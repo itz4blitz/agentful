@@ -43,5 +43,4 @@ jobs:
         run: npx semantic-release
 
       - name: Publish to npm
-        if: "!contains(github.ref, 'refs/tags/')"
         run: npm publish --provenance

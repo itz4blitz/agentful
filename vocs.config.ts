@@ -24,7 +24,7 @@ export default defineConfig({
   ogImageUrl: 'https://agentful.app/assets/agentful.jpeg',
 
   sidebar: {
-    '/docs': [
+    '/': [
       {
         text: 'Philosophy',
         items: [
@@ -136,9 +136,9 @@ export default defineConfig({
   },
 
   topNav: [
-    { text: 'Docs', link: '/docs/' },
-    { text: 'Guides', link: '/docs/guides' },
-    { text: 'Examples', link: '/docs/examples' },
+    { text: 'Docs', link: '/' },
+    { text: 'Guides', link: '/guides' },
+    { text: 'Examples', link: '/examples' },
     { text: 'GitHub', link: 'https://github.com/itz4blitz/agentful' },
     { text: 'Discord', link: 'https://discord.gg/SMDvJXUe' },
   ],
