@@ -51,8 +51,9 @@ Both work the same - agentful auto-detects your format. See [Product Structure](
 claude
 
 # 4. Begin autonomous development
-/agentful-start
 ```
+
+Run the `/agentful-start` command in Claude Code.
 
 That's it! agentful will analyze your product spec, detect your tech stack, generate specialized agents, and start building autonomously.
 
