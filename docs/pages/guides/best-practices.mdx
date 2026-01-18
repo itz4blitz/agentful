@@ -1,34 +1,34 @@
 ---
 title: "Best Practices"
-description: "Proven patterns and anti-patterns from real Agentful development experience"
+description: "Proven patterns and anti-patterns from real agentful development experience"
 sidebar_position: 4
 ---
 
 # Best Practices
 
-Learn from real Agentful development experience. These patterns, anti-patterns, and optimizations will help you get the most out of autonomous development.
+Learn from real agentful development experience. These patterns, anti-patterns, and optimizations will help you get the most out of autonomous development.
 
 ---
 
 ## Core Philosophy
 
-**The 80/20 Rule of Agentful**
+**The 80/20 Rule of agentful**
 
-Agentful excels at:
+agentful excels at:
 - ✅ Building features from clear specs
 - ✅ Writing boilerplate and infrastructure
 - ✅ Writing tests for implementation
 - ✅ Fixing validation failures
 - ✅ Following established patterns
 
-Agentful struggles with:
+agentful struggles with:
 - ❌ Ambiguous or vague requirements
 - ❌ Creative design decisions
 - ❌ Complex architectural refactors
 - ❌ Human judgment calls
 - ❌ Breaking new ground without patterns
 
-**Best practice**: Let Agentful do the 80% (implementation, tests, boilerplate), you handle the 20% (decisions, design, architecture).
+**Best practice**: Let agentful do the 80% (implementation, tests, boilerplate), you handle the 20% (decisions, design, architecture).
 
 ---
 
@@ -79,7 +79,7 @@ Agentful struggles with:
 - [ ] Keyboard shortcuts: 't' to toggle, 'd' to delete
 ```
 
-**Why**: Agentful builds in layers. Start with core, add polish in later iterations.
+**Why**: agentful builds in layers. Start with core, add polish in later iterations.
 
 ---
 
@@ -108,7 +108,7 @@ Agentful struggles with:
 
 ### Pattern 1.3: Include Edge Cases in Acceptance Criteria
 
-**Don't let Agentful discover edge cases late.**
+**Don't let agentful discover edge cases late.**
 
 **Basic acceptance criteria**:
 ```markdown
@@ -129,7 +129,7 @@ Agentful struggles with:
 - [ ] Edge case - Rate limit exceeded: Show "Too many attempts, try again in 15 minutes"
 ```
 
-**Why**: Agentful builds error handling from the start, not as an afterthought.
+**Why**: agentful builds error handling from the start, not as an afterthought.
 
 ---
 
@@ -172,13 +172,13 @@ Agentful struggles with:
 - [ ] Color contrast ratio ≥ 4.5:1
 ```
 
-**Why**: Agentful considers these from the start, not as refactors.
+**Why**: agentful considers these from the start, not as refactors.
 
 ---
 
 ### Anti-Pattern 1.1: Over-Specifying Implementation
 
-**Don't tell Agentful HOW to build, tell it WHAT to build.**
+**Don't tell agentful HOW to build, tell it WHAT to build.**
 
 **Bad (over-specified)**:
 ```markdown
@@ -204,7 +204,7 @@ Agentful struggles with:
 - [ ] Styling matches design system (Tailwind CSS)
 ```
 
-**Why**: Let Agentful choose the best implementation approach within your constraints.
+**Why**: Let agentful choose the best implementation approach within your constraints.
 
 ---
 
@@ -262,7 +262,7 @@ Agentful struggles with:
 ...
 ```
 
-**Why**: Smaller, focused features complete faster. Agentful can parallelize.
+**Why**: Smaller, focused features complete faster. agentful can parallelize.
 
 ---
 
@@ -319,7 +319,7 @@ Agentful struggles with:
 - Use Prisma Client for queries, no raw queries without approval
 ```
 
-**Why**: Helps Agentful make decisions when facing ambiguity.
+**Why**: Helps agentful make decisions when facing ambiguity.
 
 ---
 
@@ -384,7 +384,7 @@ Agentful struggles with:
 - Default to Zustand for simpler state
 ```
 
-**Why**: Agentful needs clear direction on which tool to use.
+**Why**: agentful needs clear direction on which tool to use.
 
 ---
 
@@ -410,7 +410,7 @@ Agentful struggles with:
 # 1. When starting new feature
 /agentful-status
 
-# 2. When Agentful seems stuck (10+ iterations without progress)
+# 2. When agentful seems stuck (10+ iterations without progress)
 /agentful-status
 
 # 3. When feature should be complete
@@ -420,7 +420,7 @@ Agentful struggles with:
 /agentful-status
 ```
 
-**Why**: Agentful works best uninterrupted. Check at natural breaks.
+**Why**: agentful works best uninterrupted. Check at natural breaks.
 
 ---
 
@@ -472,7 +472,7 @@ cat .agentful/completion.json | jq '
 # Shows all projects, progress, blockers
 ```
 
-**Why**: Teams need visibility without interrupting Agentful.
+**Why**: Teams need visibility without interrupting agentful.
 
 ---
 
@@ -480,16 +480,16 @@ cat .agentful/completion.json | jq '
 
 ### Pattern 4.1: The 15-Minute Rule
 
-**Let Agentful work for 15 minutes before intervening.**
+**Let agentful work for 15 minutes before intervening.**
 
-**Scenario**: Agentful seems stuck on something
+**Scenario**: agentful seems stuck on something
 
 **Impatient (bad)**:
 ```bash
 # 2 minutes in
-"Agentful is slow, let me just do it myself"
+"agentful is slow, let me just do it myself"
 # Manually write code
-# Break Agentful's flow
+# Break agentful's flow
 ```
 
 **Patient (good)**:
@@ -504,22 +504,22 @@ cat .agentful/completion.json | jq '
 # - Intervene if truly stuck
 ```
 
-**Why**: Agentful might be exploring solutions. Interrupting breaks the loop.
+**Why**: agentful might be exploring solutions. Interrupting breaks the loop.
 
 ---
 
 ### Pattern 4.2: Selective Intervention
 
-**Intervene only where Agentful struggles.**
+**Intervene only where agentful struggles.**
 
-**Agentful struggles with**:
+**agentful struggles with**:
 - Complex type definitions
 - Creative UX decisions
 - Architectural refactors
 - Performance optimizations
 - Security-critical code
 
-**Let Agentful handle**:
+**Let agentful handle**:
 - CRUD operations
 - Form handling
 - Basic routing
@@ -529,7 +529,7 @@ cat .agentful/completion.json | jq '
 
 **Example hybrid approach**:
 ```typescript
-// You write the complex types (Agentful struggles)
+// You write the complex types (agentful struggles)
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -537,7 +537,7 @@ interface AuthState {
   sessionExpiry: number;
 }
 
-// Agentful writes the basic store (Agentful excels)
+// agentful writes the basic store (agentful excels)
 const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
@@ -552,7 +552,7 @@ const useAuthStore = create<AuthState>((set) => ({
 
 ### Pattern 4.3: Guidance Over Control
 
-**Guide Agentful, don't control it.**
+**Guide agentful, don't control it.**
 
 **Controlling (bad)**:
 ```markdown
@@ -573,7 +573,7 @@ const useAuthStore = create<AuthState>((set) => ({
 - Performance: O(n) complexity is acceptable
 ```
 
-**Why**: Agentful needs flexibility to implement. Constrain by outcome, not method.
+**Why**: agentful needs flexibility to implement. Constrain by outcome, not method.
 
 ---
 
@@ -581,7 +581,7 @@ const useAuthStore = create<AuthState>((set) => ({
 
 ### Pattern 5.1: Acceptance Criteria Review Checklist
 
-**Review acceptance criteria before running Agentful.**
+**Review acceptance criteria before running agentful.**
 
 **Checklist**:
 ```markdown
@@ -614,11 +614,11 @@ If any checklist item fails, refine acceptance criteria.
 
 ### Pattern 5.2: Post-Development Review
 
-**Review Agentful's work like human code.**
+**Review agentful's work like human code.**
 
 **Review checklist**:
 ```markdown
-After Agentful completes feature:
+After agentful completes feature:
 
 Functionality:
 - [ ] All acceptance criteria pass
@@ -656,7 +656,7 @@ Documentation:
 - [ ] Setup instructions clear
 ```
 
-**Why**: Agentful can miss things. Human review catches them.
+**Why**: agentful can miss things. Human review catches them.
 
 ---
 
@@ -673,7 +673,7 @@ Documentation:
 - [ ] On failure, show error
 ```
 
-**Agentful builds it** → **You review**
+**agentful builds it** → **You review**
 
 **Iteration 2**: Add refinement based on review
 ```markdown
@@ -822,7 +822,7 @@ Documentation:
 - [ ] Cache API responses for 5 minutes
 ```
 
-**Why**: Agentful builds with performance in mind, not as refactor.
+**Why**: agentful builds with performance in mind, not as refactor.
 
 ---
 
@@ -849,7 +849,7 @@ Documentation:
 - [ ] Use JOIN instead of N+1 queries
 ```
 
-**Why**: Agentful writes optimized queries from the start.
+**Why**: agentful writes optimized queries from the start.
 
 ---
 
@@ -872,7 +872,7 @@ Documentation:
 - [ ] Prefetch next page when user reaches 80% scroll
 ```
 
-**Why**: Agentful uses best practices, not naive implementations.
+**Why**: agentful uses best practices, not naive implementations.
 
 ---
 
@@ -900,7 +900,7 @@ Documentation:
 - [ ] Don't reveal if email exists (use generic error messages)
 ```
 
-**Why**: Agentful implements security from the start, not as patch.
+**Why**: agentful implements security from the start, not as patch.
 
 ---
 
@@ -941,7 +941,7 @@ Documentation:
 
 **Never hardcode secrets.**
 
-**Bad** (Agentful might do this if not told):
+**Bad** (agentful might do this if not told):
 ```typescript
 const API_KEY = "sk-1234567890abcdef";
 ```
@@ -958,7 +958,7 @@ const API_KEY = "sk-1234567890abcdef";
 
 **Example**:
 ```typescript
-// Agentful generates this instead:
+// agentful generates this instead:
 const API_KEY = process.env.STRIPE_SECRET_KEY;
 
 if (!API_KEY) {
@@ -1103,9 +1103,9 @@ if (!API_KEY) {
 
 ---
 
-## Summary: Agentful Best Practices Mindset
+## Summary: agentful Best Practices Mindset
 
-**Think of Agentful as a junior developer** who:
+**Think of agentful as a junior developer** who:
 - ✅ Follows instructions precisely
 - ✅ Works tirelessly
 - ✅ Writes tests diligently
@@ -1125,7 +1125,7 @@ if (!API_KEY) {
 **The sweet spot**:
 ```
 You: 20% (decisions, architecture, design, complex cases)
-Agentful: 80% (implementation, tests, boilerplate, refactoring)
+agentful: 80% (implementation, tests, boilerplate, refactoring)
 ```
 
 **Result**: 10x productivity with quality maintained.

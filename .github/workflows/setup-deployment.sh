@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Agentful Deployment Setup Script
+# agentful Deployment Setup Script
 # This script helps set up the automated deployment system
 
 set -e
 
-echo "🚀 Agentful Deployment Setup"
+echo "🚀 agentful Deployment Setup"
 echo "=============================="
 echo ""
 

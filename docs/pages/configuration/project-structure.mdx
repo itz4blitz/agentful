@@ -1,12 +1,18 @@
 # Project Structure
 
-Agentful requires a specific project structure to function correctly. Understanding the required and optional files helps you organize your project effectively.
+agentful requires a specific project structure to function correctly. Understanding the required and optional files helps you organize your project effectively.
 
 ## Required Directory Structure
 
+agentful supports two product specification structures:
+
+### Option 1: Flat Structure (Single PRODUCT.md)
+
+Best for simple projects, MVPs, and single-developer workflows.
+
 ```
 .your-project/
-├── .claude/                    # REQUIRED - Agentful configuration
+├── .claude/                    # REQUIRED - agentful configuration
 │   ├── settings.json           # REQUIRED - Global settings
 │   ├── agents/                 # REQUIRED - Agent definitions
 │   │   ├── orchestrator.md
@@ -34,9 +40,83 @@ Agentful requires a specific project structure to function correctly. Understand
 │   ├── architecture.json       # Auto-created by architect
 │   └── last-validation.json    # Auto-created by reviewer
 │
-├── PRODUCT.md                  # REQUIRED - Your product spec
+├── PRODUCT.md                  # REQUIRED - Your product spec (flat)
 └── CLAUDE.md                   # OPTIONAL - Project-specific guide
 ```
+
+### Option 2: Hierarchical Structure (`.claude/product/`)
+
+Best for large projects, team collaboration, and complex feature dependencies.
+
+```
+.your-project/
+├── .claude/                    # REQUIRED - agentful configuration
+│   ├── settings.json           # REQUIRED - Global settings
+│   ├── agents/                 # REQUIRED - Agent definitions
+│   │   ├── orchestrator.md
+│   │   ├── architect.md
+│   │   ├── backend.md
+│   │   ├── frontend.md
+│   │   ├── tester.md
+│   │   ├── reviewer.md
+│   │   └── fixer.md
+│   ├── commands/               # REQUIRED - Slash commands
+│   │   ├── agentful-start.md
+│   │   ├── agentful-status.md
+│   │   ├── agentful-decide.md
+│   │   └── agentful-validate.md
+│   ├── skills/                 # REQUIRED - Reusable modules
+│   │   ├── validation/
+│   │   │   └── SKILL.md
+│   │   └── product-tracking/
+│   │       └── SKILL.md
+│   └── product/                # REQUIRED - Product spec (hierarchical)
+│       ├── PRODUCT.md          # Root product overview
+│       ├── domains/            # Functional domains
+│       │   ├── authentication/
+│       │   │   ├── DOMAIN.md
+│       │   │   └── features/
+│       │   │       ├── login.md
+│       │   │       ├── registration.md
+│       │   │       └── password-reset.md
+│       │   └── user-management/
+│       │       ├── DOMAIN.md
+│       │       └── features/
+│       │           ├── profile.md
+│       │           └── settings.md
+│       └── quality-gates/      # Quality standards
+│           ├── testing.md
+│           ├── security.md
+│           └── performance.md
+│
+├── .agentful/                  # REQUIRED - Runtime state (gitignored)
+│   ├── state.json              # Auto-created on init
+│   ├── completion.json         # Auto-created on init
+│   ├── decisions.json          # Auto-created on init
+│   ├── architecture.json       # Auto-created by architect
+│   └── last-validation.json    # Auto-created by reviewer
+│
+└── CLAUDE.md                   # OPTIONAL - Project-specific guide
+```
+
+### Choosing Your Structure
+
+:::tip
+**Flat Structure (PRODUCT.md)** - Start here for most projects. You can migrate to hierarchical later as your project grows.
+:::
+
+| Factor | Flat (PRODUCT.md) | Hierarchical (`.claude/product/`) |
+|--------|-------------------|----------------------------------|
+| **Team Size** | 1-2 developers | 3+ developers |
+| **Feature Count** | < 20 features | 20+ features |
+| **Project Complexity** | Simple to moderate | Complex with dependencies |
+| **Domain Separation** | Not needed | Multiple business domains |
+| **Ease of Use** | ✅ Very simple | ⚠️ Requires setup |
+| **Scalability** | ⚠️ Limited | ✅ Highly scalable |
+| **Team Collaboration** | ⚠️ Possible conflicts | ✅ Clear ownership |
+| **Migration Path** | Can upgrade to hierarchical | N/A |
+
+**Recommendation**: Start with **flat structure** unless you know you need hierarchical from day one.
 
 ## File Requirements
 
@@ -44,11 +124,11 @@ Agentful requires a specific project structure to function correctly. Understand
 
 | File | Purpose | Created By |
 |------|---------|------------|
-| `.claude/settings.json` | Hooks, permissions | `npx agentful init` |
-| `.claude/agents/*.md` | Agent definitions | `npx agentful init` |
-| `.claude/commands/*.md` | Slash commands | `npx agentful init` |
-| `.claude/skills/*/SKILL.md` | Skill modules | `npx agentful init` |
-| `PRODUCT.md` | Product spec | You (edit template) |
+| `.claude/settings.json` | Hooks, permissions | `npx @itz4blitz/agentful init` |
+| `.claude/agents/*.md` | Agent definitions | `npx @itz4blitz/agentful init` |
+| `.claude/commands/*.md` | Slash commands | `npx @itz4blitz/agentful init` |
+| `.claude/skills/*/SKILL.md` | Skill modules | `npx @itz4blitz/agentful init` |
+| `PRODUCT.md` **OR** `.claude/product/PRODUCT.md` | Product spec | You (edit template) |
 | `.agentful/state.json` | Work state | CLI on init |
 
 ### Recommended
@@ -68,25 +148,104 @@ Agentful requires a specific project structure to function correctly. Understand
 | `.agentful/architecture.json` | Tech stack info | Architect |
 | `.agentful/last-validation.json` | Validation results | Reviewer |
 
+## When to Use Each Structure
+
+### Flat Structure (PRODUCT.md)
+
+Choose the flat structure when:
+
+- **Starting a new project** - Quick setup, minimal overhead
+- **Building an MVP** - Fast iteration, simple scope
+- **Solo developer or small team** (1-2 people) - Easy to coordinate
+- **< 20 features planned** - Manageable in a single file
+- **Single domain focus** - One product area (e.g., just authentication)
+- **Learning agentful** - Simpler to understand and debug
+
+**Advantages:**
+- ✅ Quickest to get started
+- ✅ Easier to see the entire product at a glance
+- ✅ Simpler file management
+- ✅ Less cognitive overhead
+- ✅ Perfect for prototypes and MVPs
+
+**Limitations:**
+- ⚠️ Can become unwieldy with 20+ features
+- ⚠️ Harder for multiple developers to work simultaneously
+- ⚠️ No clear separation of concerns
+- ⚠️ Merge conflicts more likely on teams
+
+### Hierarchical Structure (`.claude/product/`)
+
+Choose the hierarchical structure when:
+
+- **Large-scale project** - 20+ features with complex dependencies
+- **Team collaboration** (3+ developers) - Clear ownership boundaries
+- **Multiple domains** - Distinct business areas (e.g., auth, billing, content)
+- **Complex dependencies** - Features that rely on other features
+- **Long-term project** - Expected to grow and evolve over months
+- **Enterprise needs** - Requires organized structure and governance
+
+**Advantages:**
+- ✅ Scales to hundreds of features
+- ✅ Clear ownership (domains/features)
+- ✅ Reduced merge conflicts
+- ✅ Better for parallel development
+- ✅ Easier to navigate large specs
+- ✅ Supports domain-driven design
+
+**Trade-offs:**
+- ⚠️ More complex initial setup
+- ⚠️ Requires planning domain structure
+- ⚠️ More files to manage
+- ⚠️ Slightly higher learning curve
+
+### Decision Matrix
+
+Use this flowchart to decide:
+
+```
+Start
+ │
+ ├─ Do you have 3+ developers?
+ │   ├─ Yes → Hierarchical
+ │   └─ No  → Continue
+ │
+ ├─ Do you have 20+ features planned?
+ │   ├─ Yes → Hierarchical
+ │   └─ No  → Continue
+ │
+ ├─ Do you have multiple business domains?
+ │   ├─ Yes → Hierarchical
+ │   └─ No  → Continue
+ │
+ └─ Is this a long-term (6+ months) project?
+     ├─ Yes → Consider Hierarchical
+     └─ No  → Flat Structure (PRODUCT.md)
+```
+
+**When in doubt, start with flat.** You can migrate to hierarchical later without losing progress.
+
 ## Initialization Process
 
 ### Full Initialization (with templates)
 
 ```bash
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 Creates:
 - All required `.claude/` configuration
 - All `.agentful/` state files
-- `PRODUCT.md` template
+- `PRODUCT.md` template (flat structure by default)
 - `CLAUDE.md` template
 - Updates `.gitignore`
+
+**Note**: This creates a flat structure. To use hierarchical structure, see [Hierarchical Setup](#hierarchical-setup) below.
 
 ### Bare Initialization (existing project)
 
 ```bash
-npx agentful init --bare
+npx @itz4blitz/agentful init --bare
 ```
 
 Creates:
@@ -97,6 +256,43 @@ Creates:
 Skips:
 - `PRODUCT.md` (if exists)
 - `CLAUDE.md` (if exists)
+
+### Hierarchical Setup
+
+To initialize with a hierarchical structure:
+
+```bash
+# 1. Run normal init
+npx @itz4blitz/agentful init
+
+# 2. Create hierarchical structure
+mkdir -p .claude/product/domains .claude/product/quality-gates
+
+# 3. Move or delete the flat PRODUCT.md
+# Option A: Move it as the root overview
+mv PRODUCT.md .claude/product/PRODUCT.md
+
+# Option B: Delete it and start fresh
+rm PRODUCT.md
+
+# 4. Create your domain structure
+# See "Hierarchical Product Structure" section below
+```
+
+**Migration from Flat to Hierarchical:**
+
+You can migrate at any time without losing progress:
+
+```bash
+# 1. Create hierarchical structure
+mkdir -p .claude/product/domains .claude/product/quality-gates
+
+# 2. Move existing PRODUCT.md as root
+mv PRODUCT.md .claude/product/PRODUCT.md
+
+# 3. Extract features into domains
+# Create DOMAIN.md and feature files based on your existing spec
+```
 
 ## .claude/settings.json
 
@@ -183,11 +379,40 @@ Allow patterns support wildcards:
 }
 ```
 
-## PRODUCT.md Structure
+## Product Specification Structure
 
-The product specification file is the most important configuration file.
+The product specification is the most important configuration file. agentful supports two formats:
 
-### Required Sections
+### Flat Structure (PRODUCT.md)
+
+Single file containing all product information. Best for simple projects.
+
+### Hierarchical Structure (`.claude/product/`)
+
+Organized structure with domains, features, and quality gates. Best for complex projects.
+
+#### Required Files
+
+```
+.claude/product/
+├── PRODUCT.md              # Root product overview (required)
+├── domains/                # Business domains (required if hierarchical)
+│   ├── {domain-name}/
+│   │   ├── DOMAIN.md       # Domain overview (required)
+│   │   └── features/       # Feature files (required)
+│   │       ├── {feature}.md
+│   │       └── {feature}.md
+└── quality-gates/          # Quality standards (optional)
+    ├── testing.md
+    ├── security.md
+    └── performance.md
+```
+
+## Flat Structure (PRODUCT.md)
+
+The single-file approach for simple projects.
+
+### Required Sections (Flat)
 
 ```markdown
 # Product Specification
@@ -246,7 +471,7 @@ The product is complete when:
 5. [Deployed to production]
 ```
 
-### Minimal PRODUCT.md
+### Minimal Flat PRODUCT.md
 
 ```markdown
 # Product Specification
@@ -276,6 +501,219 @@ A simple TODO list application.
 3. No type errors (adapts to stack)
 ```
 
+## Hierarchical Structure (`.claude/product/`)
+
+The multi-file approach for complex projects. This structure separates concerns into domains, features, and quality gates.
+
+### Root Product Overview (`.claude/product/PRODUCT.md`)
+
+High-level product description and tech stack:
+
+```markdown
+# Product Specification
+
+## Overview
+A comprehensive e-commerce platform with multi-vendor support, real-time inventory, and advanced analytics.
+
+## Goals
+- [ ] Launch with 100+ products
+- [ ] Support 10+ vendors simultaneously
+- [ ] Process 1000+ orders/day
+- [ ] Provide real-time inventory updates
+
+## Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State**: Zustand + React Query
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Next.js API Routes
+- **Language**: TypeScript
+
+### Database
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+- **Cache**: Redis
+
+### Authentication
+- **Method**: NextAuth.js
+- **Providers**: Google, GitHub, Email
+
+### Testing
+- **Unit**: Vitest
+- **E2E**: Playwright
+
+## Domains
+
+- **Authentication**: User accounts, login, registration
+- **Product Catalog**: Product management, categories, search
+- **Order Management**: Cart, checkout, order processing
+- **Vendor Portal**: Vendor dashboard, inventory, analytics
+- **Admin Panel**: Platform administration, moderation
+
+## Success Criteria
+
+The product is complete when:
+1. All domains fully implemented and tested
+2. All tests passing with 80%+ coverage
+3. No type errors
+4. No security vulnerabilities
+5. Load tested to 1000 concurrent users
+6. Deployed to production
+```
+
+### Domain Structure (`.claude/product/domains/{domain}/DOMAIN.md`)
+
+Each domain has a DOMAIN.md file describing that business area:
+
+```markdown
+# Authentication Domain
+
+## Overview
+Handles all user authentication, authorization, and account management functionality.
+
+## Scope
+- User registration and login
+- Password management
+- Profile management
+- Session handling
+- OAuth integrations
+
+## Dependencies
+- None (foundational domain)
+
+## Features
+- User Registration
+- User Login
+- Password Reset
+- Email Verification
+- OAuth (Google, GitHub)
+- Profile Management
+
+## Quality Gates
+- All authentication flows tested
+- No security vulnerabilities
+- OWASP compliance verified
+```
+
+### Feature Files (`.claude/product/domains/{domain}/features/{feature}.md`)
+
+Each feature has its own detailed specification:
+
+```markdown
+# User Registration
+
+## Description
+Allow new users to create accounts using email/password or OAuth providers.
+
+## Priority
+CRITICAL
+
+## Dependencies
+- None
+
+## User Stories
+- As a new user, I want to register with email so that I can access the platform
+- As a new user, I want to sign up with Google so that I can quickly get started
+- As a user, I want to verify my email so that my account is secure
+
+## Acceptance Criteria
+
+### Email Registration
+- [ ] User can register with email and password
+- [ ] Password must be at least 8 characters with uppercase, lowercase, and number
+- [ ] Email must be valid format
+- [ ] Email must be unique
+- [ ] User receives verification email after registration
+- [ ] Account is inactive until email verified
+
+### OAuth Registration
+- [ ] User can register with Google
+- [ ] User can register with GitHub
+- [ ] OAuth profile data is imported
+- [ ] Account is automatically verified
+
+### Security
+- [ ] Passwords are hashed with bcrypt
+- [ ] Rate limiting on registration endpoint
+- [ ] CSRF protection enabled
+- [ ] Input validation on all fields
+
+## Technical Requirements
+- Use NextAuth.js for authentication
+- Store users in PostgreSQL via Prisma
+- Send emails using Resend
+- Implement rate limiting with upstash
+```
+
+### Quality Gates (`.claude/product/quality-gates/{gate}.md`)
+
+Define quality standards for different aspects:
+
+```markdown
+# Testing Standards
+
+## Unit Testing
+- Minimum 80% code coverage
+- All business logic tested
+- Mock external dependencies
+- Fast execution (< 5 seconds total)
+
+## Integration Testing
+- All API endpoints tested
+- Database operations tested
+- Authentication flows tested
+- Third-party integrations mocked
+
+## E2E Testing
+- Critical user paths covered
+- Cross-browser testing (Chrome, Firefox, Safari)
+- Mobile responsive testing
+- Performance benchmarks met
+
+## Test Quality
+- Clear test names
+- Independent tests (no shared state)
+- Proper setup/teardown
+- Meaningful assertions
+```
+
+```markdown
+# Security Standards
+
+## Authentication
+- All endpoints authenticated except public ones
+- Session timeout after 1 hour
+- Secure cookie flags enabled
+- CSRF protection on all mutations
+
+## Authorization
+- Role-based access control (RBAC)
+- Resource-level permissions
+- Admin actions require elevated privileges
+
+## Data Protection
+- Passwords hashed (bcrypt, rounds >= 12)
+- PII encrypted at rest
+- API keys in environment variables
+- Secrets never committed to git
+
+## API Security
+- Rate limiting on all endpoints
+- Input validation and sanitization
+- SQL injection prevention (parameterized queries)
+- XSS prevention (input encoding, CSP)
+
+## Compliance
+- OWASP Top 10 addressed
+- GDPR compliance for user data
+- Regular security audits
+```
+
 ## CLAUDE.md Structure
 
 Optional project-specific instructions file.
@@ -290,9 +728,9 @@ Optional project-specific instructions file.
 ### Example CLAUDE.md
 
 ```markdown
-# Agentful Product Development
+# agentful Product Development
 
-This project uses Agentful with custom settings.
+This project uses agentful with custom settings.
 
 ## Project-Specific Rules
 
@@ -340,6 +778,12 @@ These files are auto-generated and should not be manually edited.
 
 ### completion.json
 
+The completion tracking file format differs based on your product structure:
+
+#### Flat Structure Format
+
+When using `PRODUCT.md`, features are tracked at the top level:
+
 ```json
 {
   "features": {
@@ -366,6 +810,80 @@ These files are auto-generated and should not be manually edited.
   "last_updated": "2026-01-18T01:30:00Z"
 }
 ```
+
+#### Hierarchical Structure Format
+
+When using `.claude/product/`, features are organized by domain:
+
+```json
+{
+  "domains": {
+    "authentication": {
+      "status": "complete",
+      "score": 100,
+      "features": {
+        "user-registration": {
+          "status": "complete",
+          "score": 100,
+          "started_at": "2026-01-18T00:00:00Z",
+          "completed_at": "2026-01-18T01:00:00Z"
+        },
+        "user-login": {
+          "status": "complete",
+          "score": 100,
+          "started_at": "2026-01-18T01:00:00Z",
+          "completed_at": "2026-01-18T02:00:00Z"
+        },
+        "password-reset": {
+          "status": "complete",
+          "score": 100,
+          "started_at": "2026-01-18T02:00:00Z",
+          "completed_at": "2026-01-18T03:00:00Z"
+        }
+      }
+    },
+    "product-catalog": {
+      "status": "in_progress",
+      "score": 35,
+      "features": {
+        "product-listing": {
+          "status": "complete",
+          "score": 100,
+          "started_at": "2026-01-18T03:00:00Z",
+          "completed_at": "2026-01-18T05:00:00Z"
+        },
+        "product-details": {
+          "status": "in_progress",
+          "score": 60,
+          "started_at": "2026-01-18T05:00:00Z"
+        },
+        "product-search": {
+          "status": "pending",
+          "score": 0
+        }
+      }
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "no_dead_code": false,
+    "coverage_80": false,
+    "security_clean": true
+  },
+  "overall": 52,
+  "last_updated": "2026-01-18T06:00:00Z"
+}
+```
+
+**Key Differences:**
+
+| Aspect | Flat Format | Hierarchical Format |
+|--------|-------------|---------------------|
+| Structure | Single-level features | Nested domains → features |
+| Status Tracking | Per feature | Per domain AND per feature |
+| Scoring | Feature-level only | Domain-level + feature-level |
+| Best For | Simple projects | Complex, multi-domain projects |
 
 ### decisions.json
 
@@ -399,10 +917,10 @@ These files are auto-generated and should not be manually edited.
 
 ### .gitignore
 
-Agentful automatically adds to `.gitignore`:
+agentful automatically adds to `.gitignore`:
 
 ```gitignore
-# Agentful runtime state
+# agentful runtime state
 .agentful/
 ```
 
@@ -412,7 +930,7 @@ Agentful automatically adds to `.gitignore`:
 # Dependencies
 node_modules/
 
-# Agentful runtime state
+# agentful runtime state
 .agentful/
 
 # Environment variables
@@ -441,6 +959,118 @@ coverage/
 *.log
 npm-debug.log*
 ```
+
+## Structure Comparison Summary
+
+### Quick Reference
+
+| Aspect | Flat (PRODUCT.md) | Hierarchical (`.claude/product/`) |
+|--------|-------------------|----------------------------------|
+| **Setup Time** | 2 minutes | 10-15 minutes |
+| **Learning Curve** | Low | Medium |
+| **Best Team Size** | 1-2 developers | 3+ developers |
+| **Feature Capacity** | < 20 features | 100+ features |
+| **File Count** | 1 file | 10+ files |
+| **Merge Conflicts** | More likely | Less likely |
+| **Parallel Work** | Difficult | Easy |
+| **Scalability** | Limited | Excellent |
+| **Domain Separation** | Manual | Built-in |
+| **Migration** | Can upgrade | N/A |
+
+### Structure Selection Guide
+
+#### Start with Flat if:
+- ✅ Building an MVP or prototype
+- ✅ Working solo or with one other developer
+- ✅ Project has < 20 features
+- ✅ Single business domain
+- ✅ Need to start quickly
+- ✅ Learning agentful
+
+#### Start with Hierarchical if:
+- ✅ Building a large-scale application
+- ✅ Working with a team of 3+
+- ✅ Project has 20+ features
+- ✅ Multiple business domains
+- ✅ Features have complex dependencies
+- ✅ Long-term project (6+ months)
+- ✅ Need clear ownership boundaries
+
+### Real-World Examples
+
+**Flat Structure Examples:**
+- Personal blog with CMS
+- Simple SaaS MVP (billing + core feature)
+- Portfolio website
+- Internal tools for small team
+- Prototype or proof-of-concept
+
+**Hierarchical Structure Examples:**
+- E-commerce platform (auth, products, orders, vendor portal, admin)
+- Project management tool (auth, projects, tasks, teams, notifications, reporting)
+- Healthcare app (auth, patients, appointments, records, billing, telehealth)
+- Social platform (auth, users, posts, comments, messaging, notifications, analytics)
+
+### Migration Path
+
+**You can always start flat and migrate to hierarchical later:**
+
+1. **Start with flat** - Quick setup, immediate progress
+2. **Hit a threshold** - 20+ features or team grows
+3. **Migrate gradually** - Extract features into domains over time
+4. **No progress lost** - All work transfers seamlessly
+
+**Migration Process:**
+```bash
+# 1. Create hierarchical structure
+mkdir -p .claude/product/domains .claude/product/quality-gates
+
+# 2. Move PRODUCT.md as root overview
+mv PRODUCT.md .claude/product/PRODUCT.md
+
+# 3. Extract features into domains
+# Group related features into domain folders
+# Each feature gets its own .md file
+
+# 4. Create domain overviews
+# Add DOMAIN.md for each domain explaining scope
+
+# 5. Completion tracking auto-updates
+# agentful detects the new structure and adapts
+```
+
+## Best Practices
+
+### For Flat Structure:
+1. **Use clear feature naming** - Prefix with domain (e.g., "auth-login", "user-profile")
+2. **Group related features** - Use comments or sections to organize
+3. **Keep it focused** - If it gets too long, consider migrating to hierarchical
+4. **Use priorities** - Mark features as CRITICAL, HIGH, MEDIUM, LOW
+5. **Document dependencies** - Note which features depend on others
+
+### For Hierarchical Structure:
+1. **Plan your domains first** - Think about business areas, not technical layers
+2. **Keep domains focused** - Each domain should have a clear purpose
+3. **Limit domain size** - Aim for 5-10 features per domain
+4. **Use consistent naming** - Follow the same pattern across all domains
+5. **Document dependencies** - Note both inter-domain and intra-domain dependencies
+6. **Create quality gates** - Define clear standards for each domain
+7. **Assign ownership** - Each domain should have a clear owner/team
+
+### Common Pitfalls to Avoid
+
+**Flat Structure:**
+- ❌ Don't let the file grow beyond 500 lines
+- ❌ Don't merge unrelated features into one
+- ❌ Don't ignore domain boundaries
+- ❌ Don't prevent team collaboration
+
+**Hierarchical Structure:**
+- ❌ Don't create too many domains (5-10 is ideal)
+- ❌ Don't over-organize (keep it simple)
+- ❌ Don't create empty domains
+- ❌ Don't forget to link related features
+- ❌ Don't make domains too technical (focus on business)
 
 ## Next Steps
 

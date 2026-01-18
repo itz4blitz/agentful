@@ -1,37 +1,120 @@
 ---
-title: "Writing Effective PRODUCT.md"
-description: "Master the art of writing clear, actionable product specifications for Agentful"
+title: "Writing Product Specifications"
+description: "Master the art of writing clear, actionable product specifications for agentful"
 sidebar_position: 1
 ---
 
-# Writing Effective PRODUCT.md
+# Writing Product Specifications
 
-The quality of your PRODUCT.md directly determines how well Agentful can build your product. A well-written spec leads to autonomous development success. A vague spec leads to confusion, decisions, and delays.
+The quality of your product specification directly determines how well agentful can build your product. A well-written spec leads to autonomous development success. A vague spec leads to confusion, decisions, and delays.
 
 ---
 
-## Why PRODUCT.md Matters
+## Why Product Specifications Matter
 
-PRODUCT.md is the **single source of truth** for Agentful. It's where you define:
+Product specifications are the **single source of truth** for agentful. It's where you define:
 
 - **What** you're building (overview and features)
 - **How** it should work (acceptance criteria)
 - **With what** technologies (tech stack)
 - **When** it's done (success criteria)
 
-Agentful reads this file on every iteration. The clearer and more specific it is, the less it needs to ask you for decisions.
+agentful reads your specification on every iteration. The clearer and more specific it is, the less it needs to ask you for decisions.
 
 ## The Golden Rule
 
 > **Be specific. Be explicit. Use checklists.**
 
-Vague requirements force Agentful to stop and ask. Specific requirements let Agentful work autonomously.
+Vague requirements force agentful to stop and ask. Specific requirements let agentful work autonomously.
 
 ---
 
-## The Hierarchical Domain-Based Approach
+## Specification Structures: Flat vs Hierarchical
 
-Agentful recommends organizing features into a **hierarchical domain-based structure**. This approach helps Agentful better understand feature relationships, dependencies, and implementation order.
+agentful supports **two organizational structures** for your product specifications. Both are valid - choose based on your project's complexity and team needs.
+
+### Structure Overview
+
+| Aspect | Flat Structure | Hierarchical Structure |
+|--------|---------------|----------------------|
+| **File Location** | `PRODUCT.md` or `.claude/product/index.md` | `.claude/product/domains/*/index.md` |
+| **Best For** | Small to medium projects (3-15 features) | Large projects (15+ features) |
+| **Domain Concept** | Sections within one file | Separate directories per domain |
+| **Maintainability** | Easy for single author | Better for team collaboration |
+| **Scalability** | Can get unwieldy past ~20 features | Scales to 50+ features |
+| **Navigation** | Scroll through one file | Separate files per domain |
+
+### Visual Comparison
+
+**Flat Structure** (Single File):
+```
+.claude/product/index.md
+├── Overview
+├── Tech Stack
+└── Features (by domain section)
+    ├── Domain 1: Authentication
+    │   ├── Feature 1.1
+    │   └── Feature 1.2
+    ├── Domain 2: Content Management
+    │   ├── Feature 2.1
+    │   └── Feature 2.2
+    └── Domain 3: Analytics
+        ├── Feature 3.1
+        └── Feature 3.2
+```
+
+**Hierarchical Structure** (Directory Tree):
+```
+.claude/product/
+├── index.md (overview + tech stack)
+└── domains/
+    ├── authentication/
+    │   └── index.md (features 1.1, 1.2)
+    ├── content-management/
+    │   └── index.md (features 2.1, 2.2)
+    └── analytics/
+        └── index.md (features 3.1, 3.2)
+```
+
+### Decision Matrix
+
+Choose **Flat Structure** if:
+- ✓ Your project has 15 or fewer features
+- ✓ You're a solo developer or small team
+- ✓ All features fit in 3-6 logical domains
+- ✓ You want simpler file management
+- ✓ You prefer everything in one place
+
+Choose **Hierarchical Structure** if:
+- ✓ Your project has 15+ features
+- ✓ Multiple team members own different domains
+- ✓ You have 6+ distinct business domains
+- ✓ Domains have complex interdependencies
+- ✓ You want parallel domain development
+- ✓ You need granular progress tracking
+
+### Key Terminology Difference
+
+**Important**: "Domain" means different things in each structure:
+
+- **Flat**: Domains are **section headers** in your single file (organizational tool)
+- **Hierarchical**: Domains are **actual directories** in your filesystem (architectural tool)
+
+Both structures let you organize features by business domain - the difference is physical vs logical organization.
+
+### Migration Path
+
+You can always start flat and migrate to hierarchical:
+
+1. **Start**: Flat structure for rapid iteration
+2. **Grow**: Hit ~15 features or multiple contributors?
+3. **Migrate**: Split into domain directories (see migration guide below)
+
+---
+
+## Organizing Features by Domain
+
+Both flat and hierarchical structures use **domain-based organization**. This approach helps agentful better understand feature relationships, dependencies, and implementation order.
 
 ### What Are Domains?
 
@@ -48,7 +131,7 @@ Agentful recommends organizing features into a **hierarchical domain-based struc
 
 1. **Better Organization**: Related features stay together, making the spec easier to navigate
 2. **Clearer Dependencies**: Domains show what functionality depends on what
-3. **Focused Development**: Agentful can complete one domain before moving to the next
+3. **Focused Development**: agentful can complete one domain before moving to the next
 4. **Parallelizable Work**: Different domains can often be developed in parallel
 5. **Easier Maintenance**: Future features have a clear place to belong
 
@@ -66,6 +149,10 @@ Domain 2: [Domain Name]
   ├─ Feature 2.1 - [Priority]
   └─ Feature 2.2 - [Priority]
 ```
+
+In **flat structure**, these domains become section headers in one file.
+
+In **hierarchical structure**, these domains become separate directories with their own files.
 
 ### Example: Task Management App
 
@@ -131,9 +218,671 @@ Ask yourself:
 
 ---
 
-## PRODUCT.md Structure
+## Product Specification Templates
 
-### Complete Template
+### Template 1: Flat Structure (Single File)
+
+**Best for**: Projects with 3-15 features, solo developers, small teams
+
+**File locations**:
+- `PRODUCT.md` (root directory)
+- OR `.claude/product/index.md` (recommended)
+
+```markdown
+# Product Specification
+
+## Overview
+
+[2-3 sentences describing what you're building and who it's for]
+
+## Goals
+
+- [ ] [Primary goal 1]
+- [ ] [Primary goal 2]
+- [ ] [Primary goal 3]
+
+## Tech Stack
+
+### Frontend
+- **Framework**: [Next.js 14 / React + Vite / Vue + Nuxt / SvelteKit]
+- **Language**: [TypeScript / JavaScript]
+- **Styling**: [Tailwind CSS / CSS Modules / styled-components / shadcn/ui]
+- **State Management**: [Zustand / Context API / Redux / Jotai]
+
+### Backend
+- **Runtime**: [Node.js / Bun / Deno]
+- **Framework**: [Next.js API Routes / Express / Fastify / NestJS / Hono]
+- **Language**: [TypeScript / JavaScript]
+
+### Database
+- **Database**: [PostgreSQL / MySQL / SQLite / MongoDB / PlanetScale]
+- **ORM**: [Prisma / Drizzle / TypeORM / Mongoose]
+
+### Authentication
+- **Method**: [JWT / NextAuth / Clerk / Auth0 / Lucia]
+
+### Testing
+- **Unit**: [Vitest / Jest]
+- **E2E**: [Playwright / Cypress]
+
+### Deployment
+- **Hosting**: [Vercel / Netlify / Railway / Fly.io]
+
+## Features (Domain-Based Organization)
+
+Organize features into domains as sections, then prioritize within each domain:
+
+### Domain 1: [Domain Name]
+
+#### 1.1 [Feature Name] - CRITICAL
+**Description**: [What this feature does in one sentence]
+
+**User Stories**:
+- As a [user type], I want [feature] so that [benefit]
+
+**Acceptance Criteria**:
+- [ ] [Specific, testable requirement 1]
+- [ ] [Specific, testable requirement 2]
+- [ ] [Specific, testable requirement 3]
+
+**Technical Notes** (Optional):
+- [API endpoints, components, libraries, etc.]
+
+---
+
+#### 1.2 [Feature Name] - HIGH
+**Description**: [What this feature does]
+
+**User Stories**:
+- As a [user type], I want [feature] so that [benefit]
+
+**Acceptance Criteria**:
+- [ ] [Specific requirement 1]
+- [ ] [Specific requirement 2]
+
+**Technical Notes** (Optional):
+- [Relevant implementation details]
+
+---
+
+### Domain 2: [Domain Name]
+
+#### 2.1 [Feature Name] - HIGH
+**Description**: [What this feature does]
+
+**User Stories**:
+- As a [user type], I want [feature] so that [benefit]
+
+**Acceptance Criteria**:
+- [ ] [Specific requirement 1]
+- [ ] [Specific requirement 2]
+
+---
+
+#### 2.2 [Feature Name] - MEDIUM
+**Description**: [What this feature does]
+
+**User Stories**:
+- As a [user type], I want [feature] so that [benefit]
+
+**Acceptance Criteria**:
+- [ ] [Specific requirement 1]
+- [ ] [Specific requirement 2]
+
+---
+
+### Domain 3: [Domain Name]
+
+#### 3.1 [Feature Name] - MEDIUM
+**Description**: [What this feature does]
+
+**Acceptance Criteria**:
+- [ ] [Specific requirement 1]
+
+---
+
+#### 3.2 [Feature Name] - LOW
+**Description**: [What this feature does]
+
+**Acceptance Criteria**:
+- [ ] [Specific requirement 1]
+
+---
+
+**Note**: Repeat for as many domains and features as needed. Aim for 3-6 domains with 2-5 features each.
+
+## Architecture Notes (Optional)
+
+### Folder Structure
+
+If you have a preferred structure:
+
+    src/
+    ├── app/              # Next.js app router
+    ├── components/       # React components
+    ├── lib/              # Utilities
+    ├── hooks/            # Custom hooks
+    └── styles/           # Global styles
+
+Or:
+
+    src/
+    ├── app/              # Next.js app router
+    ├── components/       # React components
+    │   ├── ui/          # Reusable UI components
+    │   └── features/    # Feature-specific components
+    ├── lib/              # Utilities and helpers
+    ├── hooks/            # Custom React hooks
+    ├── services/         # API services
+    └── types/            # TypeScript types
+
+### Design Patterns
+
+- [Any specific patterns to use]
+- [Any patterns to avoid]
+
+### Constraints
+
+- [Performance requirements]
+- [Accessibility requirements]
+- [Browser support requirements]
+
+## Third-Party Integrations (Optional)
+
+- [API 1]: [Purpose and usage notes]
+- [API 2]: [Purpose and usage notes]
+
+## Out of Scope (for MVP)
+
+List what you're explicitly NOT building:
+
+- [Feature X] - Will add in v2
+- [Feature Y] - Out of scope
+- [Feature Z] - Not needed
+
+## Success Criteria
+
+The product is complete when:
+
+1. [All critical features implemented and tested]
+2. [All tests passing with 80%+ coverage]
+3. [No type errors (adapts to stack)]
+4. [No security vulnerabilities]
+5. [Deployed to production]
+
+## Notes
+
+[Any additional context, links, or documentation]
+```
+
+---
+
+### Template 2: Hierarchical Structure (Directory Tree)
+
+**Best for**: Projects with 15+ features, multiple team members, complex domains
+
+**File structure**:
+```
+.claude/product/
+├── index.md                    # Overview + Tech Stack
+└── domains/
+    ├── authentication/
+    │   └── index.md            # Auth features
+    ├── content-management/
+    │   └── index.md            # Content features
+    └── analytics/
+        └── index.md            # Analytics features
+```
+
+**Main file**: `.claude/product/index.md`
+
+```markdown
+# Product Specification
+
+## Overview
+
+[2-3 sentences describing what you're building and who it's for]
+
+## Goals
+
+- [ ] [Primary goal 1]
+- [ ] [Primary goal 2]
+- [ ] [Primary goal 3]
+
+## Tech Stack
+
+### Frontend
+- **Framework**: [Next.js 14 / React + Vite / Vue + Nuxt / SvelteKit]
+- **Language**: [TypeScript / JavaScript]
+- **Styling**: [Tailwind CSS / CSS Modules / styled-components / shadcn/ui]
+- **State Management**: [Zustand / Context API / Redux / Jotai]
+
+### Backend
+- **Runtime**: [Node.js / Bun / Deno]
+- **Framework**: [Next.js API Routes / Express / Fastify / NestJS / Hono]
+- **Language**: [TypeScript / JavaScript]
+
+### Database
+- **Database**: [PostgreSQL / MySQL / SQLite / MongoDB / PlanetScale]
+- **ORM**: [Prisma / Drizzle / TypeORM / Mongoose]
+
+### Authentication
+- **Method**: [JWT / NextAuth / Clerk / Auth0 / Lucia]
+
+### Testing
+- **Unit**: [Vitest / Jest]
+- **E2E**: [Playwright / Cypress]
+
+### Deployment
+- **Hosting**: [Vercel / Netlify / Railway / Fly.io]
+
+## Domains
+
+This product is organized into the following domains:
+
+1. **Authentication & User Management** - User accounts, profiles, permissions
+   → See `.claude/product/domains/authentication/index.md`
+
+2. **Content Management** - CRUD operations, search, categorization
+   → See `.claude/product/domains/content-management/index.md`
+
+3. **Analytics & Reporting** - Dashboards, charts, exports
+   → See `.claude/product/domains/analytics/index.md`
+
+## Architecture Notes (Optional)
+
+### Folder Structure
+[Your preferred structure]
+
+### Design Patterns
+[Patterns to use/avoid]
+
+### Constraints
+[Performance, accessibility, browser support]
+
+## Third-Party Integrations (Optional)
+
+- [API 1]: [Purpose and usage notes]
+- [API 2]: [Purpose and usage notes]
+
+## Out of Scope (for MVP)
+
+List what you're explicitly NOT building:
+
+- [Feature X] - Will add in v2
+- [Feature Y] - Out of scope
+- [Feature Z] - Not needed
+
+## Success Criteria
+
+The product is complete when:
+
+1. [All critical features implemented and tested]
+2. [All tests passing with 80%+ coverage]
+3. [No type errors (adapts to stack)]
+4. [No security vulnerabilities]
+5. [Deployed to production]
+
+## Notes
+
+[Any additional context, links, or documentation]
+```
+
+**Domain file**: `.claude/product/domains/authentication/index.md`
+
+```markdown
+# Domain: Authentication & User Management
+
+## Domain Overview
+
+This domain handles all user identity and access management functionality including registration, login, profile management, and permissions.
+
+## Dependencies
+
+- Depends on: Database setup
+- Required by: All other domains (content, analytics, etc.)
+
+## Features
+
+### 1.1 User Registration - CRITICAL
+
+**Description**: New users can create accounts with email verification
+
+**User Stories**:
+- As a new user, I want to register with email so that I can access the platform
+- As a security-conscious user, I want email verification so that my account is secure
+
+**Acceptance Criteria**:
+- [ ] Registration form with: email, password, confirm password fields
+- [ ] Email validation: required, valid format, not already registered
+- [ ] Password validation: required, min 8 chars, uppercase + lowercase + number
+- [ ] Password confirmation must match
+- [ ] On success: create user, send verification email, show "check your email" message
+- [ ] On failure: inline error with specific reason (email taken, weak password, etc.)
+- [ ] Verification link expires in 24 hours
+- [ ] Verification link can be resent from login page
+
+**Technical Notes**:
+- Use bcrypt for password hashing (cost factor 12)
+- Use JWT for verification token (expires in 24h)
+- Rate limit registration: max 3 attempts per hour per IP
+
+---
+
+### 1.2 User Login - CRITICAL
+
+**Description**: Registered users can authenticate with credentials
+
+**User Stories**:
+- As a registered user, I want to login so that I can access my account
+- As a user, I want secure sessions so that my account isn't compromised
+
+**Acceptance Criteria**:
+- [ ] Login form with email and password fields
+- [ ] Email validation: required, valid format
+- [ ] Password validation: required, min 8 characters
+- [ ] On success: verify email is verified, store JWT in httpOnly cookie, redirect to /dashboard
+- [ ] On failure: inline error with specific reason (not found, wrong password, not verified)
+- [ ] Show "resend verification" link if email not verified
+- [ ] Rate limiting: max 5 attempts per 15 minutes per IP
+- [ ] JWT valid for 7 days
+
+**Technical Notes**:
+- JWT includes: userId, email, role, issuedAt, expiresAt
+- httpOnly cookie: secure=true, sameSite=strict, httpOnly=true
+- Use existing auth pattern in src/lib/auth.ts
+
+---
+
+### 1.3 User Profile - HIGH
+
+**Description**: Users can view and edit their profile information
+
+**User Stories**:
+- As a user, I want to update my profile so that my information is current
+- As a user, I want to see my profile data so that I know what's stored
+
+**Acceptance Criteria**:
+- [ ] Profile page at /profile
+- [ ] Display: name, email, registration date, last login
+- [ ] Edit form: name (optional), email (optional, requires verification if changed)
+- [ ] Profile picture upload (max 2MB, jpg/png)
+- [ ] "Save Changes" button with loading state
+- [ ] Success toast: "Profile updated"
+- [ ] Error handling with specific messages
+
+---
+
+### 1.4 Password Reset - MEDIUM
+
+**Description**: Users can reset forgotten passwords via email
+
+**User Stories**:
+- As a user, I want to reset my password so that I can regain access
+
+**Acceptance Criteria**:
+- [ ] "Forgot password" link on login page
+- [ ] Request form: email field
+- [ ] On submit: send reset link if email exists (always show success message to prevent email enumeration)
+- [ ] Reset email contains link to /reset-password?token=xxx
+- [ ] Reset link expires in 1 hour
+- [ ] Reset form: new password, confirm password
+- [ ] On success: show success message, redirect to login
+- [ ] Invalid/expired tokens show clear error message
+
+**Technical Notes**:
+- Use separate reset token (different from auth JWT)
+- Invalidate all user sessions after password reset
+- Rate limit: max 3 reset requests per hour per email
+
+---
+
+## Domain Success Criteria
+
+This domain is complete when:
+
+1. All CRITICAL and HIGH features implemented and tested
+2. Unit tests for auth utilities (hashing, token generation)
+3. Integration tests for all auth flows
+4. E2E tests for critical user journeys (register → verify → login → profile)
+5. Security audit passes (no SQL injection, XSS, CSRF vulnerabilities)
+```
+
+**Domain file**: `.claude/product/domains/content-management/index.md`
+
+```markdown
+# Domain: Content Management
+
+## Domain Overview
+
+This domain handles all content creation, editing, organization, and retrieval functionality.
+
+## Dependencies
+
+- Depends on: Authentication & User Management domain
+- Required by: Analytics domain
+
+## Features
+
+### 2.1 Create Content - CRITICAL
+
+**Description**: Authenticated users can create new content items
+
+**User Stories**:
+- As a user, I want to create content so that I can share information
+
+**Acceptance Criteria**:
+- [ ] Create page at /content/new
+- [ ] Form fields: title (required), body (required, rich text), tags (optional), category (dropdown)
+- [ ] Title validation: required, 5-100 chars
+- [ ] Body validation: required, 20-10000 chars
+- [ ] Rich text editor: bold, italic, links, lists, headings
+- [ ] "Publish" button (saves immediately)
+- [ ] "Save Draft" button (saves as draft status)
+- [ ] Success toast: "Content published" or "Draft saved"
+- [ ] Redirect to content detail page after publish
+
+---
+
+### 2.2 View Content List - CRITICAL
+
+**Description**: Users can browse all published content
+
+**User Stories**:
+- As a user, I want to see all content so that I can find what interests me
+
+**Acceptance Criteria**:
+- [ ] Content list page at /content
+- [ ] Grid layout showing content cards
+- [ ] Each card shows: title, excerpt (150 chars), author name, date, category tag
+- [ ] Responsive grid: 1 col mobile, 2 tablet, 3 desktop
+- [ ] Pagination: 12 items per page
+- [ ] Filter by category (dropdown)
+- [ ] Search by title (debounced 300ms)
+- [ ] Loading skeleton while fetching
+- [ ] Empty state: "No content found"
+
+---
+
+### 2.3 View Content Detail - CRITICAL
+
+**Description**: Users can read full content items
+
+**User Stories**:
+- As a user, I want to read full content so that I can get detailed information
+
+**Acceptance Criteria**:
+- [ ] Detail page at /content/[id]
+- [ ] Display: title, author, date, category, body (rich text rendered)
+- [ ] Show author info: name, avatar, bio
+- [ ] "Edit" button (only for content author)
+- [ ] Loading state while fetching
+- [ ] 404 page if content not found or deleted
+- [ ] SEO metadata: title, description, OG tags
+
+---
+
+### 2.4 Edit Content - HIGH
+
+**Description**: Content authors can edit their own content
+
+**User Stories**:
+- As a content author, I want to edit my content so that I can correct mistakes
+
+**Acceptance Criteria**:
+- [ ] Edit page at /content/[id]/edit (only for author)
+- [ ] Pre-fill form with existing content
+- [ ] Same validation as create
+- [ ] "Update" button with loading state
+- [ ] "Cancel" button returns to detail view
+- [ ] Success toast: "Content updated"
+- [ ] 403 error if user tries to edit others' content
+
+---
+
+### 2.5 Delete Content - MEDIUM
+
+**Description**: Content authors can delete their own content
+
+**User Stories**:
+- As a content author, I want to delete content so that I can remove outdated info
+
+**Acceptance Criteria**:
+- [ ] Delete button on detail page (only for author)
+- [ ] Confirmation dialog: "Delete this content? This cannot be undone."
+- [ ] On confirm: soft delete (set deletedAt timestamp)
+- [ ] Success toast: "Content deleted"
+- [ ] Redirect to /content
+- [ ] Deleted content doesn't appear in lists
+
+---
+
+## Domain Success Criteria
+
+This domain is complete when:
+
+1. All CRITICAL and HIGH features implemented and tested
+2. Rich text editor properly sanitizes HTML (XSS prevention)
+3. Soft delete works correctly (content hidden but recoverable)
+4. Authorization checks prevent editing/deleting others' content
+5. Pagination and search perform well with 1000+ items
+```
+
+**Domain file**: `.claude/product/domains/analytics/index.md`
+
+```markdown
+# Domain: Analytics & Reporting
+
+## Domain Overview
+
+This domain provides insights into content performance, user engagement, and platform metrics.
+
+## Dependencies
+
+- Depends on: Content Management domain
+- Required by: None (leaf domain)
+
+## Features
+
+### 3.1 Content Analytics Dashboard - HIGH
+
+**Description**: Content creators can view performance metrics for their content
+
+**User Stories**:
+- As a content creator, I want to see analytics so that I can understand engagement
+
+**Acceptance Criteria**:
+- [ ] Dashboard page at /analytics
+- [ ] Only accessible to authenticated users
+- [ ] Summary cards: total views, total likes, avg engagement rate
+- [ ] Date range filter: last 7 days, 30 days, 90 days, custom
+- [ ] Line chart: views over time (Chart.js or similar)
+- [ ] Top 5 content table: title, views, likes, comments
+- [ ] Loading states for all data
+- [ ] Empty state if no analytics data
+
+**Technical Notes**:
+- Use aggregation queries for performance
+- Cache analytics data for 5 minutes
+- Store view events in separate analytics collection
+
+---
+
+### 3.2 Content Performance Detail - MEDIUM
+
+**Description**: View detailed analytics for a single content item
+
+**User Stories**:
+- As a content creator, I want to see per-content analytics so that I can optimize
+
+**Acceptance Criteria**:
+- [ ] Analytics tab on content detail page (only for author)
+- [ ] Show: total views, unique views, likes, comments, shares
+- [ ] Views over time chart
+- [ ] Referrer breakdown: direct, search, social, external
+- [ ] Device breakdown: mobile, tablet, desktop
+- [ ] Date range filter (same as dashboard)
+
+---
+
+### 3.3 Export Analytics Report - LOW
+
+**Description**: Users can export analytics data as CSV
+
+**User Stories**:
+- As a content creator, I want to export analytics so that I can analyze in Excel
+
+**Acceptance Criteria**:
+- [ ] "Export CSV" button on dashboard
+- [ ] Button shows loading state while generating
+- [ ] CSV includes: content id, title, views, likes, comments, date range
+- [ ] File download triggers automatically
+- [ ] Filename format: analytics-YYYY-MM-DD.csv
+
+---
+
+## Domain Success Criteria
+
+This domain is complete when:
+
+1. All HIGH priority features implemented and tested
+2. Analytics queries are optimized (don't slow down content loading)
+3. Charts render correctly on all screen sizes
+4. CSV export handles special characters properly
+5. Date range filtering works across all features
+```
+
+---
+
+### Migrating from Flat to Hierarchical
+
+When your flat file becomes unwieldy (15+ features or multiple contributors):
+
+**Step 1: Create domain directories**
+```bash
+mkdir -p .claude/product/domains/authentication
+mkdir -p .claude/product/domains/content-management
+mkdir -p .claude/product/domains/analytics
+```
+
+**Step 2: Split your flat file**
+- Move overview + tech stack to `.claude/product/index.md`
+- Create `index.md` in each domain directory
+- Move feature sections to appropriate domain files
+- Add domain overview and dependencies to each file
+
+**Step 3: Update the main index**
+- Add "## Domains" section listing all domains
+- Include file paths for each domain
+- Maintain same numbering scheme (1.1, 1.2, 2.1, etc.)
+
+**Step 4: Test the structure**
+```bash
+# agentful will read the hierarchical structure automatically
+agentful status
+```
+
+**Key**: Feature numbering stays consistent (1.1, 2.1, etc.) regardless of structure.
 
 ```markdown
 # Product Specification
@@ -346,7 +1095,7 @@ A task management application for remote teams. Users can create projects, add t
 **Bad Example**:
 ```markdown
 ## Overview
-A task app.  # Too vague - Agentful doesn't know what features to include
+A task app.  # Too vague - agentful doesn't know what features to include
 ```
 
 ---
@@ -374,9 +1123,9 @@ A task app.  # Too vague - Agentful doesn't know what features to include
 
 ### Tech Stack
 
-**Purpose**: Tell Agentful what technologies to use.
+**Purpose**: Tell agentful what technologies to use.
 
-**Critical**: Be explicit. Don't make Agentful guess.
+**Critical**: Be explicit. Don't make agentful guess.
 
 #### Frontend
 
@@ -389,7 +1138,7 @@ A task app.  # Too vague - Agentful doesn't know what features to include
 ```
 
 **Why this matters**:
-- Agentful generates specialized agents based on your stack
+- agentful generates specialized agents based on your stack
 - Different frameworks have different patterns (Next.js app router vs pages)
 - Testing setup depends on the framework
 
@@ -452,7 +1201,7 @@ A task app.  # Too vague - Agentful doesn't know what features to include
 - **Hosting**: Vercel
 ```
 
-**Agentful uses this to**:
+**agentful uses this to**:
 - Set build configurations
 - Configure environment variables
 - Add deployment scripts
@@ -488,7 +1237,7 @@ Every feature needs:
 
 Use these consistently:
 
-- **CRITICAL** - Must have for MVP. Agentful works on these first.
+- **CRITICAL** - Must have for MVP. agentful works on these first.
 - **HIGH** - Important, but can wait slightly.
 - **MEDIUM** - Nice to have.
 - **LOW** - Future improvements.
@@ -512,7 +1261,7 @@ Use these consistently:
 - [ ] Security is good
 ```
 
-**Why this fails**: Agentful doesn't know:
+**Why this fails**: agentful doesn't know:
 - What fields to include (email? username?)
 - What validation to apply
 - How to handle errors
@@ -530,7 +1279,7 @@ Use these consistently:
 - [ ] Rate limiting: max 5 attempts per 15 minutes per IP
 ```
 
-**Why this works**: Agentful knows exactly what to build. No decisions needed.
+**Why this works**: agentful knows exactly what to build. No decisions needed.
 
 ---
 
@@ -599,7 +1348,7 @@ Use these consistently:
 - As a security-conscious user, I want rate limiting on login attempts so that my account can't be brute-forced
 ```
 
-**Why include these**: Helps Agentful understand context and make better decisions when ambiguity exists.
+**Why include these**: Helps agentful understand context and make better decisions when ambiguity exists.
 
 ---
 
@@ -616,13 +1365,13 @@ Use this section to guide implementation when you have specific requirements:
 ```
 
 **When to include**:
-- You have existing code Agentful should follow
+- You have existing code agentful should follow
 - You need a specific library or pattern
 - There are performance constraints
 - There are security requirements
 
 **When to skip**:
-- Let Agentful decide the implementation
+- Let agentful decide the implementation
 - You don't have a strong preference
 - The "how" doesn't matter, only the "what"
 
@@ -671,7 +1420,7 @@ src/
 
 **Purpose**: Explicitly state what you're NOT building.
 
-**Why this matters**: Prevents Agentful from wasting time on features you don't want.
+**Why this matters**: Prevents agentful from wasting time on features you don't want.
 
 **Example**:
 ```markdown
@@ -684,13 +1433,13 @@ src/
 - **Payment processing** - Free tier only for launch
 ```
 
-**Tip**: Be explicit. If you don't list it here, Agentful might add it if it seems related to your features.
+**Tip**: Be explicit. If you don't list it here, agentful might add it if it seems related to your features.
 
 ---
 
 ### Success Criteria
 
-**Purpose**: Define when Agentful is "done".
+**Purpose**: Define when agentful is "done".
 
 **Example**:
 ```markdown
@@ -706,7 +1455,7 @@ The product is complete when:
 6. Deployed to production and accessible
 ```
 
-**Agentful uses this to**:
+**agentful uses this to**:
 - Know when to stop working
 - Prioritize validation checks
 - Determine if a feature is truly complete
@@ -715,7 +1464,11 @@ The product is complete when:
 
 ## Real Examples
 
-### Example 1: Simple Todo App (Good)
+### Example 1: Simple Todo App (Flat Structure)
+
+**Structure**: Single file (`PRODUCT.md`)
+
+**Best for**: Simple projects with few features
 
 ```markdown
 # Product Specification
@@ -797,7 +1550,11 @@ A simple todo list application for personal task management.
 
 ---
 
-### Example 2: E-commerce Platform (Advanced)
+### Example 2: E-commerce Platform (Flat Structure)
+
+**Structure**: Single file (`PRODUCT.md`) with domain-based sections
+
+**Best for**: Medium-complexity projects with multiple domains
 
 ```markdown
 # Product Specification
@@ -976,7 +1733,153 @@ A modern e-commerce platform for selling digital products. Customers can browse 
 
 ---
 
-## Common PRODUCT.md Mistakes
+### Example 3: SaaS Platform (Hierarchical Structure)
+
+**Structure**: Directory tree (`.claude/product/domains/*/index.md`)
+
+**Best for**: Large projects with multiple team members
+
+**Main file**: `.claude/product/index.md`
+
+```markdown
+# Product Specification
+
+## Overview
+A project management SaaS platform for software teams. Teams can create projects, manage tasks, track time, and collaborate in real-time.
+
+## Goals
+- [ ] Users can register and create teams
+- [ ] Teams can manage multiple projects
+- [ ] Real-time task collaboration
+- [ ] Time tracking and reporting
+- [ ] Team analytics and insights
+
+## Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State Management**: Zustand
+- **Real-time**: Socket.io client
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express
+- **Language**: TypeScript
+- **Real-time**: Socket.io
+
+### Database
+- **Database**: PostgreSQL (Supabase)
+- **ORM**: Prisma
+
+### Authentication
+- **Method**: JWT with httpOnly cookies
+
+### Testing
+- **Unit**: Vitest
+- **E2E**: Playwright
+
+### Deployment
+- **Hosting**: Vercel (frontend) + Railway (backend)
+
+## Domains
+
+This product is organized into the following domains:
+
+1. **Authentication & Team Management** - User accounts, team creation, invitations
+   → See `.claude/product/domains/authentication/index.md`
+
+2. **Project & Task Management** - Projects, tasks, subtasks, dependencies
+   → See `.claude/product/domains/projects/index.md`
+
+3. **Time Tracking** - Time entries, reports, exports
+   → See `.claude/product/domains/time-tracking/index.md`
+
+4. **Analytics & Reporting** - Team performance, burndown charts
+   → See `.claude/product/domains/analytics/index.md`
+
+## Out of Scope (for MVP)
+
+- File attachments and document management
+- Video calls and screen sharing
+- Mobile apps (web-only for MVP)
+- Custom workflows and automations
+- API for third-party integrations
+
+## Success Criteria
+
+1. All CRITICAL and HIGH features implemented and tested
+2. Real-time collaboration works smoothly (WebSocket tests passing)
+3. All tests passing with 80%+ coverage
+4. No type errors
+5. No security vulnerabilities
+6. Deployed to production with monitoring setup
+
+## Notes
+
+- Each domain has a dedicated team member
+- Use WebSocket for real-time updates (tasks, comments)
+- Implement optimistic UI for better UX
+- Focus on core collaboration features first
+```
+
+**Domain file**: `.claude/product/domains/authentication/index.md`
+
+```markdown
+# Domain: Authentication & Team Management
+
+## Domain Overview
+Handles user registration, login, team creation, and team member management.
+
+## Dependencies
+- Depends on: Database setup
+- Required by: All other domains
+
+## Features
+
+### 1.1 User Registration - CRITICAL
+**Acceptance Criteria**:
+- [ ] Registration form: name, email, password, company name
+- [ ] Email verification required before access
+- [ ] On registration: create user, create team (user is owner), send verification email
+- [ ] JWT token in httpOnly cookie (7 day expiry)
+- [ ] Rate limit: 3 attempts per hour per IP
+
+### 1.2 Team Invitations - CRITICAL
+**Acceptance Criteria**:
+- [ ] Invite form: email address, role (admin/member/viewer)
+- [ ] Invitation email with signup link
+- [ ] Invitation link expires in 7 days
+- [ ] Team owners/admins can send invitations
+- [ ] Accepting invite adds user to team
+- [ ] Revoke invitation button
+
+### 1.3 Team Management - HIGH
+**Acceptance Criteria**:
+- [ ] Team settings page: name, description, avatar
+- [ ] Team members list with roles
+- [ ] Change member role (owner/admin only)
+- [ ] Remove member from team
+- [ ] Delete team (owner only, requires confirmation)
+
+## Domain Success Criteria
+1. All CRITICAL and HIGH features implemented
+2. Email verification flow works end-to-end
+3. Team permissions enforced (members can't invite, etc.)
+4. Security audit passes
+```
+
+**Why this works**:
+- Clear separation of concerns
+- Multiple team members can work on different domains simultaneously
+- Each domain file is focused and manageable
+- Dependencies are explicit
+- Easy to track progress per domain
+
+---
+
+## Common Product Specification Mistakes
 
 ### Mistake 1: Vague Requirements
 
@@ -1068,7 +1971,7 @@ A modern e-commerce platform for selling digital products. Customers can browse 
 ...
 ```
 
-**Why priorities matter**: Agentful works CRITICAL → HIGH → MEDIUM → LOW. Without priorities, it might work on dark mode before authentication.
+**Why priorities matter**: agentful works CRITICAL → HIGH → MEDIUM → LOW. Without priorities, it might work on dark mode before authentication.
 
 ---
 
@@ -1141,13 +2044,18 @@ Users can add items to cart and checkout.
 - [ ] Fetch and display user data on successful login
 ```
 
-**Let Agentful figure out the "how"**. You specify the "what".
+**Let agentful figure out the "how"**. You specify the "what".
 
 ---
 
-## PRODUCT.md Checklist
+## Product Specification Checklist
 
-Use this checklist before starting Agentful:
+Use this checklist before starting agentful:
+
+### Structure
+- [ ] Chosen appropriate structure (flat for 3-15 features, hierarchical for 15+)
+- [ ] Flat: Single file with domain sections OR
+- [ ] Hierarchical: Main index + domain directories with index.md files
 
 ### Content
 - [ ] Overview is clear and concise (2-3 sentences)
@@ -1158,12 +2066,14 @@ Use this checklist before starting Agentful:
 - [ ] Each feature has specific acceptance criteria
 - [ ] Acceptance criteria are testable and verifiable
 - [ ] Out of scope section lists what NOT to build
-- [ ] Success criteria define when Agentful is done
+- [ ] Success criteria define when agentful is done
+- [ ] Hierarchical: Domain dependencies are documented
 
 ### Quality
 - [ ] No vague requirements ("works well", "good performance")
 - [ ] No missing tech stack details
 - [ ] Acceptance criteria use checkboxes
+- [ ] Features are organized by domain
 - [ ] Features are prioritized
 - [ ] Implementation details only when necessary
 - [ ] User stories included for complex features
@@ -1206,7 +2116,7 @@ Use this checklist before starting Agentful:
 - [ ] Error state with retry button
 ```
 
-**Why**: Start with core functionality, then add polish after Agentful completes the basics.
+**Why**: Start with core functionality, then add polish after agentful completes the basics.
 
 ---
 
@@ -1239,7 +2149,7 @@ Use this checklist before starting Agentful:
 - [ ] Handle expired auth tokens (auto-refresh or re-login)
 ```
 
-**Why**: Agentful will handle edge cases if you specify them. Otherwise, it might miss them.
+**Why**: agentful will handle edge cases if you specify them. Otherwise, it might miss them.
 
 ---
 
@@ -1298,7 +2208,7 @@ If you have existing code:
 - [ ] Mock external dependencies (Stripe API, email service)
 ```
 
-**Why**: Agentful's tester agent needs to know what to test.
+**Why**: agentful's tester agent needs to know what to test.
 
 ---
 
@@ -1328,7 +2238,7 @@ If you have existing code:
 
 **Risky to update**:
 - Changing priorities of in-progress features
-- Removing features Agentful is working on
+- Removing features agentful is working on
 - Completely changing tech stack mid-development
 - Modifying acceptance criteria of completed features
 
@@ -1376,19 +2286,27 @@ npx agentful template --stack nextjs,prisma,tailwind
 
 ---
 
-## Summary: The Perfect PRODUCT.md
+## Summary: The Perfect Product Specification
 
-The perfect PRODUCT.md is:
+The perfect product specification is:
 
 1. **Specific** - No vague requirements
 2. **Complete** - Covers all critical aspects
-3. **Prioritized** - Clear order of work
-4. **Testable** - Every requirement can be verified
-5. **Explicit** - Tech stack fully specified
-6. **Scoped** - Out of scope section prevents creep
-7. **Achievable** - Success criteria are realistic
+3. **Organized** - Features grouped by domain
+4. **Prioritized** - Clear order of work
+5. **Testable** - Every requirement can be verified
+6. **Explicit** - Tech stack fully specified
+7. **Scoped** - Out of scope section prevents creep
+8. **Achievable** - Success criteria are realistic
+9. **Well-Structured** - Flat or hierarchical based on project size
 
-**Invest time in PRODUCT.md upfront, and Agentful will reward you with autonomous development success.**
+**Choosing the Right Structure**:
+- **Flat (PRODUCT.md or .claude/product/index.md)**: Start here for most projects
+- **Hierarchical (.claude/product/domains/*/index.md)**: Migrate when you hit 15+ features or multiple team members
+
+**Remember**: You can always start flat and migrate to hierarchical later. Feature numbering stays consistent (1.1, 2.1, etc.) regardless of structure.
+
+**Invest time in your product specification upfront, and agentful will reward you with autonomous development success.**
 
 ---
 
@@ -1396,9 +2314,9 @@ The perfect PRODUCT.md is:
 
 Now that you have a great PRODUCT.md:
 
-1. **[Start Agentful](../getting-started/quick-start)** - Begin autonomous development
+1. **[Start agentful](../getting-started/quick-start)** - Begin autonomous development
 2. **[Monitor Progress](../commands/agentful-status)** - Track completion
-3. **[Handle Decisions](../commands/agentful-decide)** - Answer when Agentful asks
+3. **[Handle Decisions](../commands/agentful-decide)** - Answer when agentful asks
 4. **[Validate Quality](../commands/agentful-validate)** - Ensure all gates pass
 
 ---

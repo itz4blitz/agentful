@@ -1,6 +1,6 @@
-# Contributing to Agentful
+# Contributing to agentful
 
-Thank you for your interest in contributing to Agentful!
+Thank you for your interest in contributing to agentful!
 
 ## 🎯 How to Contribute
 
@@ -38,7 +38,7 @@ node bin/cli.js --help
 
 ```
 agentful/
-├── .claude/              # Agentful configuration (the actual product)
+├── .claude/              # agentful configuration (the actual product)
 │   ├── agents/          # Specialist agents
 │   ├── commands/        # Slash commands
 │   ├── skills/          # Domain skills

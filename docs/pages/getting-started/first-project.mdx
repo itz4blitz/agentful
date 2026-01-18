@@ -1,11 +1,11 @@
 ---
-title: Your First Project - Agentful
-description: Learn how to create your first autonomous project with Agentful. A complete walkthrough from initialization to completion.
+title: Your First Project - agentful
+description: Learn how to create your first autonomous project with agentful. A complete walkthrough from initialization to completion.
 ---
 
 # Your First Project
 
-Build your first complete autonomous project with Agentful. We'll create a **Task Management App** together.
+Build your first complete autonomous project with agentful. We'll create a **Task Management App** together.
 
 ---
 
@@ -46,10 +46,10 @@ npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --
 
 Follow prompts (press Enter for defaults).
 
-### Initialize Agentful
+### Initialize agentful
 
 ```bash
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 **Expected output:**
@@ -66,23 +66,43 @@ Creating .claude/ directory structure...
 Initializing state files...
 Creating template files...
   ✓ Created CLAUDE.md
-  ✓ Created PRODUCT.md
+  ✓ Created .claude/product/index.md (hierarchical structure)
 
 Added .agentful/ to .gitignore
 
-✅ Agentful initialized successfully!
+✅ agentful initialized successfully!
 
 Next steps:
-  1. Edit PRODUCT.md with your product specification
+  1. Edit your product specification (see options below)
   2. Run: claude
   3. Type: /agentful-start
 ```
+
+> **Choose Your Structure**
+>
+> agentful supports two ways to define your product:
+>
+> **Simple Projects** (recommended for first-time users):
+> - Use a flat `PRODUCT.md` file in your project root
+> - Everything in one place
+> - Easier to get started
+>
+> **Complex Projects** (for larger applications):
+> - Use `.claude/product/` directory with multiple files
+> - Organize by domains/features
+> - Scales better for big projects
+>
+> Both work identically - agentful auto-detects which you're using. For this tutorial, we'll use the simple `PRODUCT.md` approach.
 
 ---
 
 ## Step 2: Define Product (10 minutes)
 
-Open `PRODUCT.md` and replace with:
+Since we're building a simple task manager, we'll use the **flat `PRODUCT.md`** structure.
+
+Create a file called `PRODUCT.md` in your project root and add:
+
+> **Note**: If you prefer the hierarchical structure, you can edit `.claude/product/index.md` instead - the content is identical. agentful will auto-detect either approach.
 
 ```markdown
 # Product Specification
@@ -275,7 +295,7 @@ The product is complete when:
 - Focus on clean code and tests
 - Use TypeScript strictly (no any types)
 - Follow Tailwind best practices
-- Write tests as you go (via Agentful)
+- Write tests as you go (via agentful)
 ```
 
 ---
@@ -298,7 +318,7 @@ In the Claude prompt, type:
 
 ---
 
-## Step 4: Watch Agentful Work (20-30 minutes)
+## Step 4: Watch agentful Work (20-30 minutes)
 
 ### What You'll See
 
@@ -413,7 +433,7 @@ This continues until all features are complete.
 
 ## Step 5: Monitor Progress (ongoing)
 
-While Agentful works, check progress anytime:
+While agentful works, check progress anytime:
 
 ```
 /agentful-status
@@ -454,7 +474,7 @@ Next Actions:
 
 ## Step 6: Handle Decisions (if needed)
 
-Agentful may ask for clarification:
+agentful may ask for clarification:
 
 ```
 ⚠️  Decision needed:
@@ -479,13 +499,13 @@ Option 2: Delete immediately without confirmation
 We can add undo functionality in v2 if needed.
 ```
 
-Agentful will immediately resume with your decision.
+agentful will immediately resume with your decision.
 
 ---
 
 ## Step 7: Review Results (5 minutes)
 
-When Agentful completes (100%), review what was built:
+When agentful completes (100%), review what was built:
 
 ### Check Generated Files
 
@@ -537,7 +557,7 @@ Project complete! 🎉
 
 ---
 
-## What Agentful Built
+## What agentful Built
 
 ### File Structure Created
 
@@ -577,7 +597,7 @@ src/
 
 ## Common Issues and Solutions
 
-### Issue: Agentful stops mid-development
+### Issue: agentful stops mid-development
 
 **Symptom:** No progress after 5+ minutes
 
@@ -597,7 +617,7 @@ src/
 **Symptom:** Red test output
 
 **Solution:**
-Let Agentful handle it. The Fixer agent will:
+Let agentful handle it. The Fixer agent will:
 1. Identify failing tests
 2. Fix implementation
 3. Re-run tests
@@ -608,7 +628,7 @@ Let Agentful handle it. The Fixer agent will:
 **Symptom:** Coverage < 80%
 
 **Solution:**
-Agentful will automatically add more tests. Watch for:
+agentful will automatically add more tests. Watch for:
 ```
 🧪 Tester Agent: Adding edge case tests...
 Coverage now: 82% ✅
@@ -632,11 +652,22 @@ npx tsc --noEmit
 
 ## Customizing Your Project
 
-After Agentful completes, you can:
+After agentful completes, you can:
 
 ### Add New Features
 
+**If using PRODUCT.md** (flat structure):
+
 Edit `PRODUCT.md`:
+```markdown
+### 6. Task Due Dates - MEDIUM
+**Description**: Add due dates to tasks
+...
+```
+
+**If using hierarchical structure** (.claude/product/):
+
+Edit `.claude/product/index.md` or add a new domain file like `.claude/product/domains/tasks.md`:
 ```markdown
 ### 6. Task Due Dates - MEDIUM
 **Description**: Add due dates to tasks
@@ -650,6 +681,8 @@ Then:
 
 ### Modify Existing Features
 
+**If using PRODUCT.md**:
+
 Update acceptance criteria in `PRODUCT.md`:
 ```markdown
 ### 1. Add Task - CRITICAL
@@ -660,10 +693,23 @@ Update acceptance criteria in `PRODUCT.md`:
 ...
 ```
 
+**If using hierarchical structure**:
+
+Update the relevant domain file in `.claude/product/domains/`
+
 Then:
 ```bash
 /agentful-start
 ```
+
+### Switch Between Structures
+
+You can switch between flat and hierarchical anytime:
+
+- **Flat → Hierarchical**: Move `PRODUCT.md` → `.claude/product/index.md` and split into domain files
+- **Hierarchical → Flat**: Merge all `.claude/product/**/*.md` into single `PRODUCT.md`
+
+agentful auto-detects the change on next run.
 
 ### Change Styling
 
@@ -673,7 +719,7 @@ Edit components directly:
 <div className="bg-blue-500 ...">  // Change color
 ```
 
-Agentful won't overwrite manual edits unless you run `/agentful-start` again.
+agentful won't overwrite manual edits unless you run `/agentful-start` again.
 
 ---
 
@@ -699,7 +745,7 @@ Try building different applications
 
 <div>
 
-### Customize Agentful
+### Customize agentful
 Modify agents and commands for your workflow
 → [Configuration Guide](/getting-started/configuration)
 
@@ -730,16 +776,17 @@ You just built a complete task management application with:
 ✅ All in 30-45 minutes
 
 **What you learned:**
-- How to initialize Agentful
-- How to write a clear PRODUCT.md
-- How Agentful's agents work together
+- How to initialize agentful
+- How to choose between flat (`PRODUCT.md`) or hierarchical (`.claude/product/`) structure
+- How to write a clear product specification
+- How agentful's agents work together
 - How to monitor and guide development
 - How to handle decisions
 - How to review and validate results
 
 **You're now ready to:**
-- Build more complex projects
-- Customize Agentful for your stack
+- Build more complex projects with hierarchical structure
+- Customize agentful for your stack
 - Use 24/7 development mode
 - Create your own agents and commands
 

@@ -1,4 +1,4 @@
-# Agentful
+# agentful
 
 **One-Command Autonomous Product Development Kit for Claude Code**
 
@@ -6,15 +6,15 @@
 ![node](https://img.shields.io/badge/node-18%2B-brightgreen?logo=node.js)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
-Agentful is an opinionated starter template for Claude Code that transforms it into an autonomous development system with specialized agents, 24/7 development loops, dynamic tech stack detection, and quality gates.
+agentful is an opinionated starter template for Claude Code that transforms it into an autonomous development system with specialized agents, 24/7 development loops, dynamic tech stack detection, and quality gates.
 
 Quick Start · Features · Agents · Documentation
 
 ---
 
-## What is Agentful?
+## What is agentful?
 
-Agentful supercharges Claude Code with:
+agentful supercharges Claude Code with:
 
 - **7 Specialized Agents** - Orchestrator, Architect, Backend, Frontend, Tester, Reviewer, Fixer
 - **24/7 Development** - Works while you sleep with Ralph Wiggum loops
@@ -30,7 +30,22 @@ Agentful supercharges Claude Code with:
 # 1. Initialize in your project
 npx @itz4blitz/agentful init
 
-# 2. Edit PRODUCT.md with your requirements
+# 2. Choose your product structure
+
+You have two options:
+
+**Quick Start** - Single file at root:
+```bash
+# Edit PRODUCT.md with your requirements
+```
+
+**Organized** - Use .claude/product/ directory:
+```bash
+# Edit .claude/product/index.md
+# Or organize domains in .claude/product/domains/
+```
+
+Both work the same - agentful auto-detects your format. See [Product Structure](#product-structure) below.
 
 # 3. Start Claude Code
 claude
@@ -39,7 +54,49 @@ claude
 /agentful-start
 ```
 
-That's it! Agentful will analyze your product spec, detect your tech stack, generate specialized agents, and start building autonomously.
+That's it! agentful will analyze your product spec, detect your tech stack, generate specialized agents, and start building autonomously.
+
+---
+
+## Product Structure
+
+agentful supports two product organization formats with **automatic detection**:
+
+### Option 1: Flat Structure (Quick Start)
+
+Best for small projects and MVPs. Use a single `PRODUCT.md` file at your project root:
+
+```bash
+your-project/
+├── PRODUCT.md          # All features in one file
+├── src/
+└── package.json
+```
+
+### Option 2: Hierarchical Structure (Organized)
+
+Best for larger projects with 20+ features or team collaboration. Organize by domains:
+
+```bash
+your-project/
+├── .claude/
+│   └── product/
+│       ├── index.md              # Product overview
+│       └── domains/
+│           ├── authentication/
+│           │   ├── index.md      # Domain overview
+│           │   └── features/
+│           │       ├── login.md
+│           │       └── register.md
+│           └── user-management/
+│               ├── index.md
+│               └── features/
+│                   └── profile.md
+```
+
+**The system auto-detects which format you're using** - no configuration needed. Start flat, migrate to hierarchical as your project grows.
+
+Learn more in [Product Structure Guide](https://agentful.app/configuration/project-structure).
 
 ---
 
@@ -50,7 +107,7 @@ graph LR
     A[Initialize] --> B[Define Product]
     B --> C[Start Building]
 
-    A --> A1["npx agentful init"]
+    A --> A1["npx @itz4blitz/agentful init"]
     B --> B1["Edit PRODUCT.md"]
     C --> C1["/agentful-start"]
 
@@ -75,7 +132,7 @@ graph LR
 
 ## Agents
 
-Agentful includes specialized agents that work together:
+agentful includes specialized agents that work together:
 
 | Agent | Purpose |
 |-------|---------|
@@ -97,7 +154,7 @@ For fully autonomous overnight development, use the Ralph Wiggum plugin:
 /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
 ```
 
-Agentful will work while you sleep, only stopping when:
+agentful will work while you sleep, only stopping when:
 - All features are complete (100%)
 - All quality gates pass
 - Or max iterations reached
@@ -123,9 +180,17 @@ After initialization, your project will have:
 
 ```
 your-project/
-├── PRODUCT.md              # Edit this: your product spec
+├── PRODUCT.md              # Option 1: Single file at root
 ├── CLAUDE.md               # Project instructions for Claude
-├── .claude/                # Agentful configuration (version control)
+├── .claude/                # agentful configuration (version control)
+│   ├── product/            # Option 2: Organized product structure
+│   │   ├── index.md        # Product overview (or all features)
+│   │   ├── domains/        # Optional: Domain organization
+│   │   │   └── auth/       #     for large projects
+│   │   │       ├── index.md
+│   │   │       └── features/
+│   │   ├── EXAMPLES.md     # Feature writing examples
+│   │   └── README.md       # Structure guide
 │   ├── agents/             # Specialized agents
 │   ├── commands/           # Slash commands
 │   ├── skills/             # Domain skills
@@ -135,7 +200,7 @@ your-project/
 │   ├── completion.json     # Progress tracking
 │   ├── decisions.json      # Pending/resolved decisions
 │   └── architecture.json   # Detected tech stack
-└── src/                    # Your code (generated by Agentful)
+└── src/                    # Your code (generated by agentful)
 ```
 
 ---

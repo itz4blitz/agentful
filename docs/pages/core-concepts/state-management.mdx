@@ -1,16 +1,16 @@
 ---
 title: "State Management"
-description: "How Agentful tracks progress, decisions, and work state"
+description: "How agentful tracks progress, decisions, and work state"
 sidebar_position: 6
 ---
 
 # State Management
 
-State management is **Agentful's memory and truth source** - the system of record that tracks what's done, what's blocked, what's pending, and what decisions have been made. All coordination happens through simple JSON files that serve as the single source of truth.
+State management is **agentful's memory and truth source** - the system of record that tracks what's done, what's blocked, what's pending, and what decisions have been made. All coordination happens through simple JSON files that serve as the single source of truth.
 
-## What Is State Management in Agentful?
+## What Is State Management in agentful?
 
-State management in Agentful means:
+State management in agentful means:
 
 - **Progress tracking** - What features are complete, partial, or pending
 - **Work coordination** - What's currently being worked on
@@ -42,7 +42,7 @@ Traditional state management approaches have issues:
 | **Proprietary format** | Hard to debug, requires tools |
 | **Scattered across files** | No single source of truth |
 
-### The Agentful Solution
+### The agentful Solution
 
 **JSON state files** provide:
 
@@ -662,7 +662,7 @@ Why not use a database for state?
 | **Dependencies** | None | Database driver |
 | **Complexity** | Simple | Overkill for this use case |
 
-JSON files are **perfect for Agentful's needs** because state is:
+JSON files are **perfect for agentful's needs** because state is:
 - Low volume (few KB, not GB)
 - Read/written by single process (no concurrent access)
 - Simple structure (flat JSON)
@@ -670,7 +670,7 @@ JSON files are **perfect for Agentful's needs** because state is:
 
 ## Summary
 
-State management in Agentful is **simple, explicit, and effective**:
+State management in agentful is **simple, explicit, and effective**:
 
 - **JSON files** - Human-readable, git-friendly
 - **Four core files** - State, completion, decisions, validation

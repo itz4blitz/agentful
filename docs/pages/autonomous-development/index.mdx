@@ -1,10 +1,10 @@
 # Autonomous Development
 
-Agentful's autonomous development mode enables Claude Code to work independently, building your product 24/7 with minimal human intervention. This comprehensive guide explains how autonomous development works and how to use it safely.
+agentful's autonomous development mode enables Claude Code to work independently, building your product 24/7 with minimal human intervention. This comprehensive guide explains how autonomous development works and how to use it safely.
 
 ## Overview
 
-Autonomous development in Agentful follows a continuous cycle:
+Autonomous development in agentful follows a continuous cycle:
 
 1. **Read State** - Check progress and what's left to build
 2. **Select Work** - Choose next feature/task based on priority
@@ -66,7 +66,7 @@ Autonomous development delegates to specialized agents:
 
 ## State Management
 
-Agentful tracks state in `.agentful/` directory:
+agentful tracks state in `.agentful/` directory:
 
 ### state.json
 
@@ -144,7 +144,7 @@ The orchestrator selects work in this order:
 
 ## Decision Handling
 
-When Agentful needs your input:
+When agentful needs your input:
 
 1. **Stops work** on blocked features
 2. **Creates decision** in `decisions.json`
@@ -156,7 +156,7 @@ You respond by running:
 /agentful-decide
 ```
 
-Then choose from the provided options. Agentful continues automatically.
+Then choose from the provided options. agentful continues automatically.
 
 ## Completion Criteria
 
@@ -227,7 +227,7 @@ The fixer agent automatically resolves:
 
 ### Decision Blocking
 
-Agentful stops and asks when:
+agentful stops and asks when:
 - Multiple valid approaches exist
 - User preferences needed (UI design, naming)
 - External dependencies required
@@ -237,7 +237,7 @@ Agentful stops and asks when:
 
 ### 1. Start with Clear PRODUCT.md
 
-The more detailed your product spec, the less Agentful needs to ask:
+The more detailed your product spec, the less agentful needs to ask:
 
 ```markdown
 ## Authentication - CRITICAL
@@ -283,7 +283,7 @@ Unanswered decisions block progress. When notified:
 1. Run `/agentful-decide`
 2. Review options
 3. Make selection
-4. Agentful continues
+4. agentful continues
 
 ### 5. Set Iteration Limits
 
@@ -298,7 +298,7 @@ For Ralph loops, always set `--max-iterations`:
 
 ## Troubleshooting
 
-### Agentful Not Starting
+### agentful Not Starting
 
 **Check**:
 1. PRODUCT.md exists and is valid
@@ -308,7 +308,7 @@ For Ralph loops, always set `--max-iterations`:
 **Fix**:
 ```bash
 # Reinitialize
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 ### Quality Gates Failing Repeatedly

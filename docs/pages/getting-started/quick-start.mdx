@@ -1,11 +1,11 @@
 ---
-title: Quick Start - Agentful
-description: Get up and running with Agentful in 5 minutes. Learn the basics of autonomous product development.
+title: Quick Start - agentful
+description: Get up and running with agentful in 5 minutes. Learn the basics of autonomous product development.
 ---
 
 # Quick Start
 
-Get Agentful building your project autonomously in 5 minutes.
+Get agentful building your project autonomously in 5 minutes.
 
 ---
 
@@ -13,36 +13,36 @@ Get Agentful building your project autonomously in 5 minutes.
 
 This quick start will walk you through:
 
-1. ✅ Initializing Agentful
+1. ✅ Initializing agentful
 2. ✅ Defining your product
 3. ✅ Starting autonomous development
 4. ✅ Monitoring progress
 5. ✅ Understanding the workflow
 
 **Time:** 5 minutes
-**Prerequisites:** [Agentful installed](/getting-started/installation)
+**Prerequisites:** [agentful installed](/getting-started/installation)
 
 ---
 
-## Step 1: Initialize Agentful (30 seconds)
+## Step 1: Initialize agentful (30 seconds)
 
 ```bash
 # In your project directory
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 **What happens:**
 - Creates `.claude/` with 7 specialized agents
 - Creates `.agentful/` for state tracking
-- Creates `PRODUCT.md` template
+- Creates `.claude/product/index.md` (hierarchical structure template)
 - Creates `CLAUDE.md` project instructions
 
 **Output:**
 ```
-✅ Agentful initialized successfully!
+✅ agentful initialized successfully!
 
 Next steps:
-  1. Edit PRODUCT.md with your product specification
+  1. Edit your product specification (see below)
   2. Run: claude
   3. Type: /agentful-start
 ```
@@ -51,9 +51,130 @@ Next steps:
 
 ## Step 2: Define Your Product (2 minutes)
 
-Open `PRODUCT.md` in your editor. This is where you tell Agentful what to build.
+agentful supports two ways to define your product. Choose the one that fits your project.
 
-### Minimal Example
+---
+
+### Choose Your Adventure
+
+**Simple Projects** (recommended for beginners and small apps):
+- Use a flat `PRODUCT.md` file in your project root
+- Everything in one place
+- Easier to get started
+- Best for: Learning projects, MVPs, single-purpose apps
+
+**Complex Projects** (for larger applications):
+- Use `.claude/product/` directory with multiple files
+- Organize by domains/features
+- Scales better for big projects
+- Best for: Multi-domain apps, large teams, long-term projects
+
+> **Both work identically** - agentful auto-detects which you're using. You can switch anytime.
+
+---
+
+### Option A: Simple Structure (Flat PRODUCT.md)
+
+Create `PRODUCT.md` in your project root:
+
+```markdown
+# Product Specification
+
+## Overview
+A simple todo list application.
+
+## Tech Stack
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: None (in-memory for now)
+- **Testing**: Vitest
+
+## Features
+
+### 1. Add Todo - CRITICAL
+**Description**: Users can add new todo items
+
+**Acceptance Criteria**:
+- [ ] Input field for new todos
+- [ ] Add button
+- [ ] Todo appears in list
+
+### 2. Toggle Todo - HIGH
+**Description**: Users can mark todos as complete
+
+**Acceptance Criteria**:
+- [ ] Click todo to toggle completion
+- [ ] Visual indicator for completed todos
+
+### 3. Delete Todo - MEDIUM
+**Description**: Users can delete todos
+
+**Acceptance Criteria**:
+- [ ] Delete button on each todo
+- [ ] Confirmation prompt
+```
+
+**That's it!** Skip to Step 3.
+
+---
+
+### Option B: Hierarchical Structure (.claude/product/)
+
+Edit `.claude/product/index.md` (created during init):
+
+```markdown
+# Product Specification
+
+## Overview
+A simple todo list application.
+
+## Domains
+- Tasks
+- UI
+- Storage
+
+## Tech Stack
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: None (in-memory for now)
+- **Testing**: Vitest
+```
+
+Then create `.claude/product/domains/tasks.md`:
+
+```markdown
+# Tasks Domain
+
+## Features
+
+### 1. Add Todo - CRITICAL
+**Description**: Users can add new todo items
+
+**Acceptance Criteria**:
+- [ ] Input field for new todos
+- [ ] Add button
+- [ ] Todo appears in list
+
+### 2. Toggle Todo - HIGH
+**Description**: Users can mark todos as complete
+
+**Acceptance Criteria**:
+- [ ] Click todo to toggle completion
+- [ ] Visual indicator for completed todos
+
+### 3. Delete Todo - MEDIUM
+**Description**: Users can delete todos
+
+**Acceptance Criteria**:
+- [ ] Delete button on each todo
+- [ ] Confirmation prompt
+```
+
+**More domains?** Create additional files like `ui.md`, `storage.md`, etc.
+
+---
+
+### Key Sections Explained
 
 ```markdown
 # Product Specification
@@ -122,7 +243,7 @@ For each feature, include:
 claude
 ```
 
-This starts the Claude Code CLI with Agentful's specialized agents loaded.
+This starts the Claude Code CLI with agentful's specialized agents loaded.
 
 ---
 
@@ -256,7 +377,7 @@ Next Actions:
 
 ## Step 6: Handle Decisions (if needed)
 
-Sometimes Agentful needs your input:
+Sometimes agentful needs your input:
 
 ```
 ⚠️  Decision needed:
@@ -279,7 +400,7 @@ Then provide your answer:
 Option 1: Yes, move to bottom
 ```
 
-Agentful will immediately resume with your decision.
+agentful will immediately resume with your decision.
 
 ---
 
@@ -376,9 +497,11 @@ Your first time? Build something simple:
 - Payment processing
 - Complex authentication
 
-### 2. Be Specific in PRODUCT.md
+### 2. Be Specific in Your Product Spec
 
-The more specific your requirements, the better Agentful understands:
+The more specific your requirements, the better agentful understands:
+
+**For simple projects (PRODUCT.md):**
 
 **Vague:**
 ```markdown
@@ -388,6 +511,31 @@ The more specific your requirements, the better Agentful understands:
 
 **Specific:**
 ```markdown
+### 1. User Registration - CRITICAL
+**Description**: Users can register with email/password
+
+**Acceptance Criteria**:
+- [ ] Email validation (required, valid format)
+- [ ] Password min 8 characters, 1 uppercase, 1 number
+- [ ] Unique email check
+- [ ] Success: redirect to dashboard
+- [ ] Error: show inline error message
+```
+
+**For complex projects (.claude/product/):**
+
+**Vague:**
+```markdown
+# .claude/product/domains/users.md
+## Features
+1. Registration
+```
+
+**Specific:**
+```markdown
+# .claude/product/domains/users.md
+## Features
+
 ### 1. User Registration - CRITICAL
 **Description**: Users can register with email/password
 
@@ -410,11 +558,11 @@ Order features by priority:
 ### 4. Future enhancement - LOW
 ```
 
-Agentful works CRITICAL → HIGH → MEDIUM → LOW
+agentful works CRITICAL → HIGH → MEDIUM → LOW
 
 ### 4. Let It Run
 
-Don't micromanage. Agentful works best when you:
+Don't micromanage. agentful works best when you:
 
 ✅ **Do:**
 - Start it and let it run
@@ -424,9 +572,11 @@ Don't micromanage. Agentful works best when you:
 
 ❌ **Don't:**
 - Interrupt after every file
-- Change PRODUCT.md mid-development
-- Manually edit files Agentful created
+- Change your product spec mid-development
+- Manually edit files agentful created
 - Stop and start repeatedly
+
+> **Switching structures?** You can change between flat (`PRODUCT.md`) and hierarchical (`.claude/product/`) anytime. agentful auto-detects the change.
 
 ### 5. Use 24/7 Mode for Big Projects
 
@@ -461,20 +611,20 @@ Let it run overnight, wake up to progress.
 
 ### Quality Expectations
 
-Agentful aims for:
+agentful aims for:
 - ✅ All tests passing
 - ✅ No type errors (adapts to stack)
 - ✅ 80%+ test coverage
 - ✅ No dead code
 - ✅ No security issues
 
-**Note:** Code may need refactoring for production. Agentful builds working MVPs, not production-optimized code.
+**Note:** Code may need refactoring for production. agentful builds working MVPs, not production-optimized code.
 
 ---
 
 ## Troubleshooting
 
-### Issue: Agentful seems stuck
+### Issue: agentful seems stuck
 
 **Solution:** Check status
 ```
@@ -496,7 +646,7 @@ If iterations > 20 without progress:
 ### Issue: Too many validation errors
 
 **Solution:** Let Fixer work
-- Agentful will auto-fix most issues
+- agentful will auto-fix most issues
 - If stuck, run `/agentful-validate` to see specific errors
 - Some errors may require manual intervention
 
@@ -517,7 +667,7 @@ Create a complete autonomous project
 <div>
 
 ### Configuration
-Customize Agentful for your needs
+Customize agentful for your needs
 → [Configuration Guide](/getting-started/configuration)
 
 </div>
@@ -535,10 +685,17 @@ Customize Agentful for your needs
 - `/agentful-validate` - Run quality checks
 
 **Key Files:**
-- `PRODUCT.md` - Your product spec
+- `PRODUCT.md` - Your product spec (simple structure)
+- `.claude/product/index.md` - Main product spec (hierarchical structure)
+- `.claude/product/domains/*.md` - Domain-specific specs (hierarchical structure)
 - `CLAUDE.md` - Project instructions
 - `.agentful/state.json` - Current state
 - `.agentful/completion.json` - Progress tracking
+
+**Choose Your Structure:**
+- **Simple**: Create `PRODUCT.md` in project root
+- **Complex**: Use `.claude/product/` with domain files
+- **Switch anytime**: agentful auto-detects both
 
 **24/7 Development:**
 ```bash

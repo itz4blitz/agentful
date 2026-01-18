@@ -1,7 +1,7 @@
 {
   "name": "@itz4blitz/agentful",
   "version": "0.1.0",
-  "description": "One-click autonomous product development kit for Claude Code (Alpha - Unstable)",
+  "description": "Autonomous product development kit for Claude Code with smart project analysis and natural conversation",
   "type": "module",
   "bin": {
     "agentful": "./bin/cli.js"
@@ -16,6 +16,7 @@
   },
   "files": [
     "bin/",
+    "lib/",
     "template/",
     ".claude/"
   ],
@@ -26,7 +27,7 @@
     "agent",
     "productivity"
   ],
-  "author": "Agentful",
+  "author": "agentful",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -34,7 +35,7 @@
   },
   "homepage": "https://agentful.app",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "devDependencies": {
     "vocs": "^1.4.1"

@@ -145,7 +145,7 @@ The product is complete when:
 
 ---
 
-**Tip**: The more detailed your product specification, the better Agentful can understand what to build. Include:
+**Tip**: The more detailed your product specification, the better agentful can understand what to build. Include:
 - Clear acceptance criteria
 - User stories for context
 - Technical constraints

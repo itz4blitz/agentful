@@ -1,13 +1,13 @@
 ---
 title: Philosophy
-description: The core principles behind Agentful's multi-agent architecture
+description: The core principles behind agentful's multi-agent architecture
 ---
 
 import { Blue, Orange, Red } from '../components/colored-text.mdx'
 
 # Philosophy
 
-Agentful is built on Anthropic's research-validated multi-agent patterns. Here's the philosophy that drives every design decision.
+agentful is built on Anthropic's research-validated multi-agent patterns. Here's the philosophy that drives every design decision.
 
 ---
 
@@ -340,7 +340,7 @@ graph TD
     A[Static Tools] --> B[Hardcoded Rules]
     B --> C[If package.json has next]
 
-    D[Agentful] --> E[Claude Intelligence]
+    D[agentful] --> E[Claude Intelligence]
     E --> F[Sample actual files]
 
     C --> G[❌ Fails on edge cases]
@@ -367,7 +367,7 @@ if (deps.next) {
 }
 ```
 
-**Agentful uses Claude to learn**:
+**agentful uses Claude to learn**:
 ```markdown
 Sample src/app/page.tsx
 → Uses App Router
@@ -433,11 +433,11 @@ graph TD
 **What YOU do**:
 1. ✏️ Write `PRODUCT.md` - describe what you want to build
 2. ▶️ Run `/agentful-start` - begin autonomous development
-3. ❓ Answer `/agentful-decide` prompts - when Agentful needs clarification
+3. ❓ Answer `/agentful-decide` prompts - when agentful needs clarification
 4. 📊 Check `/agentful-status` - see progress anytime
 5. ✅ Run `/agentful-validate` - verify quality gates pass
 
-**What Agentful does automatically**:
+**What agentful does automatically**:
 
 1. Orchestrator analyzes your `PRODUCT.md`
 2. Architect generates specialized agents for YOUR tech stack
@@ -448,7 +448,7 @@ graph TD
 7. Fixer auto-heals any issues found
 8. Loops until 100% complete
 
-**The Result**: You focus on WHAT to build. Agentful handles HOW to build it autonomously.
+**The Result**: You focus on WHAT to build. agentful handles HOW to build it autonomously.
 
 ---
 

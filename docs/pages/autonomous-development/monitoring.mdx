@@ -1,10 +1,10 @@
 # Monitoring
 
-Effective monitoring is crucial for autonomous development. This guide explains how to track progress, understand what Agentful is building, and ensure quality throughout the development process.
+Effective monitoring is crucial for autonomous development. This guide explains how to track progress, understand what agentful is building, and ensure quality throughout the development process.
 
 ## Overview
 
-Agentful provides multiple monitoring layers:
+agentful provides multiple monitoring layers:
 
 1. **Real-time Status** - Current work and progress
 2. **State Files** - Detailed progress tracking
@@ -14,7 +14,7 @@ Agentful provides multiple monitoring layers:
 
 ## Quick Status Check
 
-### Agentful Status Command
+### agentful Status Command
 
 ```bash
 /agentful-status
@@ -22,7 +22,7 @@ Agentful provides multiple monitoring layers:
 
 **Output**:
 ```
-=== Agentful Status ===
+=== agentful Status ===
 
 Current Task: Implementing user authentication
 Current Phase: implementing
@@ -286,7 +286,7 @@ git log --author="backend" --oneline
 git log --author="frontend" --oneline
 git log --author="fixer" --oneline
 
-# View commits since Agentful started
+# View commits since agentful started
 git log --since="1 hour ago" --oneline
 
 # View commit with diff
@@ -372,7 +372,7 @@ Create a monitoring script:
 
 while true; do
   clear
-  echo "=== Agentful Monitor ==="
+  echo "=== agentful Monitor ==="
   echo ""
   echo "Progress: $(cat .agentful/completion.json | jq .overall)%"
   echo "Current: $(cat .agentful/state.json | jq .current_task)"
@@ -478,8 +478,8 @@ echo "Dead Code Issues: $DEAD_CODE"
 while true; do
   COMPLETE=$(cat .agentful/completion.json | jq '.overall == 100')
   if [ "$COMPLETE" = "true" ]; then
-    echo "Agentful development complete!"
-    osascript -e 'display notification "Agentful development complete!" with title "Agentful"'
+    echo "agentful development complete!"
+    osascript -e 'display notification "agentful development complete!" with title "agentful"'
     break
   fi
   sleep 30
@@ -499,7 +499,7 @@ while true; do
 
   if [ "$LAST_CHECK" = "true" ] && [ "$CURRENT_CHECK" = "false" ]; then
     echo "Quality check failed!"
-    osascript -e 'display notification "Quality check failed" with title "Agentful"'
+    osascript -e 'display notification "Quality check failed" with title "agentful"'
   fi
 
   LAST_CHECK=$CURRENT_CHECK
@@ -520,7 +520,7 @@ while true; do
 
   if [ "$CURRENT_COUNT" -gt "$LAST_COUNT" ]; then
     echo "New decision pending!"
-    osascript -e 'display notification "Decision needed" with title "Agentful"'
+    osascript -e 'display notification "Decision needed" with title "agentful"'
   fi
 
   LAST_COUNT=$CURRENT_COUNT
@@ -541,7 +541,7 @@ while true; do
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Agentful Monitor</title>
+  <title>agentful Monitor</title>
   <meta http-equiv="refresh" content="5">
   <style>
     body { font-family: monospace; padding: 20px; }
@@ -551,7 +551,7 @@ while true; do
   </style>
 </head>
 <body>
-  <h1>Agentful Status</h1>
+  <h1>agentful Status</h1>
   <pre>
 $(/agentful-status)
   </pre>
@@ -585,7 +585,7 @@ python3 -m http.server 8000
 ### SSH Monitoring
 
 ```bash
-# Monitor remote Agentful
+# Monitor remote agentful
 ssh user@server 'cd /path/to/project && cat .agentful/completion.json | jq .overall'
 
 # Stream logs
@@ -601,7 +601,7 @@ WEBHOOK="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
 curl -X POST $WEBHOOK \
   -H 'Content-Type: application/json' \
   -d "{
-    \"text\": \"Agentful Update\",
+    \"text\": \"agentful Update\",
     \"attachments\": [{
       \"text\": \"Progress: $(cat .agentful/completion.json | jq .overall)%\nCurrent: $(cat .agentful/state.json | jq .current_task)\"
     }]
@@ -697,8 +697,8 @@ git config user.email
 
 **Fix**:
 ```bash
-# Set git config for Agentful
-git config user.name "Agentful"
+# Set git config for agentful
+git config user.name "agentful"
 git config user.email "agentful@example.com"
 ```
 

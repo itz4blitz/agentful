@@ -1,4 +1,4 @@
-# Agentful Deployment Architecture
+# agentful Deployment Architecture
 
 ## Visual Workflow Diagram
 

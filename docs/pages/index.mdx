@@ -1,23 +1,25 @@
 ---
-title: Agentful - Autonomous Product Development with Claude Code
+title: agentful - Autonomous Product Development with Claude Code
 description: Transform any project into an autonomous product builder with specialized agents, 24/7 development, and zero configuration.
 ---
 
-<div style="text-align: center;">
-  <img src="/assets/agentful.jpeg" alt="Agentful Logo" width="200" />
+<div className="text-center">
+  <img src="/assets/agentful.jpeg" alt="agentful Logo" width="300" />
 </div>
 
-# Agentful
+# agentful
 
 **One-Command Autonomous Product Development Kit for Claude Code**
 
 Transform any project into an autonomous product builder with specialized agents that work 24/7 to build, test, and validate your code.
 
+**[📚 Read the Documentation →](/getting-started/quick-start)**
+
 ---
 
-## What is Agentful?
+## What is agentful?
 
-Agentful is an **opinionated starter template** for Claude Code that transforms it into a powerful autonomous development system. It's a pre-configured `.claude/` directory that supercharges Claude Code with:
+agentful is an **opinionated starter template** for Claude Code that transforms it into a powerful autonomous development system. It's a pre-configured `.claude/` directory that supercharges Claude Code with:
 
 - **7 Specialized Agents** - Orchestrator, Architect, Backend, Frontend, Tester, Reviewer, Fixer
 - **4 Powerful Commands** - Start, Status, Decide, Validate
@@ -25,7 +27,7 @@ Agentful is an **opinionated starter template** for Claude Code that transforms 
 - **Quality Gates** - Type checking, Linting, Tests, Coverage, Security, Dead code detection (adapts to YOUR stack)
 - **24/7 Development** - Works while you sleep with Ralph Wiggum loops
 - **Progress Tracking** - See exactly what's done and what's next
-- **Decision Handling** - Agentful asks, you answer, it continues
+- **Decision Handling** - agentful asks, you answer, it continues
 
 ---
 
@@ -34,7 +36,7 @@ Agentful is an **opinionated starter template** for Claude Code that transforms 
 ```mermaid
 flowchart TB
     subgraph Setup["🚀 GET STARTED"]
-        Init([1️⃣ Initialize<br/>npx agentful init])
+        Init([1️⃣ Initialize<br/>npx @itz4blitz/agentful init])
         Define([2️⃣ Define Product<br/>Edit PRODUCT.md])
         Start([3️⃣ Start Building<br/>/agentful-start])
 
@@ -84,7 +86,7 @@ flowchart TB
 ### 1. Initialize in your project
 
 ```bash
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 ### 2. Edit your product spec
@@ -119,7 +121,7 @@ Then type:
 /agentful-start
 ```
 
-That's it! Agentful will:
+That's it! agentful will:
 1. Analyze your `PRODUCT.md`
 2. Detect your tech stack
 3. Generate specialized agents
@@ -131,7 +133,7 @@ That's it! Agentful will:
 
 ### 🤖 Specialized Agents
 
-Agentful includes specialized agents that work together:
+agentful includes specialized agents that work together:
 
 | Agent | Purpose |
 |-------|---------|
@@ -143,10 +145,11 @@ Agentful includes specialized agents that work together:
 | `@reviewer` | Code review, dead code detection, quality validation |
 | `@fixer` | Auto-fixes validation failures |
 
-### 🎯 Four Simple Commands
+### 🎯 Simple Commands
 
 | Command | Description |
 |---------|-------------|
+| `/agentful` | **Natural conversation** - just talk to Agentful |
 | `/agentful-start` | Begin or resume autonomous development |
 | `/agentful-status` | Check current progress and what's being worked on |
 | `/agentful-decide` | Answer pending decisions that block development |
@@ -167,7 +170,7 @@ claude
 /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
 ```
 
-Agentful will work while you sleep, only stopping when:
+agentful will work while you sleep, only stopping when:
 - All features are complete (100%)
 - All quality gates pass
 - Or max iterations reached
@@ -179,7 +182,7 @@ Agentful will work while you sleep, only stopping when:
 Code must pass ALL gates before completion:
 
 - ✅ All tests passing
-- ✅ No type errors (TypeScript, mypy, etc. - adapts to your stack)
+- ✅ No type errors (type checking adapts to your stack)
 - ✅ No lint errors
 - ✅ No dead code (unused exports, files, dependencies)
 - ✅ Test coverage ≥ 80%
@@ -217,7 +220,7 @@ Quality Gates:
 
 ```bash
 # You
-npx agentful init
+npx @itz4blitz/agentful init
 
 # Edit PRODUCT.md with your requirements
 
@@ -227,18 +230,18 @@ claude
 # You
 /agentful-start
 
-# Agentful
+# agentful
 Detected Next.js + TypeScript + Prisma + Tailwind
 → Generated nextjs-agent, prisma-agent, tailwind-agent
 
-# Agentful
+# agentful
 Starting work on authentication (priority: CRITICAL)
 → @backend implementing JWT service
 → @backend implementing login API route
 → @frontend creating login page
 → @tester writing auth tests
 
-# Agentful
+# agentful
 Running validation...
 → TypeScript: ✅
 → Lint: ✅
@@ -247,7 +250,7 @@ Running validation...
 → Dead code: ✅
 → Security: ✅
 
-# Agentful
+# agentful
 Authentication complete (100%)
 Next: User profile feature...
 
@@ -264,7 +267,7 @@ After initialization, your project will have:
 your-project/
 ├── PRODUCT.md              # ← Edit this: your product spec
 ├── CLAUDE.md               # Project instructions for Claude
-├── .claude/                # Agentful configuration (version control)
+├── .claude/                # agentful configuration (version control)
 │   ├── agents/             # Specialized agents
 │   │   ├── orchestrator.md
 │   │   ├── architect.md
@@ -287,7 +290,7 @@ your-project/
 │   ├── completion.json     # Progress tracking
 │   ├── decisions.json      # Pending/resolved decisions
 │   └── architecture.json   # Detected tech stack
-└── src/                    # Your code (generated by Agentful)
+└── src/                    # Your code (generated by agentful)
 ```
 
 ---
@@ -320,7 +323,7 @@ See [24/7 Development](/autonomous-development/24-7-development) for details.
 
 ### Getting Started
 
-- **[Installation](/getting-started/installation)** - Set up Agentful
+- **[Installation](/getting-started/installation)** - Set up agentful
 - **[Quick Start](/getting-started/quick-start)** - 5-minute walkthrough
 - **[First Project](/getting-started/first-project)** - Build your first project
 - **[Configuration](/getting-started/configuration)** - Basic configuration
@@ -334,12 +337,12 @@ See [24/7 Development](/autonomous-development/24-7-development) for details.
 
 ---
 
-## Why Agentful?
+## Why agentful?
 
 ### For Solo Developers
 
 - Build complete products without burnout
-- Work on high-level features while Agentful handles implementation
+- Work on high-level features while agentful handles implementation
 - Ship faster with autonomous testing and validation
 
 ### For Teams

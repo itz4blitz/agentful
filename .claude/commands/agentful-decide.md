@@ -3,7 +3,7 @@ name: agentful-decide
 description: Answer pending decisions that are blocking development progress.
 ---
 
-# Agentful Decide
+# agentful Decide
 
 This command helps you resolve pending decisions that are blocking development.
 

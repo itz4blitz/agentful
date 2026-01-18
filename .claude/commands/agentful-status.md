@@ -3,7 +3,7 @@ name: agentful-status
 description: Show current progress, completion percentage, and what's being worked on.
 ---
 
-# Agentful Status
+# agentful Status
 
 This command shows the current state of autonomous product development.
 
@@ -13,7 +13,7 @@ This command shows the current state of autonomous product development.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           Agentful Development Status
+           agentful Development Status
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Product: [from .claude/product/index.md title]

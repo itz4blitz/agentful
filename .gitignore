@@ -1,4 +1,4 @@
-# Agentful runtime state (gitignored in user projects)
+# agentful runtime state (gitignored in user projects)
 .agentful/
 
 # Dependencies

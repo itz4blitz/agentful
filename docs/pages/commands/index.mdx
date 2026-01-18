@@ -1,10 +1,10 @@
-# Agentful Commands Reference
+# agentful Commands Reference
 
-Complete reference guide for all Agentful slash commands used in autonomous product development.
+Complete reference guide for all agentful slash commands used in autonomous product development.
 
 ## Overview
 
-Agentful provides a set of slash commands that automate the product development lifecycle. These commands work together to create an autonomous development loop that can build features, validate quality, and resolve decisions with minimal human intervention.
+agentful provides a set of slash commands that automate the product development lifecycle. These commands work together to create an autonomous development loop that can build features, validate quality, and resolve decisions with minimal human intervention.
 
 ## Command Categories
 
@@ -31,14 +31,14 @@ The typical development workflow follows this sequence:
 
 ### First Time Setup
 
-Before using Agentful commands, ensure you have:
+Before using agentful commands, ensure you have:
 
 1. **PRODUCT.md** - Product requirements document
 2. **.agentful/** directory - State management
 3. **Git repository** - Version control
 
 ```bash
-# Initialize Agentful
+# Initialize agentful
 mkdir -p .agentful
 echo '{}' > .agentful/state.json
 echo '{}' > .agentful/completion.json
@@ -287,14 +287,14 @@ echo '{"version":"1.0","current_task":null}' > .agentful/state.json
 
 ```yaml
 # .github/workflows/agentful.yml
-name: Agentful Validation
+name: agentful Validation
 on: [push, pull_request]
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Run Agentful validation
+      - name: Run agentful validation
         run: |
           npm install
           /agentful-validate
@@ -326,7 +326,7 @@ Create reusable decision patterns:
 
 ## See Also
 
-- [Installation Guide](/getting-started/installation) - Setting up Agentful
+- [Installation Guide](/getting-started/installation) - Setting up agentful
 - [Product Spec Guide](/guides/writing-product-md) - Writing PRODUCT.md
 - [Agent Configuration](/agents) - Understanding specialist agents
 - [Quality Gates](/autonomous-development/quality-gates) - Configuring validation thresholds

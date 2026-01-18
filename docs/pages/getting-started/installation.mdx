@@ -1,17 +1,17 @@
 ---
-title: Installation - Agentful
-description: Learn how to install and initialize Agentful in your project using npx agentful init.
+title: Installation - agentful
+description: Learn how to install and initialize agentful in your project using npx @itz4blitz/agentful init.
 ---
 
 # Installation
 
-Get Agentful up and running in your project in under a minute.
+Get agentful up and running in your project in under a minute.
 
 ---
 
 ## Prerequisites
 
-Before installing Agentful, ensure you have:
+Before installing agentful, ensure you have:
 
 - **Claude Code** installed - [Get it here](https://code.anthropic.com)
 - **Node.js 18+** installed - [Download here](https://nodejs.org/)
@@ -33,7 +33,7 @@ If you have an existing project:
 
 ```bash
 cd your-project
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 This creates:
@@ -50,7 +50,7 @@ Starting from scratch? Create a new project first:
 mkdir my-app
 cd my-app
 npm init -y
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 ### Method 3: Bare Initialization
@@ -58,7 +58,7 @@ npx agentful init
 If you already have `PRODUCT.md` and `CLAUDE.md`:
 
 ```bash
-npx agentful init --bare
+npx @itz4blitz/agentful init --bare
 ```
 
 This skips creating template files and only sets up `.claude/` and `.agentful/`.
@@ -67,10 +67,10 @@ This skips creating template files and only sets up `.claude/` and `.agentful/`.
 
 ## What Gets Created
 
-After running `npx agentful init`, you'll see:
+After running `npx @itz4blitz/agentful init`, you'll see:
 
 ```
-✅ Agentful initialized successfully!
+✅ agentful initialized successfully!
 
 Next steps:
   1. Edit PRODUCT.md with your product specification
@@ -87,7 +87,7 @@ For autonomous 24/7 development:
 your-project/
 ├── PRODUCT.md              # ← Edit this: your product spec
 ├── CLAUDE.md               # Project instructions
-├── .claude/                # Agentful configuration
+├── .claude/                # agentful configuration
 │   ├── agents/             # 7 specialized agents
 │   ├── commands/           # 4 slash commands
 │   ├── skills/             # Domain skills
@@ -104,7 +104,7 @@ your-project/
 
 ## Verification
 
-Verify Agentful is installed:
+Verify agentful is installed:
 
 ```bash
 # Check that .claude directory exists
@@ -126,10 +126,10 @@ You should see:
 
 ## Updating .gitignore
 
-Agentful automatically adds `.agentful/` to your `.gitignore`:
+agentful automatically adds `.agentful/` to your `.gitignore`:
 
 ```bash
-# Agentful runtime state
+# agentful runtime state
 .agentful/
 ```
 
@@ -159,7 +159,7 @@ npx --version
 
 ### Issue: ".claude directory already exists"
 
-If you already have a `.claude/` directory, Agentful will ask:
+If you already have a `.claude/` directory, agentful will ask:
 
 ```bash
 ⚠️  .claude/ directory already exists!
@@ -173,7 +173,7 @@ Overwrite? (y/N)
 
 ```bash
 mv .claude .claude.backup
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 ### Issue: Permission denied
@@ -197,14 +197,14 @@ sudo chown -R $USER:$USER .claude .agentful
 npm init -y
 
 # Then try again
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 ---
 
 ## Next Steps
 
-Now that Agentful is installed:
+Now that agentful is installed:
 
 1. **Edit your product spec** → [Quick Start Guide](/getting-started/quick-start)
 2. **Start Claude Code** → `claude`
@@ -214,10 +214,10 @@ Now that Agentful is installed:
 
 ## Uninstallation
 
-To remove Agentful from your project:
+To remove agentful from your project:
 
 ```bash
-# Remove Agentful directories
+# Remove agentful directories
 rm -rf .claude .agentful
 
 # Remove template files (optional)
@@ -233,10 +233,10 @@ rm PRODUCT.md CLAUDE.md
 
 ### Custom Install Location
 
-By default, Agentful installs in the current directory. To install elsewhere:
+By default, agentful installs in the current directory. To install elsewhere:
 
 ```bash
-npx agentful init --path /path/to/project
+npx @itz4blitz/agentful init --path /path/to/project
 ```
 
 ### Silent Installation
@@ -244,14 +244,14 @@ npx agentful init --path /path/to/project
 For automation scripts:
 
 ```bash
-npx agentful init --silent
+npx @itz4blitz/agentful init --silent
 ```
 
 Skips the confirmation prompt and creates a backup if `.claude/` exists.
 
 ### Version Check
 
-Check which version of Agentful you installed:
+Check which version of agentful you installed:
 
 ```bash
 npx agentful --version
@@ -266,7 +266,7 @@ npx agentful --version
 <div>
 
 ### Quick Start
-Learn how to use Agentful in 5 minutes
+Learn how to use agentful in 5 minutes
 → [Quick Start Guide](/getting-started/quick-start)
 
 </div>

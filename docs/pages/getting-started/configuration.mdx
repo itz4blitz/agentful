@@ -1,17 +1,17 @@
 ---
-title: Configuration - Agentful
-description: Learn how to configure Agentful for your project. Customize agents, commands, settings, and behavior.
+title: Configuration - agentful
+description: Learn how to configure agentful for your project. Customize agents, commands, settings, and behavior.
 ---
 
 # Configuration
 
-Customize Agentful to match your workflow, tech stack, and preferences.
+Customize agentful to match your workflow, tech stack, and preferences.
 
 ---
 
 ## Overview
 
-Agentful is highly customizable. You can modify:
+agentful is highly customizable. You can modify:
 
 - **Agents** - Add, remove, or specialize agents
 - **Commands** - Create custom slash commands
@@ -22,6 +22,16 @@ Agentful is highly customizable. You can modify:
 **Configuration files location:**
 ```
 .claude/
+├── product/            # Product structure (choose one)
+│   ├── index.md        # Option 1: Flat - all features
+│   ├── domains/        # Option 2: Hierarchical - by domain
+│   │   └── auth/
+│   │       ├── index.md
+│   │       └── features/
+│   │           ├── login.md
+│   │           └── register.md
+│   ├── EXAMPLES.md     # Feature writing examples
+│   └── README.md       # Structure guide
 ├── agents/             # Agent definitions
 ├── commands/           # Slash commands
 ├── skills/             # Domain skills
@@ -30,11 +40,161 @@ Agentful is highly customizable. You can modify:
 
 ---
 
+## Product Structure
+
+agentful supports **both** flat and hierarchical product structures with **automatic detection**. Choose the format that best fits your project size and complexity.
+
+### Flat Structure
+
+**Best for:** Quick prototypes, MVPs, small projects with 5-10 features
+
+**Option A: Root file (legacy)**
+```bash
+your-project/
+├── PRODUCT.md          # All features in one file
+├── src/
+└── package.json
+```
+
+**Option B: .claude directory**
+```bash
+your-project/
+├── .claude/
+│   └── product/
+│       └── index.md    # All features in one file
+├── src/
+└── package.json
+```
+
+**Example `PRODUCT.md` or `.claude/product/index.md`:**
+```markdown
+# My App
+
+## Features
+
+### 1. User Authentication - CRITICAL
+- Login with email/password
+- JWT token handling
+- Password reset
+
+### 2. User Profile - HIGH
+- Edit profile information
+- Upload avatar
+
+### 3. Dashboard - MEDIUM
+- Display user stats
+- Recent activity
+```
+
+### Hierarchical Structure
+
+**Best for:** Large projects with 20+ features, team collaboration, complex dependencies
+
+```bash
+your-project/
+├── .claude/
+│   └── product/
+│       ├── index.md              # Product overview
+│       └── domains/
+│           ├── authentication/
+│           │   ├── index.md      # Domain overview
+│           │   └── features/
+│           │       ├── login.md
+│           │       └── register.md
+│           └── user-management/
+│               ├── index.md
+│               └── features/
+│                   └── profile.md
+```
+
+**Example structure:**
+
+**`.claude/product/index.md`** - Product overview:
+```markdown
+# My App
+
+A full-stack application for user management.
+
+## Domains
+- Authentication (CRITICAL)
+- User Management (HIGH)
+- Dashboard (MEDIUM)
+```
+
+**`.claude/product/domains/authentication/index.md`** - Domain overview:
+```markdown
+# Authentication Domain
+
+Handles user identity and access control.
+
+## Features
+- Login
+- Register
+- Password Reset
+```
+
+**`.claude/product/domains/authentication/features/login.md`** - Feature details:
+```markdown
+# Feature: Login
+
+Priority: CRITICAL
+
+## Subtasks
+1. Create login UI
+2. Implement login API
+3. Add JWT handling
+4. Write tests
+```
+
+### Auto-Detection
+
+The system automatically detects which format you're using:
+
+1. **Hierarchical**: If `.claude/product/domains/*/index.md` exists
+   → Tracks at subtask → feature → domain levels
+
+2. **Flat (legacy)**: If `PRODUCT.md` exists at root
+   → Tracks at feature level
+
+3. **Flat (new)**: If `.claude/product/index.md` exists (without domains)
+   → Tracks at feature level
+
+**No configuration needed** - just create your files and agentful adapts automatically.
+
+### Migration Path
+
+Start flat, migrate to hierarchical as your project grows:
+
+```bash
+# Phase 1: Quick Start
+PRODUCT.md (all features in one file)
+
+# Phase 2: Organize (optional)
+.claude/product/index.md (move to .claude directory)
+
+# Phase 3: Scale Up (when needed)
+.claude/product/domains/ (split by domain)
+```
+
+### When to Use Each Format
+
+| Format | Use When | Benefits |
+|--------|----------|----------|
+| Flat (PRODUCT.md) | MVP, prototype, small project | Simplest, fastest setup |
+| Flat (.claude/product/index.md) | Want organization, but small project | Keeps root clean, still simple |
+| Hierarchical | 20+ features, team collaboration | Domain-driven, parallel work, organized |
+
+**Recommendation:** Start with `PRODUCT.md` for speed. Migrate to `.claude/product/domains/` when you have 20+ features or multiple developers.
+
+For detailed examples and best practices, see [Project Structure Guide](/configuration/project-structure).
+
+---
+
 ## Basic Configuration
 
 ### 1. Settings (settings.json)
 
-The main configuration file for Agentful.
+The main configuration file for agentful.
 
 **Location:** `.claude/settings.json`
 
@@ -461,7 +621,7 @@ version: 1.0.0
 
 # Testing Skill
 
-Provides testing capabilities for Agentful agents.
+Provides testing capabilities for agentful agents.
 
 ## What This Skill Does
 
@@ -860,7 +1020,7 @@ Add your project-specific workflow here.
 **Commit `.claude/` to git:**
 ```bash
 git add .claude/
-git commit -m "Configure Agentful agents and commands"
+git commit -m "Configure agentful agents and commands"
 ```
 
 **Ignore `.agentful/` (runtime state):**
@@ -873,7 +1033,7 @@ git commit -m "Configure Agentful agents and commands"
 
 **Create CONFIG.md:**
 ```markdown
-# Agentful Configuration
+# agentful Configuration
 
 ## Custom Agents
 
@@ -901,7 +1061,7 @@ git commit -m "Configure Agentful agents and commands"
 **Start with defaults:**
 ```bash
 # Use default config first
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 **Make small changes:**
@@ -912,7 +1072,7 @@ npx agentful init
 **Document what works:**
 - Keep notes on successful changes
 - Share with team
-- Contribute back to Agentful
+- Contribute back to agentful
 
 ---
 

@@ -3,7 +3,7 @@ name: agentful-start
 description: Start or resume autonomous product development loop. Delegates to orchestrator agent.
 ---
 
-# Agentful Start
+# agentful Start
 
 This command initiates the autonomous product development loop.
 
@@ -53,15 +53,15 @@ current_checksums = calculate_checksums(".claude/")
 # Compare with stored checksums
 if current_checksums != stored_checksums:
   if context == "agentful_framework":
-    # We're in Agentful repo
+    # We're in agentful repo
     "Framework updated. Changes detected in:
      - orchestrator.md (improved)
      - validation skill (new gate added)
 
      Testing updated framework..."
   else:
-    # User project - Agentful was updated
-    "Agentful framework updated.
+    # User project - agentful was updated
+    "agentful framework updated.
      New capabilities available:
      - Enhanced orchestrator with work classification
      - New validation gates
@@ -89,8 +89,8 @@ if agent_improvements.pending.any(priority == "HIGH"):
 
     # Delegate to orchestrator for META_WORK
   else:
-    "Note: The Agentful framework has suggested improvements.
-     These will be available when you update Agentful."
+    "Note: The agentful framework has suggested improvements.
+     These will be available when you update agentful."
 ```
 
 ### 5. Check Decisions

@@ -1,12 +1,12 @@
 # Configuration Overview
 
-Agentful provides a flexible configuration system that lets you customize every aspect of autonomous product development. Configuration is split between project-level settings and Agentful's internal configuration.
+agentful provides a flexible configuration system that lets you customize every aspect of autonomous product development. Configuration is split between project-level settings and agentful's internal configuration.
 
 ## Configuration Structure
 
 ```
 .your-project/
-├── .claude/                    # Claude Code + Agentful config
+├── .claude/                    # Claude Code + agentful config
 │   ├── settings.json           # Global settings (hooks, permissions)
 │   ├── agents/                 # Agent definitions
 │   ├── commands/               # Slash command definitions
@@ -17,7 +17,7 @@ Agentful provides a flexible configuration system that lets you customize every 
 │   ├── decisions.json          # Pending/resolved decisions
 │   └── architecture.json       # Tech stack detection
 ├── PRODUCT.md                  # Your product specification
-└── CLAUDE.md                   # Agentful usage guide
+└── CLAUDE.md                   # agentful usage guide
 ```
 
 ## Configuration Files
@@ -28,7 +28,7 @@ Agentful provides a flexible configuration system that lets you customize every 
 |------|---------|-------|
 | `.claude/settings.json` | Hooks, permissions, global settings | Yes |
 | `PRODUCT.md` | Product requirements and tech stack | Yes (required) |
-| `CLAUDE.md` | Project-specific Agentful instructions | Optional |
+| `CLAUDE.md` | Project-specific agentful instructions | Optional |
 | `.agentful/*.json` | Runtime state (auto-generated) | No |
 
 ### Generated Files
@@ -43,10 +43,10 @@ Agentful provides a flexible configuration system that lets you customize every 
 
 ## Quick Start Configuration
 
-### 1. Initialize Agentful
+### 1. Initialize agentful
 
 ```bash
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 This creates:
@@ -129,7 +129,7 @@ Edit `.claude/settings.json` for hooks and permissions:
 
 ## Configuration Layers
 
-Agentful configuration applies in layers (highest priority first):
+agentful configuration applies in layers (highest priority first):
 
 1. **Project-level** - `PRODUCT.md`, `CLAUDE.md`
 2. **Agent-level** - Individual agent definitions in `.claude/agents/`
@@ -142,7 +142,7 @@ Agentful configuration applies in layers (highest priority first):
 
 ```bash
 # Use default settings
-npx agentful init
+npx @itz4blitz/agentful init
 
 # Edit PRODUCT.md for dev-specific features
 # - Enable debug mode

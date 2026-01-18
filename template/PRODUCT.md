@@ -1,5 +1,12 @@
 # Product Specification
 
+> **Note**: agentful supports **both** flat and hierarchical product structures.
+>
+> - **Flat Structure** (Recommended for beginners): Single file at project root (this file)
+> - **Hierarchical Structure** (For larger projects): `.claude/product/` with separate domain files
+>
+> This template shows the **flat structure** format. To convert to hierarchical structure, see [Migration Guide](#migration-to-hierarchical-structure) below.
+
 ## Overview
 
 [Describe what you're building in 2-3 sentences]
@@ -489,8 +496,89 @@ Each subtask should have:
 - **Priorities** ensure MVP features are built first
 - **Status tracking** enables autonomous development loops
 
-**Tip**: The more detailed your PRODUCT.md, the better Agentful can understand what to build. Include:
+**Tip**: The more detailed your PRODUCT.md, the better agentful can understand what to build. Include:
 - Clear acceptance criteria with checkboxes
 - User stories for context
 - Technical constraints and notes
 - Examples when helpful
+
+---
+
+## Migration to Hierarchical Structure
+
+When your project grows too large for a single file, you can migrate to the hierarchical structure:
+
+### When to Migrate
+
+Consider migrating when:
+- Your PRODUCT.md exceeds 500 lines
+- You have 20+ features across multiple domains
+- Multiple team members need to edit product specs simultaneously
+- You want better organization for complex projects
+
+### How to Migrate
+
+1. **Create the hierarchical structure:**
+   ```bash
+   mkdir -p .claude/product/domains
+   ```
+
+2. **Split your PRODUCT.md into domain files:**
+   - Move each domain section to `.claude/product/domains/{domain-name}/index.md`
+   - Move each feature to `.claude/product/domains/{domain-name}/features/{feature-name}.md`
+   - Create `.claude/product/index.md` with product overview only
+
+3. **System auto-detects the change:**
+   - agentful will automatically detect the hierarchical structure
+   - No configuration changes needed
+
+4. **Delete or archive the old PRODUCT.md:**
+   - You can keep it as a backup
+   - Or delete it once migration is complete
+
+### Example Migration
+
+**Before (Flat - this file):**
+```markdown
+# Product Spec
+
+## Domain: Authentication
+### Feature: Login
+[Details...]
+
+## Domain: User Management
+### Feature: Profile
+[Details...]
+```
+
+**After (Hierarchical):**
+```
+.claude/product/
+├── index.md                    # Product overview only
+└── domains/
+    ├── authentication/
+    │   ├── index.md           # Domain overview
+    │   └── features/
+    │       └── login.md       # Feature details
+    └── user-management/
+        ├── index.md
+        └── features/
+            └── profile.md
+```
+
+### Detailed Migration Guide
+
+For step-by-step instructions, examples, and best practices, see:
+`.claude/product/README.md` in your project (after running `npx @itz4blitz/agentful init`)
+
+### Key Differences
+
+| Aspect | Flat Structure | Hierarchical Structure |
+|--------|---------------|----------------------|
+| **File location** | `PRODUCT.md` at root | `.claude/product/` directory |
+| **Organization** | Single file with all features | Multiple files split by domain |
+| **Best for** | Small projects, MVPs, beginners | Large projects, teams, complex products |
+| **Tracking** | Feature-level completion | Subtask → Feature → Domain completion |
+| **Collaboration** | One editor at a time | Multiple editors can work on different domains |
+
+Both structures work identically - agentful auto-detects which format you're using!

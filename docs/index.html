@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agentful - One-Click Autonomous Product Development for Claude Code</title>
+  <title>agentful - One-Click Autonomous Product Development for Claude Code</title>
   <meta name="description" content="Turn any project into an autonomous product builder. Drop-in .claude/ configuration for Claude Code with specialized agents, skills, and commands.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -563,7 +563,7 @@
   <!-- Navigation -->
   <nav>
     <div class="container nav-content">
-      <div class="logo">Agentful</div>
+      <div class="logo">agentful</div>
       <ul class="nav-links">
         <li><a href="#features">Features</a></li>
         <li><a href="#how-it-works">How It Works</a></li>
@@ -586,7 +586,7 @@
         <a href="#how-it-works" class="btn btn-secondary">See How It Works</a>
       </div>
       <div class="install-box">
-        <code>npx agentful init</code>
+        <code>npx @itz4blitz/agentful init</code>
         <button class="copy-btn" onclick="copyInstall()">Copy</button>
       </div>
     </div>
@@ -645,7 +645,7 @@
         <div class="step">
           <div class="step-number">1</div>
           <h3>Initialize</h3>
-          <p>Run <code>npx agentful init</code> in your project</p>
+          <p>Run <code>npx @itz4blitz/agentful init</code> in your project</p>
         </div>
         <div class="step">
           <div class="step-number">2</div>
@@ -660,7 +660,7 @@
         <div class="step">
           <div class="step-number">4</div>
           <h3>Watch It Build</h3>
-          <p>Agentful works autonomously until complete</p>
+          <p>agentful works autonomously until complete</p>
         </div>
       </div>
     </div>
@@ -739,7 +739,7 @@
     <div class="container">
       <div class="section-header">
         <h2>Slash Commands</h2>
-        <p>Control Agentful with simple commands</p>
+        <p>Control agentful with simple commands</p>
       </div>
       <div class="command-list">
         <div class="command-item">
@@ -767,8 +767,8 @@
     <div class="container">
       <div class="cta-box">
         <h2>Ready to Build Autonomously?</h2>
-        <p>Install Agentful in your project and start Claude Code. That's it.</p>
-        <button class="btn btn-white" onclick="copyInstall()">🚀 npx agentful init</button>
+        <p>Install agentful in your project and start Claude Code. That's it.</p>
+        <button class="btn btn-white" onclick="copyInstall()">🚀 npx @itz4blitz/agentful init</button>
       </div>
     </div>
   </section>
@@ -777,7 +777,7 @@
   <footer>
     <div class="container">
       <div class="footer-content">
-        <div class="logo">Agentful</div>
+        <div class="logo">agentful</div>
         <div class="footer-links">
           <a href="https://github.com/itz4blitz/agentful">GitHub</a>
           <a href="https://github.com/itz4blitz/agentful/issues">Issues</a>
@@ -786,14 +786,14 @@
         </div>
       </div>
       <div class="footer-bottom">
-        MIT License © 2026 Agentful Contributors
+        MIT License © 2026 agentful Contributors
       </div>
     </div>
   </footer>
 
   <script>
     function copyInstall() {
-      navigator.clipboard.writeText('npx agentful init');
+      navigator.clipboard.writeText('npx @itz4blitz/agentful init');
       const btn = document.querySelector('.install-box .copy-btn') || document.querySelector('.cta-box .btn-white');
       const originalText = btn.textContent;
       btn.textContent = 'Copied!';

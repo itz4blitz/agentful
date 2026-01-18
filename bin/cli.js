@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 
 /**
- * Agentful CLI
- * One-click autonomous product development kit for Claude Code
+ * agentful CLI
+ * An opinionated autonomous product development kit for Claude Code
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { analyzeProject, exportToArchitectureJson } from '../lib/project-analyzer.js';
+import AgentGenerator from '../lib/agent-generator.js';
+import DomainStructureGenerator from '../lib/domain-structure-generator.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,11 +38,12 @@ function log(color, ...args) {
 
 function showBanner() {
   console.log('');
-  log(colors.cyan, '    ___    __  ____________  ____  ___   ____________ ');
-  log(colors.cyan, '   /   |  / / / /_  __/ __ \\/ __ \\/ _ | / ____/  _/ / ');
-  log(colors.cyan, '  / /| | / / / / / / / /_/ / /_/ /  __ |/ /    / // /  ');
-  log(colors.cyan, ' / ___ |/ /_/ / / / / _, _/ _, _/ /_/ / /___/ // /   ');
-  log(colors.cyan, '/_/  |_|_____/ /_/_/ /_/ |_/_/ |_|\\____/\\____/___/    ');
+  log(colors.cyan, '   █████╗  ██████╗ ███████╗███╗   ██╗████████╗███████╗██╗   ██╗██╗     ');
+  log(colors.cyan, '  ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██╔════╝██║   ██║██║     ');
+  log(colors.cyan, '  ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   █████╗  ██║   ██║██║     ');
+  log(colors.cyan, '  ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ██╔══╝  ██║   ██║██║     ');
+  log(colors.cyan, '  ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ██║     ╚██████╔╝███████╗');
+  log(colors.cyan, '  ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝      ╚═════╝ ╚══════╝');
   console.log('');
   log(colors.dim, `                   v${VERSION}                           `);
   console.log('');
@@ -51,19 +55,25 @@ function showHelp() {
   console.log(`  ${colors.bright}agentful${colors.reset} ${colors.green}<command>${colors.reset}`);
   console.log('');
   console.log('COMMANDS:');
-  console.log(`  ${colors.green}init${colors.reset}         Initialize Agentful in current directory`);
+  console.log(`  ${colors.green}init${colors.reset}         Initialize agentful in current directory`);
   console.log(`  ${colors.green}init --bare${colors.reset}  Skip creating templates (just .claude/)`);
+  console.log(`  ${colors.green}init --no-smart${colors.reset} Skip smart analysis (basic init only)`);
+  console.log(`  ${colors.green}init --deep${colors.reset}  Run deep analysis (slower, more thorough)`);
+  console.log(`  ${colors.green}init --generate-agents${colors.reset}  Auto-generate agents`);
+  console.log(`  ${colors.green}init --generate-domains${colors.reset} Auto-generate domain structure`);
   console.log(`  ${colors.green}generate${colors.reset}     Generate specialized agents from tech stack`);
   console.log(`  ${colors.green}status${colors.reset}       Show current development progress`);
   console.log(`  ${colors.green}--help${colors.reset}       Show this help message`);
   console.log(`  ${colors.green}--version${colors.reset}    Show version`);
   console.log('');
   console.log('AFTER INIT:');
-  console.log(`  1. Edit ${colors.bright}PRODUCT.md${colors.reset} with your product specification`);
-  console.log(`     - Define features with priorities: CRITICAL, HIGH, MEDIUM, LOW`);
-  console.log(`     - Add user stories: "As a [user], I want [feature] so that [benefit]"`);
-  console.log(`  2. Run ${colors.bright}claude${colors.reset} to start Claude Code`);
-  console.log(`  3. Type ${colors.bright}/agentful-start${colors.reset} to begin autonomous development`);
+  console.log(`  1. ${colors.bright}Choose your product structure:${colors.reset}`);
+  console.log(`     ${colors.green}• Simple (recommended):${colors.reset} Edit PRODUCT.md at project root`);
+  console.log(`     ${colors.cyan}• Organized:${colors.reset} Use .claude/product/ with domain directories`);
+  console.log(`     ${colors.dim}(agentful auto-detects which format you use)${colors.reset}`);
+  console.log(`  2. Define features with priorities: CRITICAL, HIGH, MEDIUM, LOW`);
+  console.log(`  3. Run ${colors.bright}claude${colors.reset} to start Claude Code`);
+  console.log(`  4. Type ${colors.bright}/agentful${colors.reset} for natural conversation or ${colors.bright}/agentful-start${colors.reset} for autonomous development`);
   console.log('');
   console.log('FOR 24/7 DEVELOPMENT:');
   console.log(`  ${colors.cyan}/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"${colors.reset}`);
@@ -71,7 +81,7 @@ function showHelp() {
 }
 
 function showVersion() {
-  console.log(`Agentful v${VERSION}`);
+  console.log(`agentful v${VERSION}`);
 }
 
 function copyDir(src, dest) {
@@ -98,7 +108,7 @@ function checkGitignore() {
     content = fs.readFileSync(gitignorePath, 'utf-8');
   }
 
-  const agentfulIgnore = '# Agentful runtime state\n.agentful/\n';
+  const agentfulIgnore = '# agentful runtime state\n.agentful/\n';
 
   if (!content.includes('.agentful/')) {
     fs.appendFileSync(gitignorePath, agentfulIgnore);
@@ -106,12 +116,19 @@ function checkGitignore() {
   }
 }
 
-async function initAgentful(options = { bare: false }) {
+async function initagentful(options = {}) {
   showBanner();
 
   const targetDir = process.cwd();
   const claudeDir = path.join(targetDir, '.claude');
   const agentfulDir = path.join(targetDir, '.agentful');
+
+  // Parse options
+  const bare = options.bare || false;
+  const smart = options.smart !== false; // Default: true
+  const deep = options.deep || false;
+  const autoGenerateAgents = options.generateAgents || false;
+  const autoGenerateDomains = options.generateDomains || false;
 
   // Check if already initialized
   if (fs.existsSync(claudeDir)) {
@@ -208,7 +225,7 @@ async function initAgentful(options = { bare: false }) {
   );
 
   // Copy templates if not bare mode
-  if (!options.bare) {
+  if (!bare) {
     log(colors.dim, 'Creating template files...');
 
     const claudeMdPath = path.join(targetDir, 'CLAUDE.md');
@@ -238,27 +255,179 @@ async function initAgentful(options = { bare: false }) {
   // Update .gitignore
   checkGitignore();
 
+  // Perform smart project analysis (unless explicitly disabled)
+  let analysis = null;
+  if (smart) {
+    console.log('');
+    log(colors.bright, '🔍 Analyzing your project...');
+    console.log('');
+
+    try {
+      const startTime = Date.now();
+      analysis = await analyzeProject(targetDir);
+      await exportToArchitectureJson(targetDir, analysis);
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
+      // Show detected tech stack
+      if (analysis.language && analysis.language !== 'unknown') {
+        log(colors.cyan, `  Language:    ${analysis.language}`);
+        if (analysis.primaryLanguage && analysis.primaryLanguage !== analysis.language) {
+          log(colors.dim, `  Primary:     ${analysis.primaryLanguage}`);
+        }
+      }
+
+      if (analysis.frameworks.length > 0) {
+        log(colors.cyan, `  Frameworks:  ${analysis.frameworks.join(', ')}`);
+      }
+
+      if (analysis.packageManager && analysis.packageManager !== 'unknown') {
+        log(colors.cyan, `  Package Mgr: ${analysis.packageManager}`);
+      }
+
+      if (analysis.buildSystem && analysis.buildSystem !== 'unknown') {
+        log(colors.cyan, `  Build:       ${analysis.buildSystem}`);
+      }
+
+      console.log('');
+
+      // Show detected domains
+      if (analysis.domains.length > 0) {
+        log(colors.bright, '📊 Detected domains:');
+        console.log('');
+
+        analysis.domains.slice(0, 5).forEach(domain => {
+          const confidence = analysis.domainConfidence[domain] || 0.5;
+          const confidenceBar = '█'.repeat(Math.round(confidence * 10)) + '░'.repeat(10 - Math.round(confidence * 10));
+          const confidencePct = Math.round(confidence * 100);
+
+          // Color code based on confidence
+          let confidenceColor = colors.red;
+          if (confidence >= 0.8) confidenceColor = colors.green;
+          else if (confidence >= 0.5) confidenceColor = colors.yellow;
+
+          log(confidenceColor, `  • ${domain.padEnd(20)} ${confidenceBar} ${confidencePct}%`);
+        });
+
+        if (analysis.domains.length > 5) {
+          log(colors.dim, `  ... and ${analysis.domains.length - 5} more`);
+        }
+
+        console.log('');
+      }
+
+      log(colors.dim, `  Analysis completed in ${duration}s (${Math.round(analysis.confidence * 100)}% confidence)`);
+
+      // Show warnings if any
+      if (analysis.warnings && analysis.warnings.length > 0) {
+        console.log('');
+        log(colors.yellow, '⚠️  Warnings:');
+        analysis.warnings.slice(0, 3).forEach(warning => {
+          log(colors.dim, `  • ${warning}`);
+        });
+      }
+
+    } catch (error) {
+      log(colors.dim, '  ⊙ Smart analysis skipped (project may be empty or unsupported)');
+      log(colors.dim, `     Error: ${error.message}`);
+      analysis = null;
+    }
+  }
+
+  // Interactive prompts for generation (if not auto-generated)
+  if (analysis && analysis.domains.length > 0 && !autoGenerateDomains && !autoGenerateAgents) {
+    console.log('');
+    const readline = await import('readline');
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout
+    });
+
+    // Ask about domain structure
+    const generateStructure = await new Promise(resolve => {
+      rl.question(`✨ Generate domain structure and specialized agents? [Y/n] `, answer => {
+        resolve(answer.toLowerCase() !== 'n');
+      });
+    });
+
+    rl.close();
+
+    if (generateStructure) {
+      await generateAgentsAndDomains(targetDir, analysis);
+    }
+  } else if (autoGenerateDomains || autoGenerateAgents) {
+    console.log('');
+    log(colors.dim, '🤖 Generating agents and domain structure...');
+    await generateAgentsAndDomains(targetDir, analysis, {
+      agents: autoGenerateAgents,
+      domains: autoGenerateDomains
+    });
+  }
+
   // Done!
   console.log('');
-  log(colors.green, '✅ Agentful initialized successfully!');
+  log(colors.green, '✅ agentful initialized successfully!');
   console.log('');
   log(colors.bright, 'Next steps:');
   console.log('');
-  console.log(`  1. ${colors.cyan}Edit PRODUCT.md${colors.reset} with your product specification`);
+  console.log(`  1. ${colors.cyan}Edit your product specification${colors.reset}`);
+  console.log(`     ${colors.green}• PRODUCT.md${colors.reset} (simple, at root)`);
+  console.log(`     ${colors.cyan}• .claude/product/index.md${colors.reset} (organized, with domains)`);
+  console.log(`     ${colors.dim}(agentful auto-detects which you use)${colors.reset}`);
   console.log(`  2. ${colors.cyan}Run: claude${colors.reset}`);
-  console.log(`  3. ${colors.cyan}Type: /agentful-start${colors.reset}`);
+  console.log(`  3. ${colors.cyan}Type: /agentful${colors.reset} (natural) or ${colors.cyan}/agentful-start${colors.reset} (autonomous)`);
   console.log('');
   log(colors.dim, 'For autonomous 24/7 development:');
   log(colors.cyan, `  /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"`);
   console.log('');
 }
 
+/**
+ * Generate agents and domain structure
+ */
+async function generateAgentsAndDomains(projectPath, analysis, options = {}) {
+  const { agents = true, domains = true } = options;
+
+  try {
+    // Generate domain structure
+    if (domains) {
+      log(colors.dim, '📁 Creating domain structure...');
+      const domainGenerator = new DomainStructureGenerator(projectPath, analysis);
+      const domainResult = await domainGenerator.generateDomainStructure();
+      log(colors.green, `  ✓ Generated ${domainResult.domains} domains with ${domainResult.features} features`);
+    }
+
+    // Generate specialized agents
+    if (agents) {
+      log(colors.dim, '🤖 Generating specialized agents...');
+      const agentGenerator = new AgentGenerator(projectPath, analysis);
+      const agentResult = await agentGenerator.generateAgents();
+
+      const totalAgents = agentResult.core.length + agentResult.domains.length + agentResult.tech.length;
+      log(colors.green, `  ✓ Generated ${totalAgents} agents:`);
+      log(colors.dim, `     - ${agentResult.core.length} core agents`);
+      if (agentResult.domains.length > 0) {
+        log(colors.dim, `     - ${agentResult.domains.length} domain agents`);
+      }
+      if (agentResult.tech.length > 0) {
+        log(colors.dim, `     - ${agentResult.tech.length} tech-specific agents`);
+      }
+    }
+
+    console.log('');
+    log(colors.green, '✨ Generation complete!');
+    log(colors.dim, '  Your agents are now contextually aware of your codebase.');
+  } catch (error) {
+    log(colors.red, `❌ Generation failed: ${error.message}`);
+    log(colors.dim, '  You can continue without it, or run: agentful generate');
+  }
+}
+
 function showStatus() {
   const agentfulDir = path.join(process.cwd(), '.agentful');
 
   if (!fs.existsSync(agentfulDir)) {
-    log(colors.red, '❌ Agentful not initialized in this directory!');
-    log(colors.dim, 'Run: npx agentful init');
+    log(colors.red, '❌ agentful not initialized in this directory!');
+    log(colors.dim, 'Run: npx @itz4blitz/agentful init');
     process.exit(1);
   }
 
@@ -471,10 +640,10 @@ async function generateAgents() {
 
   const agentfulDir = path.join(process.cwd(), '.agentful');
 
-  // Check if Agentful is initialized
+  // Check if agentful is initialized
   if (!fs.existsSync(agentfulDir)) {
-    log(colors.red, '❌ Agentful not initialized in this directory!');
-    log(colors.dim, 'Run: npx agentful init');
+    log(colors.red, '❌ agentful not initialized in this directory!');
+    log(colors.dim, 'Run: npx @itz4blitz/agentful init');
     process.exit(1);
   }
 
@@ -541,7 +710,15 @@ async function main() {
 
   switch (command) {
     case 'init':
-      await initAgentful({ bare: args.includes('--bare') });
+      // Parse init options
+      const initOptions = {
+        bare: args.includes('--bare'),
+        smart: !args.includes('--no-smart'),
+        deep: args.includes('--deep'),
+        generateAgents: args.includes('--generate-agents'),
+        generateDomains: args.includes('--generate-domains')
+      };
+      await initagentful(initOptions);
       break;
 
     case 'status':

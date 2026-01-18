@@ -1,6 +1,6 @@
 # Product Structure Guide
 
-Agentful supports **both** flat and hierarchical product structures with automatic detection. This guide explains how to use each format.
+agentful supports **both** flat and hierarchical product structures with automatic detection. This guide explains how to use each format.
 
 ## Quick Start
 

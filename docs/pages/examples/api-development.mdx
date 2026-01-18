@@ -54,160 +54,425 @@ A production-ready REST API for e-commerce platforms. Provides endpoints for use
 
 ## Features
 
-### Domain 1: Authentication & User Management
+<FEATURE_ORGANIZATION NOTE>
+This API demonstrates HIERARCHICAL structure optimized for REST services.
+Features organized by API resource domain:
+- .claude/product/domains/users/
+- .claude/product/domains/products/
+- .claude/product/domains/orders/
+This mirrors REST resource organization and scales for large APIs.
+</FEATURE_ORGANIZATION NOTE>
 
-#### 1.1 User Authentication - CRITICAL
+### Domain: Users
+
+#### User Registration - CRITICAL
 **Priority**: CRITICAL
-**Description**: JWT-based authentication with role-based access control
+**Description**: Register new customer accounts
 **User Stories**:
-- As a new user, I can register an account
+- As a new user, I can register an account with email and password
+**Acceptance Criteria**:
+- Passwords hashed with bcrypt (10 rounds)
+- Email must be unique
+- Default role: Customer
+- Returns JWT token on successful registration
+**API Endpoint**:
+- POST /api/auth/register
+**Implementation**:
+- Repository: UserRepository
+- Service: AuthService.register()
+- Controller: AuthController.register()
+- Validation: registerSchema
+- Middleware: None (public endpoint)
+
+#### User Login - CRITICAL
+**Priority**: CRITICAL
+**Description**: Authenticate users and issue JWT tokens
+**User Stories**:
 - As a registered user, I can login to receive a JWT token
 - As an authenticated user, I can access protected endpoints
 - As an admin, I have elevated permissions
 **Acceptance Criteria**:
-- Passwords hashed with bcrypt (10 rounds)
 - JWT tokens expire after 24 hours
 - Refresh tokens available (7 days)
 - Roles: Customer, Admin, SuperAdmin
-- Protected routes require valid JWT
+- Protected routes require valid JWT in Authorization header
 **API Endpoints**:
-- POST /api/auth/register
 - POST /api/auth/login
 - POST /api/auth/refresh
-- POST /api/auth/logout
-**Implementation Details**:
+**Implementation**:
 - Repository: UserRepository
-- Service: AuthService
-- Controller: AuthController
-- Middleware: authMiddleware, roleMiddleware
-- Validation: registerSchema, loginSchema
+- Service: AuthService.login()
+- Controller: AuthController.login()
+- Validation: loginSchema
+- Middleware: authMiddleware (for protected routes)
 
-#### 1.2 User Profile Management - MEDIUM
+#### User Logout - MEDIUM
 **Priority**: MEDIUM
-**Description**: Manage user account information
+**Description**: Invalidate user tokens
+**User Stories**:
+- As a logged-in user, I can logout securely
+**Acceptance Criteria**:
+- Add token to blacklist (or use short-lived tokens)
+- Clear client-side token storage
+**API Endpoint**:
+- POST /api/auth/logout
+**Implementation**:
+- Service: AuthService.logout()
+- Controller: AuthController.logout()
+
+#### View Profile - MEDIUM
+**Priority**: MEDIUM
+**Description**: Users can view their profile information
 **User Stories**:
 - As a user, I can view my profile information
-- As a user, I can update my account details
-- As an admin, I can view all user accounts
+**Acceptance Criteria**:
+- Returns user's name, email, role
+- Requires authentication
+**API Endpoint**:
+- GET /api/users/me
+**Implementation**:
+- Repository: UserRepository
+- Service: UserService.getProfile()
+- Controller: UserController.getProfile()
+- Middleware: authMiddleware
+
+#### Update Profile - LOW
+**Priority**: LOW
+**Description**: Users can update their account details
+**User Stories**:
+- As a user, I can update my name and email
 **Acceptance Criteria**:
 - Users can update name and email
 - Email changes require verification
-- Admin can list all users with pagination
-- Soft delete for user accounts
-**API Endpoints**:
-- GET /api/users/me
+- Email must remain unique
+**API Endpoint**:
 - PUT /api/users/me
-- GET /api/admin/users (admin only)
-- DELETE /api/admin/users/:id (admin only)
-**Implementation Details**:
+**Implementation**:
 - Repository: UserRepository
-- Service: UserService
-- Controller: UserController
+- Service: UserService.updateProfile()
+- Controller: UserController.updateProfile()
 - Validation: updateProfileSchema
+- Middleware: authMiddleware
 
-### Domain 2: Product & Catalog Management
+#### Admin: List All Users - LOW
+**Priority**: LOW
+**Description**: Admin can view all user accounts
+**User Stories**:
+- As an admin, I can view all user accounts with pagination
+**Acceptance Criteria**:
+- Admin can list all users with pagination
+- Shows email, name, role, created date
+- Requires Admin or SuperAdmin role
+**API Endpoint**:
+- GET /api/admin/users
+**Implementation**:
+- Repository: UserRepository
+- Service: UserService.listUsers()
+- Controller: UserController.listUsers()
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
 
-#### 2.1 Product Catalog - HIGH
+#### Admin: Delete User - LOW
+**Priority**: LOW
+**Description**: Admin can delete user accounts
+**User Stories**:
+- As an admin, I can delete user accounts
+**Acceptance Criteria**:
+- Soft delete for user accounts
+- Requires Admin or SuperAdmin role
+**API Endpoint**:
+- DELETE /api/admin/users/:id
+**Implementation**:
+- Repository: UserRepository
+- Service: UserService.deleteUser()
+- Controller: UserController.deleteUser()
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
+
+### Domain: Products
+
+#### List Products - HIGH
 **Priority**: HIGH
-**Description**: CRUD operations for products with categories and search
+**Description**: Browse and filter product catalog
 **User Stories**:
 - As a customer, I can browse all products
 - As a customer, I can search products by name
-- As a customer, I can filter products by category
-- As an admin, I can create, update, and delete products
+- As a customer, I can filter products by category and price
 **Acceptance Criteria**:
 - Products have name, description, price, stock, category
-- Pagination support (default 20 per page)
+- Pagination support (default 20 per page, max 100)
 - Full-text search on name and description
 - Category filtering
-- Price range filtering
-- Stock validation
+- Price range filtering (minPrice, maxPrice)
+- Sorting by price, name, createdAt
 **API Endpoints**:
 - GET /api/products (list with filters)
-- GET /api/products/:id (get one)
-- POST /api/products (admin only)
-- PUT /api/products/:id (admin only)
-- DELETE /api/products/:id (admin only)
-- GET /api/categories (list categories)
-**Implementation Details**:
-- Repository: ProductRepository, CategoryRepository
-- Service: ProductService
-- Controller: ProductController
-- Validation: productSchema, productQuerySchema
+- GET /api/products/search/:query
+**Implementation**:
+- Repository: ProductRepository
+- Service: ProductService.getProducts()
+- Controller: ProductController.getProducts()
+- Validation: productQuerySchema
 - Performance: Indexed database queries
 
-#### 2.2 Category Management - MEDIUM
-**Priority**: MEDIUM
-**Description**: Manage product categories
+#### Get Product Details - HIGH
+**Priority**: HIGH
+**Description**: View detailed information for a single product
 **User Stories**:
-- As an admin, I can create product categories
-- As an admin, I can update category details
+- As a customer, I can view detailed product information
+**Acceptance Criteria**:
+- Returns product with category details
+- 404 if product not found
+**API Endpoint**:
+- GET /api/products/:id
+**Implementation**:
+- Repository: ProductRepository
+- Service: ProductService.getProductById()
+- Controller: ProductController.getProductById()
+
+#### Admin: Create Product - HIGH
+**Priority**: HIGH
+**Description**: Admin can add new products to catalog
+**User Stories**:
+- As an admin, I can create new products
+**Acceptance Criteria**:
+- Requires Admin or SuperAdmin role
+- Stock validation (cannot be negative)
+- Price must be positive
+- Category must exist
+**API Endpoint**:
+- POST /api/products
+**Implementation**:
+- Repository: ProductRepository, CategoryRepository
+- Service: ProductService.createProduct()
+- Controller: ProductController.createProduct()
+- Validation: productSchema
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
+
+#### Admin: Update Product - HIGH
+**Priority**: HIGH
+**Description**: Admin can modify product information
+**User Stories**:
+- As an admin, I can update product details
+**Acceptance Criteria**:
+- Requires Admin or SuperAdmin role
+- Same validation as create
+**API Endpoint**:
+- PUT /api/products/:id
+**Implementation**:
+- Repository: ProductRepository, CategoryRepository
+- Service: ProductService.updateProduct()
+- Controller: ProductController.updateProduct()
+- Validation: productSchema
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
+
+#### Admin: Delete Product - MEDIUM
+**Priority**: MEDIUM
+**Description**: Admin can remove products from catalog
+**User Stories**:
+- As an admin, I can delete products
+**Acceptance Criteria**:
+- Requires Admin or SuperAdmin role
+- Check if product is referenced in orders (optionally prevent)
+**API Endpoint**:
+- DELETE /api/products/:id
+**Implementation**:
+- Repository: ProductRepository
+- Service: ProductService.deleteProduct()
+- Controller: ProductController.deleteProduct()
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
+
+#### List Categories - MEDIUM
+**Priority**: MEDIUM
+**Description**: View all product categories
+**User Stories**:
 - As a customer, I can browse products by category
 **Acceptance Criteria**:
+- Returns flat list or nested structure
+- Includes product count per category
+**API Endpoint**:
+- GET /api/categories
+**Implementation**:
+- Repository: CategoryRepository
+- Service: CategoryService.getCategories()
+- Controller: CategoryController.getCategories()
+
+#### Admin: Create Category - MEDIUM
+**Priority**: MEDIUM
+**Description**: Admin can create product categories
+**User Stories**:
+- As an admin, I can create product categories
+**Acceptance Criteria**:
+- Requires Admin or SuperAdmin role
 - Categories have name, description, parent category (optional)
 - Support nested categories (max 2 levels)
 - Soft delete for categories
-**API Endpoints**:
-- GET /api/categories
-- POST /api/categories (admin)
-- PUT /api/categories/:id (admin)
-- DELETE /api/categories/:id (admin)
-**Implementation Details**:
+**API Endpoint**:
+- POST /api/categories
+**Implementation**:
 - Repository: CategoryRepository
-- Service: CategoryService
-- Controller: CategoryController
+- Service: CategoryService.createCategory()
+- Controller: CategoryController.createCategory()
+- Validation: categorySchema
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
 
-### Domain 3: Order & Transaction Management
+#### Admin: Update Category - MEDIUM
+**Priority**: MEDIUM
+**Description**: Admin can modify category details
+**User Stories**:
+- As an admin, I can update category details
+**Acceptance Criteria**:
+- Requires Admin or SuperAdmin role
+**Cannot create circular references in parent category
+**API Endpoint**:
+- PUT /api/categories/:id
+**Implementation**:
+- Repository: CategoryRepository
+- Service: CategoryService.updateCategory()
+- Controller: CategoryController.updateCategory()
+- Validation: categorySchema
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
 
-#### 3.1 Order Processing - HIGH
+#### Admin: Delete Category - LOW
+**Priority**: LOW
+**Description**: Admin can remove categories
+**User Stories**:
+- As an admin, I can delete categories
+**Acceptance Criteria**:
+- Requires Admin or SuperAdmin role
+- Soft delete
+- Cannot delete if products reference it
+**API Endpoint**:
+- DELETE /api/categories/:id
+**Implementation**:
+- Repository: CategoryRepository
+- Service: CategoryService.deleteCategory()
+- Controller: CategoryController.deleteCategory()
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
+
+### Domain: Orders
+
+#### Create Order - HIGH
 **Priority**: HIGH
-**Description**: Create and manage customer orders with status tracking
+**Description**: Customers can create orders with multiple items
 **User Stories**:
 - As a customer, I can create an order with multiple items
-- As a customer, I can view my order history
-- As a customer, I can track order status
-- As an admin, I can update order status
 **Acceptance Criteria**:
 - Orders have multiple items (quantity, price at purchase)
-- Order status: Pending, Processing, Shipped, Delivered, Cancelled
 - Stock validation before order creation
 - Order total calculation
-- Customer can only see their own orders
-**API Endpoints**:
-- POST /api/orders (create order)
-- GET /api/orders (my orders - customer)
-- GET /api/orders/:id (order details)
-- GET /api/admin/orders (all orders - admin)
-- PATCH /api/admin/orders/:id/status (update status - admin)
-**Implementation Details**:
-- Repository: OrderRepository, OrderItemRepository
-- Service: OrderService
-- Controller: OrderController
-- Validation: createOrderSchema, updateOrderStatusSchema
+- Atomic transaction (all items succeed or all fail)
+**API Endpoint**:
+- POST /api/orders
+**Implementation**:
+- Repository: OrderRepository, OrderItemRepository, ProductRepository
+- Service: OrderService.createOrder()
+- Controller: OrderController.createOrder()
+- Validation: createOrderSchema
 - Business Logic: Transaction handling for stock updates
+- Middleware: authMiddleware
 
-#### 3.2 Payment Integration - LOW
+#### View My Orders - HIGH
+**Priority**: HIGH
+**Description**: Customers can view their order history
+**User Stories**:
+- As a customer, I can view my order history
+**Acceptance Criteria**:
+- Customer can only see their own orders
+- Pagination support
+- Ordered by date descending
+**API Endpoint**:
+- GET /api/orders
+**Implementation**:
+- Repository: OrderRepository
+- Service: OrderService.getCustomerOrders()
+- Controller: OrderController.getCustomerOrders()
+- Middleware: authMiddleware
+
+#### View Order Details - HIGH
+**Priority**: HIGH
+**Description**: View detailed information for a specific order
+**User Stories**:
+- As a customer, I can view detailed order information
+**Acceptance Criteria**:
+- Customer can only view their own orders
+- Includes all order items with product details
+**API Endpoint**:
+- GET /api/orders/:id
+**Implementation**:
+- Repository: OrderRepository
+- Service: OrderService.getOrderById()
+- Controller: OrderController.getOrderById()
+- Middleware: authMiddleware
+
+#### Admin: List All Orders - MEDIUM
+**Priority**: MEDIUM
+**Description**: Admin can view all orders
+**User Stories**:
+- As an admin, I can view all orders
+**Acceptance Criteria**:
+- Requires Admin or SuperAdmin role
+- Filter by status, customer, date range
+- Pagination support
+**API Endpoint**:
+- GET /api/admin/orders
+**Implementation**:
+- Repository: OrderRepository
+- Service: OrderService.getAllOrders()
+- Controller: OrderController.getAllOrders()
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
+
+#### Admin: Update Order Status - MEDIUM
+**Priority**: MEDIUM
+**Description**: Admin can update order status
+**User Stories**:
+- As an admin, I can update order status
+**Acceptance Criteria**:
+- Requires Admin or SuperAdmin role
+- Order status: Pending, Processing, Shipped, Delivered, Cancelled
+- Status transition validation
+**API Endpoint**:
+- PATCH /api/admin/orders/:id/status
+**Implementation**:
+- Repository: OrderRepository
+- Service: OrderService.updateOrderStatus()
+- Controller: OrderController.updateOrderStatus()
+- Validation: updateOrderStatusSchema
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
+
+#### Process Payment - LOW
 **Priority**: LOW
 **Description**: Integrate payment processing (placeholder)
 **User Stories**:
 - As a customer, I can add payment info to orders
-- As an admin, I can process refunds
 **Acceptance Criteria**:
 - Support for Stripe/PayPal integration
 - Payment status tracking
 - Webhook handling for payment updates
 **API Endpoints**:
 - POST /api/orders/:id/payment
-- POST /api/orders/:id/refund (admin)
 - POST /api/webhooks/payments
-**Implementation Details**:
+**Implementation**:
 - Service: PaymentService (adapter pattern)
 - Controller: PaymentController
 - Validation: paymentSchema
 
-### Domain 4: Developer Experience
+#### Process Refund - LOW
+**Priority**: LOW
+**Description**: Admin can process refunds
+**User Stories**:
+- As an admin, I can process refunds
+**Acceptance Criteria**:
+- Requires Admin or SuperAdmin role
+- Restores stock if applicable
+**API Endpoint**:
+- POST /api/orders/:id/refund
+**Implementation**:
+- Service: PaymentService
+- Controller: PaymentController
+- Middleware: authMiddleware, roleMiddleware(['ADMIN', 'SUPERADMIN'])
 
-#### 4.1 API Documentation - MEDIUM
+### Domain: Developer Experience
+
+#### API Documentation - MEDIUM
 **Priority**: MEDIUM
 **Description**: Self-documenting API with Swagger
 **User Stories**:
@@ -418,17 +683,53 @@ shopapi/
 
 ### Final State
 
+**Hierarchical PRODUCT.md Structure**:
 ```
 shopapi/
 ├── .claude/
 │   ├── agents/
 │   ├── commands/
-│   └── skills/
+│   ├── skills/
+│   └── product/
+│       ├── overview.md          # Project overview, tech stack
+│       ├── domains/             # HIERARCHICAL: Organized by API resource
+│       │   ├── users/
+│       │   │   ├── index.md     # Users domain overview
+│       │   │   ├── registration.md
+│       │   │   ├── login.md
+│       │   │   ├── logout.md
+│       │   │   ├── view-profile.md
+│       │   │   ├── update-profile.md
+│       │   │   ├── list-users.md
+│       │   │   └── delete-user.md
+│       │   ├── products/
+│       │   │   ├── index.md     # Products domain overview
+│       │   │   ├── list-products.md
+│       │   │   ├── get-product.md
+│       │   │   ├── create-product.md
+│       │   │   ├── update-product.md
+│       │   │   ├── delete-product.md
+│       │   │   ├── list-categories.md
+│       │   │   ├── create-category.md
+│       │   │   ├── update-category.md
+│       │   │   └── delete-category.md
+│       │   ├── orders/
+│       │   │   ├── index.md     # Orders domain overview
+│       │   │   ├── create-order.md
+│       │   │   ├── view-orders.md
+│       │   │   ├── view-order-details.md
+│       │   │   ├── list-all-orders.md
+│       │   │   ├── update-status.md
+│       │   │   ├── process-payment.md
+│       │   │   └── process-refund.md
+│       │   └── developer-experience/
+│       │       └── api-documentation.md
+│       ├── non-functional.md    # Performance, security, etc.
+│       └── database-schema.md   # Prisma schema
 ├── .agentful/
 │   ├── state.json
 │   ├── completion.json
 │   └── decisions.json
-├── PRODUCT.md
 ├── CLAUDE.md
 ├── prisma/
 │   ├── schema.prisma
@@ -444,19 +745,24 @@ shopapi/
 │   │   └── rate-limit.ts        # Rate limiting config
 │   ├── controllers/             # Request handlers
 │   │   ├── auth.controller.ts
+│   │   ├── user.controller.ts
 │   │   ├── product.controller.ts
+│   │   ├── category.controller.ts
 │   │   ├── order.controller.ts
-│   │   └── category.controller.ts
+│   │   └── payment.controller.ts
 │   ├── services/                # Business logic
 │   │   ├── auth.service.ts
+│   │   ├── user.service.ts
 │   │   ├── product.service.ts
+│   │   ├── category.service.ts
 │   │   ├── order.service.ts
-│   │   └── category.service.ts
+│   │   └── payment.service.ts
 │   ├── repositories/            # Data access
 │   │   ├── user.repository.ts
 │   │   ├── product.repository.ts
+│   │   ├── category.repository.ts
 │   │   ├── order.repository.ts
-│   │   └── category.repository.ts
+│   │   └── order-item.repository.ts
 │   ├── middleware/              # Express middleware
 │   │   ├── auth.middleware.ts
 │   │   ├── role.middleware.ts
@@ -465,16 +771,21 @@ shopapi/
 │   ├── routes/                  # Route definitions
 │   │   ├── index.ts
 │   │   ├── auth.routes.ts
+│   │   ├── user.routes.ts
 │   │   ├── product.routes.ts
+│   │   ├── category.routes.ts
 │   │   ├── order.routes.ts
-│   │   └── category.routes.ts
+│   │   └── payment.routes.ts
 │   ├── schemas/                 # Zod validation schemas
 │   │   ├── auth.schema.ts
+│   │   ├── user.schema.ts
 │   │   ├── product.schema.ts
+│   │   ├── category.schema.ts
 │   │   ├── order.schema.ts
-│   │   └── category.schema.ts
+│   │   └── payment.schema.ts
 │   ├── types/                   # TypeScript types
 │   │   ├── auth.types.ts
+│   │   ├── user.types.ts
 │   │   ├── product.types.ts
 │   │   ├── order.types.ts
 │   │   └── express.d.ts         # Extended Express types
@@ -489,15 +800,19 @@ shopapi/
 │   ├── unit/
 │   │   ├── services/
 │   │   │   ├── auth.service.test.ts
+│   │   │   ├── user.service.test.ts
 │   │   │   ├── product.service.test.ts
-│   │   │   └── order.service.test.ts
+│   │   │   ├── order.service.test.ts
+│   │   │   └── payment.service.test.ts
 │   │   └── repositories/
 │   │       └── product.repository.test.ts
 │   ├── integration/
 │   │   ├── api/
 │   │   │   ├── auth.test.ts
+│   │   │   ├── users.test.ts
 │   │   │   ├── products.test.ts
-│   │   │   └── orders.test.ts
+│   │   │   ├── orders.test.ts
+│   │   │   └── payments.test.ts
 │   │   └── database/
 │   │       └── transactions.test.ts
 │   └── fixtures/
@@ -513,6 +828,14 @@ shopapi/
 ├── package.json
 └── tsconfig.json
 ```
+
+**Why Hierarchical for APIs?**
+For REST APIs, organizing features by resource domain (users, products, orders) is ideal:
+- Mirrors REST resource organization
+- Each domain = logical API resource group
+- Easy to assign different teams to different resources
+- Scales to dozens of endpoints without confusion
+- Clear separation of concerns (e.g., user domain handles all /api/users/* endpoints)
 
 **File Count**: 87 files
 **Lines of Code**: ~6,200 lines
@@ -549,8 +872,8 @@ npm install -D eslint prettier
 # Initialize TypeScript
 npx tsc --init
 
-# Initialize Agentful
-npx agentful init
+# Initialize agentful
+npx @itz4blitz/agentful init
 ```
 
 #### Configure TypeScript
@@ -604,7 +927,7 @@ npx agentful init
 
 ### Phase 2: Clean Architecture Implementation
 
-Agentful strictly follows the layered architecture pattern. Here's how it implements each layer:
+agentful strictly follows the layered architecture pattern. Here's how it implements each layer:
 
 #### Layer 1: Repository Layer (Data Access)
 
@@ -1118,7 +1441,7 @@ export default router;
 
 ### Phase 3: Comprehensive Testing
 
-Agentful achieves 91% test coverage through unit and integration tests.
+agentful achieves 91% test coverage through unit and integration tests.
 
 #### Unit Tests
 
@@ -1812,7 +2135,7 @@ await prisma.$transaction(async (tx) => {
 
 ## Conclusion
 
-This API service demonstrates Agentful's ability to:
+This API service demonstrates agentful's ability to:
 
 - Build production-grade backends
 - Follow clean architecture principles

@@ -1,14 +1,16 @@
-# Agentful Product Development
+# agentful Product Development
 
-This project uses **Agentful** for autonomous product development.
+This project uses **agentful** for autonomous product development.
 
 ## Quick Start
 
-1. Edit `PRODUCT.md` with your product requirements
+1. Edit your product specification:
+   - **Flat structure** (recommended for beginners): Edit `PRODUCT.md` at project root
+   - **Hierarchical structure** (for larger projects): Edit files in `.claude/product/`
 2. Run: `claude`
 3. Type: `/agentful-start`
 
-That's it. Agentful will begin autonomous development.
+That's it. agentful will begin autonomous development.
 
 ## For 24/7 Development
 
@@ -28,7 +30,7 @@ claude --dangerously-skip-permissions
 
 ## Agents
 
-Agentful uses specialized agents that work together:
+agentful uses specialized agents that work together:
 
 | Agent | Purpose |
 |-------|---------|
@@ -51,7 +53,21 @@ Progress is tracked in `.agentful/`:
 
 ## Product Specification
 
-Your product is defined in `PRODUCT.md`. This file contains:
+Your product is defined in one of two formats:
+
+### Flat Structure (Recommended for Beginners)
+
+- **Location**: `PRODUCT.md` at project root
+- **Format**: Single file with all features
+- **Best for**: Small projects, MVPs, quick prototypes
+
+### Hierarchical Structure (For Larger Projects)
+
+- **Location**: `.claude/product/` directory
+- **Format**: Multiple files organized by domain
+- **Best for**: Large projects, teams, complex products
+
+The system auto-detects which format you're using. Both formats contain:
 
 - Overview and goals
 - Tech stack decisions
@@ -59,11 +75,31 @@ Your product is defined in `PRODUCT.md`. This file contains:
 - Acceptance criteria
 - Architecture notes
 
+### Choosing the Right Structure
+
+**Start with flat structure if:**
+- You're new to agentful
+- Building an MVP or prototype
+- Project has less than 20 features
+- Working alone or in a small team
+
+**Use hierarchical structure if:**
+- Project has 20+ features across multiple domains
+- Multiple team members need to edit specs simultaneously
+- You need better organization for complex projects
+- Your PRODUCT.md file is getting too long (500+ lines)
+
+### Migrating Between Formats
+
+You can start with flat and migrate to hierarchical as your project grows. See the migration guide in your product specification file for detailed instructions.
+
+The system auto-detects format changes automatically - no configuration needed!
+
 ## How It Works
 
 ```mermaid
 flowchart LR
-    Start([🚀 Initialize<br/>npx agentful init]) --> Define[📝 Define Product<br/>Edit PRODUCT.md]
+    Start([🚀 Initialize<br/>npx @itz4blitz/agentful init]) --> Define[📝 Define Product<br/>Edit PRODUCT.md]
     Define --> Build[⚡ Start Building<br/>/agentful-start]
     Build --> Loop{🔄 24/7 Development Loop}
 
@@ -112,17 +148,17 @@ Code must pass all gates before completion:
 
 ## Decision Handling
 
-When Agentful needs your input:
+When agentful needs your input:
 
 1. Question is added to `decisions.json`
 2. Development continues on unblocked features
 3. Run `/agentful-decide` to answer
-4. Agentful resumes blocked work
+4. agentful resumes blocked work
 
 ## Tech Stack Auto-Detection
 
-Agentful automatically detects your tech stack from:
-- `PRODUCT.md` - Explicit tech stack section
+agentful automatically detects your tech stack from:
+- Product specification (`PRODUCT.md` or `.claude/product/index.md`) - Explicit tech stack section
 - `package.json` - Dependencies and frameworks
 - Existing code - File patterns and imports
 
@@ -133,16 +169,16 @@ It then generates specialized agents for your specific stack.
 ```
 You: /agentful-start
 
-Agentful: Detected Next.js + TypeScript + Prisma + Tailwind
+agentful: Detected Next.js + TypeScript + Prisma + Tailwind
          → Generated nextjs-agent, prisma-agent, tailwind-agent
 
-Agentful: Starting work on authentication (priority: CRITICAL)
+agentful: Starting work on authentication (priority: CRITICAL)
          → @backend implementing JWT service
          → @backend implementing login API route
          → @frontend creating login page
          → @tester writing auth tests
 
-Agentful: Running validation...
+agentful: Running validation...
          → TypeScript: ✅
          → Lint: ✅
          → Tests: ✅
@@ -150,7 +186,7 @@ Agentful: Running validation...
          → Dead code: ✅
          → Security: ✅
 
-Agentful: Authentication complete (100%)
+agentful: Authentication complete (100%)
          Next: User profile feature...
 
 [Continues 24/7 until complete]
@@ -166,10 +202,10 @@ All agents and commands can be customized in `.claude/`:
 
 ## Getting Help
 
-If Agentful gets stuck:
+If agentful gets stuck:
 
 1. Run `/agentful-status` to see current state
-2. Check `PRODUCT.md` for unclear requirements
+2. Check your product specification (`PRODUCT.md` or `.claude/product/`) for unclear requirements
 3. Run `/agentful-decide` if decisions are pending
 4. Run `/agentful-validate` to check for issues
 
@@ -177,9 +213,12 @@ If Agentful gets stuck:
 
 ```
 .your-project/
-├── PRODUCT.md              # Your product spec (you edit this)
+├── PRODUCT.md              # Your product spec - flat structure (you edit this)
 ├── CLAUDE.md               # This file
-├── .claude/                # Agentful configuration
+├── .claude/                # agentful configuration
+│   ├── product/            # Product spec - hierarchical structure (alternative)
+│   │   ├── index.md        # Product overview
+│   │   └── domains/        # Domain-specific specs
 │   ├── agents/             # Specialized agents
 │   ├── commands/           # Slash commands
 │   ├── skills/             # Domain skills
@@ -189,9 +228,11 @@ If Agentful gets stuck:
 │   ├── completion.json
 │   ├── decisions.json
 │   └── architecture.json
-└── src/                    # Your code (generated by Agentful)
+└── src/                    # Your code (generated by agentful)
 ```
+
+**Note**: You can use either `PRODUCT.md` (flat) or `.claude/product/` (hierarchical). agentful auto-detects which format you're using.
 
 ---
 
-**Agentful** - Autonomous product development with Claude Code
+**agentful** - Autonomous product development with Claude Code

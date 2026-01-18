@@ -1,6 +1,6 @@
 # Workflow Configuration
 
-Agentful workflows are defined as slash commands. You can customize existing commands, create new workflows, and integrate with your development processes.
+agentful workflows are defined as slash commands. You can customize existing commands, create new workflows, and integrate with your development processes.
 
 ## Command Structure
 
@@ -38,7 +38,7 @@ name: agentful-start
 description: Start or resume autonomous development with custom workflow
 ---
 
-# Agentful Start
+# agentful Start
 
 ## Custom Startup Sequence
 
@@ -84,14 +84,14 @@ name: agentful-status
 description: Display detailed project status with custom metrics
 ---
 
-# Agentful Status
+# agentful Status
 
 ## Display Format
 
 ### Progress Overview
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-           Agentful Development Status
+           agentful Development Status
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Progress: [████████████░░░░░░░░] 60%
@@ -436,7 +436,7 @@ Add to `package.json`:
 {
   "scripts": {
     "prepare": "husky install",
-    "pre-commit": "echo 'Running Agentful pre-commit checks' && claude /pre-commit || exit 1"
+    "pre-commit": "echo 'Running agentful pre-commit checks' && claude /pre-commit || exit 1"
   }
 }
 ```
@@ -447,7 +447,7 @@ Or use `.husky/pre-commit`:
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# Run Agentful pre-commit checks
+# Run agentful pre-commit checks
 npx agentful pre-commit
 
 # Exit on failure
@@ -464,7 +464,7 @@ fi
 Create `.github/workflows/agentful.yml`:
 
 ```yaml
-name: Agentful Validation
+name: agentful Validation
 
 on:
   pull_request:
@@ -485,9 +485,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run Agentful validation
+      - name: Run agentful validation
         run: |
-          npx agentful init --bare
+          npx @itz4blitz/agentful init --bare
           npx agentful validate
 
       - name: Upload validation report
@@ -511,7 +511,7 @@ agentful-validation:
 
   script:
     - npm ci
-    - npx agentful init --bare
+    - npx @itz4blitz/agentful init --bare
     - npx agentful validate
 
   artifacts:
@@ -579,7 +579,7 @@ Run all quality checks
 
 User: `/feature user-profile`
 
-Agentful:
+agentful:
 1. Reads user-profile from PRODUCT.md
 2. Creates feature branch feature/user-profile
 3. Implements all requirements
@@ -659,7 +659,7 @@ If tests fail at any point:
 
 User: `/refactor Extract user service logic`
 
-Agentful:
+agentful:
 1. Reads current user service code
 2. Identifies extraction points
 3. Creates new service modules
@@ -735,7 +735,7 @@ npm run deploy:prod
 
 User: `/hotfix Users cannot login due to auth token error`
 
-Agentful:
+agentful:
 1. Identifies auth token bug
 2. Creates minimal fix
 3. Runs type check

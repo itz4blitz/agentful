@@ -1,17 +1,17 @@
 ---
 title: Smart Orchestration
-description: How Agentful classifies work and routes to appropriate workflows automatically
+description: How agentful classifies work and routes to appropriate workflows automatically
 ---
 
-# Agentful Smart Orchestration
+# agentful Smart Orchestration
 
 ## Overview
 
-Agentful has been enhanced with **smart work classification** and **self-improvement capabilities**. Users can now simply talk to Claude, and Agentful will automatically:
+agentful has been enhanced with **smart work classification** and **self-improvement capabilities**. Users can now simply talk to Claude, and agentful will automatically:
 
 1. **Classify the work type** (feature, bugfix, enhancement, refactor, meta-work, maintenance)
 2. **Route to the appropriate workflow** (autonomous loop vs one-off task)
-3. **Detect context** (working on Agentful itself vs user project)
+3. **Detect context** (working on agentful itself vs user project)
 4. **Self-improve** (agents can recognize limitations and improve themselves)
 
 ## Key Changes
@@ -28,14 +28,14 @@ The orchestrator now classifies user requests into 8 work types:
 | **BUGFIX** | "Fix [bug/error]" | Quick fix → Test → Validate | ❌ No |
 | **ENHANCEMENT** | "Add [X] to [Y]" / "enhance" | Enhance → Test → Validate | ❌ No |
 | **REFACTOR** | "Refactor/improve [code]" | Refactor → Test → Validate | ❌ No |
-| **META_WORK** | "Add agent/command" (Agentful only) | Meta-development | ❌ No |
+| **META_WORK** | "Add agent/command" (agentful only) | Meta-development | ❌ No |
 | **MAINTENANCE** | "Update deps/security" | Maintenance workflow | ❌ No |
-| **IMPROVE_AGENTS** | "Improve agent" (Agentful only) | Self-improvement | ❌ No |
-| **UPDATE_SKILLS** | "Update skill" (Agentful only) | Skill update | ❌ No |
+| **IMPROVE_AGENTS** | "Improve agent" (agentful only) | Self-improvement | ❌ No |
+| **UPDATE_SKILLS** | "Update skill" (agentful only) | Skill update | ❌ No |
 
 **Added: Context Detection**
 
-The orchestrator now detects if it's working in the Agentful repository itself:
+The orchestrator now detects if it's working in the agentful repository itself:
 
 ```bash
 if exists(".claude/agents/orchestrator.md") AND
@@ -48,7 +48,7 @@ else:
     capabilities = ["feature_development", "bugfixes", "enhancements"]
 ```
 
-This enables **dogfooding** - Agentful can improve itself!
+This enables **dogfooding** - agentful can improve itself!
 
 ### 2. Agent Self-Improvement System
 
@@ -86,15 +86,15 @@ This enables **dogfooding** - Agentful can improve itself!
 
 ### 3. Framework Update Detection
 
-Agentful now detects when it's been updated (via `npm update` or pulling latest):
+agentful now detects when it's been updated (via `npm update` or pulling latest):
 
 **Workflow:**
 
 1. Calculate checksums of all agents/skills/commands
 2. Compare with stored checksums
 3. If checksums differ:
-   - **In Agentful repo**: User made changes intentionally
-   - **In user project**: Agentful was updated, offer to regenerate specialized agents
+   - **In agentful repo**: User made changes intentionally
+   - **In user project**: agentful was updated, offer to regenerate specialized agents
 
 ### 4. Enhanced /agentful-start Command
 
@@ -155,11 +155,11 @@ Orchestrator:
 - Updated: completion.json auth.score = 100
 - Continuing to next feature...
 
-# Maintainer (you) working on Agentful itself
-User: Add a deployment command to Agentful
+# Maintainer (you) working on agentful itself
+User: Add a deployment command to agentful
 
 Orchestrator:
-- Context: Working in Agentful repository
+- Context: Working in agentful repository
 - Classified as: META_WORK → ADD_COMMAND
 - [Create] .claude/commands/agentful-deploy.md
 - [Update] bin/cli.js to register command
@@ -210,8 +210,8 @@ Orchestrator:
 1. Recognize their own limitations
 2. Suggest improvements to themselves
 3. Suggest improvements to other agents
-4. Modify themselves (when in Agentful repo)
-5. Modify other agents (when in Agentful repo)
+4. Modify themselves (when in agentful repo)
+5. Modify other agents (when in agentful repo)
 6. Detect when the framework is updated
 
 ## Examples
@@ -246,10 +246,10 @@ Continuing to next feature...
 ### Example 3: Framework Meta-Development
 
 ```
-User (in Agentful repo): Add a database migration agent
+User (in agentful repo): Add a database migration agent
 
 Claude/Orchestrator:
-- Context: Agentful repository
+- Context: agentful repository
 - Work type: META_WORK → ADD_AGENT
 - Creating .claude/agents/database-migrations.md
 - Updating orchestrator.md
@@ -299,16 +299,16 @@ Orchestrator (on next loop):
 
 ### For Maintainers
 
-**When working on Agentful itself:**
+**When working on agentful itself:**
 
 ```bash
-# Can now use Agentful to improve Agentful
+# Can now use agentful to improve agentful
 "Add a deploy command" → Creates command, updates CLI, tests
 "Improve the backend agent" → Updates agent.md, tests
 "Add an accessibility gate" → Updates validation skill
 ```
 
-**Agentful is now self-improving:**
+**agentful is now self-improving:**
 - Agents recognize limitations
 - Agents suggest improvements
 - Orchestrator implements improvements
@@ -320,7 +320,7 @@ Orchestrator (on next loop):
 
 1. **Test the new workflows:**
    ```bash
-   # In Agentful repo
+   # In agentful repo
    "Add a /agentful-deploy command"
    → Should create command, update CLI, document
 
@@ -328,10 +328,10 @@ Orchestrator (on next loop):
    → Should update tester.md, test improvement
    ```
 
-2. **Create Agentful's own PRODUCT.md:**
+2. **Create agentful's own PRODUCT.md:**
    - For dogfooding the framework
-   - Track Agentful's features (commands, agents, skills)
-   - Use Agentful to build Agentful
+   - Track agentful's features (commands, agents, skills)
+   - Use agentful to build agentful
 
 3. **Test self-improvement:**
    - Have an agent encounter a limitation
@@ -348,7 +348,7 @@ Orchestrator (on next loop):
 
 **What changed:**
 - ✅ Orchestrator now classifies work type (feature/bugfix/enhance/refactor/meta)
-- ✅ Orchestrator detects context (Agentful repo vs user project)
+- ✅ Orchestrator detects context (agentful repo vs user project)
 - ✅ Agents can self-improve (recognize limitations, suggest improvements)
 - ✅ Framework detects updates (checksums of agents/skills)
 - ✅ /agentful-start accepts user requests for classification
@@ -362,7 +362,7 @@ Orchestrator (on next loop):
 - ✅ Same validation gates
 
 **The result:**
-- Users just talk to Claude, Agentful figures out the rest
-- Maintainer can use Agentful to improve Agentful
+- Users just talk to Claude, agentful figures out the rest
+- Maintainer can use agentful to improve agentful
 - Framework is self-aware and self-improving
 - Minimal slash commands, maximum intelligence

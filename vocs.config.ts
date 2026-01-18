@@ -1,17 +1,27 @@
 import { defineConfig } from 'vocs'
 
 export default defineConfig({
-  title: 'Agentful',
+  title: 'agentful',
   description: 'Autonomous product development kit for Claude Code. Transform any project into a 24/7 self-building system with specialized agents.',
 
-  icon: '/logo.svg',
+  icon: '/assets/agentful.jpeg',
   logo: {
-    light: '/logo-light.svg',
-    dark: '/logo-dark.svg',
+    light: '/assets/agentful.jpeg',
+    dark: '/assets/agentful.jpeg',
   },
 
   url: 'https://agentful.app',
-  github: 'https://github.com/itz4blitz/agentful',
+
+  editLink: 'https://github.com/itz4blitz/agentful/edit/main/docs',
+
+  socials: [
+    {
+      icon: 'github',
+      link: 'https://github.com/itz4blitz/agentful',
+    },
+  ],
+
+  ogImageUrl: 'https://agentful.app/assets/agentful.jpeg',
 
   sidebar: {
     '/': [
@@ -60,6 +70,7 @@ export default defineConfig({
         text: 'Commands',
         items: [
           { text: 'Commands Overview', link: '/commands' },
+          { text: 'agentful', link: '/commands/agentful' },
           { text: 'agentful-start', link: '/commands/agentful-start' },
           { text: 'agentful-status', link: '/commands/agentful-status' },
           { text: 'agentful-decide', link: '/commands/agentful-decide' },
@@ -133,10 +144,10 @@ export default defineConfig({
   ],
 
   theme: {
-    accentColor: '#0ea5e9',
+    accentColor: '#10b981', // Green instead of blue
   },
 
-  footer: {
-    copyright: `© ${new Date().getFullYear()} Agentful. Built with Vocs.`,
-  },
+  head: [
+    '<link rel="stylesheet" href="/custom.css">',
+  ],
 })

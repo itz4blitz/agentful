@@ -13,7 +13,7 @@ You are the **Architect Agent**. Your job is to understand the project's pattern
 
 ### 1. Analyze the Project
 
-**For NEW projects** (just ran `npx agentful init`):
+**For NEW projects** (just ran `npx @itz4blitz/agentful init`):
 1. Read `product/index.md` to understand what they want to build
 2. Ask user: "What tech stack are you using?" (add to decisions.json if needed)
 3. Once tech stack is known, generate agents
@@ -262,7 +262,7 @@ Create/update `.agentful/architecture.json`:
 ## When to Run
 
 You are invoked by the orchestrator when:
-1. Agentful is first initialized on an existing project
+1. agentful is first initialized on an existing project
 2. product/index.md tech stack changes significantly
 3. Orchestrator notices patterns don't match current agents
 
@@ -443,4 +443,4 @@ Unlike static tools, you can:
 - **Handle edge cases** - Every project is unique
 - **Adapt over time** - Re-analyze as project evolves
 
-This is what makes Agentful special - we use Claude's intelligence, not hardcoded rules!
+This is what makes agentful special - we use Claude's intelligence, not hardcoded rules!

@@ -1,13 +1,13 @@
 
 # CLI Reference
 
-Complete reference for all Agentful CLI commands, options, and outputs.
+Complete reference for all agentful CLI commands, options, and outputs.
 
 ## Installation
 
 ```bash
 # Local installation
-npx agentful init
+npx @itz4blitz/agentful init
 
 # Global installation
 npm install -g @itz4blitz/agentful
@@ -17,7 +17,7 @@ npm install -g @itz4blitz/agentful
 
 ### `agentful init`
 
-Initialize Agentful in the current directory.
+Initialize agentful in the current directory.
 
 #### Usage
 
@@ -82,7 +82,7 @@ Initializing state files...
   ✓ Created PRODUCT.md
 Added .agentful/ to .gitignore
 
-✅ Agentful initialized successfully!
+✅ agentful initialized successfully!
 
 Next steps:
   1. Edit PRODUCT.md with your product specification
@@ -183,13 +183,13 @@ Next Actions:
 #### Error Cases
 
 ```
-❌ Agentful not initialized in this directory!
-Run: npx agentful init
+❌ agentful not initialized in this directory!
+Run: npx @itz4blitz/agentful init
 ```
 
 ```
 ❌ State file missing!
-Run: npx agentful init
+Run: npx @itz4blitz/agentful init
 ```
 
 #### Complete Output Example
@@ -254,7 +254,7 @@ USAGE:
   agentful <command>
 
 COMMANDS:
-  init         Initialize Agentful in current directory
+  init         Initialize agentful in current directory
   init --bare  Skip creating templates (just .claude/)
   status      Show current development progress
   --help       Show this help message
@@ -273,7 +273,7 @@ FOR 24/7 DEVELOPMENT:
 
 ### `agentful --version`
 
-Display Agentful version.
+Display agentful version.
 
 #### Usage
 
@@ -285,7 +285,7 @@ agentful -v
 #### Output
 
 ```
-Agentful v1.0.0
+agentful v1.0.0
 ```
 
 ---
@@ -305,7 +305,7 @@ Agentful v1.0.0
 
 | File | Purpose | Created By |
 |------|---------|------------|
-| `.claude/` | Agentful configuration | `agentful init` |
+| `.claude/` | agentful configuration | `agentful init` |
 | `.agentful/state.json` | Current state | `agentful init` |
 | `.agentful/completion.json` | Progress tracking | `agentful init` |
 | `.agentful/decisions.json` | Decision tracking | `agentful init` |
@@ -320,7 +320,7 @@ Agentful v1.0.0
 
 ### Directory Permissions
 
-Agentful requires:
+agentful requires:
 - Read access to current directory
 - Write access to create `.claude/` and `.agentful/`
 - Write access to update `.gitignore`
@@ -345,7 +345,7 @@ The CLI uses ANSI colors for better readability:
 
 ## Version Compatibility
 
-### Agentful Version
+### agentful Version
 
 Current version: **1.0.0**
 
@@ -371,7 +371,7 @@ node --version
 
 | Command | Purpose | Common Use Case |
 |---------|---------|-----------------|
-| `agentful init` | Start new project | Creating new Agentful project |
+| `agentful init` | Start new project | Creating new agentful project |
 | `agentful init --bare` | Config only | Adding to existing project |
 | `agentful status` | Check progress | See what's done/in progress |
 | `agentful --help` | Get help | Remember command syntax |
@@ -385,7 +385,7 @@ node --version
 
 ```bash
 # Use npx instead
-npx agentful init
+npx @itz4blitz/agentful init
 
 # Or install globally
 npm install -g @itz4blitz/agentful
@@ -440,7 +440,7 @@ agentful init --bare
 ### With CI/CD
 
 ```bash
-# Check Agentful status in CI
+# Check agentful status in CI
 - run: agentful status
 
 # Validate completion percentage

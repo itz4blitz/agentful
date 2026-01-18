@@ -1,6 +1,6 @@
 # GitHub Actions Workflows
 
-This directory contains automated deployment workflows for Agentful.
+This directory contains automated deployment workflows for agentful.
 
 ## Workflows
 

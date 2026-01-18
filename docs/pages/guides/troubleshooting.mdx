@@ -1,12 +1,12 @@
 ---
 title: "Troubleshooting Guide"
-description: "Solve common Agentful issues with step-by-step solutions"
+description: "Solve common agentful issues with step-by-step solutions"
 sidebar_position: 3
 ---
 
 # Troubleshooting Guide
 
-Agentful usually runs smoothly, but when issues arise, this guide helps you diagnose and resolve them quickly.
+agentful usually runs smoothly, but when issues arise, this guide helps you diagnose and resolve them quickly.
 
 ---
 
@@ -15,7 +15,7 @@ Agentful usually runs smoothly, but when issues arise, this guide helps you diag
 Before diving into specific issues, run these checks:
 
 ```bash
-# 1. Check Agentful state
+# 1. Check agentful state
 /agentful-status
 
 # 2. Check validation status
@@ -32,7 +32,7 @@ npm test
 ```
 
 **This tells you**:
-- Where Agentful is stuck
+- Where agentful is stuck
 - What's failing validation
 - If decisions are blocking progress
 - If there are basic code issues
@@ -41,7 +41,7 @@ npm test
 
 ## Common Issues by Category
 
-## Category 1: Agentful Seems Stuck
+## Category 1: agentful Seems Stuck
 
 ### Symptom 1.1: No Progress After Many Iterations
 
@@ -95,7 +95,7 @@ cat .agentful/decisions.json | jq '.pending'
 Option 1: JWT (stateless, scalable)
 ```
 
-Agentful will resume immediately.
+agentful will resume immediately.
 
 ---
 
@@ -151,7 +151,7 @@ Coverage at 77%, needs 80%
 [Stuck here]
 ```
 
-**Why**: Agentful adding tests but not enough
+**Why**: agentful adding tests but not enough
 
 **Fix**: Identify uncovered code
 ```bash
@@ -161,7 +161,7 @@ npm test -- --coverage --reporters=json
 
 **Manual intervention**: Add critical tests yourself
 ```bash
-# Let Agentful handle easy tests, you write complex ones
+# Let agentful handle easy tests, you write complex ones
 # Then re-run:
 /agentful-validate
 ```
@@ -176,7 +176,7 @@ Edit `.claude/agents/reviewer.md`:
 
 ---
 
-#### Cause C: Type Errors Agentful Can't Resolve
+#### Cause C: Type Errors agentful Can't Resolve
 
 **Symptom**: Same type error appears repeatedly
 
@@ -213,11 +213,11 @@ interface Session {
 
 ### Solution 1.3: Unclear PRODUCT.md
 
-**If Agentful keeps reading PRODUCT.md but not building**:
+**If agentful keeps reading PRODUCT.md but not building**:
 
 **Check**:
 ```bash
-# See what Agentful is trying to understand
+# See what agentful is trying to understand
 # Look in conversation history for:
 # "Reading PRODUCT.md..."
 # "Analyzing feature X..."
@@ -244,12 +244,12 @@ Users can see their profile.
 
 ---
 
-### Symptom 1.4: Agentful Stops Without Completing
+### Symptom 1.4: agentful Stops Without Completing
 
 **What you see**:
 ```
 Feature complete: User authentication (100%)
-[Agentful exits]
+[agentful exits]
 ```
 
 **But**: More features remain in PRODUCT.md
@@ -272,7 +272,7 @@ cat .agentful/state.json
 /ralph-loop "/agentful-start" --max-iterations 50
 ```
 
-Agentful stops after 50 iterations even if incomplete.
+agentful stops after 50 iterations even if incomplete.
 
 **Fix**: Increase limit or remove it
 ```bash
@@ -340,7 +340,7 @@ return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
 **Fix**: Update test to match implementation (or vice versa)
 
-**Prevention**: Tell Agentful to regenerate tests
+**Prevention**: Tell agentful to regenerate tests
 ```markdown
 **Technical Notes**:
 - Regenerate all tests for this feature to match current implementation
@@ -523,7 +523,7 @@ export function _setupLogging() { ... }
 
 ## Category 3: Performance Issues
 
-### Symptom 3.1: Agentful Runs Very Slowly
+### Symptom 3.1: agentful Runs Very Slowly
 
 **What you see**: One feature takes hours instead of minutes
 
@@ -540,7 +540,7 @@ export function _setupLogging() { ... }
 
 #### Cause A: Large Codebase
 
-**1000+ files, Agentful scans everything each iteration**
+**1000+ files, agentful scans everything each iteration**
 
 **Fix**: Exclude directories from agent searches
 ```markdown
@@ -565,7 +565,7 @@ Ignore:
 
 **Fix**: Run faster subset during development
 ```bash
-# Quick test mode during Agentful runs
+# Quick test mode during agentful runs
 npm test -- --passWithNoTests --maxWorkers=4
 
 # Full test suite only on final validation
@@ -591,7 +591,7 @@ npm test -- --coverage
 
 **What you see**: Claude Code using 2GB+ RAM, system slows down
 
-**Diagnosis**: Agentful reading too much into context
+**Diagnosis**: agentful reading too much into context
 
 **Fix**: Reduce file reading
 ```markdown
@@ -665,7 +665,7 @@ Feature complete, but state.json still shows "in_progress"
 
 ## Category 5: Integration Issues
 
-### Symptom 5.1: Git Conflicts with Agentful
+### Symptom 5.1: Git Conflicts with agentful
 
 **What you see**:
 ```
@@ -701,7 +701,7 @@ git commit
 Error: process.env.DATABASE_URL is undefined
 ```
 
-**Diagnosis**: Agentful trying to use env var that's not set
+**Diagnosis**: agentful trying to use env var that's not set
 
 **Fix**: Add to `.env.local`:
 ```bash
@@ -724,7 +724,7 @@ NEXT_PUBLIC_API_URL="https://..."
 
 ### Symptom 6.1: Agent Builds Wrong Thing
 
-**What you see**: Agentful builds X when you asked for Y
+**What you see**: agentful builds X when you asked for Y
 
 **Diagnosis**: PRODUCT.md unclear or ambiguous
 
@@ -733,7 +733,7 @@ NEXT_PUBLIC_API_URL="https://..."
 ### 1. User Management - CRITICAL
 Users can manage their accounts.
 
-# Agentful might build:
+# agentful might build:
 # - Account creation
 # - Profile editing
 # - Account deletion
@@ -763,9 +763,9 @@ Users can manage their accounts.
 
 ### Symptom 6.2: Agent Overwrites Manual Edits
 
-**What you see**: You edit code, Agentful changes it back
+**What you see**: You edit code, agentful changes it back
 
-**Diagnosis**: Agentful doesn't know you edited it
+**Diagnosis**: agentful doesn't know you edited it
 
 **Fix**: Document your edits
 ```typescript
@@ -779,7 +779,7 @@ function handleApiResponse(response: Response) {
 }
 ```
 
-**Or tell Agentful in technical notes**:
+**Or tell agentful in technical notes**:
 ```markdown
 **Technical Notes**:
 - src/app/api/handler.ts has custom error handling
@@ -791,7 +791,7 @@ function handleApiResponse(response: Response) {
 
 ### Symptom 6.3: Agent Won't Stop
 
-**What you see**: Agentful keeps working past completion
+**What you see**: agentful keeps working past completion
 
 **Diagnosis**: Completion criteria not met
 
@@ -816,7 +816,7 @@ cat .agentful/completion.json
   }
 }
 
-# Then stop Agentful
+# Then stop agentful
 # Don't let it continue looping
 ```
 
@@ -834,13 +834,13 @@ cp -r .agentful .agentful.backup
 git add .
 git commit -m "Backup before reset"
 
-# 2. Remove Agentful state
+# 2. Remove agentful state
 rm -rf .agentful/
 
 # 3. Start fresh
 /agentful-start
 
-# Agentful will re-analyze PRODUCT.md and start over
+# agentful will re-analyze PRODUCT.md and start over
 ```
 
 **Warning**: You lose all progress tracking, but code remains.
@@ -849,7 +849,7 @@ rm -rf .agentful/
 
 ### Recovery 2: Rollback to Working State
 
-**When Agentful broke something that worked**
+**When agentful broke something that worked**
 
 ```bash
 # 1. Find last good commit
@@ -869,10 +869,10 @@ rm -rf .agentful/
 
 ### Recovery 3: Manual Feature Completion
 
-**When Agentful can't complete a feature, you need to**
+**When agentful can't complete a feature, you need to**
 
 ```bash
-# 1. Stop Agentful
+# 1. Stop agentful
 # Let it finish current task, then exit
 
 # 2. Complete feature yourself
@@ -892,7 +892,7 @@ rm -rf .agentful/
 # 4. Validate
 /agentful-validate
 
-# 5. Resume Agentful for next feature
+# 5. Resume agentful for next feature
 /agentful-start
 ```
 
@@ -909,7 +909,7 @@ rm -rf .agentful/
 - State issues
 
 **Ask for help**:
-- Agentful crashes Claude Code
+- agentful crashes Claude Code
 - Data loss or corruption
 - Can't diagnose after 30 minutes
 - Same issue repeats after fix
@@ -918,13 +918,13 @@ rm -rf .agentful/
 
 **Good issue report**:
 ```markdown
-## Agentful Issue Report
+## agentful Issue Report
 
 ### What I was doing
 Running `/agentful-start` on authentication feature
 
 ### What happened
-Agentful entered validation loop, stuck at 78% coverage
+agentful entered validation loop, stuck at 78% coverage
 
 ### Steps to reproduce
 1. Run `/agentful-start`
@@ -949,13 +949,13 @@ Agentful entered validation loop, stuck at 78% coverage
 
 **Where to report**:
 - GitHub Issues: https://github.com/blitz/agentful/issues
-- Discord: [Agentful Discord channel]
+- Discord: [agentful Discord channel]
 
 ---
 
 ## Prevention Checklist
 
-**Before starting Agentful**:
+**Before starting agentful**:
 - [ ] PRODUCT.md is complete and specific
 - [ ] Tech stack fully specified
 - [ ] All features prioritized
@@ -964,7 +964,7 @@ Agentful entered validation loop, stuck at 78% coverage
 - [ ] Dependencies installed
 - [ ] Git repository initialized
 
-**During Agentful run**:
+**During agentful run**:
 - [ ] Check status every 5-10 iterations
 - [ ] Monitor for decisions needing answers
 - [ ] Don't interrupt mid-task
@@ -994,7 +994,7 @@ Agentful entered validation loop, stuck at 78% coverage
 - Run `/agentful-decide` for decisions
 - Add detail to PRODUCT.md for unclear requirements
 - Update tests manually if they're out of sync
-- Fix type errors manually (Agentful struggles with complex types)
+- Fix type errors manually (agentful struggles with complex types)
 - Reset state if corrupted
 
 **When in doubt**:

@@ -1,0 +1,19 @@
+/* Make logo bigger and centered */
+.vocs_Content img[alt="agentful Logo"] {
+  width: 300px !important;
+  height: auto !important;
+  display: block !important;
+  margin: 0 auto 2rem auto !important;
+}
+
+/* Center the image container */
+.vocs_Content .text-center {
+  text-align: center !important;
+}
+
+/* Remove any gradient backgrounds - keep it clean */
+.vocs_Hero,
+.vocs_PageHeader {
+  background: none !important;
+  background-image: none !important;
+}

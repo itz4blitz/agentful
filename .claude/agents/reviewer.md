@@ -170,7 +170,7 @@ grep -rn "console\.log\|console\.debug" src/ --include="*.ts" --include="*.tsx" 
 
 ### 8. Documentation Check
 
-**For Agentful framework development only:**
+**For agentful framework development only:**
 
 Check for duplicate or redundant documentation:
 

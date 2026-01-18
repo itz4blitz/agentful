@@ -1,10 +1,10 @@
-# Publishing Agentful to npm
+# Publishing agentful to npm
 
 > **⚠️ WARNING: This is an ALPHA release (0.1.0)**
 >
 > This software has NOT been tested in real projects yet. It should be considered experimental and unstable. Use at your own risk!
 
-This guide explains how to publish Agentful to npm so users can install it with `npx agentful init`.
+This guide explains how to publish agentful to npm so users can install it with `npx @itz4blitz/agentful init`.
 
 ## Prerequisites
 
@@ -25,7 +25,7 @@ npm publish
 npm view agentful
 ```
 
-That's it! Users can now run: `npx agentful init`
+That's it! Users can now run: `npx @itz4blitz/agentful init`
 
 ## What Gets Published
 
@@ -90,8 +90,8 @@ npx agentful --version
 mkdir my-test-project
 cd my-test-project
 
-# Initialize Agentful
-npx agentful init
+# Initialize agentful
+npx @itz4blitz/agentful init
 
 # Verify files created
 ls -la .claude/
@@ -157,7 +157,7 @@ npm publish
 
 ```bash
 # Users can now run:
-npx agentful init
+npx @itz4blitz/agentful init
 npx agentful generate
 npx agentful status
 ```
@@ -298,7 +298,7 @@ After publishing, users can:
 
 ```bash
 # One-time initialization
-npx agentful init
+npx @itz4blitz/agentful init
 
 # Or install globally (optional)
 npm install -g @itz4blitz/agentful
@@ -311,7 +311,7 @@ After publishing, verify:
 
 - [ ] Package page loads: https://npmjs.com/package/@itz4blitz/agentful
 - [ ] `npx agentful --help` works
-- [ ] `npx agentful init` creates files correctly
+- [ ] `npx @itz4blitz/agentful init` creates files correctly
 - [ ] `npx agentful generate` detects tech stack
 - [ ] README displays on npm page
 - [ ] Version is correct
@@ -354,7 +354,7 @@ npm login && npm publish
 
 **Users will run**:
 ```bash
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 **Expected to publish**: `agentful@0.1.0`

@@ -1,6 +1,6 @@
 # 24/7 Development with Ralph Wiggum
 
-Ralph Wiggum is a Claude Code plugin that enables continuous looping - perfect for autonomous development that runs while you sleep. This guide explains how to use Ralph Wiggum with Agentful for true 24/7 productivity.
+Ralph Wiggum is a Claude Code plugin that enables continuous looping - perfect for autonomous development that runs while you sleep. This guide explains how to use Ralph Wiggum with agentful for true 24/7 productivity.
 
 ## What is Ralph Wiggum?
 
@@ -33,7 +33,7 @@ Verify installation:
 ```
 
 **Parameters explained**:
-- `/agentful-start` - Command to loop (Agentful's autonomous mode)
+- `/agentful-start` - Command to loop (agentful's autonomous mode)
 - `--max-iterations 50` - Maximum loops before stopping (safety limit)
 - `--completion-promise "AGENTFUL_COMPLETE"` - Stop when orchestrator emits this
 
@@ -167,7 +167,7 @@ EOF
 While Ralph is running, open a new terminal:
 
 ```bash
-# Check what Agentful is working on
+# Check what agentful is working on
 cd /path/to/project
 claude
 /agentful-status
@@ -214,7 +214,7 @@ cat .agentful/last-review.json
 
 ### When Decisions Are Needed
 
-Agentful encounters a decision:
+agentful encounters a decision:
 
 1. **Creates decision** in `decisions.json`
 2. **Moves to non-blocked work** (continues autonomously)
@@ -255,7 +255,7 @@ vim .agentful/decisions.json
   ]
 }
 
-// Agentful continues with other features (dashboard, user-profile)
+// agentful continues with other features (dashboard, user-profile)
 // You answer when convenient
 // Next loop picks up auth again
 ```
@@ -288,7 +288,7 @@ Error: Network timeout
 
 **3. Decision Blocks**
 - Cause: Needs user input
-- Solution: Agentful works on other features
+- Solution: agentful works on other features
 
 **4. Git Conflicts**
 - Cause: Manual edits during loop
@@ -329,7 +329,7 @@ All progress saved in state files. Simply restart:
 /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
 ```
 
-Agentful resumes from where it left off.
+agentful resumes from where it left off.
 
 ## Best Practices
 
@@ -398,7 +398,7 @@ git commit -m "Before Ralph loop"
 /ralph-loop "/agentful-start" \
   --max-iterations 50 \
   --completion-promise "AGENTFUL_COMPLETE" \
-  && osascript -e 'display notification "Agentful complete!"'
+  && osascript -e 'display notification "agentful complete!"'
 ```
 
 ## Advanced Patterns
@@ -472,7 +472,7 @@ EOF
 ```
 
 **Common causes**:
-- Agentful crashed (check PRODUCT.md valid)
+- agentful crashed (check PRODUCT.md valid)
 - Decision blocks everything (run `/agentful-decide`)
 - Max iterations too low (increase limit)
 

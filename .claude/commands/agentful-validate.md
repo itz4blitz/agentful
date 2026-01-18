@@ -3,7 +3,7 @@ name: agentful-validate
 description: Run all quality checks and validation gates. Delegates to reviewer agent.
 ---
 
-# Agentful Validate
+# agentful Validate
 
 This command runs all quality checks and validation gates.
 

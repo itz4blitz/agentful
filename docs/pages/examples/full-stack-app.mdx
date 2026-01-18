@@ -1,6 +1,6 @@
 ---
 title: Full-Stack SaaS Application - Complete Example
-description: Build a complete task management system with authentication, real-time updates, and team collaboration using Agentful
+description: Build a complete task management system with authentication, real-time updates, and team collaboration using agentful
 ---
 
 
@@ -12,7 +12,7 @@ A complete task management system for remote teams with authentication, real-tim
 
 ## Overview
 
-**TaskFlow** is a collaborative task management application similar to Trello or Asana, built from scratch using Agentful in 6-8 hours.
+**TaskFlow** is a collaborative task management application similar to Trello or Asana, built from scratch using agentful in 6-8 hours.
 
 ### Business Value
 - **Target Users**: Remote teams, startups, agencies
@@ -32,7 +32,7 @@ A complete task management system for remote teams with authentication, real-tim
 
 ## Complete PRODUCT.md
 
-Here's the complete `PRODUCT.md` that powered this project:
+Here's the complete `PRODUCT.md` that powered this project, organized in a **hierarchical structure** perfect for production applications:
 
 ```markdown
 # TaskFlow - Team Task Management
@@ -52,33 +52,63 @@ A collaborative task management application for remote teams. Users can create w
 
 ## Features
 
-### Domain 1: Authentication & User Management
+<FEATURE_ORGANIZATION NOTE>
+This example demonstrates HIERARCHICAL structure for production apps.
+Instead of one massive PRODUCT.md, features are organized by domain:
+- .claude/product/domains/authentication/
+- .claude/product/domains/workspaces/
+- .claude/product/domains/tasks/
+This scales better for large applications with multiple teams.
+</FEATURE_ORGANIZATION NOTE>
 
-#### 1.1 User Authentication - CRITICAL
+### Domain: Authentication
+
+#### User Registration - CRITICAL
 **Priority**: CRITICAL - Must be completed first
-**Description**: User registration, login, logout with JWT
 **User Stories**:
 - As a new user, I can register with email and password
-- As a registered user, I can login to access my workspace
-- As a logged-in user, I can logout securely
 **Acceptance Criteria**:
-- Passwords must be hashed (bcrypt)
+- Passwords must be hashed (bcrypt, 10 rounds)
+- Email validation required
+- User automatically logged in after registration
+- JWT token stored in httpOnly cookie
+**API Endpoints**:
+- POST /api/auth/register
+**Components**:
+- app/(auth)/register/page.tsx
+- components/auth/RegisterForm.tsx
+
+#### User Login - CRITICAL
+**Priority**: CRITICAL
+**User Stories**:
+- As a registered user, I can login to access my workspace
+**Acceptance Criteria**:
 - JWT tokens stored in httpOnly cookies
 - Session expires after 7 days
 - Protected routes redirect to login
+- Login form shows clear error messages
 **API Endpoints**:
-- POST /api/auth/register
 - POST /api/auth/login
-- POST /api/auth/logout
 - GET /api/auth/me
 **Components**:
-- pages/login/page.tsx
-- pages/register/page.tsx
-- components/auth/AuthForm.tsx
+- app/(auth)/login/page.tsx
+- components/auth/LoginForm.tsx
 
-#### 1.2 User Profile - LOW
+#### User Logout - CRITICAL
+**Priority**: CRITICAL
+**User Stories**:
+- As a logged-in user, I can logout securely
+**Acceptance Criteria**:
+- Clears httpOnly cookie
+- Redirects to login page
+- Clears client-side state
+**API Endpoints**:
+- POST /api/auth/logout
+**Components**:
+- components/auth/LogoutButton.tsx
+
+#### User Profile - LOW
 **Priority**: LOW - Nice to have
-**Description**: View and edit user profile
 **User Stories**:
 - As a user, I can view my profile
 - As a user, I can update my name and avatar
@@ -90,91 +120,153 @@ A collaborative task management application for remote teams. Users can create w
 - GET /api/users/me
 - PUT /api/users/me
 **Components**:
-- pages/profile/page.tsx
+- app/profile/page.tsx
 - components/users/ProfileForm.tsx
 
-### Domain 2: Workspace & Team Management
+### Domain: Workspaces
 
-#### 2.1 Workspace Management - HIGH
+#### Create Workspace - HIGH
 **Priority**: HIGH - Core feature for organizing work
-**Description**: Create and manage team workspaces
 **User Stories**:
 - As a user, I can create a new workspace
-- As a workspace owner, I can invite team members
-- As a workspace member, I can view all workspaces I'm part of
 **Acceptance Criteria**:
 - User can create unlimited workspaces
-- Workspace has name, description, and owner
-- Members can be invited via email
-- Members have roles: Owner, Admin, Member, Viewer
+- Workspace requires name and description
+- Creator becomes workspace owner
 **API Endpoints**:
 - POST /api/workspaces
+**Components**:
+- components/workspaces/CreateWorkspaceDialog.tsx
+
+#### View Workspaces - HIGH
+**Priority**: HIGH
+**User Stories**:
+- As a workspace member, I can view all workspaces I'm part of
+**Acceptance Criteria**:
+- Show list of all user's workspaces
+- Display workspace name and member count
+- Click to enter workspace
+**API Endpoints**:
 - GET /api/workspaces
-- GET /api/workspaces/:id
-- PUT /api/workspaces/:id
-- DELETE /api/workspaces/:id
-- POST /api/workspaces/:id/members
-- DELETE /api/workspaces/:id/members/:userId
 **Components**:
 - components/workspaces/WorkspaceList.tsx
 - components/workspaces/WorkspaceCard.tsx
-- components/workspaces/CreateWorkspaceDialog.tsx
 
-#### 2.2 Team Collaboration - MEDIUM
-**Priority**: MEDIUM - Enhances collaboration
-**Description**: Real-time collaboration features
+#### Manage Workspace Members - MEDIUM
+**Priority**: MEDIUM
 **User Stories**:
-- As a user, I see task updates immediately when others make changes
+- As a workspace owner, I can invite team members
+- As a workspace owner, I can remove members
+**Acceptance Criteria**:
+- Members invited via email
+- Members have roles: Owner, Admin, Member, Viewer
+- Email invitation sent with workspace link
+**API Endpoints**:
+- POST /api/workspaces/:id/members
+- DELETE /api/workspaces/:id/members/:userId
+**Components**:
+- components/workspaces/MemberList.tsx
+- components/workspaces/InviteMemberDialog.tsx
+
+#### Real-time Presence - MEDIUM
+**Priority**: MEDIUM - Enhances collaboration
+**User Stories**:
 - As a user, I see when team members come online
 **Acceptance Criteria**:
-- Use Server-Sent Events or polling (SSE preferred)
-- Update UI optimistically for instant feedback
-- Show "user is typing" indicators
 - Display online/offline status
+- Show active users in workspace
+- Update status in real-time
 **Implementation**:
 - /api/workspaces/:id/events (SSE endpoint)
-- Hook: hooks/useTaskUpdates.ts
-- Component: components/tasks/RealtimeBadge.tsx
+- Hook: hooks/useWorkspacePresence.ts
+- Component: components/workspaces/OnlineUsers.tsx
 
-### Domain 3: Task & Project Management
+### Domain: Tasks
 
-#### 3.1 Task Management - HIGH
+#### Create Task - HIGH
 **Priority**: HIGH - Core feature
-**Description**: Create, read, update, and delete tasks within workspaces
 **User Stories**:
 - As a user, I can create tasks in a workspace
-- As a user, I can assign tasks to team members
-- As a user, I can set due dates and priorities
-- As a user, I can move tasks through statuses (Todo, In Progress, Done)
 **Acceptance Criteria**:
-- Tasks have title, description, status, priority, assignee, due date
-- Tasks belong to a workspace
-- Tasks can be filtered by status and assignee
-- Task changes are tracked in activity feed
+- Tasks require title and workspace
+- Optional: description, assignee, due date, priority
+- Default status: Todo
 **API Endpoints**:
 - POST /api/workspaces/:workspaceId/tasks
+**Components**:
+- components/tasks/CreateTaskDialog.tsx
+
+#### View Tasks - HIGH
+**Priority**: HIGH
+**User Stories**:
+- As a user, I can view all tasks in a workspace
+**Acceptance Criteria**:
+- Tasks organized by status (Todo, In Progress, Done)
+- Kanban-style board layout
+- Drag-and-drop to move tasks
+**API Endpoints**:
 - GET /api/workspaces/:workspaceId/tasks
-- GET /api/tasks/:id
-- PUT /api/tasks/:id
-- DELETE /api/tasks/:id
-- PATCH /api/tasks/:id/status
 **Components**:
 - components/tasks/TaskBoard.tsx
 - components/tasks/TaskCard.tsx
-- components/tasks/CreateTaskDialog.tsx
+
+#### Update Task Status - HIGH
+**Priority**: HIGH
+**User Stories**:
+- As a user, I can move tasks through statuses
+**Acceptance Criteria**:
+- Drag and drop to change status
+- Optimistic UI update
+- Activity feed tracks changes
+**API Endpoints**:
+- PATCH /api/tasks/:id/status
+**Components**:
+- components/tasks/TaskCard.tsx (with drag handlers)
+
+#### Assign Tasks - MEDIUM
+**Priority**: MEDIUM
+**User Stories**:
+- As a user, I can assign tasks to team members
+- As a user, I can set due dates and priorities
+**Acceptance Criteria**:
+- Assign from workspace member list
+- Set priority: Low, Medium, High, Urgent
+- Due date picker
+**API Endpoints**:
+- PUT /api/tasks/:id
+**Components**:
+- components/tasks/TaskAssignee.tsx
+- components/tasks/TaskDueDate.tsx
+
+#### Task Filtering - MEDIUM
+**Priority**: MEDIUM
+**User Stories**:
+- As a user, I can filter tasks by assignee
+- As a user, I can filter tasks by priority
+**Acceptance Criteria**:
+- Filter by assignee (including "unassigned")
+- Filter by priority level
+- Clear filters button
+**API Endpoints**:
+- GET /api/workspaces/:workspaceId/tasks (with query params)
+**Components**:
 - components/tasks/TaskFilters.tsx
 
-#### 3.2 Real-time Updates - MEDIUM
+#### Real-time Task Updates - MEDIUM
 **Priority**: MEDIUM - Enhances collaboration
-**Description**: See task changes instantly without refresh
+**User Stories**:
+- As a user, I see task updates immediately when others make changes
 **Acceptance Criteria**:
 - Task updates sync across all connected clients
 - Activity feed shows recent changes
 - Notifications for task assignments
 **Implementation Notes**:
-- Leverage SSE infrastructure from Domain 2
+- Leverage SSE infrastructure from Workspaces domain
 - Add activity tracking to task operations
 - Broadcast changes on task mutations
+**Components**:
+- components/tasks/RealtimeBadge.tsx
+- hooks/useTaskUpdates.ts
 
 ## Non-Functional Requirements
 
@@ -333,7 +425,7 @@ enum ActivityType {
 
 ## Project Structure
 
-### Initial State (Before Agentful)
+### Initial State (Before agentful)
 
 ```
 taskflow/
@@ -343,19 +435,44 @@ taskflow/
 └── next.config.js
 ```
 
-### Final State (After Agentful)
+### Final State (After agentful)
 
+**Hierarchical PRODUCT.md Structure**:
 ```
 taskflow/
 ├── .claude/
 │   ├── agents/
 │   ├── commands/
-│   └── skills/
+│   ├── skills/
+│   └── product/
+│       ├── overview.md          # Project overview, tech stack
+│       ├── domains/             # HIERARCHICAL: Organized by domain
+│       │   ├── authentication/
+│       │   │   ├── index.md     # Auth domain overview
+│       │   │   ├── registration.md
+│       │   │   ├── login.md
+│       │   │   ├── logout.md
+│       │   │   └── profile.md
+│       │   ├── workspaces/
+│       │   │   ├── index.md     # Workspaces domain overview
+│       │   │   ├── create-workspace.md
+│       │   │   ├── view-workspaces.md
+│       │   │   ├── manage-members.md
+│       │   │   └── real-time-presence.md
+│       │   └── tasks/
+│       │       ├── index.md     # Tasks domain overview
+│       │       ├── create-task.md
+│       │       ├── view-tasks.md
+│       │       ├── update-status.md
+│       │       ├── assign-tasks.md
+│       │       ├── filter-tasks.md
+│       │       └── real-time-updates.md
+│       ├── non-functional.md    # Performance, security, etc.
+│       └── database-schema.md   # Prisma schema
 ├── .agentful/
 │   ├── state.json
 │   ├── completion.json
 │   └── decisions.json
-├── PRODUCT.md
 ├── CLAUDE.md
 ├── prisma/
 │   ├── schema.prisma
@@ -404,16 +521,24 @@ taskflow/
 │   │   │   ├── form.tsx
 │   │   │   └── ...
 │   │   ├── auth/
-│   │   │   └── AuthForm.tsx
+│   │   │   ├── RegisterForm.tsx
+│   │   │   ├── LoginForm.tsx
+│   │   │   └── LogoutButton.tsx
 │   │   ├── workspaces/
 │   │   │   ├── WorkspaceList.tsx
 │   │   │   ├── WorkspaceCard.tsx
-│   │   │   └── CreateWorkspaceDialog.tsx
+│   │   │   ├── CreateWorkspaceDialog.tsx
+│   │   │   ├── MemberList.tsx
+│   │   │   ├── InviteMemberDialog.tsx
+│   │   │   └── OnlineUsers.tsx
 │   │   ├── tasks/
 │   │   │   ├── TaskBoard.tsx
 │   │   │   ├── TaskCard.tsx
 │   │   │   ├── CreateTaskDialog.tsx
-│   │   │   └── TaskFilters.tsx
+│   │   │   ├── TaskFilters.tsx
+│   │   │   ├── TaskAssignee.tsx
+│   │   │   ├── TaskDueDate.tsx
+│   │   │   └── RealtimeBadge.tsx
 │   │   └── layout/
 │   │       ├── Header.tsx
 │   │       └── Sidebar.tsx
@@ -425,7 +550,8 @@ taskflow/
 │   │   ├── useAuth.ts
 │   │   ├── useWorkspaces.ts
 │   │   ├── useTasks.ts
-│   │   └── useTaskUpdates.ts
+│   │   ├── useTaskUpdates.ts
+│   │   └── useWorkspacePresence.ts
 │   ├── store/
 │   │   └── authStore.ts
 │   ├── types/
@@ -448,6 +574,13 @@ taskflow/
 ├── .env.local
 └── package.json
 ```
+
+**Why Hierarchical?**
+For production apps, organizing features by domain (authentication, workspaces, tasks) is more realistic than a flat PRODUCT.md. This structure:
+- Scales to dozens of features without becoming overwhelming
+- Allows teams to work on different domains in parallel
+- Makes it easier to find and update specific features
+- Mirrors real-world project organization
 
 **File Count**: 127 files created
 **Lines of Code**: ~8,500 lines
@@ -473,10 +606,10 @@ npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
 ```
 
-#### 2. Initialize Agentful
+#### 2. Initialize agentful
 
 ```bash
-npx agentful init
+npx @itz4blitz/agentful init
 ```
 
 #### 3. Edit PRODUCT.md
@@ -490,7 +623,7 @@ claude
 /agentful-start
 ```
 
-**Agentful Output**:
+**agentful Output**:
 ```
 ✅ Detected: Next.js 14 + TypeScript + Prisma + Tailwind
 ✅ Generated specialized agents
@@ -505,7 +638,7 @@ Delegating to @backend...
 
 **Agent**: `@backend` → `@architect`
 
-**Agentful Sequence**:
+**agentful Sequence**:
 ```
 @orchestrator: Creating database schema
 → @backend: Writing Prisma schema
@@ -606,7 +739,7 @@ npx prisma generate
 
 #### 3.1 Backend Implementation
 
-**Agentful Sequence**:
+**agentful Sequence**:
 ```
 @orchestrator: Building authentication feature
 → @backend: Creating auth service
@@ -1431,7 +1564,7 @@ User: /agentful-start
 
 ## Key Decisions Made
 
-During development, Agentful encountered these decisions and resolved them:
+During development, agentful encountered these decisions and resolved them:
 
 ### Decision 1: Auth Library
 **Question**: Which auth library to use?
@@ -1543,7 +1676,7 @@ Status: ALL GATES PASSED 🎉
 
 ## Conclusion
 
-This full-stack SaaS application demonstrates Agentful's ability to:
+This full-stack SaaS application demonstrates agentful's ability to:
 
 - Build complex features autonomously
 - Maintain high code quality standards
@@ -1572,8 +1705,8 @@ Want to build this yourself?
 mkdir taskflow && cd taskflow
 npm init -y
 
-# 2. Initialize Agentful
-npx agentful init
+# 2. Initialize agentful
+npx @itz4blitz/agentful init
 
 # 3. Copy PRODUCT.md (from this example)
 
