@@ -1,0 +1,546 @@
+---
+title: Quick Start - Agentful
+description: Get up and running with Agentful in 5 minutes. Learn the basics of autonomous product development.
+---
+
+# Quick Start
+
+Get Agentful building your project autonomously in 5 minutes.
+
+---
+
+## Overview
+
+This quick start will walk you through:
+
+1. ✅ Initializing Agentful
+2. ✅ Defining your product
+3. ✅ Starting autonomous development
+4. ✅ Monitoring progress
+5. ✅ Understanding the workflow
+
+**Time:** 5 minutes
+**Prerequisites:** [Agentful installed](/getting-started/installation)
+
+---
+
+## Step 1: Initialize Agentful (30 seconds)
+
+```bash
+# In your project directory
+npx agentful init
+```
+
+**What happens:**
+- Creates `.claude/` with 7 specialized agents
+- Creates `.agentful/` for state tracking
+- Creates `PRODUCT.md` template
+- Creates `CLAUDE.md` project instructions
+
+**Output:**
+```
+✅ Agentful initialized successfully!
+
+Next steps:
+  1. Edit PRODUCT.md with your product specification
+  2. Run: claude
+  3. Type: /agentful-start
+```
+
+---
+
+## Step 2: Define Your Product (2 minutes)
+
+Open `PRODUCT.md` in your editor. This is where you tell Agentful what to build.
+
+### Minimal Example
+
+```markdown
+# Product Specification
+
+## Overview
+A simple todo list application.
+
+## Tech Stack
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: None (in-memory for now)
+- **Testing**: Vitest
+
+## Features
+
+### 1. Add Todo - CRITICAL
+**Description**: Users can add new todo items
+
+**Acceptance Criteria**:
+- [ ] Input field for new todos
+- [ ] Add button
+- [ ] Todo appears in list
+
+### 2. Toggle Todo - HIGH
+**Description**: Users can mark todos as complete
+
+**Acceptance Criteria**:
+- [ ] Click todo to toggle completion
+- [ ] Visual indicator for completed todos
+
+### 3. Delete Todo - MEDIUM
+**Description**: Users can delete todos
+
+**Acceptance Criteria**:
+- [ ] Delete button on each todo
+- [ ] Confirmation prompt
+```
+
+### Key Sections Explained
+
+**Overview** - 2-3 sentences describing what you're building
+
+**Tech Stack** - Your technology choices
+- Frontend framework
+- Backend framework
+- Database
+- Testing tools
+- Styling approach
+
+**Features** - What you want built, ordered by priority
+- **CRITICAL** - Must have for MVP
+- **HIGH** - Important but can wait
+- **MEDIUM** - Nice to have
+- **LOW** - Future improvements
+
+For each feature, include:
+- **Description** - What it does
+- **Acceptance Criteria** - Specific requirements (checkboxes)
+- **User Stories** (optional) - Who wants what and why
+
+---
+
+## Step 3: Start Claude Code (10 seconds)
+
+```bash
+claude
+```
+
+This starts the Claude Code CLI with Agentful's specialized agents loaded.
+
+---
+
+## Step 4: Begin Autonomous Development (30 seconds)
+
+In the Claude Code prompt, type:
+
+```
+/agentful-start
+```
+
+**What happens next:**
+
+### Phase 1: Architecture Analysis (10 seconds)
+
+```
+🏗️  Architect Agent analyzing...
+
+Detected tech stack:
+- Next.js 14
+- TypeScript
+- Tailwind CSS
+
+Generated specialized agents:
+✓ nextjs-agent
+✓ typescript-agent
+✓ tailwind-agent
+✓ vitest-agent
+```
+
+### Phase 2: Planning (10 seconds)
+
+```
+📋 Orchestrator planning work...
+
+Priority queue:
+1. Add Todo feature (CRITICAL)
+2. Toggle Todo feature (HIGH)
+3. Delete Todo feature (MEDIUM)
+
+Starting: Add Todo feature
+```
+
+### Phase 3: Implementation (varies)
+
+```
+🔧 Frontend Agent implementing...
+
+Created:
+- src/app/page.tsx (main page)
+- src/components/TodoList.tsx
+- src/components/TodoInput.tsx
+- src/hooks/useTodos.ts
+```
+
+### Phase 4: Testing (varies)
+
+```
+🧪 Tester Agent writing tests...
+
+Created:
+- src/components/__tests__/TodoList.test.tsx
+- src/hooks/__tests__/useTodos.test.ts
+
+Running tests...
+✓ All tests passing
+```
+
+### Phase 5: Validation (20 seconds)
+
+```
+🔍 Reviewer Agent validating...
+
+Quality Gates:
+✅ All tests passing
+✅ No type errors (adapts to stack)
+⚠️  Test coverage: 65% (target: 80%)
+✅ No dead code
+✅ No security issues
+
+Coverage below 80%, continuing...
+```
+
+### Phase 6: Iteration (continues)
+
+```
+🔄 Fixer Agent improving coverage...
+
+Added tests for edge cases...
+Coverage now: 82% ✅
+
+Feature complete: Add Todo (100%)
+
+Next: Toggle Todo feature...
+```
+
+---
+
+## Step 5: Monitor Progress (ongoing)
+
+Check progress anytime:
+
+```
+/agentful-status
+```
+
+**Output:**
+```
+🔧 Working on: Toggle Todo feature
+   Phase: implementation
+   Iterations: 8
+
+Progress:
+   ████████░░░░░░░░░░░ 40%
+
+Quality Gates:
+   ✅ Tests Passing
+   ✅ No Type Errors
+   ✅ Coverage 82%
+   ✅ No Dead Code
+   ⚠️  1 pending decision:
+      1. Should completed todos move to bottom?
+
+Next Actions:
+   • /agentful-start    - Continue development
+   • /agentful-decide  - Answer pending decision
+   • /agentful-validate- Run quality checks
+```
+
+---
+
+## Step 6: Handle Decisions (if needed)
+
+Sometimes Agentful needs your input:
+
+```
+⚠️  Decision needed:
+Should completed todos move to the bottom of the list?
+
+Options:
+1. Yes, move to bottom
+2. No, keep in place
+3. Sort by completion date
+```
+
+**To answer:**
+
+```
+/agentful-decide
+```
+
+Then provide your answer:
+```
+Option 1: Yes, move to bottom
+```
+
+Agentful will immediately resume with your decision.
+
+---
+
+## Understanding the Workflow
+
+### The Development Loop
+
+```
+┌─────────────────────────────────────────┐
+│  1. Architect: Analyze tech stack       │
+└─────────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────────┐
+│  2. Orchestrator: Plan next task        │
+└─────────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────────┐
+│  3. Specialist: Implement feature       │
+│     (@frontend, @backend, @tester)      │
+└─────────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────────┐
+│  4. Reviewer: Validate quality          │
+└─────────────────────────────────────────┘
+              ↓
+         Issues found?
+              ↓
+       ┌──────┴──────┐
+       ↓             ↓
+┌─────────────┐  ┌─────────────┐
+│ 5. Fixer    │  │ 6. Complete │
+│    Fix issues│  │    Update   │
+└─────────────┘  │  Progress   │
+       │         └─────────────┘
+       └─────────────────┘
+              ↓
+┌─────────────────────────────────────────┐
+│  7. Loop again until 100% complete      │
+└─────────────────────────────────────────┘
+```
+
+### Agent Roles
+
+| Agent | When it activates | What it does |
+|-------|------------------|--------------|
+| **@architect** | Once at start | Analyzes tech stack, generates specialized agents |
+| **@orchestrator** | Every iteration | Plans work, delegates to specialists |
+| **@frontend** | Building UI | Components, pages, hooks, styling |
+| **@backend** | Building APIs | Services, repositories, controllers |
+| **@tester** | After implementation | Writes unit, integration, E2E tests |
+| **@reviewer** | After testing | Validates quality gates, finds issues |
+| **@fixer** | When issues found | Auto-fixes validation failures |
+
+---
+
+## Common Commands
+
+### Start/Resume Development
+```
+/agentful-start
+```
+
+### Check Progress
+```
+/agentful-status
+```
+
+### Answer Pending Decisions
+```
+/agentful-decide
+```
+
+### Run Quality Checks
+```
+/agentful-validate
+```
+
+---
+
+## Tips for Success
+
+### 1. Start Small
+
+Your first time? Build something simple:
+
+✅ **Good first projects:**
+- Todo app
+- Blog with markdown
+- Contact form
+- Weather widget
+
+❌ **Avoid for first time:**
+- Real-time collaboration
+- Payment processing
+- Complex authentication
+
+### 2. Be Specific in PRODUCT.md
+
+The more specific your requirements, the better Agentful understands:
+
+**Vague:**
+```markdown
+## Features
+1. User management
+```
+
+**Specific:**
+```markdown
+### 1. User Registration - CRITICAL
+**Description**: Users can register with email/password
+
+**Acceptance Criteria**:
+- [ ] Email validation (required, valid format)
+- [ ] Password min 8 characters, 1 uppercase, 1 number
+- [ ] Unique email check
+- [ ] Success: redirect to dashboard
+- [ ] Error: show inline error message
+```
+
+### 3. Use Priority Levels
+
+Order features by priority:
+
+```markdown
+### 1. Core feature - CRITICAL
+### 2. Important feature - HIGH
+### 3. Nice to have - MEDIUM
+### 4. Future enhancement - LOW
+```
+
+Agentful works CRITICAL → HIGH → MEDIUM → LOW
+
+### 4. Let It Run
+
+Don't micromanage. Agentful works best when you:
+
+✅ **Do:**
+- Start it and let it run
+- Check in periodically with `/agentful-status`
+- Answer decisions when prompted
+- Review code at milestones
+
+❌ **Don't:**
+- Interrupt after every file
+- Change PRODUCT.md mid-development
+- Manually edit files Agentful created
+- Stop and start repeatedly
+
+### 5. Use 24/7 Mode for Big Projects
+
+For complex projects, use Ralph Wiggum loops:
+
+```bash
+/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+```
+
+Let it run overnight, wake up to progress.
+
+---
+
+## What to Expect
+
+### Timeline Examples
+
+**Simple Project (Todo App)**
+- 5-10 minutes
+- 3-5 iterations
+- 1-2 features
+
+**Medium Project (Blog)**
+- 30-60 minutes
+- 10-20 iterations
+- 5-10 features
+
+**Complex Project (SaaS MVP)**
+- 2-4 hours (or overnight with Ralph)
+- 50-100 iterations
+- 10-20 features
+
+### Quality Expectations
+
+Agentful aims for:
+- ✅ All tests passing
+- ✅ No type errors (adapts to stack)
+- ✅ 80%+ test coverage
+- ✅ No dead code
+- ✅ No security issues
+
+**Note:** Code may need refactoring for production. Agentful builds working MVPs, not production-optimized code.
+
+---
+
+## Troubleshooting
+
+### Issue: Agentful seems stuck
+
+**Solution:** Check status
+```
+/agentful-status
+```
+
+If iterations > 20 without progress:
+1. Check for pending decisions
+2. Run `/agentful-decide`
+3. Or restart: `/agentful-start`
+
+### Issue: Not making progress on features
+
+**Solution:** Review PRODUCT.md
+- Are acceptance criteria clear?
+- Is tech stack specified?
+- Try breaking features into smaller chunks
+
+### Issue: Too many validation errors
+
+**Solution:** Let Fixer work
+- Agentful will auto-fix most issues
+- If stuck, run `/agentful-validate` to see specific errors
+- Some errors may require manual intervention
+
+---
+
+## Next Steps
+
+<div className="grid gap-4 md:grid-cols-2 mt-8">
+
+<div>
+
+### Build Your First Project
+Create a complete autonomous project
+→ [First Project Guide](/getting-started/first-project)
+
+</div>
+
+<div>
+
+### Configuration
+Customize Agentful for your needs
+→ [Configuration Guide](/getting-started/configuration)
+
+</div>
+
+</div>
+
+---
+
+## Quick Reference
+
+**Essential Commands:**
+- `/agentful-start` - Begin autonomous development
+- `/agentful-status` - Check progress
+- `/agentful-decide` - Answer decisions
+- `/agentful-validate` - Run quality checks
+
+**Key Files:**
+- `PRODUCT.md` - Your product spec
+- `CLAUDE.md` - Project instructions
+- `.agentful/state.json` - Current state
+- `.agentful/completion.json` - Progress tracking
+
+**24/7 Development:**
+```bash
+/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+```

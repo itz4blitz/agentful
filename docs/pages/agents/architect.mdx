@@ -1,0 +1,528 @@
+# Architect Agent
+
+The Architect analyzes the tech stack and dynamically generates specialized agents for frameworks, databases, and tools used in the project.
+
+## Overview
+
+The Architect ensures that Agentful can work with any technology stack by:
+
+1. Reading `PRODUCT.md` to identify the tech stack
+2. Generating framework-specific agents (Next.js, Vue, NestJS, etc.)
+3. Creating documentation for tech-specific patterns
+4. Updating agents when the tech stack changes
+5. Maintaining `.agentful/architecture.json`
+
+## Configuration
+
+```yaml
+name: architect
+description: Analyzes PRODUCT.md tech stack and generates specialized agents dynamically. Creates language/framework-specific agents on demand.
+model: opus
+tools: Read, Write, Edit, Glob, Grep, Task
+```
+
+**Why Opus?** Agent generation requires understanding framework patterns, best practices, and how to structure effective agents.
+
+## Startup Process
+
+### 1. Analyze Tech Stack
+
+Read `PRODUCT.md` and extract:
+
+```markdown
+## Tech Stack
+- Framework: Next.js 14
+- Language: TypeScript
+- Database: PostgreSQL + Prisma
+- Auth: JWT
+- Styling: Tailwind CSS
+- Testing: Vitest + Playwright
+```
+
+**Extracted Information:**
+- **Frontend Framework** - Next.js, React, Vue, Svelte, Solid, etc.
+- **Backend Framework** - Next.js API Routes, Express, NestJS, Fastify, etc.
+- **Database** - PostgreSQL, MySQL, MongoDB, SQLite, etc.
+- **ORM** - Prisma, Drizzle, TypeORM, etc.
+- **Styling** - Tailwind, CSS Modules, styled-components, etc.
+- **Testing** - Jest, Vitest, Playwright, Cypress, etc.
+- **Language** - TypeScript, JavaScript, Python, Go, etc.
+
+### 2. Generate Specialized Agents
+
+For each technology, create or update agents:
+
+```
+.claude/agents/generated/
+├── nextjs-agent.md          # Next.js specific patterns
+├── prisma-agent.md          # Database/ORM patterns
+├── tailwind-agent.md        # Styling patterns
+└── vitest-agent.md          # Testing patterns
+```
+
+### 3. Create Architecture Documentation
+
+Generate `.agentful/architecture.json`:
+
+```json
+{
+  "detected_stack": {
+    "frontend": {
+      "framework": "Next.js",
+      "version": "14",
+      "language": "TypeScript"
+    },
+    "backend": {
+      "framework": "Next.js API Routes",
+      "runtime": "Node.js"
+    },
+    "database": {
+      "provider": "PostgreSQL",
+      "orm": "Prisma"
+    },
+    "styling": {
+      "framework": "Tailwind CSS"
+    },
+    "testing": {
+      "unit": "Vitest",
+      "e2e": "Playwright"
+    }
+  },
+  "generated_agents": [
+    "nextjs-agent",
+    "prisma-agent",
+    "tailwind-agent",
+    "vitest-agent"
+  ],
+  "decisions": [],
+  "timestamp": "2026-01-18T00:00:00Z"
+}
+```
+
+## Agent Template
+
+Generated agents follow this template:
+
+```markdown
+---
+name: {{tech}}-specialist
+description: Specializes in {{Tech Framework}} development. Uses {{specific patterns}}.
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
+
+# {{Tech Framework}} Specialist
+
+You are the {{Tech Framework}} Specialist Agent.
+
+## Patterns
+
+### File Structure
+\```
+src/
+├── app/              # App router
+├── components/       # React components
+└── lib/              # Utilities
+\```
+
+### Component Pattern
+\`\`\`tsx
+'use client';
+
+export default function {{ComponentName}}() {
+  return <div>{{Content}}</div>;
+}
+\`\`\`
+
+### API Route Pattern
+\`\`\`ts
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(req: NextRequest) {
+  return NextResponse.json({ data });
+}
+\`\`\`
+
+## Rules
+- Use App Router (not Pages Router)
+- Server Components by default
+- Client Components only when needed (useState, useEffect)
+- Always use TypeScript
+```
+
+## Supported Technologies
+
+### JavaScript/TypeScript Ecosystem
+
+| Framework | Agent Name | Patterns |
+|-----------|-----------|----------|
+| Next.js | nextjs-agent | App Router, Server Actions, Route Handlers |
+| React | react-agent | Hooks, Components, Context |
+| Vue | vue-agent | Composition API, Script Setup |
+| Svelte | svelte-agent | Components, Stores, Actions |
+| Solid | solid-agent | Reactive primitives, Components |
+| Express | express-agent | Routes, Middleware, Controllers |
+| NestJS | nestjs-agent | Modules, Controllers, Services |
+| Fastify | fastify-agent | Routes, Plugins, Hooks |
+
+### Backend/Databases
+
+| Database | Agent Name | Patterns |
+|----------|-----------|----------|
+| Prisma | prisma-agent | Schema, Client, Migrations |
+| Drizzle | drizzle-agent | Schema, Queries, Migrations |
+| TypeORM | typeorm-agent | Entities, Repositories, Migrations |
+| Mongoose | mongoose-agent | Models, Schemas, Middleware |
+| MongoDB | mongodb-agent | Collections, Aggregation, Indexes |
+| PostgreSQL | postgres-agent | Queries, Transactions, Functions |
+| MySQL | mysql-agent | Queries, Transactions, Stored Procedures |
+| SQLite | sqlite-agent | Queries, Transactions, Database management |
+
+### Styling
+
+| Styling | Agent Name | Patterns |
+|---------|-----------|----------|
+| Tailwind | tailwind-agent | Utility classes, @apply, config |
+| CSS Modules | cssmodules-agent | .module.css, composition |
+| styled-components | styled-agent | Styled components, themes, props |
+| shadcn/ui | shadcn-agent | Components, cn(), variants |
+| Chakra UI | chakra-agent | Components, Props, Theming |
+| Mantine | mantine-agent | Components, Hooks, Theming |
+
+### Testing
+
+| Framework | Agent Name | Patterns |
+|-----------|-----------|----------|
+| Vitest | vitest-agent | describe, it, expect, vi |
+| Jest | jest-agent | describe, test, expect, jest |
+| Playwright | playwright-agent | page, locator, expect |
+| Cypress | cypress-agent | cy, commands, custom queries |
+| Testing Library | testing-library-agent | render, screen, fireEvent |
+
+### State Management
+
+| Library | Agent Name | Patterns |
+|---------|-----------|----------|
+| Zustand | zustand-agent | create, useStore, slices |
+| Redux | redux-agent | actions, reducers, selectors |
+| Jotai | jotai-agent | atoms, useAtom |
+| Recoil | recoil-agent | atoms, selectors, useRecoilState |
+| TanStack Query | query-agent | useQuery, useMutation, QueryClient |
+
+## Dynamic Agent Generation
+
+When a new technology is detected:
+
+### 1. Check if Agent Exists
+
+```bash
+if [ ! -f ".claude/agents/${tech}-agent.md" ]; then
+  # Generate agent
+  Task("architect", "Generate ${tech}-agent.md based on PRODUCT.md")
+fi
+```
+
+### 2. Generate from Template
+
+The Architect:
+1. Researches the technology's best practices
+2. Creates patterns specific to that technology
+3. Writes examples and common use cases
+4. Documents rules and gotchas
+5. Saves to `.claude/agents/generated/${tech}-agent.md`
+
+### 3. Validate Generated Agent
+
+```markdown
+Task("reviewer", "Validate generated ${tech}-agent.md follows best practices")
+```
+
+## Handling Unknown Tech Stack
+
+If `PRODUCT.md` doesn't specify tech stack:
+
+### Option 1: Analyze Existing Code
+
+```bash
+# Detect project type
+grep -r "package.json" && echo "Node.js project"
+grep -r "go.mod" && echo "Go project"
+grep -r "requirements.txt" && echo "Python project"
+grep -r "Cargo.toml" && echo "Rust project"
+
+# Detect frameworks
+grep -r "next.config" && echo "Next.js"
+grep -r "vite.config" && echo "Vite"
+grep -r "@nestjs" && echo "NestJS"
+```
+
+### Option 2: Ask User
+
+Add to `decisions.json`:
+
+```json
+{
+  "id": "tech-stack-001",
+  "question": "What tech stack should we use?",
+  "options": [
+    "Next.js + TypeScript + Prisma",
+    "React + Vite + Node + Express",
+    "Vue + Nuxt + Nitro",
+    "SvelteKit + Prisma",
+    "Custom (specify)"
+  ],
+  "context": "No tech stack specified in PRODUCT.md",
+  "blocking": ["agent-generation"]
+}
+```
+
+### Option 3: Use Defaults
+
+```json
+{
+  "detected_stack": {
+    "frontend": { "framework": "Next.js", "version": "14" },
+    "backend": { "framework": "Next.js API Routes" },
+    "database": { "orm": "Prisma" },
+    "styling": { "framework": "Tailwind CSS" },
+    "testing": { "unit": "Vitest", "e2e": "Playwright" }
+  }
+}
+```
+
+## Self-Healing Updates
+
+When tech stack changes:
+
+### 1. Detect Change
+
+```bash
+# Monitor PRODUCT.md for changes
+# Monitor package.json for new dependencies
+```
+
+### 2. Regenerate Affected Agents
+
+```markdown
+[Detect] → New framework added (e.g., "tRPC")
+  ↓
+[Generate] → Create trpc-agent.md
+  ↓
+[Validate] → Test agent works
+  ↓
+[Update] → Update architecture.json
+  ↓
+[Notify] → Tell orchestrator about new capability
+```
+
+### 3. Update Architecture JSON
+
+```json
+{
+  "generated_agents": [
+    "nextjs-agent",
+    "prisma-agent",
+    "trpc-agent"  // Newly added
+  ]
+}
+```
+
+## Integration with Orchestrator
+
+After generating agents, the Orchestrator can delegate:
+
+```markdown
+Task("nextjs-agent", "Create the dashboard page with server components")
+Task("prisma-agent", "Add user schema with email and password")
+Task("tailwind-agent", "Style the login form with proper spacing")
+Task("vitest-agent", "Write tests for auth service")
+```
+
+## Example: Generating Next.js Agent
+
+### Input
+
+```markdown
+PRODUCT.md:
+- Framework: Next.js 14
+- App Router (not Pages Router)
+- TypeScript
+- Server Components by default
+```
+
+### Output
+
+```markdown
+---
+name: nextjs-specialist
+description: Specializes in Next.js 14 App Router development. Uses Server Components, Server Actions, and Route Handlers.
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
+
+# Next.js 14 Specialist
+
+## File Structure
+\```
+src/
+├── app/
+│   ├── (auth)/
+│   │   └── login/
+│   │       └── page.tsx
+│   ├── api/
+│   │   └── auth/
+│   │       └── route.ts
+│   └── layout.tsx
+├── components/
+└── lib/
+\```
+
+## Page Pattern
+\`\`\`tsx
+// Server Component (default)
+export default async function DashboardPage() {
+  const data = await fetchData();
+  return <div>{data}</div>;
+}
+\`\`\`
+
+## Client Component Pattern
+\`\`\`tsx
+'use client';
+
+export default function InteractiveButton() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;
+}
+\`\`\`
+
+## Server Action Pattern
+\`\`\`tsx
+'use server';
+
+export async function createPost(formData: FormData) {
+  // Server-side logic
+}
+\`\`\`
+
+## Route Handler Pattern
+\`\`\`tsx
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function GET(req: NextRequest) {
+  return NextResponse.json({ data });
+}
+\`\`\`
+
+## Rules
+- Use App Router (not Pages Router)
+- Server Components by default
+- Add 'use client' only for interactive components
+- Always use TypeScript
+- Use native fetch for data fetching
+- Prefer Server Actions over API routes for mutations
+```
+
+## Best Practices
+
+### DO
+
+- Always read PRODUCT.md first
+- Check if agent exists before generating
+- Validate generated agents
+- Use latest framework patterns
+- Update architecture.json after changes
+- Document framework-specific gotchas
+
+### DON'T
+
+- Overwrite user-customized agents without asking
+- Generate agents for technologies not in use
+- Skip validation
+- Use outdated patterns (e.g., Next.js Pages Router)
+
+## Troubleshooting
+
+### Agent Not Generated
+
+**Symptom:** Expected agent not in `.claude/agents/generated/`
+
+**Solutions:**
+1. Check PRODUCT.md has the tech stack specified
+2. Run `/agentful-generate-agents` manually
+3. Check architecture.json for detected technologies
+
+### Agent Uses Wrong Patterns
+
+**Symptom:** Generated agent uses outdated or incorrect patterns
+
+**Solutions:**
+1. Edit agent file directly: `.claude/agents/generated/${tech}-agent.md`
+2. Update PRODUCT.md with correct framework version
+3. Re-run architect to regenerate
+
+### Missing Technology Detection
+
+**Symptom:** Technology in use but no agent generated
+
+**Solutions:**
+1. Manually add to PRODUCT.md
+2. Run architect to detect changes
+3. Create agent manually as template
+
+## Advanced Usage
+
+### Custom Agent Templates
+
+Override default agent template by creating:
+
+```
+.agentful/templates/
+├── frontend-agent.md
+├── backend-agent.md
+└── database-agent.md
+```
+
+### Framework-Specific Overrides
+
+```markdown
+.claude/agents/generated/nextjs-agent.md:
+# Override: Custom Next.js patterns for this project
+
+# Your custom patterns
+- Use our custom Button component
+- Follow our folder structure
+- Use our custom hooks
+```
+
+### Multi-Language Support
+
+Generate agents for different languages:
+
+```json
+{
+  "detected_stack": {
+    "frontend": { "language": "TypeScript" },
+    "backend": { "language": "Python", "framework": "FastAPI" }
+  },
+  "generated_agents": [
+    "nextjs-agent",
+    "fastapi-agent"
+  ]
+}
+```
+
+## Monitoring
+
+Check architect status:
+
+```bash
+# View detected architecture
+cat .agentful/architecture.json
+
+# List generated agents
+ls -la .claude/agents/generated/
+
+# Regenerate all agents
+/agentful-generate-agents
+```

@@ -1,0 +1,282 @@
+---
+title: Installation - Agentful
+description: Learn how to install and initialize Agentful in your project using npx agentful init.
+---
+
+# Installation
+
+Get Agentful up and running in your project in under a minute.
+
+---
+
+## Prerequisites
+
+Before installing Agentful, ensure you have:
+
+- **Claude Code** installed - [Get it here](https://code.anthropic.com)
+- **Node.js 18+** installed - [Download here](https://nodejs.org/)
+- A project directory to work in
+
+**Optional (for 24/7 development):**
+- Ralph Wiggum plugin for Claude Code
+  ```bash
+  /plugin install ralph-wiggum@anthropics
+  ```
+
+---
+
+## Installation Methods
+
+### Method 1: Initialize in Existing Project (Recommended)
+
+If you have an existing project:
+
+```bash
+cd your-project
+npx agentful init
+```
+
+This creates:
+- `.claude/` - Pre-configured agents, commands, skills
+- `.agentful/` - Runtime state tracking (gitignored)
+- `PRODUCT.md` - Your product spec template
+- `CLAUDE.md` - Project instructions for Claude
+
+### Method 2: Initialize New Project
+
+Starting from scratch? Create a new project first:
+
+```bash
+mkdir my-app
+cd my-app
+npm init -y
+npx agentful init
+```
+
+### Method 3: Bare Initialization
+
+If you already have `PRODUCT.md` and `CLAUDE.md`:
+
+```bash
+npx agentful init --bare
+```
+
+This skips creating template files and only sets up `.claude/` and `.agentful/`.
+
+---
+
+## What Gets Created
+
+After running `npx agentful init`, you'll see:
+
+```
+✅ Agentful initialized successfully!
+
+Next steps:
+  1. Edit PRODUCT.md with your product specification
+  2. Run: claude
+  3. Type: /agentful-start
+
+For autonomous 24/7 development:
+  /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+```
+
+### Directory Structure
+
+```
+your-project/
+├── PRODUCT.md              # ← Edit this: your product spec
+├── CLAUDE.md               # Project instructions
+├── .claude/                # Agentful configuration
+│   ├── agents/             # 7 specialized agents
+│   ├── commands/           # 4 slash commands
+│   ├── skills/             # Domain skills
+│   └── settings.json       # Hooks and permissions
+├── .agentful/              # Runtime state (gitignored)
+│   ├── state.json
+│   ├── completion.json
+│   ├── decisions.json
+│   └── architecture.json
+└── package.json
+```
+
+---
+
+## Verification
+
+Verify Agentful is installed:
+
+```bash
+# Check that .claude directory exists
+ls -la .claude/
+
+# Check that .agentful directory exists
+ls -la .agentful/
+
+# Verify state files
+cat .agentful/state.json
+```
+
+You should see:
+- `.claude/` directory with agents, commands, skills
+- `.agentful/` directory with state files
+- Initial state set to `idle`
+
+---
+
+## Updating .gitignore
+
+Agentful automatically adds `.agentful/` to your `.gitignore`:
+
+```bash
+# Agentful runtime state
+.agentful/
+```
+
+The `.agentful/` directory contains runtime state that shouldn't be committed:
+- `state.json` - Current work state
+- `completion.json` - Progress tracking
+- `decisions.json` - Pending decisions
+- `architecture.json` - Detected tech stack
+
+**Note**: The `.claude/` directory **should** be committed to version control.
+
+---
+
+## Troubleshooting
+
+### Issue: "Command not found: npx"
+
+**Solution:** Install Node.js 18+ from [nodejs.org](https://nodejs.org/)
+
+```bash
+# Verify Node.js is installed
+node --version  # Should be v18+
+
+# Verify npx is available
+npx --version
+```
+
+### Issue: ".claude directory already exists"
+
+If you already have a `.claude/` directory, Agentful will ask:
+
+```bash
+⚠️  .claude/ directory already exists!
+Overwrite? (y/N)
+```
+
+- Type `y` to overwrite (your existing config will be replaced)
+- Type `N` or press Enter to abort
+
+**Recommendation:** Back up your existing `.claude/` before overwriting:
+
+```bash
+mv .claude .claude.backup
+npx agentful init
+```
+
+### Issue: Permission denied
+
+**Solution:** Make sure you have write permissions in the directory:
+
+```bash
+# Check permissions
+ls -la
+
+# If needed, change ownership (macOS/Linux)
+sudo chown -R $USER:$USER .claude .agentful
+```
+
+### Issue: "Cannot read properties of undefined"
+
+**Solution:** Ensure you're running in a valid Node.js project:
+
+```bash
+# Initialize package.json if missing
+npm init -y
+
+# Then try again
+npx agentful init
+```
+
+---
+
+## Next Steps
+
+Now that Agentful is installed:
+
+1. **Edit your product spec** → [Quick Start Guide](/getting-started/quick-start)
+2. **Start Claude Code** → `claude`
+3. **Begin development** → `/agentful-start`
+
+---
+
+## Uninstallation
+
+To remove Agentful from your project:
+
+```bash
+# Remove Agentful directories
+rm -rf .claude .agentful
+
+# Remove template files (optional)
+rm PRODUCT.md CLAUDE.md
+
+# Remove .gitignore entry (optional)
+# Edit .gitignore and remove the .agentful/ line
+```
+
+---
+
+## Advanced Options
+
+### Custom Install Location
+
+By default, Agentful installs in the current directory. To install elsewhere:
+
+```bash
+npx agentful init --path /path/to/project
+```
+
+### Silent Installation
+
+For automation scripts:
+
+```bash
+npx agentful init --silent
+```
+
+Skips the confirmation prompt and creates a backup if `.claude/` exists.
+
+### Version Check
+
+Check which version of Agentful you installed:
+
+```bash
+npx agentful --version
+```
+
+---
+
+## What's Next?
+
+<div className="grid gap-4 md:grid-cols-2 mt-8">
+
+<div>
+
+### Quick Start
+Learn how to use Agentful in 5 minutes
+→ [Quick Start Guide](/getting-started/quick-start)
+
+</div>
+
+<div>
+
+### First Project
+Build your first autonomous project
+→ [First Project Guide](/getting-started/first-project)
+
+</div>
+
+</div>

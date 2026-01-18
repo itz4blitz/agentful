@@ -1,0 +1,437 @@
+# Orchestrator Agent
+
+The Orchestrator is the central coordinator of the Agentful system. It manages the entire development lifecycle by reading state, delegating work to specialists, and tracking progress.
+
+## Overview
+
+The Orchestrator **never writes code directly**. Instead, it coordinates work by:
+
+1. Reading project state from JSON files
+2. Selecting the next work item based on priority
+3. Delegating to specialist agents (Backend, Frontend, Tester, etc.)
+4. Validating results through the Reviewer
+5. Fixing any issues found
+6. Updating completion state
+7. Looping until the project is complete
+
+## Configuration
+
+```yaml
+name: orchestrator
+description: Coordinates autonomous product development. Reads state, delegates to specialists, tracks progress. NEVER writes code directly.
+model: opus
+tools: Read, Write, Edit, Glob, Grep, Task, AskUserQuestion, TodoWrite
+```
+
+**Why Opus?** The Orchestrator needs the highest reasoning capability to make complex decisions about prioritization, delegation, and progress tracking.
+
+## State Management
+
+The Orchestrator reads and maintains three key state files:
+
+### 1. state.json
+
+Tracks current work state and iteration count.
+
+```json
+{
+  "version": "1.0",
+  "current_task": "implement-user-auth",
+  "current_phase": "implementation",
+  "iterations": 5,
+  "last_updated": "2026-01-18T00:00:00Z",
+  "blocked_on": []
+}
+```
+
+**Fields:**
+- `current_task` - Currently executing task
+- `current_phase` - Phase: idle, implementation, validation, fixing
+- `iterations` - Number of loop iterations
+- `blocked_on` - List of decision IDs blocking progress
+
+### 2. completion.json
+
+Tracks feature completion and quality gates.
+
+```json
+{
+  "features": {
+    "authentication": {
+      "status": "complete",
+      "score": 100,
+      "completed_at": "2026-01-18T01:00:00Z"
+    },
+    "user-profile": {
+      "status": "in_progress",
+      "score": 45,
+      "notes": "Backend done, frontend pending"
+    },
+    "dashboard": {
+      "status": "pending",
+      "score": 0
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "no_dead_code": true,
+    "coverage_80": false
+  },
+  "overall": 48,
+  "last_updated": "2026-01-18T00:00:00Z"
+}
+```
+
+**Fields:**
+- `features` - Map of feature → completion status
+- `status` - pending, in_progress, complete
+- `score` - 0-100 completion percentage
+- `gates` - Quality gates (all must be true to ship)
+- `overall` - Overall project completion percentage
+
+### 3. decisions.json
+
+Tracks pending and resolved user decisions.
+
+```json
+{
+  "pending": [
+    {
+      "id": "decision-001",
+      "question": "Should auth use JWT or session cookies?",
+      "options": [
+        "JWT (stateless, scalable)",
+        "Sessions (simpler, built-in)",
+        "Clerk (managed service)"
+      ],
+      "context": "Building authentication system for PRODUCT.md",
+      "blocking": ["auth-feature", "user-profile-feature"],
+      "timestamp": "2026-01-18T00:00:00Z"
+    }
+  ],
+  "resolved": []
+}
+```
+
+## Startup Process
+
+On every loop iteration, the Orchestrator:
+
+### 1. Read State Files
+
+```markdown
+1. Read PRODUCT.md - Understand what we're building
+2. Read .agentful/state.json - Current work state
+3. Read .agentful/completion.json - What's done/not done
+4. Read .agentful/decisions.json - Pending user decisions
+```
+
+### 2. Select Next Work Item
+
+Using priority order:
+
+1. **Critical failures** - Broken tests, type errors, blocked PRs
+2. **Unblock work** - Things waiting on a single small decision
+3. **High priority features** - As defined in PRODUCT.md
+4. **Medium priority features**
+5. **Tests for completed features**
+6. **Polish/Optimization** - Only when everything else is done
+
+### 3. Check Blockers
+
+```javascript
+if (workItem.blockedOn && workItem.blockedOn.length > 0) {
+  // Move to next non-blocked item
+  // Tell user to run /agentful-decide
+}
+```
+
+## Delegation Pattern
+
+The Orchestrator uses the `Task` tool to spawn specialist agents:
+
+### Backend Work
+
+```markdown
+Task("backend agent", "Implement the user authentication system with JWT tokens per PRODUCT.md section 3")
+```
+
+### Frontend Work
+
+```markdown
+Task("frontend agent", "Create the login page with email/password form with validation")
+```
+
+### Testing
+
+```markdown
+Task("tester agent", "Write unit tests for the auth service with 80% coverage")
+```
+
+### Review
+
+After ANY implementation work:
+
+```markdown
+Task("reviewer agent", "Review all changes in src/auth/")
+```
+
+## Decision Handling
+
+When user input is needed:
+
+### 1. Add to decisions.json
+
+```json
+{
+  "id": "decision-001",
+  "question": "Should auth use JWT or session cookies?",
+  "options": ["JWT (stateless, scalable)", "Sessions (simpler, built-in)", "Clerk (managed service)"],
+  "context": "Building authentication system for PRODUCT.md",
+  "blocking": ["auth-feature", "user-profile-feature"],
+  "timestamp": "2026-01-18T00:00:00Z"
+}
+```
+
+### 2. Stop Work on Blocked Features
+
+Move to the next non-blocked work item.
+
+### 3. Notify User
+
+```markdown
+⚠️ User decision needed: Should auth use JWT or session cookies?
+
+Run: /agentful-decide
+
+Blocked features:
+- auth-feature
+- user-profile-feature
+```
+
+## Completion Tracking
+
+After validated work (Reviewer passes):
+
+```json
+{
+  "features": {
+    "authentication": {
+      "status": "complete",
+      "score": 100,
+      "completed_at": "2026-01-18T01:00:00Z"
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "no_dead_code": true,
+    "coverage_80": true
+  },
+  "overall": 65
+}
+```
+
+## Loop Until Done
+
+The Orchestrator continues looping until:
+
+```javascript
+completion.overall === 100 &&
+Object.values(completion.gates).every(gate => gate === true) &&
+Object.values(completion.features).every(f => f.status === "complete")
+```
+
+## Ralph Wiggum Integration
+
+When running in a Ralph loop (`/ralph-loop`), output this **ONLY when truly complete**:
+
+```
+<promise>AGENTFUL_COMPLETE</promise>
+```
+
+Until then, continue iterating.
+
+## Example Flow
+
+```
+[Read state]
+  ↓
+completion.json: auth at 30%, user-profile at 0%
+  ↓
+[Select work] → Continue authentication (highest priority)
+  ↓
+[Delegate] → Task("@backend", "Implement JWT authentication per PRODUCT.md")
+  ↓
+[Wait] → Backend agent completes
+  ↓
+[Delegate] → Task("@reviewer", "Review authentication changes")
+  ↓
+[Wait] → Reviewer finds issues:
+  - Missing tests (coverage 60%)
+  - Console.log in src/auth/login.ts:45
+  - Unused import in src/auth/jwt.ts
+  ↓
+[Delegate] → Task("@fixer", "Fix reviewer issues")
+  ↓
+[Wait] → Fixer completes all fixes
+  ↓
+[Delegate] → Task("@reviewer", "Re-review authentication")
+  ↓
+[Wait] → Reviewer passes!
+  ↓
+[Update] → completion.json: auth = complete (100%)
+  ↓
+[Loop] → What's next? Read state, pick next item...
+```
+
+## Best Practices
+
+### DO
+
+- Always check state.json before starting work
+- Always update completion.json after validated work
+- Always run reviewer after implementation
+- Use TodoWrite to track your own tasks
+- Move to next work when blocked on user input
+- Prioritize critical failures over new features
+
+### DON'T
+
+- Never write code yourself - delegate to specialists
+- Never skip the reviewer agent
+- Never make up decisions - ask the user
+- Never work on blocked features
+- Never assume features are complete without validation
+
+## Troubleshooting
+
+### Orchestrator Stuck
+
+**Symptom:** Not progressing, looping on same task
+
+**Solutions:**
+1. Check `.agentful/state.json` for current task
+2. Check `.agentful/decisions.json` for blockers
+3. Run `/agentful-status` to see what's happening
+4. Manually resolve blockers with `/agentful-decide`
+
+### Completion Score Not Updating
+
+**Symptom:** Features complete but overall score stays at 0
+
+**Solutions:**
+1. Verify reviewer is passing
+2. Check that all gates are true
+3. Ensure `status: "complete"` is set
+4. Verify score calculation
+
+### Infinite Loop
+
+**Symptom:** Agent keeps delegating same task
+
+**Solutions:**
+1. Check if reviewer is failing repeatedly
+2. Look for unfixable issues in decisions.json
+3. Verify agent can actually complete the task
+4. Consider manual intervention
+
+## Integration Points
+
+### With Architect
+
+```
+[Orchestrator] → "I need Next.js patterns"
+  ↓
+[Architect] → Generates nextjs-agent.md
+  ↓
+[Orchestrator] → Can now delegate to @nextjs-agent
+```
+
+### With Backend/Frontend
+
+```
+[Orchestrator] → "Build auth feature"
+  ↓
+[Backend] → Implements API routes, services
+  ↓
+[Frontend] → Implements login page
+  ↓
+[Orchestrator] → "Validate this work"
+```
+
+### With Tester
+
+```
+[Orchestrator] → "Implementation done"
+  ↓
+[Tester] → Writes tests
+  ↓
+[Orchestrator] → "Run validation"
+```
+
+### With Reviewer
+
+```
+[Orchestrator] → "Review auth changes"
+  ↓
+[Reviewer] → Finds issues
+  ↓
+[Orchestrator] → "Fix these issues"
+  ↓
+[Fixer] → Fixes issues
+  ↓
+[Orchestrator] → "Re-review"
+```
+
+## Advanced Usage
+
+### Custom Prioritization
+
+Override default priority by editing `state.json`:
+
+```json
+{
+  "current_task": "custom-priority",
+  "priority": ["feature-a", "feature-b", "feature-c"]
+}
+```
+
+### Selective Execution
+
+Focus on specific features:
+
+```markdown
+[Read state] → Only work on "authentication" feature
+[Delegate] → Task("@backend", "Complete authentication feature")
+[Loop] → Until authentication is complete
+```
+
+### Parallel Delegation
+
+Spawn multiple agents at once:
+
+```markdown
+Task("@backend", "Implement user API")
+Task("@frontend", "Implement user profile page")
+Task("@tester", "Prepare tests for user feature")
+```
+
+## Monitoring
+
+Check orchestrator progress:
+
+```bash
+# View completion state
+cat .agentful/completion.json
+
+# View current work
+cat .agentful/state.json
+
+# View blockers
+cat .agentful/decisions.json
+
+# Full status
+/agentful-status
+```

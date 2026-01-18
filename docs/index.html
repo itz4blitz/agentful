@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentful - One-Click Autonomous Product Development for Claude Code</title>
+  <meta name="description" content="Turn any project into an autonomous product builder. Drop-in .claude/ configuration for Claude Code with specialized agents, skills, and commands.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #7c3aed;
+      --primary-dark: #6d28d9;
+      --primary-light: #a78bfa;
+      --secondary: #06b6d4;
+      --accent: #f43f5e;
+      --bg: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-card-hover: #1a1a25;
+      --border: #1f1f2e;
+      --text: #e4e4e7;
+      --text-muted: #a1a1aa;
+      --text-dim: #52525b;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --gradient-1: linear-gradient(135deg, #7c3aed 0%, #06b6d4 100%);
+      --gradient-2: linear-gradient(135deg, #f43f5e 0%, #7c3aed 100%);
+      --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 35px 60px -15px rgba(124, 58, 237, 0.2);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 1.5rem;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: var(--gradient-1);
+      color: white;
+      box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 180px 0 100px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1000px;
+      height: 1000px;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      letter-spacing: -0.03em;
+    }
+
+    .hero h1 span {
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto 40px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .install-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 48px;
+    }
+
+    .install-box code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      color: var(--primary-light);
+    }
+
+    .install-box .copy-btn {
+      background: var(--border);
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .install-box .copy-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Features */
+    .features {
+      padding: 100px 0;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .section-header h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-4px);
+      border-color: var(--primary);
+    }
+
+    .feature-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--gradient-1);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+    }
+
+    /* How it works */
+    .how-it-works {
+      padding: 100px 0;
+      background: linear-gradient(180deg, transparent, rgba(124, 58, 237, 0.05), transparent);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 32px;
+      margin-top: 64px;
+    }
+
+    .step {
+      text-align: center;
+      position: relative;
+    }
+
+    .step-number {
+      width: 60px;
+      height: 60px;
+      background: var(--gradient-1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin: 0 auto 24px;
+    }
+
+    .step h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .step p {
+      color: var(--text-muted);
+    }
+
+    .step code {
+      background: var(--bg-card);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--primary-light);
+    }
+
+    /* Agents */
+    .agents {
+      padding: 100px 0;
+    }
+
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .agent-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.3s;
+    }
+
+    .agent-card:hover {
+      border-color: var(--primary-light);
+    }
+
+    .agent-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .agent-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-card-hover);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .agent-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .agent-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .agent-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: var(--bg);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .agent-badge.coordinator { background: rgba(124, 58, 237, 0.2); color: var(--primary-light); }
+    .agent-badge.implementer { background: rgba(6, 182, 212, 0.2); color: var(--secondary); }
+    .agent-badge.validator { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+
+    /* Commands */
+    .commands {
+      padding: 100px 0;
+      background: linear-gradient(180deg, transparent, rgba(6, 182, 212, 0.05), transparent);
+    }
+
+    .command-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .command-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      transition: all 0.3s;
+    }
+
+    .command-item:hover {
+      border-color: var(--secondary);
+    }
+
+    .command-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      color: var(--secondary);
+      background: rgba(6, 182, 212, 0.1);
+      padding: 8px 16px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .command-desc {
+      flex: 1;
+      color: var(--text-muted);
+    }
+
+    /* CTA */
+    .cta {
+      padding: 100px 0;
+      text-align: center;
+    }
+
+    .cta-box {
+      background: var(--gradient-1);
+      border-radius: 24px;
+      padding: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    }
+
+    .cta-box h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .cta-box p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 32px;
+      position: relative;
+    }
+
+    .cta-box .btn-white {
+      background: white;
+      color: var(--primary);
+      position: relative;
+    }
+
+    .cta-box .btn-white:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Footer */
+    footer {
+      padding: 64px 0 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .command-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .cta-box {
+        padding: 40px 24px;
+      }
+
+      .cta-box h2 {
+        font-size: 1.75rem;
+      }
+    }
+
+    /* Animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .float {
+      animation: float 3s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container nav-content">
+      <div class="logo">Agentful</div>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#agents">Agents</a></li>
+        <li><a href="#commands">Commands</a></li>
+        <li><a href="https://github.com/itz4blitz/agentful">GitHub</a></li>
+        <li><a href="https://discord.gg/SMDvJXUe">Discord</a></li>
+      </ul>
+      <a href="#" class="btn btn-primary" onclick="copyInstall()">🚀 Install</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1>Turn Claude Code into an<br><span>Autonomous Product Builder</span></h1>
+      <p class="hero-subtitle">Drop-in configuration for 24/7 development. Agents, skills, and commands that build while you sleep.</p>
+      <div class="hero-buttons">
+        <a href="#" class="btn btn-primary" onclick="copyInstall()">🚀 Get Started</a>
+        <a href="#how-it-works" class="btn btn-secondary">See How It Works</a>
+      </div>
+      <div class="install-box">
+        <code>npx agentful init</code>
+        <button class="copy-btn" onclick="copyInstall()">Copy</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-header">
+        <h2>Everything You Need</h2>
+        <p>One command sets up autonomous development in any project</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Zero Config</h3>
+          <p>Drop-in .claude/ folder with pre-built agents, commands, and skills. Just run and go.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>Specialized Agents</h3>
+          <p>Backend, Frontend, Tester, Reviewer, Fixer, and Architect agents working together.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🌙</div>
+          <h3>24/7 Development</h3>
+          <p>Works overnight with Ralph Wiggum loops. Wake up to completed features.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔮</div>
+          <h3>Tech Stack Detection</h3>
+          <p>Automatically detects your stack and generates specialized agents on the fly.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <h3>Quality Gates</h3>
+          <p>TypeScript, linting, tests, coverage, security, and dead code checks automatically.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Progress Tracking</h3>
+          <p>See exactly what's done, what's in progress, and what's blocking at any time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="how-it-works">
+    <div class="container">
+      <div class="section-header">
+        <h2>How It Works</h2>
+        <p>Four simple steps to autonomous development</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Initialize</h3>
+          <p>Run <code>npx agentful init</code> in your project</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Define Product</h3>
+          <p>Edit <code>PRODUCT.md</code> with your requirements</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Start Claude</h3>
+          <p>Run <code>claude</code> and type <code>/agentful-start</code></p>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <h3>Watch It Build</h3>
+          <p>Agentful works autonomously until complete</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Agents -->
+  <section id="agents" class="agents">
+    <div class="container">
+      <div class="section-header">
+        <h2>Specialized Agents</h2>
+        <p>Each agent has a role. They work together seamlessly.</p>
+      </div>
+      <div class="agents-grid">
+        <div class="agent-card">
+          <div class="agent-card-header">
+            <div class="agent-icon">🧠</div>
+            <h3>Orchestrator</h3>
+          </div>
+          <p>The brain that coordinates all work. Reads state, delegates tasks, tracks progress. Never codes directly.</p>
+          <span class="agent-badge coordinator">Coordinator</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-card-header">
+            <div class="agent-icon">🏗️</div>
+            <h3>Architect</h3>
+          </div>
+          <p>Analyzes your tech stack and dynamically generates specialized agents for your specific framework.</p>
+          <span class="agent-badge coordinator">Coordinator</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-card-header">
+            <div class="agent-icon">⚙️</div>
+            <h3>Backend</h3>
+          </div>
+          <p>Implements services, repositories, controllers, APIs, database schemas, and authentication.</p>
+          <span class="agent-badge implementer">Implementer</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-card-header">
+            <div class="agent-icon">🎨</div>
+            <h3>Frontend</h3>
+          </div>
+          <p>Creates components, pages, hooks, state management, and styling. Beautiful UIs automatically.</p>
+          <span class="agent-badge implementer">Implementer</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-card-header">
+            <div class="agent-icon">🧪</div>
+            <h3>Tester</h3>
+          </div>
+          <p>Writes comprehensive unit, integration, and E2E tests. Ensures 80%+ coverage automatically.</p>
+          <span class="agent-badge implementer">Implementer</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-card-header">
+            <div class="agent-icon">🔍</div>
+            <h3>Reviewer</h3>
+          </div>
+          <p>Runs quality gates: TypeScript, linting, dead code detection, security scans. Nothing gets past.</p>
+          <span class="agent-badge validator">Validator</span>
+        </div>
+        <div class="agent-card">
+          <div class="agent-card-header">
+            <div class="agent-icon">🔧</div>
+            <h3>Fixer</h3>
+          </div>
+          <p>Auto-fixes validation failures. Removes dead code, adds tests, resolves issues without intervention.</p>
+          <span class="agent-badge implementer">Implementer</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Commands -->
+  <section id="commands" class="commands">
+    <div class="container">
+      <div class="section-header">
+        <h2>Slash Commands</h2>
+        <p>Control Agentful with simple commands</p>
+      </div>
+      <div class="command-list">
+        <div class="command-item">
+          <code class="command-name">/agentful-start</code>
+          <span class="command-desc">Begin or resume autonomous development loop</span>
+        </div>
+        <div class="command-item">
+          <code class="command-name">/agentful-status</code>
+          <span class="command-desc">Check current progress and what's being worked on</span>
+        </div>
+        <div class="command-item">
+          <code class="command-name">/agentful-decide</code>
+          <span class="command-desc">Answer pending decisions that block development</span>
+        </div>
+        <div class="command-item">
+          <code class="command-name">/agentful-validate</code>
+          <span class="command-desc">Run all quality checks and validation gates</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <div class="cta-box">
+        <h2>Ready to Build Autonomously?</h2>
+        <p>Install Agentful in your project and start Claude Code. That's it.</p>
+        <button class="btn btn-white" onclick="copyInstall()">🚀 npx agentful init</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="logo">Agentful</div>
+        <div class="footer-links">
+          <a href="https://github.com/itz4blitz/agentful">GitHub</a>
+          <a href="https://github.com/itz4blitz/agentful/issues">Issues</a>
+          <a href="https://github.com/itz4blitz/agentful/blob/main/CONTRIBUTING.md">Contributing</a>
+          <a href="https://github.com/itz4blitz/agentful/blob/main/LICENSE">License</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        MIT License © 2026 Agentful Contributors
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function copyInstall() {
+      navigator.clipboard.writeText('npx agentful init');
+      const btn = document.querySelector('.install-box .copy-btn') || document.querySelector('.cta-box .btn-white');
+      const originalText = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = originalText, 2000);
+    }
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href !== '#') {
+          e.preventDefault();
+          document.querySelector(href).scrollIntoView({
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

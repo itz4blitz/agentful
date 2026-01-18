@@ -1,0 +1,333 @@
+# Agentful Commands Reference
+
+Complete reference guide for all Agentful slash commands used in autonomous product development.
+
+## Overview
+
+Agentful provides a set of slash commands that automate the product development lifecycle. These commands work together to create an autonomous development loop that can build features, validate quality, and resolve decisions with minimal human intervention.
+
+## Command Categories
+
+### Core Development Commands
+
+- **[/agentful-start](./agentful-start)** - Start or resume autonomous product development
+- **[/agentful-status](./agentful-status)** - View current progress and state
+- **[/agentful-decide](./agentful-decide)** - Resolve pending decisions blocking progress
+- **[/agentful-validate](./agentful-validate)** - Run quality checks and validation gates
+
+## Quick Start
+
+### Basic Workflow
+
+The typical development workflow follows this sequence:
+
+```
+1. /agentful-start     → Begin autonomous development
+2. /agentful-status    → Check progress
+3. /agentful-decide    → Answer blocking decisions (if needed)
+4. /agentful-validate  → Verify quality (optional)
+5. /agentful-start     → Continue development
+```
+
+### First Time Setup
+
+Before using Agentful commands, ensure you have:
+
+1. **PRODUCT.md** - Product requirements document
+2. **.agentful/** directory - State management
+3. **Git repository** - Version control
+
+```bash
+# Initialize Agentful
+mkdir -p .agentful
+echo '{}' > .agentful/state.json
+echo '{}' > .agentful/completion.json
+echo '{"pending":[],"resolved":[]}' > .agentful/decisions.json
+```
+
+## Command Reference
+
+### /agentful-start
+
+**Purpose:** Initiates the autonomous development loop
+
+**When to use:**
+- Starting a new product development session
+- Resuming development after a break
+- Continuing after resolving decisions
+- Running autonomous development cycles
+
+**Key features:**
+- Reads product state and picks next task
+- Delegates work to specialist agents
+- Validates completion before moving on
+- Updates completion tracking
+
+**See:** [Complete /agentful-start reference](./agentful-start)
+
+---
+
+### /agentful-status
+
+**Purpose:** Shows current progress and development state
+
+**When to use:**
+- Checking what's been completed
+- Seeing what's currently in progress
+- Identifying blocking issues
+- Getting an overview before making decisions
+
+**Key features:**
+- Visual progress display with percentages
+- Feature status table (Done/Active/Pending)
+- Quality gate status
+- Pending decisions overview
+- Current work context
+
+**See:** [Complete /agentful-status reference](./agentful-status)
+
+---
+
+### /agentful-decide
+
+**Purpose:** Resolves pending decisions blocking development
+
+**When to use:**
+- /agentful-start reports pending decisions
+- You need to make architectural choices
+- Blocking issues need resolution
+- Setting product direction
+
+**Key features:**
+- Interactive decision interface
+- Presents options with context
+- Records decisions for traceability
+- Unblocks features automatically
+
+**See:** [Complete /agentful-decide reference](./agentful-decide)
+
+---
+
+### /agentful-validate
+
+**Purpose:** Runs quality checks and validation gates
+
+**When to use:**
+- Before committing code
+- After completing features
+- Verifying quality standards
+- CI/CD integration
+
+**Key features:**
+- TypeScript type checking
+- Lint validation
+- Dead code detection
+- Test execution
+- Coverage reporting
+- Security scanning
+
+**See:** [Complete /agentful-validate reference](./agentful-validate)
+
+---
+
+## Common Workflows
+
+### Workflow 1: Initial Development Session
+
+```bash
+# Start building your product
+/agentful-start
+
+# Check progress after some time
+/agentful-status
+
+# If blocked by decisions
+/agentful-decide
+
+# Continue development
+/agentful-start
+```
+
+### Workflow 2: Quality-Focused Development
+
+```bash
+# Run development
+/agentful-start
+
+# Validate quality before proceeding
+/agentful-validate
+
+# If validation fails, run again to auto-fix
+/agentful-start
+
+# Verify fixes
+/agentful-validate
+```
+
+### Workflow 3: Autonomous Loop (Advanced)
+
+For continuous autonomous development:
+
+```bash
+/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+```
+
+This runs the development loop continuously until:
+- All features complete (100%)
+- All quality gates passing
+- Maximum iterations reached
+
+### Workflow 4: Decision-Heavy Session
+
+```bash
+# Start development
+/agentful-start
+
+# If blocked, review all pending decisions
+/agentful-decide
+
+# Resolve multiple decisions in sequence
+# (Interactive mode walks through each)
+
+# Resume with clear path
+/agentful-start
+
+# Verify unblocked progress
+/agentful-status
+```
+
+## Command Output Reference
+
+### Status Indicators
+
+| Symbol | Meaning |
+|--------|---------|
+| ✅ | Completed/Passing |
+| 🔄 | In Progress |
+| ⏸ | Pending/Blocked |
+| ⚠️ | Warning |
+| ❌ | Failed/Error |
+
+### Progress Bars
+
+```
+Overall Progress: ████░░░░░░░░░░ 48%
+                  10%     50%     100%
+```
+
+- Solid blocks (█) = completed
+- Empty blocks (░) = remaining
+
+### Quality Gates
+
+```
+┌─────────────────────┬────────┐
+│ Quality Gate        │ Status │
+├─────────────────────┼────────┤
+│ Tests Passing       │ ✅     │
+│ No Type Errors      │ ✅     │
+│ No Dead Code        │ ❌     │
+│ Coverage ≥ 80%      │ ⚠️ 72% │
+└─────────────────────┴────────┘
+```
+
+## Tips and Best Practices
+
+### Development Tips
+
+1. **Start with /agentful-status** - Always check current state before starting work
+2. **Resolve decisions promptly** - Pending decisions block progress immediately
+3. **Run validation regularly** - Catch quality issues early
+4. **Monitor iterations** - High iteration counts may indicate problems
+
+### Productivity Tips
+
+1. **Use autonomous mode for long sessions** - Let the loop run while you focus on other tasks
+2. **Check status between iterations** - Stay informed without interrupting flow
+3. **Keep PRODUCT.md updated** - Better requirements = better autonomous development
+4. **Review decisions log** - Learn from previous architectural choices
+
+### Troubleshooting
+
+#### Development Stuck?
+
+```bash
+# Check what's happening
+/agentful-status
+
+# Look for pending decisions
+# If present, resolve them
+/agentful-decide
+```
+
+#### Quality Gates Failing?
+
+```bash
+# Run detailed validation
+/agentful-validate
+
+# Review specific failures
+# Run /agentful-start to auto-fix
+```
+
+#### Can't Start Development?
+
+```bash
+# Verify required files exist
+ls -la PRODUCT.md .agentful/
+
+# Initialize if missing
+mkdir -p .agentful
+echo '{"version":"1.0","current_task":null}' > .agentful/state.json
+```
+
+## Advanced Usage
+
+### Integration with CI/CD
+
+```yaml
+# .github/workflows/agentful.yml
+name: Agentful Validation
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Agentful validation
+        run: |
+          npm install
+          /agentful-validate
+```
+
+### Custom Decision Templates
+
+Create reusable decision patterns:
+
+```json
+// .agentful/decision-templates.json
+{
+  "templates": [
+    {
+      "name": "auth-strategy",
+      "question": "Authentication approach?",
+      "options": ["JWT", "Sessions", "OAuth", "Custom"]
+    }
+  ]
+}
+```
+
+### Progress Tracking Integration
+
+```bash
+# Sync with external project management
+/agentful-status | jq '.features' > project-status.json
+```
+
+## See Also
+
+- [Installation Guide](/getting-started/installation) - Setting up Agentful
+- [Product Spec Guide](/guides/writing-product-md) - Writing PRODUCT.md
+- [Agent Configuration](/agents) - Understanding specialist agents
+- [Quality Gates](/autonomous-development/quality-gates) - Configuring validation thresholds
+- [Troubleshooting](/guides/troubleshooting) - Common issues and solutions

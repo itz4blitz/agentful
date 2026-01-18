@@ -1,0 +1,761 @@
+# Monitoring
+
+Effective monitoring is crucial for autonomous development. This guide explains how to track progress, understand what Agentful is building, and ensure quality throughout the development process.
+
+## Overview
+
+Agentful provides multiple monitoring layers:
+
+1. **Real-time Status** - Current work and progress
+2. **State Files** - Detailed progress tracking
+3. **Quality Reports** - Validation results
+4. **Git History** - Commits and changes
+5. **Custom Dashboards** - Build your own monitoring
+
+## Quick Status Check
+
+### Agentful Status Command
+
+```bash
+/agentful-status
+```
+
+**Output**:
+```
+=== Agentful Status ===
+
+Current Task: Implementing user authentication
+Current Phase: implementing
+Iteration: 12 of ~50 estimated
+
+Overall Progress: 35%
+├── Authentication: 100% ✓
+├── User Profile: 60% (backend done, frontend pending)
+└── Dashboard: 0%
+
+Quality Gates:
+├── Tests: Passing ✓
+├── TypeScript: Clean ✓
+├── Lint: Clean ✓
+├── Dead Code: 3 issues
+├── Coverage: 72% (target: 80%)
+└── Security: Clean ✓
+
+Pending Decisions: 1
+- [auth-decision-001] Should passwords include special characters?
+
+Recent Commits:
+• abc1234 feat: Implement user registration
+• def5678 test: Add auth service tests
+• ghi9012 fix: Remove unused imports
+```
+
+## State File Monitoring
+
+### completion.json
+
+Track overall progress:
+
+```bash
+# View completion status
+cat .agentful/completion.json
+
+# Pretty print
+cat .agentful/completion.json | jq '.'
+
+# Check overall progress
+cat .agentful/completion.json | jq '.overall'
+
+# Check gate status
+cat .agentful/completion.json | jq '.gates'
+
+# Check feature status
+cat .agentful/completion.json | jq '.features'
+```
+
+**Example Output**:
+```json
+{
+  "features": {
+    "authentication": {
+      "status": "complete",
+      "score": 100,
+      "completed_at": "2026-01-18T01:00:00Z"
+    },
+    "user-profile": {
+      "status": "in_progress",
+      "score": 60,
+      "notes": "Backend complete, frontend in progress"
+    },
+    "dashboard": {
+      "status": "pending",
+      "score": 0
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "no_dead_code": false,
+    "coverage_80": false,
+    "security_clean": true
+  },
+  "overall": 53,
+  "last_updated": "2026-01-18T02:30:00Z"
+}
+```
+
+### state.json
+
+Monitor current work:
+
+```bash
+# Current task
+cat .agentful/state.json | jq '.current_task'
+
+# Current phase
+cat .agentful/state.json | jq '.current_phase'
+
+# Iteration count
+cat .agentful/state.json | jq '.iterations'
+
+# Blockers
+cat .agentful/state.json | jq '.blocked_on'
+```
+
+**Example Output**:
+```json
+{
+  "version": "1.0",
+  "current_task": "Implementing user profile page",
+  "current_phase": "implementing",
+  "iterations": 15,
+  "last_updated": "2026-01-18T02:30:00Z",
+  "blocked_on": ["ui-decision-002"]
+}
+```
+
+### decisions.json
+
+Track pending decisions:
+
+```bash
+# Count pending decisions
+cat .agentful/decisions.json | jq '.pending | length'
+
+# View pending questions
+cat .agentful/decisions.json | jq '.pending[] | .question'
+
+# View what's blocked
+cat .agentful/decisions.json | jq '.pending[] | .blocking'
+```
+
+**Example Output**:
+```json
+{
+  "pending": [
+    {
+      "id": "ui-decision-002",
+      "question": "Which component library should we use?",
+      "options": [
+        "Material-UI (MUI)",
+        "Chakra UI",
+        "Tailwind UI",
+        "Custom components"
+      ],
+      "blocking": ["user-profile", "dashboard"],
+      "timestamp": "2026-01-18T02:00:00Z"
+    }
+  ],
+  "resolved": [
+    {
+      "id": "auth-decision-001",
+      "question": "JWT or sessions?",
+      "answer": "JWT with httpOnly cookies",
+      "resolved_at": "2026-01-18T01:00:00Z"
+    }
+  ]
+}
+```
+
+## Quality Monitoring
+
+### Validation Reports
+
+```bash
+# Latest review
+cat .agentful/last-review.json
+
+# Check if passed
+cat .agentful/last-review.json | jq '.passed'
+
+# View failed checks
+cat .agentful/last-review.json | jq '.checks | to_entries[] | select(.value.passed == false)'
+
+# View must-fix items
+cat .agentful/last-review.json | jq '.mustFix[]'
+
+# View can-ignore items
+cat .agentful/last-review.json | jq '.canIgnore[]'
+```
+
+**Example Output**:
+```json
+{
+  "passed": false,
+  "timestamp": "2026-01-18T02:30:00Z",
+  "checks": {
+    "typescript": {
+      "passed": true,
+      "summary": "No type errors"
+    },
+    "lint": {
+      "passed": true,
+      "summary": "No lint errors"
+    },
+    "deadCode": {
+      "passed": false,
+      "issues": [
+        "Unused export: formatDate in src/utils/date.ts",
+        "Unused file: src/components/OldWidget.tsx"
+      ]
+    },
+    "tests": {
+      "passed": true,
+      "summary": "52 tests passed"
+    },
+    "coverage": {
+      "passed": false,
+      "actual": 72,
+      "required": 80,
+      "summary": "8 percentage points below threshold"
+    },
+    "security": {
+      "passed": true,
+      "summary": "No security issues"
+    }
+  },
+  "mustFix": [
+    "Remove unused export: formatDate in src/utils/date.ts",
+    "Delete unused file: src/components/OldWidget.tsx",
+    "Add tests to reach 80% coverage (currently at 72%)"
+  ],
+  "canIgnore": []
+}
+```
+
+### Fix Reports
+
+```bash
+# What was fixed
+cat .agentful/last-fix.json | jq '.fixed[]'
+
+# What remains
+cat .agentful/last-fix.json | jq '.remaining[]'
+
+# What's blocked
+cat .agentful/last-fix.json | jq '.blocked[]'
+```
+
+**Example Output**:
+```json
+{
+  "timestamp": "2026-01-18T02:35:00Z",
+  "fixed": [
+    "Removed unused export: formatDate in src/utils/date.ts",
+    "Deleted unused file: src/components/OldWidget.tsx",
+    "Added tests for string utility functions"
+  ],
+  "remaining": [
+    "Coverage at 76% (need 4 more percentage points)"
+  ],
+  "blocked": []
+}
+```
+
+## Git-Based Monitoring
+
+### Commit History
+
+```bash
+# View recent commits
+git log --oneline -20
+
+# View by agent
+git log --author="orchestrator" --oneline
+git log --author="backend" --oneline
+git log --author="frontend" --oneline
+git log --author="fixer" --oneline
+
+# View commits since Agentful started
+git log --since="1 hour ago" --oneline
+
+# View commit with diff
+git log -1 --stat
+```
+
+**Example Output**:
+```
+abc1234 feat: Implement user profile page
+def5678 test: Add profile service tests (92% coverage)
+ghi9012 fix: Remove unused imports from profile component
+jkl2345 refactor: Extract profile validation logic
+mno6789 feat: Implement user profile backend API
+pqr3456 test: Add API integration tests
+```
+
+### Branch Tracking
+
+```bash
+# Current branch
+git branch --show-current
+
+# List all branches
+git branch -a
+
+# Compare to main
+git log main..HEAD --oneline
+```
+
+### Change Statistics
+
+```bash
+# Lines changed by agent
+git log --author="backend" --since="1 day ago" --pretty=tformat: --numstat | \
+  awk '{add+=$1; del+=$2} END {print "Added:", add, "Deleted:", del}'
+
+# Files changed
+git diff --name-only HEAD~10 HEAD
+
+# Diff by feature
+git log --grep="authentication" --oneline
+```
+
+## Real-Time Monitoring
+
+### Watch Mode
+
+Monitor state files in real-time:
+
+```bash
+# Watch completion progress
+watch -n 5 'cat .agentful/completion.json | jq .overall'
+
+# Watch current task
+watch -n 5 'cat .agentful/state.json | jq .current_task'
+
+# Watch quality gates
+watch -n 5 'cat .agentful/completion.json | jq .gates'
+```
+
+### Tail Logs
+
+```bash
+# If using logging
+tail -f .agentful/agentful.log
+
+# View last 100 lines
+tail -n 100 .agentful/agentful.log
+
+# Search for errors
+grep -i "error" .agentful/agentful.log
+```
+
+## Progress Visualization
+
+### Terminal Dashboard
+
+Create a monitoring script:
+
+```bash
+#!/bin/bash
+# monitor.sh
+
+while true; do
+  clear
+  echo "=== Agentful Monitor ==="
+  echo ""
+  echo "Progress: $(cat .agentful/completion.json | jq .overall)%"
+  echo "Current: $(cat .agentful/state.json | jq .current_task)"
+  echo "Phase: $(cat .agentful/state.json | jq .current_phase)"
+  echo "Iteration: $(cat .agentful/state.json | jq .iterations)"
+  echo ""
+  echo "Quality Gates:"
+  cat .agentful/completion.json | jq -r '.gates | to_entries[] | "  \(.key): \(.value)"'
+  echo ""
+  echo "Pending Decisions: $(cat .agentful/decisions.json | jq '.pending | length')"
+  echo ""
+  echo "Recent Commits:"
+  git log --oneline -5
+  echo ""
+  sleep 5
+done
+```
+
+Run with:
+```bash
+chmod +x monitor.sh
+./monitor.sh
+```
+
+### ASCII Progress Bars
+
+```bash
+#!/bin/bash
+# progress-bar.sh
+
+OVERALL=$(cat .agentful/completion.json | jq .overall)
+FILLED=$((OVERALL / 2))
+EMPTY=$((50 - FILLED))
+
+BAR="["
+for ((i=0; i<FILLED; i++)); do BAR+="="; done
+for ((i=0; i<EMPTY; i++)); do BAR+=" "; done
+BAR+="]"
+
+echo "Progress: $BAR $OVERALL%"
+```
+
+## Custom Metrics
+
+### Track Development Velocity
+
+```bash
+#!/bin/bash
+# velocity.sh
+
+# Commits per hour
+COMMITS=$(git log --since="1 hour ago" --oneline | wc -l)
+echo "Commits/Hour: $COMMITS"
+
+# Features per day
+FEATURES=$(git log --since="1 day ago" --grep="feat:" --oneline | wc -l)
+echo "Features/Day: $FEATURES"
+
+# Test coverage trend
+COVERAGE_NOW=$(cat .agentful/completion.json | jq '.gates.coverage_80')
+echo "Coverage: $([ "$COVERAGE_NOW" = "true" ] && echo "≥80%" || echo "<80%")"
+```
+
+### Track Quality Metrics
+
+```bash
+#!/bin/bash
+# quality.sh
+
+echo "=== Quality Metrics ==="
+
+# Type errors
+TSC_ERRORS=$(npx tsc --noEmit 2>&1 | grep "error TS" | wc -l)
+echo "Type Errors: $TSC_ERRORS"
+
+# Lint errors
+LINT_ERRORS=$(npm run lint 2>&1 | grep "error" | wc -l)
+echo "Lint Errors: $LINT_ERRORS"
+
+# Test results
+TEST_RESULTS=$(npm test 2>&1 | grep -E "passing|failing")
+echo "$TEST_RESULTS"
+
+# Coverage
+COVERAGE=$(npm test -- --coverage --reporter=json 2>&1 | \
+  jq -r '.total.lines.pct // "N/A"')
+echo "Coverage: ${COVERAGE}%"
+
+# Dead code
+DEAD_CODE=$(npx knip --reporter json 2>/dev/null | \
+  jq '[.. | .issues? // empty] | add | length')
+echo "Dead Code Issues: $DEAD_CODE"
+```
+
+## Alerting
+
+### Notify on Completion
+
+```bash
+#!/bin/bash
+# wait-for-complete.sh
+
+while true; do
+  COMPLETE=$(cat .agentful/completion.json | jq '.overall == 100')
+  if [ "$COMPLETE" = "true" ]; then
+    echo "Agentful development complete!"
+    osascript -e 'display notification "Agentful development complete!" with title "Agentful"'
+    break
+  fi
+  sleep 30
+done
+```
+
+### Notify on Failures
+
+```bash
+#!/bin/bash
+# watch-failures.sh
+
+LAST_CHECK=$(cat .agentful/last-review.json | jq '.passed')
+
+while true; do
+  CURRENT_CHECK=$(cat .agentful/last-review.json | jq '.passed')
+
+  if [ "$LAST_CHECK" = "true" ] && [ "$CURRENT_CHECK" = "false" ]; then
+    echo "Quality check failed!"
+    osascript -e 'display notification "Quality check failed" with title "Agentful"'
+  fi
+
+  LAST_CHECK=$CURRENT_CHECK
+  sleep 30
+done
+```
+
+### Notify on Decisions
+
+```bash
+#!/bin/bash
+# watch-decisions.sh
+
+LAST_COUNT=$(cat .agentful/decisions.json | jq '.pending | length')
+
+while true; do
+  CURRENT_COUNT=$(cat .agentful/decisions.json | jq '.pending | length')
+
+  if [ "$CURRENT_COUNT" -gt "$LAST_COUNT" ]; then
+    echo "New decision pending!"
+    osascript -e 'display notification "Decision needed" with title "Agentful"'
+  fi
+
+  LAST_COUNT=$CURRENT_COUNT
+  sleep 30
+done
+```
+
+## Web Dashboard (Optional)
+
+### Simple HTTP Dashboard
+
+```bash
+#!/bin/bash
+# dashboard-server.sh
+
+while true; do
+  cat > /tmp/agentful-status.html << EOF
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Agentful Monitor</title>
+  <meta http-equiv="refresh" content="5">
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    .pass { color: green; }
+    .fail { color: red; }
+    .pending { color: orange; }
+  </style>
+</head>
+<body>
+  <h1>Agentful Status</h1>
+  <pre>
+$(/agentful-status)
+  </pre>
+
+  <h2>Quality Gates</h2>
+  <ul>
+$(cat .agentful/completion.json | jq -r '.gates | to_entries[] | "<li class=\"\(if .value then "pass" else "fail" end)\">\(.key): \(if .value then "✓" else "✗" end)</li>"')
+  </ul>
+
+  <h2>Recent Activity</h2>
+  <pre>
+$(git log --oneline -10)
+  </pre>
+</body>
+</html>
+EOF
+
+  # Serve with Python or npx serve
+  sleep 5
+done
+```
+
+Run with:
+```bash
+python3 -m http.server 8000
+# Open http://localhost:8000/agentful-status.html
+```
+
+## Remote Monitoring
+
+### SSH Monitoring
+
+```bash
+# Monitor remote Agentful
+ssh user@server 'cd /path/to/project && cat .agentful/completion.json | jq .overall'
+
+# Stream logs
+ssh user@server 'tail -f /path/to/project/.agentful/agentful.log'
+```
+
+### Slack Integration
+
+```bash
+# Post status to Slack
+WEBHOOK="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+
+curl -X POST $WEBHOOK \
+  -H 'Content-Type: application/json' \
+  -d "{
+    \"text\": \"Agentful Update\",
+    \"attachments\": [{
+      \"text\": \"Progress: $(cat .agentful/completion.json | jq .overall)%\nCurrent: $(cat .agentful/state.json | jq .current_task)\"
+    }]
+  }"
+```
+
+## Monitoring Best Practices
+
+### 1. Check Regularly
+
+```bash
+# Every hour during workday
+# Every 4-6 hours during overnight runs
+```
+
+### 2. Monitor Key Metrics
+
+Focus on:
+- Overall progress percentage
+- Quality gate status
+- Pending decisions (answer promptly)
+- Recent commits (review direction)
+
+### 3. Set Up Alerts
+
+For long runs:
+- Completion notification
+- Failure alerts
+- Decision notifications
+
+### 4. Keep Historical Data
+
+```bash
+# Daily snapshots
+cp .agentful/completion.json .agentful/history/completion-$(date +%Y%m%d).json
+
+# Analyze trends
+for file in .agentful/history/completion-*.json; do
+  echo "$file: $(jq '.overall' $file)%"
+done
+```
+
+### 5. Use Visual Dashboards
+
+- Terminal dashboards for local monitoring
+- Web dashboards for team visibility
+- Slack notifications for remote teams
+
+## Troubleshooting Monitoring
+
+### Status Not Updating
+
+**Check**:
+```bash
+# State file permissions
+ls -la .agentful/*.json
+
+# File locked?
+lsof .agentful/completion.json
+```
+
+**Fix**:
+```bash
+# Ensure writeable
+chmod 644 .agentful/*.json
+```
+
+### Inaccurate Progress
+
+**Check**:
+```bash
+# Review feature scores
+cat .agentful/completion.json | jq '.features'
+
+# Check if gates accurate
+cat .agentful/last-review.json
+```
+
+**Fix**:
+```bash
+# Re-run validation
+/agentful-validate
+```
+
+### Missing Commits
+
+**Check**:
+```bash
+# Git config
+git config user.name
+git config user.email
+```
+
+**Fix**:
+```bash
+# Set git config for Agentful
+git config user.name "Agentful"
+git config user.email "agentful@example.com"
+```
+
+## Advanced Monitoring
+
+### Time-Series Tracking
+
+```bash
+#!/bin/bash
+# track-progress.sh
+
+LOG_FILE=".agentful/progress.log"
+
+while true; do
+  TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  OVERALL=$(cat .agentful/completion.json | jq .overall)
+  TASK=$(cat .agentful/state.json | jq -r .current_task)
+
+  echo "$TIMESTAMP,$OVERALL,$TASK" >> $LOG_FILE
+  sleep 60  # Log every minute
+done
+```
+
+### Performance Metrics
+
+```bash
+#!/bin/bash
+# performance.sh
+
+# Track iteration time
+START_TIME=$(cat .agentful/state.json | jq -r '.last_updated')
+CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Calculate iteration duration (if you have Python/node)
+# Or use GNU date
+```
+
+### Predictive Completion
+
+```bash
+#!/bin/bash
+# eta.sh
+
+# Calculate estimated completion
+CURRENT_PROGRESS=$(cat .agentful/completion.json | jq .overall)
+ITERATIONS=$(cat .agentful/state.json | jq .iterations)
+
+# Simple linear projection
+if [ "$CURRENT_PROGRESS" -gt 0 ]; then
+  AVG_RATE=$(echo "scale=2; $CURRENT_PROGRESS / $ITERATIONS" | bc)
+  REMAINING=$(echo "scale=0; (100 - $CURRENT_PROGRESS) / $AVG_RATE" | bc)
+  echo "Estimated iterations remaining: $REMAINING"
+fi
+```
+
+## Next Steps
+
+- [Autonomous Development Overview](./index.mdx) - Back to overview
+- [24/7 Development](./24-7-development.mdx) - Monitoring long-running loops
+- [Recovery Strategies](./recovery-strategies.mdx) - Monitor fixer effectiveness

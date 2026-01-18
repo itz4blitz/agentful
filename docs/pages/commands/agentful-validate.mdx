@@ -1,0 +1,795 @@
+# /agentful-validate
+
+Run all quality checks and validation gates by delegating to the reviewer agent.
+
+## Purpose
+
+The `/agentful-validate` command ensures your codebase meets quality standards by running comprehensive checks:
+
+1. **TypeScript Check** - Type safety validation
+2. **Lint Check** - Code style and standards
+3. **Dead Code Detection** - Find unused code
+4. **Test Check** - Verify all tests pass
+5. **Coverage Check** - Ensure ≥80% code coverage
+6. **Security Check** - Scan for vulnerabilities and secrets
+
+This command is essential for maintaining code quality throughout autonomous development. The orchestrator runs it automatically after each feature completion, but you can also run it manually.
+
+## Usage
+
+### Basic Usage
+
+```bash
+/agentful-validate
+```
+
+This runs all validation checks and displays results.
+
+### Quick Mode - Specific Checks
+
+```bash
+# Type check only (fastest)
+/agentful-validate --type-check
+
+# Test run only
+/agentful-validate --tests
+
+# Security scan only
+/agentful-validate --security
+
+# Lint only
+/agentful-validate --lint
+```
+
+### After Feature Completion
+
+```bash
+/agentful-start
+# [Feature completed]
+/agentful-validate
+# → Verify quality before continuing
+```
+
+### Before Commit
+
+```bash
+/agentful-validate
+# → If all passing, safe to commit
+# → If failing, fix issues first
+```
+
+### CI/CD Integration
+
+```yaml
+# .github/workflows/validate.yml
+- name: Run Agentful validation
+  run: /agentful-validate
+```
+
+Exit codes:
+- `0` - All checks passed
+- `1` - One or more checks failed
+- `2` - Unable to run checks (missing deps, etc.)
+
+## Validation Checks
+
+### 1. TypeScript Check
+
+**Command:** `npx tsc --noEmit`
+
+**What it checks:**
+- Type errors in TypeScript code
+- Missing type definitions
+- Incorrect type usage
+- Interface compatibility
+
+**Example output:**
+```
+TypeScript      ✅ PASS - No type errors
+```
+
+**Or:**
+```
+TypeScript      ❌ FAIL - 3 errors found
+
+src/auth/login.ts:45:12 - error TS2322: Type 'string' is not assignable to type 'number'
+src/utils/format.ts:18:5 - error TS7005: Module '"lodash"' has no default export
+```
+
+### 2. Lint Check
+
+**Command:** `npm run lint` (or `eslint .`)
+
+**What it checks:**
+- Code style consistency
+- Best practices violations
+- Potential bugs
+- Unused variables
+
+**Example output:**
+```
+Lint            ✅ PASS - No lint errors
+```
+
+**Or:**
+```
+Lint            ❌ FAIL - 5 issues found
+
+src/components/UserProfile.tsx:23:8 - Unused variable 'tempData'
+src/utils/api.ts:56:15 - Missing semicolon
+src/hooks/useAuth.ts:12:3 - 'console.log' should be removed
+```
+
+### 3. Dead Code Detection
+
+**Command:** Custom analysis of exports, imports, files
+
+**What it checks:**
+- Unused exports in modules
+- Imported but never used
+- Entire files that aren't imported
+- Unused dependencies in package.json
+
+**Example output:**
+```
+Dead Code       ✅ PASS - No dead code found
+```
+
+**Or:**
+```
+Dead Code       ❌ FAIL - 3 issues found
+
+1. Unused export: formatDate in src/utils/date.ts
+   Exported but never imported
+
+2. Unused file: src/components/OldWidget.tsx
+   Entire file not imported by any module
+
+3. Unused dependency: lodash in package.json
+   Installed but never imported in code
+```
+
+### 4. Test Check
+
+**Command:** `npm test` (or `jest`, `vitest`, etc.)
+
+**What it checks:**
+- All tests pass
+- No test failures
+- No skipped tests (warning)
+- Test suite executes successfully
+
+**Example output:**
+```
+Tests           ✅ PASS - 47 tests passed
+```
+
+**Or:**
+```
+Tests           ❌ FAIL - 3 tests failed
+
+FAIL src/auth/login.test.ts
+  ✕ should reject invalid credentials (45ms)
+  ✕ should handle network errors (32ms)
+
+FAIL src/utils/format.test.ts
+  ✕ should format dates correctly (18ms)
+```
+
+### 5. Coverage Check
+
+**Command:** Coverage from test runner (jest/vitest)
+
+**What it checks:**
+- Line coverage ≥ 80%
+- Branch coverage ≥ 80%
+- Function coverage ≥ 80%
+- Statement coverage ≥ 80%
+
+**Example output:**
+```
+Coverage        ✅ PASS - 87% coverage
+```
+
+**Or:**
+```
+Coverage        ⚠️ WARN - 72% (needs 80%)
+
+Coverage by file:
+  src/auth/login.ts      45% (missing: error handling)
+  src/utils/api.ts       60% (missing: edge cases)
+  src/components/UI.tsx  95%
+
+Need 8 more points to reach 80% threshold.
+```
+
+### 6. Security Check
+
+**Command:** Security scan for secrets, vulnerabilities, debug logs
+
+**What it checks:**
+- Hardcoded secrets/API keys
+- Debug console.log statements
+- Known vulnerable dependencies
+- Insecure code patterns
+
+**Example output:**
+```
+Security        ✅ PASS - No security issues
+```
+
+**Or:**
+```
+Security        ⚠️ WARN - 2 issues found
+
+1. console.log in src/auth/login.ts:45
+   Should be removed for production
+
+2. Potential secret in .env.example:12
+   API_KEY placeholder looks like real key
+```
+
+## Output Examples
+
+### All Checks Passing
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              Validation Results
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TypeScript      ✅ PASS - No type errors
+Lint            ✅ PASS - No lint errors
+Dead Code       ✅ PASS - No dead code found
+Tests           ✅ PASS - 47 tests passed
+Coverage        ✅ PASS - 87% coverage
+Security        ✅ PASS - No security issues
+
+Overall: ✅ ALL CHECKS PASSED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Quality gates passing. Safe to proceed with deployment.
+```
+
+### Some Checks Failing
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              Validation Results
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TypeScript      ✅ PASS - No type errors
+Lint            ✅ PASS - No lint errors
+Dead Code       ❌ FAIL - 3 issues found
+Tests           ✅ PASS - 47 tests passed
+Coverage        ⚠️ WARN - 72% (needs 80%)
+Security        ⚠️ WARN - 2 issues found
+
+Overall: ❌ FAILED
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Issues that must be fixed:
+
+Dead Code (3):
+  1. Unused export: formatDate in src/utils/date.ts
+  2. Unused file: src/components/OldWidget.tsx
+  3. Unused dependency: lodash in package.json
+
+Coverage (8 points needed):
+  4. src/auth/login.ts - 45% (missing: error handling)
+  5. src/utils/api.ts - 60% (missing: edge cases)
+
+Security (2):
+  6. console.log in src/auth/login.ts:45
+  7. Potential secret in .env.example:12
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run /agentful-start to auto-fix these issues.
+```
+
+### Detailed Failure Output
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              Validation Results
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TypeScript      ❌ FAIL - 5 errors
+
+Error Details:
+  src/auth/login.ts:45:12
+    error TS2322: Type 'string' is not assignable to type 'number'
+
+  src/components/UserForm.tsx:23:5
+    error TS2571: Object is of type 'unknown'
+
+  src/api/client.ts:18:3
+    error TS2307: Cannot find module 'missing-package'
+
+  src/utils/format.ts:56:8
+    error TS2339: Property 'toLocaleDateString' does not exist on type 'Date | null'
+
+  src/hooks/useAuth.ts:89:12
+    error TS2322: Type 'null' is not assignable to type 'User'
+
+Lint            ⚠️ WARN - 12 warnings
+
+Warning Details:
+  src/components/Header.tsx:12:8
+    warning: 'tempData' is assigned a value but never used
+
+  src/utils/api.ts:45:15
+    warning: Missing semicolon
+
+... (10 more warnings)
+
+Tests           ❌ FAIL - 3 tests failed
+
+Failure Details:
+  FAIL src/auth/login.test.ts (52 ms)
+    ✕ should reject invalid credentials (23 ms)
+      Expected: error message
+      Received: null
+
+    ✕ should handle network errors (18 ms)
+      Timeout: async callback not called
+
+  FAIL src/utils/format.test.ts (12 ms)
+    ✕ should format dates correctly (8 ms)
+      Expected: "Jan 18, 2026"
+      Received: "2026-01-18"
+
+Coverage        ⚠️ WARN - 68% (needs 80%)
+
+File Coverage:
+  src/auth/login.ts       45%  ████████████░░░░░░░░
+  src/api/client.ts       52%  ███████████████░░░░░
+  src/utils/format.ts     71%  ███████████████████░
+  src/components/UI.tsx   95%  ████████████████████
+
+Security        ✅ PASS
+
+Overall: ❌ FAILED - Critical issues must be fixed
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run /agentful-start to auto-fix, or fix manually and re-run.
+```
+
+## When to Use
+
+### After Feature Completion
+
+```bash
+/agentful-start
+# [Feature implementation completed]
+/agentful-validate
+# → Verify quality before moving to next feature
+```
+
+**Why:** Ensures each feature meets standards before proceeding.
+
+### Before Committing
+
+```bash
+git add .
+/agentful-validate
+# → If passing, commit
+# → If failing, fix first
+git commit -m "feat: new feature"
+```
+
+**Why:** Prevents low-quality code from entering repository.
+
+### Before Deployment
+
+```bash
+/agentful-validate
+# → Full validation before production
+npm run deploy
+```
+
+**Why:** Catches issues that would break production.
+
+### CI/CD Pipeline
+
+```yaml
+# .github/workflows/ci.yml
+on: [push, pull_request]
+jobs:
+  validate:
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm install
+      - run: /agentful-validate
+      # Exit code 0 = pass, 1 = fail
+```
+
+**Why:** Automated quality gate for all changes.
+
+### After Manual Changes
+
+```bash
+# You manually edited some files
+vim src/auth/login.ts
+
+# Validate your changes
+/agentful-validate
+```
+
+**Why:** Catches mistakes immediately after manual edits.
+
+## Integration with Development Flow
+
+### Standard Flow
+
+```bash
+1. /agentful-start
+   → Implement feature
+
+2. /agentful-validate
+   → Verify quality
+
+3. If passing:
+   → /agentful-start (continue to next feature)
+
+4. If failing:
+   → /agentful-start (auto-fix)
+   → /agentful-validate (verify fixes)
+```
+
+### Quality-Focused Flow
+
+```bash
+1. /agentful-start
+   → Implement feature
+
+2. /agentful-validate --type-check
+   → Quick type check
+
+3. /agentful-validate --tests
+   → Quick test run
+
+4. /agentful-validate
+   → Full validation
+
+5. If all passing:
+   → Commit and continue
+```
+
+### Fix-and-Validate Loop
+
+```bash
+# Validation fails
+/agentful-validate
+
+# Auto-fix issues
+/agentful-start
+
+# Verify fixes
+/agentful-validate
+
+# If still failing, manual fix needed
+vim src/fix-file.ts
+
+# Re-validate
+/agentful-validate
+```
+
+## Tips
+
+### Fast Validation
+
+```bash
+# Quick type check during development
+/agentful-validate --type-check
+
+# Fast feedback loop
+# Takes ~2 seconds vs ~30 seconds for full validation
+```
+
+### Fix Validation Failures
+
+```bash
+# Let orchestrator auto-fix
+/agentful-validate
+# Shows failures
+/agentful-start
+# Orchestrator delegates to @fixer
+```
+
+### Track Quality Over Time
+
+```bash
+# Log validation results
+/agentful-validate > validation-$(date +%Y%m%d).log
+
+# Compare over time
+diff validation-20260117.log validation-20260118.log
+```
+
+### Coverage Improvement
+
+```bash
+# See what needs coverage
+/agentful-validate
+
+# Shows files below 80%
+# Focus testing on those files
+
+# Re-run to see improvement
+/agentful-validate
+```
+
+## Troubleshooting
+
+### Issue: "Cannot run validation - missing dependencies"
+
+**Cause:** Test framework not installed
+
+**Solution:**
+```bash
+npm install --save-dev jest @types/jest
+# Or vitest, etc.
+/agentful-validate
+```
+
+### Issue: TypeScript check fails but code runs fine
+
+**Cause:** Type definitions missing or incorrect
+
+**Solution:**
+```bash
+# Install missing types
+npm install --save-dev @types/node @types/react
+
+# Or fix type errors manually
+vim src/file-with-error.ts
+
+# Re-validate
+/agentful-validate
+```
+
+### Issue: Tests pass locally but fail in validation
+
+**Cause:** Different test configuration or environment
+
+**Solution:**
+```bash
+# Check test command in package.json
+cat package.json | grep test
+
+# Ensure it matches what validation runs
+npm test  # Should match
+```
+
+### Issue: Coverage low but tests all pass
+
+**Cause:** Not all code paths tested
+
+**Solution:**
+```bash
+# See coverage details
+npm test -- --coverage
+
+# Identify uncovered lines
+# Add tests for those paths
+/agentful-validate
+```
+
+### Issue: Dead code false positives
+
+**Cause:** Code used in ways analyzer doesn't detect
+
+**Solution:**
+```bash
+# Verify code is truly unused
+grep -r "exportName" src/
+
+# If actually used, ignore warning or update analyzer
+# If truly unused, remove it
+rm src/unused-file.ts
+/agentful-validate
+```
+
+## Advanced Usage
+
+### Custom Validation Thresholds
+
+```json
+// .agentful/validation-config.json
+{
+  "coverage": {
+    "threshold": 90,  // Higher than default 80%
+    "perFile": true   // Require each file to meet threshold
+  },
+  "security": {
+    "allowDebugLogs": false,
+    "allowConsoleLog": false
+  },
+  "deadCode": {
+    "ignorePatterns": ["*.test.ts", "*.spec.ts"]
+  }
+}
+```
+
+### Parallel Validation
+
+```bash
+# Run checks in parallel for speed
+/agentful-validate --parallel
+
+# Or specific parallel checks
+/agentful-validate --type-check --tests --parallel
+```
+
+### Validation Report
+
+```bash
+# Generate detailed HTML report
+/agentful-validate --report > validation-report.html
+open validation-report.html
+```
+
+### Watch Mode
+
+```bash
+# Continuously validate on file changes
+/agentful-validate --watch
+
+# Re-runs validation when files change
+# Great for active development
+```
+
+### CI/CD Exit Codes
+
+```bash
+#!/bin/bash
+# ci-validate.sh
+
+/agentful-validate
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 0 ]; then
+  echo "✅ Validation passed"
+  exit 0
+elif [ $EXIT_CODE -eq 1 ]; then
+  echo "❌ Validation failed"
+  # Notify team
+  slack-send "Validation failed - PR blocked"
+  exit 1
+else
+  echo "⚠️  Validation error (exit code: $EXIT_CODE)"
+  exit 2
+fi
+```
+
+## Integration Examples
+
+### Pre-commit Hook
+
+```bash
+# .git/hooks/pre-commit
+#!/bin/bash
+
+echo "Running pre-commit validation..."
+/agentful-validate
+
+if [ $? -ne 0 ]; then
+  echo "❌ Validation failed. Commit aborted."
+  echo "Run /agentful-start to auto-fix issues."
+  exit 1
+fi
+
+echo "✅ Validation passed. Proceeding with commit."
+```
+
+### GitHub Actions
+
+```yaml
+# .github/workflows/validate.yml
+name: Agentful Validation
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - name: Install dependencies
+        run: npm ci
+      - name: Run validation
+        run: /agentful-validate
+      - name: Upload results
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: validation-results
+          path: validation-report.html
+```
+
+### Slack Notifications
+
+```bash
+#!/bin/bash
+# validate-and-notify.sh
+
+/agentful-validate > validation-results.txt 2>&1
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+  # Send failure to Slack
+  curl -X POST $SLACK_WEBHOOK_URL \
+    -H 'Content-Type: application/json' \
+    -d "{
+      \"text\": \"❌ Validation Failed\",
+      \"attachments\": [{
+        \"text\": \"$(cat validation-results.txt)\"
+      }]
+    }"
+fi
+
+exit $EXIT_CODE
+```
+
+### Quality Metrics Dashboard
+
+```bash
+#!/bin/bash
+# collect-metrics.sh
+
+# Run validation and extract metrics
+TYPESCRIPT_RESULT=$(/agentful-validate --type-check --json | jq '.pass')
+LINT_RESULT=$(/agentful-validate --lint --json | jq '.pass')
+COVERAGE_RESULT=$(/agentful-validate --coverage --json | jq '.coverage')
+
+# Store for dashboard
+echo "$(date),$TYPESCRIPT_RESULT,$LINT_RESULT,$COVERAGE_RESULT" \
+  >> .agentful/metrics.csv
+
+# Plot with gnuplot or send to Grafana
+```
+
+## Quality Gates Reference
+
+### Default Thresholds
+
+| Gate | Threshold | Can Customize? |
+|------|-----------|----------------|
+| TypeScript | 0 errors | No (must pass) |
+| Lint | 0 errors | No (must pass) |
+| Dead Code | 0 issues | No (must pass) |
+| Tests | 0 failures | No (must pass) |
+| Coverage | ≥80% | Yes |
+| Security | 0 critical | Yes (can downgrade to warning) |
+
+### Adjusting Thresholds
+
+Edit `.agentful/validation-config.json`:
+
+```json
+{
+  "gates": {
+    "coverage": {
+      "threshold": 90,
+      "enforce": true
+    },
+    "security": {
+      "level": "strict",  // strict, moderate, lenient
+      "allowConsoleLog": false
+    }
+  }
+}
+```
+
+## See Also
+
+- [/agentful-start](./agentful-start) - Auto-fix validation failures
+- [/agentful-status](./agentful-status) - Check gate status overview
+- [Quality Gates](/autonomous-development/quality-gates) - Configuring validation thresholds
+- [Reviewer Agent](/agents/reviewer) - How validation runs
+- [CI/CD Integration](/guides/best-practices) - Pipeline examples

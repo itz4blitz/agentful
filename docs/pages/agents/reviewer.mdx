@@ -1,0 +1,637 @@
+# Reviewer Agent
+
+The Reviewer Agent ensures code quality and production readiness through comprehensive validation of all changes.
+
+## Overview
+
+The Reviewer Agent runs automated checks and manual reviews to validate:
+
+- TypeScript type safety
+- Code quality (linting)
+- Dead code elimination
+- Test coverage
+- Security vulnerabilities
+- Production readiness
+
+## Configuration
+
+```yaml
+name: reviewer
+description: Reviews code quality, finds dead code, validates production readiness. Runs all checks and reports issues.
+model: sonnet
+tools: Read, Glob, Grep, Bash, Write, Edit
+```
+
+**Why Sonnet?** Review requires attention to detail and pattern recognition but doesn't need the highest reasoning level.
+
+## Validation Checks
+
+The Reviewer runs **8 comprehensive checks**. All must pass for code to be production-ready.
+
+### 1. TypeScript Type Check
+
+Ensure type safety across the codebase.
+
+```bash
+npx tsc --noEmit
+```
+
+**FAIL if:** Any type errors found
+
+**Example output:**
+
+```json
+{
+  "check": "typescript",
+  "passed": true,
+  "issues": [],
+  "summary": "No type errors found"
+}
+```
+
+**Common type errors:**
+- Missing type annotations
+- Implicit any types
+- Type mismatches
+- Missing imports
+- Incorrect prop types
+
+### 2. Lint Check
+
+Enforce code style and best practices.
+
+```bash
+npm run lint
+```
+
+**FAIL if:** Any lint errors (warnings are OK)
+
+**Example output:**
+
+```json
+{
+  "check": "lint",
+  "passed": true,
+  "issues": [],
+  "summary": "No lint errors"
+}
+```
+
+**Common lint errors:**
+- Unused variables
+- Inconsistent spacing
+- Missing semicolons (if required)
+- Incorrect imports
+- Code complexity violations
+
+### 3. Dead Code Detection
+
+Find and eliminate unused code.
+
+#### Method 1: knip (Most Comprehensive)
+
+```bash
+npx knip --reporter json 2>/dev/null
+```
+
+#### Method 2: ts-prune
+
+```bash
+npx ts-prune 2>/dev/null
+```
+
+#### Method 3: Manual Grep Check
+
+```bash
+grep -r "export.*function\|export.*class" src/ --include="*.ts" --include="*.tsx" |
+  while read line; do
+    export_name=$(echo "$line" | grep -oP "export\s+(const|function|class|interface|type)\s+\K\w+");
+    file=$(echo "$line" | cut -d: -f1);
+    if [ -n "$export_name" ]; then
+      if ! grep -r "$export_name" src/ --include="*.ts" --include="*.tsx" | grep -v "export.*$export_name" | grep -v "^$file:" | grep -q .; then
+        echo "Unused export: $export_name in $file";
+      fi;
+    fi;
+  done
+```
+
+**FAIL if:** Any unused files, exports, imports, or dependencies
+
+**Example output:**
+
+```json
+{
+  "check": "deadCode",
+  "passed": false,
+  "issues": [
+    "Unused export: formatDate in src/utils/date.ts",
+    "Unused file: src/old/auth.ts",
+    "Unused dependency: lodash in package.json"
+  ],
+  "summary": "Found 3 dead code issues"
+}
+```
+
+**Types of dead code:**
+- Unused exports
+- Unused imports
+- Unused files
+- Unused dependencies
+- Commented-out code
+- TODO/FIXME comments
+
+### 4. Dead Code Manual Checks
+
+Also check for:
+
+```typescript
+// ❌ Unused imports
+import { unused, used } from './module';
+
+// ❌ Commented out code (remove or document why kept)
+// function oldImplementation() { ... }
+
+// ⚠️ TODO/FIXME for dead code (track in decisions.json)
+// TODO: Remove this after v2 migration
+```
+
+### 5. Test Check
+
+Ensure all tests pass.
+
+```bash
+npm test
+```
+
+**FAIL if:** Any tests fail
+
+**Example output:**
+
+```json
+{
+  "check": "tests",
+  "passed": true,
+  "issues": [],
+  "summary": "All tests passed"
+}
+```
+
+**Test failures:**
+- Unit test failures
+- Integration test failures
+- E2E test failures
+- Setup/teardown issues
+- Mock configuration errors
+
+### 6. Coverage Check
+
+Verify adequate test coverage.
+
+```bash
+npm test -- --coverage
+```
+
+**FAIL if:** Coverage < 80%
+
+**Example output:**
+
+```json
+{
+  "check": "coverage",
+  "passed": false,
+  "issues": [],
+  "summary": "Coverage at 72%, needs 80%",
+  "actual": 72,
+  "required": 80
+}
+```
+
+**Coverage metrics:**
+- Line coverage
+- Branch coverage
+- Function coverage
+- Statement coverage
+
+### 7. Security Check
+
+Identify security vulnerabilities.
+
+```bash
+# Run npm audit
+npm audit --production
+
+# Check for secrets
+grep -r "password.*=\s*['\"][^'\"]+['\"]" src/ --include="*.ts" --include="*.tsx" --ignore-case
+
+# Check for hardcoded API keys
+grep -rE "(api[_-]?key|secret|token)\s*[:=]\s*['\"][^'\"]{20,}['\"]" src/ --include="*.ts" --include="*.tsx" --ignore-case
+
+# Check for console.log
+grep -rn "console\.log\|console\.debug" src/ --include="*.ts" --include="*.tsx" | head -20
+```
+
+**FAIL if:** High/critical vulnerabilities, hardcoded secrets, debug logs
+
+**Example output:**
+
+```json
+{
+  "check": "security",
+  "passed": false,
+  "issues": [
+    "console.log in src/auth/login.ts:45",
+    "Possible hardcoded secret in src/config/api.ts:12",
+    "npm audit: 1 high severity vulnerability"
+  ],
+  "summary": "Found 3 security issues"
+}
+```
+
+**Security issues:**
+- Hardcoded secrets/keys
+- Debug statements (console.log)
+- SQL injection vulnerabilities
+- XSS vulnerabilities
+- npm vulnerabilities
+
+### 8. Manual Code Review
+
+Check code quality issues that automation can't catch.
+
+```typescript
+// ❌ Unhandled promise rejections
+async function bad() {
+  await somethingThatMightFail();  // No try/catch
+}
+
+// ✅ Proper error handling
+async function good() {
+  try {
+    await somethingThatMightFail();
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+// ❌ Missing error boundaries
+// ✅ Add error boundary components
+
+// ❌ Hardcoded secrets
+const apiKey = "sk-1234567890abcdef";  // NEVER do this
+
+// ✅ Use environment variables
+const apiKey = process.env.API_KEY;
+
+// ❌ TODO/FIXME comments left in code
+// TODO: Implement this later  // ❌ Block or implement
+
+// ✅ Either implement or document in decisions.json
+```
+
+**Example output:**
+
+```json
+{
+  "check": "manualReview",
+  "passed": false,
+  "issues": [
+    "Unhandled promise in src/services/user.ts:45",
+    "Missing error boundary in src/app/layout.tsx",
+    "TODO comment in src/utils/helpers.ts:12"
+  ],
+  "summary": "Found 3 code quality issues"
+}
+```
+
+## Output Format
+
+### Failed Review Example
+
+```json
+{
+  "passed": false,
+  "timestamp": "2026-01-18T00:00:00Z",
+  "checks": {
+    "typescript": {
+      "passed": true,
+      "summary": "No type errors"
+    },
+    "lint": {
+      "passed": true,
+      "summary": "No lint errors"
+    },
+    "deadCode": {
+      "passed": false,
+      "issues": [
+        "Unused export: formatDate in src/utils/date.ts",
+        "Unused file: src/components/OldWidget.tsx"
+      ]
+    },
+    "tests": {
+      "passed": true,
+      "summary": "47 tests passed"
+    },
+    "coverage": {
+      "passed": false,
+      "actual": 72,
+      "required": 80,
+      "summary": "8 percentage points below threshold"
+    },
+    "security": {
+      "passed": false,
+      "issues": [
+        "console.log in src/auth/login.ts:45",
+        "Possible hardcoded secret in src/config/api.ts:12"
+      ]
+    },
+    "manualReview": {
+      "passed": true,
+      "summary": "No manual issues found"
+    }
+  },
+  "mustFix": [
+    "Remove unused export formatDate from src/utils/date.ts",
+    "Delete unused file src/components/OldWidget.tsx",
+    "Add tests to reach 80% coverage (currently at 72%)",
+    "Remove console.log from src/auth/login.ts:45",
+    "Investigate possible hardcoded secret in src/config/api.ts:12"
+  ],
+  "canIgnore": []
+}
+```
+
+### Passed Review Example
+
+```json
+{
+  "passed": true,
+  "timestamp": "2026-01-18T00:00:00Z",
+  "checks": {
+    "typescript": { "passed": true },
+    "lint": { "passed": true },
+    "deadCode": { "passed": true },
+    "tests": { "passed": true },
+    "coverage": { "passed": true },
+    "security": { "passed": true },
+    "manualReview": { "passed": true }
+  },
+  "summary": "All validation checks passed. Code is production-ready."
+}
+```
+
+## Review Workflow
+
+1. **Run all checks sequentially**
+   - TypeScript check
+   - Lint check
+   - Dead code detection
+   - Test check
+   - Coverage check
+   - Security check
+   - Manual code review
+
+2. **Collect all failures**
+   - Categorize by type
+   - Identify severity
+   - Provide specific locations
+
+3. **Categorize issues**
+   - `mustFix`: Critical issues blocking deployment
+   - `canIgnore`: Minor issues that can defer
+
+4. **Save report**
+   - Write to `.agentful/last-review.json`
+   - Include all details
+   - Mark as passed/failed
+
+5. **Trigger next step**
+   - If `passed: false`, orchestrator invokes @fixer
+   - If `passed: true`, update completion state
+
+## Report File
+
+The reviewer saves results to `.agentful/last-review.json`:
+
+```json
+{
+  "passed": false,
+  "timestamp": "2026-01-18T00:00:00Z",
+  "checks": { ... },
+  "mustFix": [ ... ],
+  "canIgnore": [ ... ]
+}
+```
+
+This file is used by:
+- **Fixer Agent** - Reads issues to fix
+- **Orchestrator** - Reads to decide next steps
+- **Users** - Check what's blocking deployment
+
+## Manual Code Review Guidelines
+
+### Error Handling
+
+Check for:
+- Unhandled promise rejections
+- Missing try/catch blocks
+- Uncaught errors in async functions
+- Missing error boundaries
+
+### Security
+
+Check for:
+- Hardcoded secrets or keys
+- SQL injection vulnerabilities
+- XSS vulnerabilities
+- Debug statements in production code
+- Insecure dependencies
+
+### Code Quality
+
+Check for:
+- TODO/FIXME comments (should be implemented or tracked)
+- Commented-out code (remove or document)
+- Complex functions (should be broken down)
+- Duplicate code (should be extracted)
+- Magic numbers (should be constants)
+
+### Performance
+
+Check for:
+- Unnecessary re-renders
+- Memory leaks
+- Large bundle sizes
+- Unoptimized images
+- Missing lazy loading
+
+### Accessibility
+
+Check for:
+- Missing aria labels
+- Keyboard navigation issues
+- Color contrast problems
+- Missing alt text
+- Semantic HTML violations
+
+## Best Practices
+
+### DO
+
+- Always run all 8 checks
+- Be specific about file locations and line numbers
+- Categorize issues properly (mustFix vs canIgnore)
+- Save report to `.agentful/last-review.json`
+- Check both frontend and backend code
+- Review recent changes only (incremental review)
+
+### DON'T
+
+- Skip checks for "small changes"
+- Fix issues yourself (delegate to @fixer)
+- Ignore coverage thresholds
+- Be vague about issue locations
+- Skip security checks
+
+## Common Issues
+
+### Type Errors
+
+**Symptom:** TypeScript compilation fails
+
+**Common causes:**
+- Missing type imports
+- Incorrect prop types
+- Implicit any
+- Type mismatches
+
+**Solution:** Fix with proper TypeScript types
+
+### Lint Errors
+
+**Symptom:** Linter finds style violations
+
+**Common causes:**
+- Inconsistent spacing
+- Unused variables
+- Missing imports
+- Code complexity
+
+**Solution:** Fix style issues or disable rule if justified
+
+### Dead Code
+
+**Symptom:** Unused exports, imports, files
+
+**Common causes:**
+- Refactoring left behind
+- Feature removed but code not deleted
+- Unused dependencies
+
+**Solution:** Remove dead code completely
+
+### Low Coverage
+
+**Symptom:** Test coverage below 80%
+
+**Common causes:**
+- Missing tests for new code
+- Untested error paths
+- Untested edge cases
+
+**Solution:** Add tests to reach threshold
+
+### Security Issues
+
+**Symptom:** Vulnerabilities or secrets in code
+
+**Common causes:**
+- Hardcoded secrets
+- Debug statements
+- Outdated dependencies
+- Injection vulnerabilities
+
+**Solution:** Fix security issues immediately
+
+## Rules
+
+1. **ALWAYS** run all 8 checks
+2. **NEVER** skip checks for "small changes"
+3. **ALWAYS** report issues in structured JSON format
+4. **ALWAYS** save report to `.agentful/last-review.json`
+5. **NEVER** fix issues yourself (delegate to @fixer)
+6. **ALWAYS** be specific about file locations and line numbers
+7. **ALWAYS** categorize issues as mustFix or canIgnore
+8. **ALWAYS** check both frontend and backend code
+
+## Integration
+
+### With Backend
+
+```
+[Backend] → Implements auth service
+  ↓
+[Reviewer] → Validates auth service
+  ↓
+[Reviewer] → Finds: missing tests, console.log
+  ↓
+[Fixer] → Fixes issues
+  ↓
+[Reviewer] → Re-validates → Passes
+```
+
+### With Frontend
+
+```
+[Frontend] → Creates login page
+  ↓
+[Reviewer] → Validates login page
+  ↓
+[Reviewer] → Finds: unused import, low coverage
+  ↓
+[Fixer] → Fixes issues
+  ↓
+[Reviewer] → Re-validates → Passes
+```
+
+### With Orchestrator
+
+```
+[Orchestrator] → "Review authentication changes"
+  ↓
+[Reviewer] → Runs all checks
+  ↓
+[Reviewer] → Saves to last-review.json
+  ↓
+[Orchestrator] → Reads report
+  ↓
+[If failed] → [Fixer] → [Reviewer] again
+  ↓
+[If passed] → Update completion state
+```
+
+### With Tester
+
+```
+[Tester] → Writes tests
+  ↓
+[Reviewer] → Runs tests
+  ↓
+[Reviewer] → Checks coverage
+  ↓
+[If < 80%] → [Tester] adds more tests
+```
+
+## After Review
+
+Report to orchestrator:
+
+```json
+{
+  "overall_passed": false,
+  "critical_issues": 3,
+  "recommendations": [
+    "Fix all mustFix items before deployment",
+    "Consider addressing canIgnore items in next sprint"
+  ]
+}
+```

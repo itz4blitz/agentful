@@ -1,0 +1,532 @@
+# 24/7 Development with Ralph Wiggum
+
+Ralph Wiggum is a Claude Code plugin that enables continuous looping - perfect for autonomous development that runs while you sleep. This guide explains how to use Ralph Wiggum with Agentful for true 24/7 productivity.
+
+## What is Ralph Wiggum?
+
+Ralph Wiggum is a Claude Code plugin that:
+- Executes commands in a continuous loop
+- Stops only when completion promise is emitted
+- Tracks iteration count to prevent infinite loops
+- Handles errors gracefully and continues
+- Provides detailed logging of each iteration
+
+## Installation
+
+Install Ralph Wiggum plugin:
+
+```bash
+/plugin install ralph-wiggum@anthropics
+```
+
+Verify installation:
+```bash
+/plugin list
+```
+
+## Basic Usage
+
+### Starting a 24/7 Loop
+
+```bash
+/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+```
+
+**Parameters explained**:
+- `/agentful-start` - Command to loop (Agentful's autonomous mode)
+- `--max-iterations 50` - Maximum loops before stopping (safety limit)
+- `--completion-promise "AGENTFUL_COMPLETE"` - Stop when orchestrator emits this
+
+### How It Works
+
+1. **Start Loop** - Ralph executes `/agentful-start`
+2. **Orchestrator Runs** - Plans work, delegates to agents
+3. **Work Completes** - Agents build features
+4. **Validation Runs** - Quality gates checked
+5. **Issues Fixed** - Fixer resolves problems
+6. **Progress Updated** - State files updated
+7. **Check Promise** - If `AGENTFUL_COMPLETE` emitted, stop
+8. **Otherwise Loop** - Continue from step 2
+9. **Iteration Count** - Stop at max-iterations if not complete
+
+## Orchestrator Integration
+
+The orchestrator agent outputs the completion promise when truly done:
+
+```javascript
+// In orchestrator logic
+if (completion.overall === 100 && allGatesPass()) {
+  console.log("<promise>AGENTFUL_COMPLETE</promise>");
+}
+```
+
+Until then, Ralph keeps looping.
+
+## Loop Configuration
+
+### Iteration Limits
+
+Choose based on project size:
+
+```bash
+# Small project (1-3 features)
+/ralph-loop "/agentful-start" --max-iterations 20
+
+# Medium project (4-10 features)
+/ralph-loop "/agentful-start" --max-iterations 50
+
+# Large project (10+ features)
+/ralph-loop "/agentful-start" --max-iterations 100
+
+# Weekend warrior (let it run all weekend)
+/ralph-loop "/agentful-start" --max-iterations 200
+```
+
+### Time Estimates
+
+Approximate iterations per hour: 5-10
+(depending on feature complexity and validation time)
+
+```bash
+# Overnight (8 hours) = 40-80 iterations
+/ralph-loop "/agentful-start" --max-iterations 80
+
+# Weekend (48 hours) = 240-480 iterations
+/ralph-loop "/agentful-start" --max-iterations 400
+```
+
+### Safety Limits
+
+Always set max-iterations, even for large projects:
+
+```bash
+# Good: Has safety limit
+/ralph-loop "/agentful-start" --max-iterations 100
+
+# Bad: Could run forever if bugs occur
+/ralph-loop "/agentful-start"  # No limit!
+```
+
+## Real-World Examples
+
+### Example 1: Overnight Feature Build
+
+```bash
+# Friday evening setup
+/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+
+# Wake up Saturday morning to:
+# - 3-5 features implemented
+# - All tests passing
+# - 80%+ coverage
+# - Ready for review
+```
+
+### Example 2: Weekend Sprint
+
+```bash
+# Friday night
+/ralph-loop "/agentful-start" --max-iterations 200 --completion-promise "AGENTFUL_COMPLETE"
+
+# Monday morning:
+# - Full MVP complete
+# - All features tested
+# - Quality gates passing
+# - Production ready
+```
+
+### Example 3: Bug Fix Marathon
+
+```bash
+# Create PRODUCT.md focused on bugs
+cat > PRODUCT.md << EOF
+## Bug Sprint
+
+Fix all critical and high priority bugs from GitHub Issues.
+
+Critical:
+- [ ] Authentication timeout on slow networks
+- [ ] Database connection leaks
+- [ ] Memory leak in WebSocket handler
+
+High:
+- [ ] UI freeze on large datasets
+- [ ] File upload failures
+EOF
+
+# Start loop
+/ralph-loop "/agentful-start" --max-iterations 30
+
+# Check back in a few hours - all bugs fixed and tested
+```
+
+## Monitoring Ralph Loops
+
+### Check Progress
+
+While Ralph is running, open a new terminal:
+
+```bash
+# Check what Agentful is working on
+cd /path/to/project
+claude
+/agentful-status
+
+# Exit without stopping Ralph
+# Ralph continues in original terminal
+```
+
+### View Iteration Count
+
+Ralph displays current iteration:
+
+```
+[Iteration 12/50] Running: /agentful-start
+[Iteration 13/50] Running: /agentful-start
+...
+```
+
+### Check Git History
+
+Each validated feature is committed:
+
+```bash
+# See what's been built
+git log --oneline --graph -20
+
+# Example output:
+# * abc1234 feat: Implement user authentication
+# * def5678 test: Add auth service tests (95% coverage)
+# * ghi9012 fix: Remove dead code from auth module
+```
+
+### Review Quality Gates
+
+```bash
+# Check completion status
+cat .agentful/completion.json
+
+# Check last validation report
+cat .agentful/last-review.json
+```
+
+## Decision Handling During Loops
+
+### When Decisions Are Needed
+
+Agentful encounters a decision:
+
+1. **Creates decision** in `decisions.json`
+2. **Moves to non-blocked work** (continues autonomously)
+3. **Waits for you** to answer
+
+### How to Answer Without Stopping Ralph
+
+**Option 1: Quick Answer**
+```bash
+# In new terminal
+claude
+/agentful-decide
+
+# Select option
+# Exit - Ralph continues running
+```
+
+**Option 2: Edit Direct**
+```bash
+# Edit decisions.json
+vim .agentful/decisions.json
+
+# Move decision from "pending" to "resolved"
+# Ralph will pick up on next loop
+```
+
+### Example Decision Flow
+
+```javascript
+// .agentful/decisions.json (during loop)
+{
+  "pending": [
+    {
+      "id": "auth-decision-001",
+      "question": "Use JWT or sessions?",
+      "blocking": ["authentication-feature"]
+    }
+  ]
+}
+
+// Agentful continues with other features (dashboard, user-profile)
+// You answer when convenient
+// Next loop picks up auth again
+```
+
+## Error Handling
+
+### Ralph Handles Errors Gracefully
+
+If an iteration fails:
+1. Logs error with iteration number
+2. Continues to next iteration
+3. No progress lost (previous commits intact)
+
+```bash
+[Iteration 15/50] Running: /agentful-start
+Error: Network timeout
+[Iteration 16/50] Running: /agentful-start
+# Continues...
+```
+
+### Common Errors
+
+**1. API Timeouts**
+- Cause: External service slow/down
+- Solution: Ralph retries next iteration
+
+**2. Test Failures**
+- Cause: Bug introduced
+- Solution: Fixer agent fixes automatically
+
+**3. Decision Blocks**
+- Cause: Needs user input
+- Solution: Agentful works on other features
+
+**4. Git Conflicts**
+- Cause: Manual edits during loop
+- Solution: Stop Ralph, resolve, restart
+
+## Stopping Ralph Loops
+
+### Graceful Stop
+
+Press `Ctrl+C` in Ralph's terminal.
+
+Ralph finishes current iteration then stops:
+
+```
+[Iteration 27/50] Running: /agentful-start
+^C
+Gracefully stopping...
+Iteration complete. Stopped at iteration 27/50.
+```
+
+### Completion Promise
+
+Ralph stops automatically when promise emitted:
+
+```
+[Iteration 42/50] Running: /agentful-start
+<promise>AGENTFUL_COMPLETE</promise>
+Completion promise detected. Stopping.
+Final iteration: 42/50
+Total time: 4h 23m
+```
+
+### Restarting After Stop
+
+All progress saved in state files. Simply restart:
+
+```bash
+/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+```
+
+Agentful resumes from where it left off.
+
+## Best Practices
+
+### 1. Test Before 24/7
+
+```bash
+# First run manually
+/agentful-start
+
+# Let it complete 2-3 features
+# Check code quality
+# Verify style matches expectations
+
+# Then enable Ralph
+/ralph-loop "/agentful-start" --max-iterations 50
+```
+
+### 2. Start with Conservative Limits
+
+```bash
+# First time: small limit
+/ralph-loop "/agentful-start" --max-iterations 10
+
+# Monitor, then increase
+/ralph-loop "/agentful-start" --max-iterations 50
+```
+
+### 3. Monitor First Few Loops
+
+```bash
+# Watch first 3-5 iterations
+# Ensure decisions handled correctly
+# Check quality gates passing
+# Then leave it alone
+```
+
+### 4. Use Screen/Tmux for Long Runs
+
+```bash
+# Start in screen session
+screen -S agentful
+
+# Start Ralph
+/ralph-loop "/agentful-start" --max-iterations 100
+
+# Detach: Ctrl+A, D
+# Reattach: screen -r agentful
+# survives SSH disconnects
+```
+
+### 5. Commit Before Starting
+
+```bash
+# Ensure clean state
+git add .
+git commit -m "Before Ralph loop"
+
+# Start Ralph
+/ralph-loop "/agentful-start" --max-iterations 50
+```
+
+### 6. Set Up Notifications (Optional)
+
+```bash
+# Simple completion notification
+/ralph-loop "/agentful-start" \
+  --max-iterations 50 \
+  --completion-promise "AGENTFUL_COMPLETE" \
+  && osascript -e 'display notification "Agentful complete!"'
+```
+
+## Advanced Patterns
+
+### Parallel Development
+
+Run multiple Ralph loops on separate branches:
+
+```bash
+# Terminal 1: Feature branch A
+git checkout feature-a
+/ralph-loop "/agentful-start" --max-iterations 30
+
+# Terminal 2: Feature branch B
+git checkout feature-b
+/ralph-loop "/agentful-start" --max-iterations 30
+```
+
+### Staged Development
+
+Build in phases:
+
+```bash
+# Phase 1: Core features
+cat > PRODUCT.md << EOF
+## Phase 1 - Core
+- Authentication
+- User profile
+- Database setup
+EOF
+
+/ralph-loop "/agentful-start" --max-iterations 30
+
+# After complete, update PRODUCT.md for Phase 2
+```
+
+### Bug-Only Mode
+
+Create focused PRODUCT.md for bugs:
+
+```bash
+cat > PRODUCT.md << EOF
+## Bug Sprint
+
+Critical priority only.
+EOF
+
+/ralph-loop "/agentful-start" --max-iterations 20
+```
+
+## Troubleshooting Ralph
+
+### Ralph Not Starting
+
+**Check plugin installed**:
+```bash
+/plugin list | grep ralph
+```
+
+**Reinstall if needed**:
+```bash
+/plugin install ralph-wiggum@anthropics --force
+```
+
+### Loop Stops Prematurely
+
+**Check for errors**:
+```bash
+# View Ralph's log
+# Usually in terminal output
+```
+
+**Common causes**:
+- Agentful crashed (check PRODUCT.md valid)
+- Decision blocks everything (run `/agentful-decide`)
+- Max iterations too low (increase limit)
+
+### Infinite Loop Without Progress
+
+**Check state files**:
+```bash
+cat .agentful/state.json
+cat .agentful/completion.json
+```
+
+**If iteration count increasing but completion not**:
+1. Stop Ralph (Ctrl+C)
+2. Review `.agentful/last-review.json`
+3. Fix blocking issues manually
+4. Restart Ralph
+
+## Production Considerations
+
+### For Team Development
+
+```bash
+# Use feature branches
+git checkout -k feature/autonomous-build
+
+# Run Ralph
+/ralph-loop "/agentful-start" --max-iterations 50
+
+# Create PR when complete
+gh pr create --title "Autonomous build: Feature X"
+```
+
+### For Critical Projects
+
+```bash
+# Lower iteration limit
+/ralph-loop "/agentful-start" --max-iterations 20
+
+# Monitor more frequently
+# Check every 2-3 hours
+```
+
+### For Prototypes/MVPs
+
+```bash
+# High iteration limit
+/ralph-loop "/agentful-start" --max-iterations 200
+
+# Let it run all weekend
+# Check Monday morning
+```
+
+## Next Steps
+
+- [Autonomous Development Overview](./index.mdx) - Back to overview
+- [Quality Gates](./quality-gates.mdx) - What gates must pass
+- [Monitoring](./monitoring.mdx) - Track progress effectively

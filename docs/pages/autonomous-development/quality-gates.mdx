@@ -1,0 +1,631 @@
+# Quality Gates
+
+Agentful's quality gates ensure that all code entering your codebase meets production-ready standards. This comprehensive guide explains each gate, passing criteria, and how to troubleshoot failures.
+
+## Overview
+
+All code must pass **6 quality gates** before being marked complete:
+
+1. **Tests Passing** - All tests must pass
+2. **TypeScript Clean** - No type errors
+3. **Lint Clean** - No lint errors
+4. **Dead Code Removed** - No unused exports, files, or dependencies
+5. **Coverage ≥ 80%** - Test coverage threshold
+6. **Security Clean** - No vulnerabilities, secrets, or debug logs
+
+The reviewer agent runs all checks after every code change. The fixer agent automatically resolves failures when possible.
+
+## Gate 1: Tests Passing
+
+### Purpose
+
+Ensure all tests pass before accepting new code.
+
+### Check Command
+
+```bash
+npm test
+```
+
+### Passing Criteria
+
+- Exit code: 0 (success)
+- Failed tests: 0
+- No test timeouts or crashes
+
+### Failure Scenarios
+
+```typescript
+// ❌ Failing test
+test('should authenticate user', async () => {
+  const result = await authenticate('user@example.com', 'wrong-password');
+  expect(result).toBeTruthy();  // Fails: result is null
+});
+```
+
+### Common Issues
+
+1. **Test timeouts** - Increase timeout or fix async code
+2. **Flaky tests** - Tests that pass sometimes, fail sometimes
+3. **Broken fixtures** - Mock data not matching current code
+4. **Missing setup** - Tests not initializing dependencies
+
+### Auto-Fixable
+
+The fixer agent can:
+- Fix simple assertion errors
+- Update outdated test data
+- Increase timeouts for slow tests
+- Remove duplicate or redundant tests
+
+### Manual Fixes Required
+
+- Complex test logic failures
+- Race conditions in tests
+- Environment-specific test issues
+
+## Gate 2: TypeScript Clean
+
+### Purpose
+
+Catch type errors at compile time, ensuring type safety.
+
+### Check Command
+
+```bash
+npx tsc --noEmit
+```
+
+### Passing Criteria
+
+- Exit code: 0
+- Type errors: 0
+- No implicit any
+
+### Failure Scenarios
+
+```typescript
+// ❌ Type error: Property does not exist
+interface User {
+  name: string;
+  email: string;
+}
+
+const user: User = { name: 'John', email: 'john@example.com' };
+console.log(user.age);  // Error: Property 'age' does not exist
+
+// ❌ Type error: Wrong type
+function calculateTotal(price: number, quantity: number): number {
+  return price * quantity;
+}
+
+calculateTotal('10', 5);  // Error: Argument of type 'string' not assignable to 'number'
+
+// ❌ Type error: Missing return type
+async function fetchData() {  // Should specify Promise<User>
+  return await db.user.findFirst();
+}
+```
+
+### Common Issues
+
+1. **Missing type annotations** - Functions without return types
+2. **Implicit any** - Parameters without types
+3. **Wrong types** - Type mismatches
+4. **Missing imports** - Types not imported
+5. **Library types** - @types packages not installed
+
+### Auto-Fixable
+
+The fixer agent can:
+- Add missing type annotations
+- Fix obvious type mismatches
+- Install missing @types packages
+- Remove unused type imports
+- Add proper interface definitions
+
+### Manual Fixes Required
+
+- Complex type logic
+- Generic type constraints
+- Type assertion decisions
+- Architectural type design
+
+## Gate 3: Lint Clean
+
+### Purpose
+
+Enforce consistent code style and catch common errors.
+
+### Check Command
+
+```bash
+npm run lint
+```
+
+### Passing Criteria
+
+- Exit code: 0
+- Lint errors: 0
+- Warnings: Allowed (not blocking)
+
+### Failure Scenarios
+
+```typescript
+// ❌ Lint error: Unused variable
+const unusedVar = 5;  // Error: 'unusedVar' is assigned a value but never used
+
+// ❌ Lint error: Inconsistent spacing
+import{Component}from 'react';  // Missing spaces
+
+// ❌ Lint error: Missing semicolon (if configured)
+const value = 42  // Error: Missing semicolon
+
+// ❌ Lint error: Console statement
+console.log('Debug output');  // Error: Unexpected console statement
+```
+
+### Common Issues
+
+1. **Unused variables** - Variables declared but not used
+2. **Console statements** - console.log left in code
+3. **Formatting** - Inconsistent spacing, quotes, etc.
+4. **Import order** - Imports not sorted correctly
+5. **Naming conventions** - Variables not following conventions
+
+### Auto-Fixable
+
+The fixer agent can:
+- Remove unused variables and imports
+- Delete console.log statements
+- Fix formatting issues (with --fix flag)
+- Reorder imports
+- Fix naming conventions
+
+### Manual Fixes Required
+
+- Complex refactoring to fix issues
+- Architectural lint rule violations
+
+## Gate 4: Dead Code Removed
+
+### Purpose
+
+Eliminate unused code that bloats the codebase and creates maintenance burden.
+
+### Check Commands
+
+```bash
+# Try knip first (most comprehensive)
+npx knip --reporter json 2>/dev/null
+
+# Fall back to ts-prune
+npx ts-prune 2>/dev/null
+
+# Manual grep check
+grep -r "export.*function\|export.*class" src/ --include="*.ts" --include="*.tsx"
+```
+
+### Passing Criteria
+
+- Unused exports: 0
+- Unused files: 0
+- Unused dependencies: 0
+- Unused imports: 0
+
+### Failure Scenarios
+
+```typescript
+// ❌ Unused export
+// src/utils/date.ts
+export function formatDate(date: Date): string {  // Never imported anywhere
+  return date.toISOString();
+}
+
+export function parseDate(str: string): Date {  // Used in other files
+  return new Date(str);
+}
+
+// ❌ Unused file
+// src/components/OldWidget.tsx
+// Entire file never imported anywhere
+
+// ❌ Unused import
+import { unused, used } from './module';  // 'unused' never referenced
+
+// ❌ Unused dependency
+// package.json
+{
+  "dependencies": {
+    "lodash": "^4.17.21"  // Never used in code
+  }
+}
+```
+
+### Common Issues
+
+1. **Unused exports** - Functions/classes exported but never imported
+2. **Unused files** - Files not imported by any other file
+3. **Unused dependencies** - Packages in package.json but not used
+4. **Unused imports** - Imports not referenced in file
+5. **Commented code** - Old code commented out instead of deleted
+
+### Auto-Fixable
+
+The fixer agent can:
+- Delete unused exports
+- Delete unused files
+- Remove unused imports
+- Uninstall unused dependencies
+- Remove commented-out code
+
+### Manual Fixes Required
+
+- Determining if code is intentionally exported for library
+- Code used in conditional imports
+- Dynamic imports not detected by tools
+
+## Gate 5: Coverage ≥ 80%
+
+### Purpose
+
+Ensure code is adequately tested to prevent regressions.
+
+### Check Command
+
+```bash
+npm test -- --coverage --reporter=json
+```
+
+### Passing Criteria
+
+- Overall coverage: ≥ 80%
+- File-level coverage: No individual file below 60%
+
+### Failure Scenarios
+
+```typescript
+// ❌ Untested function
+// src/utils/string.ts
+export function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+// No test file exists: src/utils/__tests__/string.test.ts
+
+// ❌ Partially tested function
+// src/services/user.ts
+export async function createUser(email: string, password: string) {
+  if (await userExists(email)) {
+    throw new Error('User exists');
+  }
+
+  const hashed = await hashPassword(password);
+  return db.user.create({ data: { email, password: hashed } });
+}
+
+// Test only covers success case, not error case
+```
+
+### Coverage Metrics
+
+Track these metrics:
+
+```json
+{
+  "lines": 85,      // Percentage of lines executed
+  "functions": 90,  // Percentage of functions called
+  "branches": 75,   // Percentage of if/else branches taken
+  "statements": 85  // Percentage of statements executed
+}
+```
+
+All metrics should be ≥ 80%.
+
+### Common Issues
+
+1. **Missing tests** - New code without test coverage
+2. **Untested branches** - if/else not fully covered
+3. **Error paths** - try/catch error cases not tested
+4. **Edge cases** - Boundary conditions not tested
+5. **Async paths** - Promise rejections not tested
+
+### Auto-Fixable
+
+The fixer agent can:
+- Generate basic unit tests for untested functions
+- Add test cases for missing branches
+- Create tests for error paths
+- Increase coverage by adding test scenarios
+
+### Manual Fixes Required
+
+- Complex integration test setup
+- E2E test scenarios
+- Performance testing
+- Testing with external dependencies
+
+## Gate 6: Security Clean
+
+### Purpose
+
+Prevent security vulnerabilities and secrets in code.
+
+### Check Commands
+
+```bash
+# npm audit for vulnerabilities
+npm audit --production
+
+# Check for hardcoded secrets
+grep -rE "(password|secret|token|api_key|apikey)\s*[:=]\s*['\"][^'\"]{10,}['\"]" \
+  src/ --include="*.ts" --include="*.tsx"
+
+# Check for console.log
+grep -rn "console\.(log|debug|warn)" src/ --include="*.ts" --include="*.tsx"
+
+# Check for @ts-ignore
+grep -rn "@ts-ignore\|@ts-nocheck" src/ --include="*.ts" --include="*.tsx"
+```
+
+### Passing Criteria
+
+- Critical vulnerabilities: 0
+- High vulnerabilities: 0
+- Hardcoded secrets: 0
+- console.log statements: 0
+- @ts-ignore: 0
+
+### Failure Scenarios
+
+```typescript
+// ❌ Hardcoded secret
+const API_KEY = "sk-1234567890abcdef";  // NEVER commit this
+
+// ✅ Use environment variables
+const API_KEY = process.env.API_KEY;
+
+// ❌ console.log left in code
+async function login(email: string, password: string) {
+  console.log('Login attempt:', email);  // Remove this
+  const user = await authenticate(email, password);
+  return user;
+}
+
+// ❌ @ts-ignore silencing error
+// @ts-ignore
+const data = JSON.parse(maybeInvalidJSON);  // Fix the type instead
+
+// ❌ npm audit vulnerability
+// package.json
+{
+  "dependencies": {
+    "lodash": "4.17.15"  // Has known high-severity vulnerability
+  }
+}
+```
+
+### Common Issues
+
+1. **Hardcoded secrets** - API keys, passwords in code
+2. **Debug statements** - console.log, console.debug left in
+3. **Type suppressions** - @ts-ignore hiding real issues
+4. **Vulnerable dependencies** - Outdated packages with CVEs
+5. **Insecure configs** - CORS settings, auth misconfigurations
+
+### Auto-Fixable
+
+The fixer agent can:
+- Remove console.log statements
+- Replace hardcoded secrets with env vars
+- Remove @ts-ignore and fix underlying type issues
+- Update vulnerable dependencies
+- Add .env.example entries for required env vars
+
+### Manual Fixes Required
+
+- Complex secret management setup (Vault, AWS Secrets)
+- Breaking dependency updates
+- Architecture-level security changes
+
+## Quality Gate Workflow
+
+### 1. Implementation
+
+Agent implements feature:
+```typescript
+// Backend agent creates auth service
+export class AuthService {
+  async login(email: string, password: string) {
+    console.log('Login:', email);  // Oops, left debug log
+    const user = await db.user.findFirst({ where: { email } });
+    if (!user) throw new Error('Invalid credentials');
+    return generateToken(user);
+  }
+}
+```
+
+### 2. Review
+
+Reviewer agent runs all checks:
+```json
+{
+  "passed": false,
+  "checks": {
+    "tests": { "passed": false, "failed": 2 },
+    "typescript": { "passed": true },
+    "lint": { "passed": false },
+    "deadCode": { "passed": true },
+    "coverage": { "passed": false, "actual": 65 },
+    "security": { "passed": false, "issues": ["console.log in auth.service.ts:5"] }
+  }
+}
+```
+
+### 3. Fix
+
+Fixer agent resolves issues:
+```typescript
+// Removed console.log
+export class AuthService {
+  async login(email: string, password: string) {
+    const user = await db.user.findFirst({ where: { email } });
+    if (!user) throw new Error('Invalid credentials');
+    return generateToken(user);
+  }
+}
+
+// Added missing tests
+// Improved coverage to 82%
+```
+
+### 4. Re-Review
+
+Reviewer runs checks again:
+```json
+{
+  "passed": true,
+  "summary": "All quality gates passed"
+}
+```
+
+### 5. Complete
+
+Orchestrator marks feature complete:
+```json
+{
+  "authentication": {
+    "status": "complete",
+    "score": 100
+  }
+}
+```
+
+## Monitoring Quality Gates
+
+### Check Status
+
+```bash
+# View latest review
+cat .agentful/last-review.json
+
+# View gate status in completion
+cat .agentful/completion.json | jq '.gates'
+
+# Run validation manually
+/agentful-validate
+```
+
+### Gate Status Output
+
+```json
+{
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "no_dead_code": true,
+    "coverage_80": false,
+    "security_clean": true
+  },
+  "overall": 83.3
+}
+```
+
+## Troubleshooting Gate Failures
+
+### Gate Fails Repeatedly
+
+1. **Check last-review.json**:
+   ```bash
+   cat .agentful/last-review.json | jq '.mustFix'
+   ```
+
+2. **Identify pattern** - Same file failing?
+
+3. **Manual intervention** - If fixer can't resolve, fix manually
+
+4. **Re-run validation**:
+   ```bash
+   /agentful-validate
+   ```
+
+### Coverage Stuck Below 80%
+
+1. **Check by-file coverage**:
+   ```bash
+   npm test -- --coverage --reporter=json
+   # Look at coverage report for low files
+   ```
+
+2. **Target lowest files** - Add tests to worst files first
+
+3. **Test generation** - Fixer can generate basic tests
+
+4. **Manual test writing** - Complex scenarios need manual tests
+
+### Dead Code Keeps Returning
+
+1. **Check imports** - Unused imports often reappear
+
+2. **Check generated code** - Some tools generate unused code
+
+3. **Check barrel exports** - index.ts files exporting unused items
+
+4. **Regular cleanup** - Run knip periodically
+
+### Security Issues Won't Auto-Fix
+
+1. **Secrets in old commits** - Use git-secrets or BFG
+2. **Breaking dependency updates** - Manual update and testing
+3. **Architecture issues** - May require design changes
+
+## Customizing Gates
+
+### Adjust Coverage Threshold
+
+Edit `.claude/agents/reviewer.md`:
+
+```markdown
+### 6. Coverage Check
+
+**FAIL if:** Coverage < 90%  # Changed from 80%
+```
+
+### Add Custom Gates
+
+Add new check to reviewer:
+
+```markdown
+### 7. Performance Check
+
+```bash
+npm run benchmark
+```
+
+**FAIL if:** Response time > 100ms
+```
+
+### Disable Gates (Not Recommended)
+
+Only disable if truly not needed:
+
+```markdown
+### 6. Coverage Check
+
+**DISABLED:** Not applicable for this project
+```
+
+## Best Practices
+
+1. **Run locally before commit** - Catch issues early
+2. **Watch gate trends** - Coverage going up or down?
+3. **Address failures quickly** - Don't let debt accumulate
+4. **Keep tests fast** - Slow tests discourage running them
+5. **Review security regularly** - Run npm audit weekly
+6. **Monitor dead code** - Run knip monthly cleanup
+
+## Next Steps
+
+- [Autonomous Development Overview](./index.mdx) - Back to overview
+- [Recovery Strategies](./recovery-strategies.mdx) - How fixer resolves issues
+- [Monitoring](./monitoring.mdx) - Track gate status over time

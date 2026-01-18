@@ -1,0 +1,556 @@
+# /agentful-status
+
+Show current progress, completion percentage, phase, and what's being worked on.
+
+## Purpose
+
+The `/agentful-status` command provides a comprehensive overview of your autonomous development session. It displays:
+
+- Overall product completion percentage
+- Individual feature status (Done/Active/Pending)
+- Quality gate results (tests, types, lint, coverage, security)
+- Pending decisions that need resolution
+- Current work being performed
+- Iteration count and session history
+
+Use this command to quickly understand where your project stands without interrupting development flow.
+
+## Usage
+
+### Basic Usage
+
+```bash
+/agentful-status
+```
+
+This displays a formatted dashboard showing all aspects of development progress.
+
+### Common Patterns
+
+```bash
+# Before starting work
+/agentful-status
+# → See what's done, what's next
+
+# After autonomous run
+/agentful-status
+# → Check what was completed
+
+# When blocked
+/agentful-status
+# → Identify what's blocking progress
+
+# Before making decisions
+/agentful-status
+# → Review context for decisions
+```
+
+## Output Format
+
+### Complete Status Display
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           Agentful Development Status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Product: TaskMaster Pro
+Overall Progress: ████████░░░░░░░░░░ 48%
+Phase: backend-implementation
+Iterations: 12
+Last Updated: 2026-01-18 14:32:15 UTC
+
+┌─────────────────────┬──────────┬─────────┬────────────────┐
+│ Feature             │ Status   │ Score   │ Notes          │
+├─────────────────────┼──────────┼─────────┼────────────────┤
+│ Authentication      │ ✅ Done  │ 100%    │                │
+│ User Profile        │ 🔄 Active│ 45%     │ Backend done   │
+│                    │          │         │ Frontend pending│
+│ Dashboard           │ ⏸ Pending│ 0%      │ Blocked on UX  │
+│ Settings           │ ⏸ Pending│ 0%      │                │
+│ Notifications      │ ⏸ Pending│ 0%      │                │
+└─────────────────────┴──────────┴─────────┴────────────────┘
+
+┌─────────────────────┬────────┐
+│ Quality Gate        │ Status │
+├─────────────────────┼────────┤
+│ Tests Passing       │ ✅     │ 47/47
+│ No Type Errors      │ ✅     │
+│ No Dead Code        │ ❌     │ 3 issues
+│ Coverage ≥ 80%      │ ⚠️     │ 72%
+│ Security Scan       │ ✅     │
+└─────────────────────┴────────┘
+
+⚠️  Decisions Needed:
+
+1. "Dashboard UI framework?"
+   Options: React (standard), Svelte (faster), Vue (simple)
+   Context: Building dashboard component library
+   Blocking: dashboard-feature
+
+   → Run /agentful-decide to resolve
+
+🔧 Currently Working On:
+   Task: user-profile-frontend
+   Agent: frontend
+   Started: 8 minutes ago
+   Phase: Implementing profile edit form
+
+   Last output: "Creating form validation schema..."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Next Actions:
+  • /agentful-start    - Continue development
+  • /agentful-decide  - Answer pending decisions
+  • /agentful-validate- Run quality checks
+```
+
+## Output Sections
+
+### Header Section
+
+```
+Product: TaskMaster Pro
+Overall Progress: ████████░░░░░░░░░░ 48%
+Phase: backend-implementation
+Iterations: 12
+Last Updated: 2026-01-18 14:32:15 UTC
+```
+
+**What it tells you:**
+- **Product**: Name from PRODUCT.md
+- **Progress**: Visual bar + percentage of all features
+- **Phase**: Current development phase (e.g., planning, implementing, validating)
+- **Iterations**: Number of development cycles completed
+- **Last Updated**: When state was last modified
+
+**How to use this info:**
+- Track progress over time
+- Identify if development is active (recent update)
+- See how many iterations have run
+
+### Feature Table
+
+```
+┌─────────────────────┬──────────┬─────────┬────────────────┐
+│ Feature             │ Status   │ Score   │ Notes          │
+├─────────────────────┼──────────┼─────────┼────────────────┤
+│ Authentication      │ ✅ Done  │ 100%    │                │
+│ User Profile        │ 🔄 Active│ 45%     │ Backend done   │
+│                    │          │         │ Frontend pending│
+│ Dashboard           │ ⏸ Pending│ 0%      │ Blocked on UX  │
+│ Settings           │ ⏸ Pending│ 0%      │                │
+└─────────────────────┴──────────┴─────────┴────────────────┘
+```
+
+**Status indicators:**
+- ✅ **Done** - Feature complete (100%), validated, ready
+- 🔄 **Active** - Currently being worked on (`> 0%`, `< 100%`)
+- ⏸ **Pending** - Not started (0%), may be blocked
+
+**Notes column explains:**
+- Why a feature is blocked
+- What's left to complete
+- Dependencies or prerequisites
+
+**How to use this info:**
+- See what features are done vs. pending
+- Identify what's blocking progress
+- Understand feature dependencies
+
+### Quality Gates
+
+```
+┌─────────────────────┬────────┐
+│ Quality Gate        │ Status │
+├─────────────────────┼────────┤
+│ Tests Passing       │ ✅     │ 47/47
+│ No Type Errors      │ ✅     │
+│ No Dead Code        │ ❌     │ 3 issues
+│ Coverage ≥ 80%      │ ⚠️     │ 72%
+│ Security Scan       │ ✅     │
+└─────────────────────┴────────┘
+```
+
+**Gate meanings:**
+- **Tests Passing** - All tests pass (shows count if available)
+- **No Type Errors** - TypeScript compilation succeeds
+- **No Dead Code** - No unused exports, files, or imports
+- **Coverage ≥ 80%** - Code coverage meets threshold
+- **Security Scan** - No vulnerabilities or secrets
+
+**Status indicators:**
+- ✅ **Pass** - Gate passed, no action needed
+- ⚠️ **Warning** - Gate soft-failed (e.g., coverage at 72%)
+- ❌ **Fail** - Gate failed, needs attention
+
+**How to use this info:**
+- Identify quality issues before proceeding
+- See what's preventing validation from passing
+- Prioritize what to fix
+
+### Pending Decisions
+
+```
+⚠️  Decisions Needed:
+
+1. "Dashboard UI framework?"
+   Options: React (standard), Svelte (faster), Vue (simple)
+   Context: Building dashboard component library
+   Blocking: dashboard-feature
+
+   → Run /agentful-decide to resolve
+```
+
+**What it shows:**
+- Question that needs your input
+- Available options with descriptions
+- Context for why the decision is needed
+- What features/tasks are blocked by this decision
+
+**How to use this info:**
+- Understand what decisions are blocking progress
+- Prepare answers before running `/agentful-decide`
+- See architectural context for decisions
+
+### Current Work
+
+```
+🔧 Currently Working On:
+   Task: user-profile-frontend
+   Agent: frontend
+   Started: 8 minutes ago
+   Phase: Implementing profile edit form
+
+   Last output: "Creating form validation schema..."
+```
+
+**What it tells you:**
+- Which task is currently executing
+- Which specialist agent is working
+- How long it's been running
+- What phase of the task
+- Most recent log/output
+
+**How to use this info:**
+- See if development is active or stuck
+- Understand what's happening right now
+- Identify if a task is taking too long
+
+## When to Use
+
+### Before Starting Work
+
+```bash
+/agentful-status
+# → See what's been done
+# → Identify what's next
+# → Check if blocked by decisions
+```
+
+**Why:** Helps you understand current state before taking action.
+
+### After Autonomous Session
+
+```bash
+/agentful-start
+# [Let it run for a while]
+# Ctrl+C to stop
+/agentful-status
+# → See what was completed
+# → Check overall progress
+```
+
+**Why:** Validate that progress was made during the session.
+
+### When Development Seems Stuck
+
+```bash
+/agentful-status
+# → Check "Currently Working On" section
+# → See if task is taking too long
+# → Identify blocking decisions
+```
+
+**Why:** Diagnose why development isn't progressing.
+
+### Before Making Decisions
+
+```bash
+/agentful-status
+# → Review pending decisions in context
+# → See what features are blocked
+# → Understand architectural tradeoffs
+```
+
+**Why:** Provides context for making informed decisions.
+
+### Quality Check
+
+```bash
+/agentful-status
+# → Quick look at quality gates
+# → If issues found, run /agentful-validate for details
+```
+
+**Why:** Fast quality overview without running full validation.
+
+## Examples by Scenario
+
+### Scenario 1: New Session Check
+
+```bash
+$ /agentful-status
+
+Product: MyApp
+Progress: ██░░░░░░░░░░░░░░░ 20%
+Phase: Initial development
+Iterations: 2
+
+Features:
+  ✅ Setup (100%)
+  🔄 Auth (60%)
+  ⏸ Dashboard (0%)
+
+Quality: All gates passing
+Decisions: None pending
+
+Current Work: Implementing auth refresh tokens
+```
+
+**Interpretation:** Early development, auth in progress, no blockers.
+
+### Scenario 2: Blocked Development
+
+```bash
+$ /agentful-status
+
+Product: MyApp
+Progress: ████░░░░░░░░░░░░ 40%
+Phase: Blocked on decisions
+Iterations: 8
+
+Features:
+  ✅ Auth (100%)
+  ⏸ Dashboard (0%) - Blocked on UI framework
+
+⚠️ Decisions Needed:
+1. "UI framework for dashboard?"
+   Blocking: dashboard-feature
+```
+
+**Interpretation:** Development halted by pending decision. Need to run `/agentful-decide`.
+
+### Scenario 3: Quality Issues
+
+```bash
+$ /agentful-status
+
+Product: MyApp
+Progress: ████████░░░░░░░░ 60%
+Phase: Fixing quality issues
+Iterations: 15
+
+Features:
+  ✅ Auth (100%)
+  ✅ Dashboard (100%)
+  🔄 Profile (90%)
+
+Quality Gates:
+  Tests: ✅
+  TypeScript: ✅
+  Dead Code: ❌ 5 issues
+  Coverage: ⚠️ 76%
+```
+
+**Interpretation:** Feature mostly done but quality gates failing. Run `/agentful-validate` for details, then `/agentful-start` to auto-fix.
+
+### Scenario 4: Nearly Complete
+
+```bash
+$ /agentful-status
+
+Product: MyApp
+Progress: ██████████░░░░░░ 90%
+Phase: Final validation
+Iterations: 28
+
+Features:
+  ✅ Auth (100%)
+  ✅ Dashboard (100%)
+  ✅ Profile (100%)
+  ✅ Settings (95%)
+
+Quality: All gates passing
+Decisions: None pending
+
+Current Work: Finalizing settings UI
+```
+
+**Interpretation:** Almost done! One more feature at 95%, quality good.
+
+## Tips
+
+### Quick Progress Checks
+
+```bash
+# One-liner to see just completion percentage
+/agentful-status | grep "Progress:"
+```
+
+### Monitoring Active Development
+
+```bash
+# Watch status update every 30 seconds
+watch -n 30 "/agentful-status"
+```
+
+### Export Status
+
+```bash
+# Save status to file for later comparison
+/agentful-status > status-backup.txt
+
+# Or JSON for programmatic use
+/agentful-status --json > status.json
+```
+
+### Compare Progress Over Time
+
+```bash
+# Save status snapshots
+/agentful-status > status-$(date +%Y%m%d-%H%M).txt
+
+# Compare later
+diff status-20260118-1000.txt status-20260118-1200.txt
+```
+
+## Troubleshooting
+
+### Issue: Status shows "No state found"
+
+**Cause:** `.agentful/state.json` missing or corrupted
+
+**Solution:**
+```bash
+ls -la .agentful/
+# If missing, initialize
+echo '{"version":"1.0","current_task":null}' > .agentful/state.json
+/agentful-status
+```
+
+### Issue: Feature completion not updating
+
+**Cause:** Orchestrator not updating completion.json
+
+**Solution:**
+```bash
+# Check completion.json
+cat .agentful/completion.json
+
+# Manually update if needed
+# Or run /agentful-start to trigger update
+```
+
+### Issue: Quality gates outdated
+
+**Cause:** Gates not updated after recent changes
+
+**Solution:**
+```bash
+# Force validation update
+/agentful-validate
+
+# Then check status
+/agentful-status
+```
+
+### Issue: "Currently Working On" seems stuck
+
+**Cause:** Task hanging or agent error
+
+**Solution:**
+```bash
+# Check how long it's been running
+/agentful-status
+
+# If >30 minutes, might be stuck
+# Try stopping and restarting
+/agentful-start
+```
+
+## Advanced Usage
+
+### Custom Status Format
+
+```bash
+# Show only features
+/agentful-status --features
+
+# Show only quality gates
+/agentful-status --quality
+
+# Show only current work
+/agentful-status --current
+```
+
+### Integration with Monitoring
+
+```bash
+#!/bin/bash
+# monitor-status.sh
+
+while true; do
+  STATUS=$(agentful-status)
+  PROGRESS=$(echo "$STATUS" | grep "Progress:" | awk '{print $2}')
+
+  echo "[$(date)] Progress: $PROGRESS"
+
+  # Alert if stuck
+  if echo "$STATUS" | grep -q "Blocked"; then
+    echo "⚠️  Development blocked!"
+    # Send notification
+  fi
+
+  sleep 300  # Check every 5 minutes
+done
+```
+
+### Progress Tracking Dashboard
+
+```bash
+# Generate simple HTML dashboard
+/agentful-status --html > status.html
+open status.html
+```
+
+### Status History
+
+```bash
+# Log status over time
+mkdir -p .agentful/history
+while true; do
+  /agentful-status > .agentful/history/status-$(date +%s).txt
+  sleep 300
+done
+```
+
+## Data Sources
+
+The `/agentful-status` command reads from:
+
+| File | Purpose | Format |
+|------|---------|--------|
+| `.agentful/state.json` | Current task, phase, iterations | JSON |
+| `.agentful/completion.json` | Feature completion %, gate status | JSON |
+| `.agentful/decisions.json` | Pending decisions | JSON |
+| `PRODUCT.md` | Product name, feature list | Markdown |
+
+## See Also
+
+- [/agentful-start](./agentful-start) - Continue development
+- [/agentful-decide](./agentful-decide) - Resolve pending decisions
+- [/agentful-validate](./agentful-validate) - Detailed quality check
+- [State Files](/core-concepts/state-management) - Understanding state.json structure
+- [Completion Tracking](/core-concepts/state-management) - How completion is calculated

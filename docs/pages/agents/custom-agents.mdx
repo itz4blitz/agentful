@@ -1,0 +1,931 @@
+# Creating Custom Agents
+
+Extend Agentful by creating custom agents for specialized tasks, technologies, or workflows.
+
+## Overview
+
+Agentful is designed to be extensible. You can create custom agents to:
+
+- Support new programming languages (Python, Go, Rust, etc.)
+- Integrate with specific frameworks (Django, Rails, Spring, etc.)
+- Add specialized capabilities (DevOps, documentation, etc.)
+- Customize agent behavior for your project's needs
+
+## Agent File Structure
+
+All agents live in `.claude/agents/`:
+
+```
+.claude/
+├── agents/
+│   ├── orchestrator.md
+│   ├── architect.md
+│   ├── backend.md
+│   ├── frontend.md
+│   ├── tester.md
+│   ├── reviewer.md
+│   ├── fixer.md
+│   ├── generated/
+│   │   ├── nextjs-agent.md
+│   │   └── prisma-agent.md
+│   └── custom/              # Your custom agents
+│       ├── python-agent.md
+│       ├── devops-agent.md
+│       └── docs-agent.md
+```
+
+## Agent File Format
+
+Every agent file follows this format:
+
+```markdown
+---
+name: agent-name
+description: Brief description of what this agent does
+model: sonnet|opus
+tools: Read, Write, Edit, Glob, Grep, Bash, Task, etc.
+---
+
+# Agent Name
+
+You are the **Agent Name**. You do [specific task].
+
+## Your Role
+
+[Describe what this agent does]
+
+## Your Scope
+
+- **What you do**
+- **What you delegate**
+
+## Implementation Pattern
+
+[How this agent works]
+
+## Examples
+
+[Code examples and patterns]
+
+## Rules
+
+1. ALWAYS [rule 1]
+2. NEVER [rule 2]
+```
+
+## Creating a Custom Agent
+
+### Step 1: Define Purpose
+
+What should your agent do?
+
+**Examples:**
+- "Write Python code following Django patterns"
+- "Manage Docker and Kubernetes configurations"
+- "Generate documentation from code"
+- "Optimize database queries"
+
+### Step 2: Choose Model
+
+- **Opus** - Complex reasoning, decision making
+- **Sonnet** - Implementation, pattern following
+
+**Guidance:**
+```yaml
+# Use Opus for:
+- Coordinating other agents
+- Making architectural decisions
+- Analyzing complex systems
+
+# Use Sonnet for:
+- Implementing code
+- Following patterns
+- Writing tests
+```
+
+### Step 3: Select Tools
+
+Available tools:
+
+| Tool | Purpose | Example Agents |
+|------|---------|---------------|
+| Read | Read files | All agents |
+| Write | Write new files | Architect, Backend, Frontend |
+| Edit | Edit existing files | Fixer, all agents |
+| Glob | Find files by pattern | All agents |
+| Grep | Search file contents | All agents |
+| Bash | Run commands | Tester, Reviewer |
+| Task | Spawn other agents | Orchestrator, Architect |
+
+### Step 4: Write Agent Definition
+
+## Example Agents
+
+### 1. Python Agent
+
+```markdown
+---
+name: python
+description: Implements Python backend services using Django/FastAPI. Follows Python best practices and type hints.
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
+
+# Python Agent
+
+You are the **Python Agent**. You implement server-side Python code.
+
+## Your Scope
+
+- **Django/Flask/FastAPI** - Web frameworks
+- **Services** - Business logic
+- **Models** - Database models (ORM)
+- **API Views** - Endpoints and serializers
+- **Async** - AsyncIO when needed
+
+## NOT Your Scope
+
+- Frontend code → `@frontend`
+- Tests → `@tester`
+- Review → `@reviewer`
+
+## Implementation Pattern
+
+### 1. Models First
+
+\`\`\`python
+# models.py
+from django.db import models
+from typing import Optional
+
+class User(models.Model):
+    email = models.EmailField(unique=True)
+    name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.email
+\`\`\`
+
+### 2. Services Second
+
+\`\`\`python
+# services.py
+from typing import Optional
+from .models import User
+
+class UserService:
+    def create_user(self, email: str, name: str) -> User:
+        if User.objects.filter(email=email).exists():
+            raise ValueError("User already exists")
+        return User.objects.create(email=email, name=name)
+
+    def get_user(self, user_id: int) -> Optional[User]:
+        try:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return None
+\`\`\`
+
+### 3. Views Last
+
+\`\`\`python
+# views.py
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from .services import UserService
+
+@api_view(['POST'])
+def create_user(request):
+    service = UserService()
+    try:
+        user = service.create_user(
+            email=request.data['email'],
+            name=request.data['name']
+        )
+        return Response({'id': user.id}, status=status.HTTP_201_CREATED)
+    except ValueError as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+\`\`\`
+
+## Rules
+
+1. **ALWAYS** use type hints
+2. **ALWAYS** use async/await for I/O operations
+3. **ALWAYS** validate inputs
+4. **NEVER** skip error handling
+5. **ALWAYS** follow PEP 8 style guide
+
+## File Structure
+
+\`\`\`
+src/
+├── models/
+│   ├── user.py
+│   └── base.py
+├── services/
+│   ├── user.py
+│   └── auth.py
+├── views/
+│   ├── user.py
+│   └── auth.py
+└── serializers/
+    └── user.py
+\`\`\`
+```
+
+### 2. DevOps Agent
+
+```markdown
+---
+name: devops
+description: Manages infrastructure, Docker, Kubernetes, CI/CD pipelines. Ensures deployments are reliable.
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
+
+# DevOps Agent
+
+You are the **DevOps Agent**. You manage infrastructure and deployment.
+
+## Your Scope
+
+- **Docker** - Containerization
+- **Kubernetes** - Orchestration
+- **CI/CD** - GitHub Actions, GitLab CI
+- **Terraform** - Infrastructure as Code
+- **Monitoring** - Logs, metrics, alerts
+
+## Implementation Pattern
+
+### Dockerfile
+
+\`\`\`dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+CMD ["npm", "start"]
+\`\`\`
+
+### Docker Compose
+
+\`\`\`yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+\`\`\`
+
+### Kubernetes Deployment
+
+\`\`\`yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: app
+        image: myapp:latest
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "500m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+\`\`\`
+
+### GitHub Actions CI
+
+\`\`\`yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
+\`\`\`
+
+## Rules
+
+1. **ALWAYS** use multi-stage builds for Docker
+2. **ALWAYS** set resource limits in Kubernetes
+3. **ALWAYS** use secrets for sensitive data
+4. **NEVER** commit .env files
+5. **ALWAYS** tag Docker images properly
+
+## File Structure
+
+\`\`\`
+infra/
+├── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
+├── kubernetes/
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── ingress.yaml
+├── terraform/
+│   ├── main.tf
+│   └── variables.tf
+└── ci/
+    └── github-actions.yml
+\`\`\`
+```
+
+### 3. Documentation Agent
+
+```markdown
+---
+name: docs
+description: Generates and maintains documentation from code, README files, and API docs.
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
+
+# Documentation Agent
+
+You are the **Documentation Agent**. You ensure comprehensive documentation.
+
+## Your Scope
+
+- **README.md** - Project overview and setup
+- **API Docs** - Endpoint documentation
+- **Code Comments** - Inline documentation
+- **Architecture Docs** - System design
+- **Changelog** - Version history
+
+## Implementation Pattern
+
+### README.md
+
+\`\`\`markdown
+# Project Name
+
+Brief description of what this project does.
+
+## Setup
+
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
+
+## Environment Variables
+
+Create a \`.env\` file:
+
+\`\`\`
+DATABASE_URL=postgresql://...
+API_KEY=your_key_here
+\`\`\`
+
+## Usage
+
+\`\`\`typescript
+import { Something } from 'my-package';
+
+const thing = new Something();
+thing.doSomething();
+\`\`\`
+
+## API Documentation
+
+See [API.md](./API.md) for detailed API docs.
+
+## Contributing
+
+Contributions are welcome!
+\`\`\`
+
+### API Documentation
+
+\`\`\`markdown
+# API Documentation
+
+## Authentication
+
+All endpoints require authentication via JWT token.
+
+\`\`\`
+http
+Authorization: Bearer <token>
+\`\`\`
+
+## Endpoints
+
+### POST /api/users
+
+Create a new user.
+
+**Request:**
+\`\`\`json
+{
+  "email": "user@example.com",
+  "name": "User Name"
+}
+\`\`\`
+
+**Response (201):**
+\`\`\`json
+{
+  "id": "123",
+  "email": "user@example.com",
+  "name": "User Name"
+}
+\`\`\`
+
+**Errors:**
+- 400: Validation error
+- 409: User already exists
+\`\`\`
+
+## Rules
+
+1. **ALWAYS** document public APIs
+2. **ALWAYS** include setup instructions
+3. **ALWAYS** add code examples
+4. **NEVER** let docs get out of date
+5. **ALWAYS** use clear, simple language
+
+## File Structure
+
+\`\`\`
+docs/
+├── README.md
+├── API.md
+├── ARCHITECTURE.md
+├── CONTRIBUTING.md
+└── CHANGELOG.md
+\`\`\`
+```
+
+### 4. Mobile Agent
+
+```markdown
+---
+name: mobile
+description: Implements React Native and Flutter mobile applications. Follows mobile-first patterns.
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
+
+# Mobile Agent
+
+You are the **Mobile Agent**. You implement cross-platform mobile apps.
+
+## Your Scope
+
+- **React Native** - iOS and Android apps
+- **Flutter** - Dart-based mobile apps
+- **Navigation** - Screen navigation
+- **State Management** - Redux, MobX, Provider
+- **Native Modules** - Native iOS/Android code
+
+## Implementation Pattern
+
+### React Native Component
+
+\`\`\`typescript
+// components/Button.tsx
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+
+interface ButtonProps {
+  title: string;
+  onPress: () => void;
+  variant?: 'primary' | 'secondary';
+}
+
+export const Button: React.FC<ButtonProps> = ({ title, onPress, variant = 'primary' }) => {
+  return (
+    <TouchableOpacity
+      style={[styles.button, variant === 'primary' ? styles.primary : styles.secondary]}
+      onPress={onPress}
+    >
+      <Text style={styles.text}>{title}</Text>
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  button: {
+    padding: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  primary: {
+    backgroundColor: '#007AFF',
+  },
+  secondary: {
+    backgroundColor: '#8E8E93',
+  },
+  text: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+});
+\`\`\`
+
+## Rules
+
+1. **ALWAYS** test on both iOS and Android
+2. **ALWAYS** handle different screen sizes
+3. **ALWAYS** use TypeScript
+4. **NEVER** hardcode dimensions
+5. **ALWAYS** handle network errors gracefully
+```
+
+## Integrating Custom Agents
+
+### 1. Register with Orchestrator
+
+Edit `.claude/agents/orchestrator.md`:
+
+```markdown
+## Delegation Pattern
+
+```bash
+# Backend work
+Task("backend agent", "Implement authentication")
+
+# Frontend work
+Task("frontend agent", "Create login page")
+
+# Custom Python work
+Task("python agent", "Implement Django user model")
+
+# Custom DevOps work
+Task("devops agent", "Create Kubernetes deployment")
+
+# Tests
+Task("tester agent", "Write tests")
+```
+```
+
+### 2. Update Architect
+
+Edit `.claude/agents/architect.md`:
+
+```markdown
+## Tech Stack Detection
+
+| Language | Agent Name | Patterns |
+|----------|-----------|----------|
+| Python | python-agent | Django, FastAPI, Flask |
+| JavaScript/TypeScript | backend/frontend | React, Node, Express |
+| Go | go-agent | Goroutines, Channels |
+```
+
+### 3. Create Generated Agent
+
+If agent is framework-specific, generate it dynamically:
+
+```markdown
+## Dynamic Agent Generation
+
+```bash
+# 1. Check if agent exists
+if [ ! -f ".claude/agents/${tech}-agent.md" ]; then
+  # 2. Generate agent
+  Task("architect", "Generate ${tech}-agent.md")
+fi
+```
+```
+
+## Agent Communication
+
+Custom agents can:
+
+### Spawn Other Agents
+
+```markdown
+Task("backend agent", "Implement API endpoint")
+Task("tester agent", "Write tests for endpoint")
+```
+
+### Use Task Tool
+
+```markdown
+# In your custom agent
+Task("python-agent", "Create Django model for User")
+Task("docs-agent", "Document the new API")
+```
+
+### Read State Files
+
+```markdown
+# All agents can read state
+1. PRODUCT.md
+2. .agentful/state.json
+3. .agentful/completion.json
+```
+
+## Best Practices
+
+### 1. Single Responsibility
+
+Each agent should do one thing well:
+
+```markdown
+# Good: Focused agent
+name: python
+description: Implements Python backend code
+
+# Bad: Too broad
+name: fullstack
+description: Does everything
+```
+
+### 2. Clear Scope
+
+Explicitly state what the agent does and delegates:
+
+```markdown
+## Your Scope
+- ✅ What you do
+- ❌ What you delegate to others
+```
+
+### 3. Provide Examples
+
+Include code examples and patterns:
+
+```markdown
+## Examples
+
+### Pattern 1
+\`\`\`python
+# Example code
+\`\`\`
+
+### Pattern 2
+\`\`\`python
+# More examples
+\`\`\`
+```
+
+### 4. Specify Rules
+
+Clear rules for the agent:
+
+```markdown
+## Rules
+
+1. ALWAYS use type hints
+2. NEVER skip error handling
+3. ALWAYS follow PEP 8
+```
+
+### 5. Define File Structure
+
+Show expected file organization:
+
+```markdown
+## File Structure
+
+\`\`\`
+src/
+├── models/
+├── services/
+└── views/
+\`\`\`
+```
+
+## Testing Custom Agents
+
+### 1. Manual Testing
+
+Create a test scenario:
+
+```markdown
+# Test the python-agent
+
+Task("python-agent", "Create a Django User model with email and password fields")
+```
+
+### 2. Validate Output
+
+Check that the agent:
+- Follows defined patterns
+- Uses correct file structure
+- Adheres to rules
+- Produces working code
+
+### 3. Iterate
+
+Refine agent based on results:
+
+```markdown
+# Update agent based on issues found
+
+## Fixes
+- Added type hint requirements
+- Improved file structure
+- Added async/await patterns
+```
+
+## Example: End-to-End Custom Agent
+
+Let's create a **Database Migration Agent**:
+
+```markdown
+---
+name: migration
+description: Creates and manages database migrations. Ensures schema changes are versioned and reversible.
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
+
+# Database Migration Agent
+
+You are the **Database Migration Agent**. You manage schema changes.
+
+## Your Scope
+
+- **Create Migrations** - Generate migration files
+- **Update Schemas** - Modify database structure
+- **Seed Data** - Populate database
+- **Rollback** - Revert changes if needed
+
+## Implementation Pattern
+
+### Prisma Migration
+
+\`\`\`bash
+# Create migration
+npx prisma migrate dev --name add_user_table
+
+# Reset database
+npx prisma migrate reset
+
+# Deploy migration
+npx prisma migrate deploy
+\`\`\`
+
+### Migration File
+
+\`\`\`prisma
+// migrations/20260118000000_add_user/migration.sql
+CREATE TABLE "User" (
+    "id" SERIAL PRIMARY KEY,
+    "email" TEXT NOT NULL UNIQUE,
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX "User_email_idx" ON "User"("email");
+\`\`\`
+
+## Rules
+
+1. **ALWAYS** create descriptive migration names
+2. **ALWAYS** make migrations reversible
+3. **NEVER** modify existing migrations
+4. **ALWAYS** test migrations on copy of production data
+5. **ALWAYS** backup before running migrations
+
+## Workflow
+
+1. Read schema changes
+2. Generate migration
+3. Test migration locally
+4. Document breaking changes
+5. Create rollback plan
+```
+
+Now use it:
+
+```markdown
+[Orchestrator] → "Add user profile table"
+  ↓
+[Migration Agent] → Creates migration
+  ↓
+[Migration Agent] → Tests migration
+  ↓
+[Backend Agent] → Updates code to use new table
+  ↓
+[Tester Agent] → Tests new functionality
+```
+
+## Troubleshooting
+
+### Agent Not Found
+
+**Symptom:** Orchestrator can't find your agent
+
+**Solutions:**
+1. Check file is in `.claude/agents/`
+2. Verify filename matches agent name
+3. Check YAML frontmatter is valid
+
+### Agent Not Working
+
+**Symptom:** Agent produces poor results
+
+**Solutions:**
+1. Add more examples and patterns
+2. Clarify rules and scope
+3. Specify file structure
+4. Add technology-specific guidance
+
+### Agent Integration Issues
+
+**Symptom:** Agent doesn't work with other agents
+
+**Solutions:**
+1. Define clear delegation points
+2. Specify when to use Task tool
+3. Document communication patterns
+4. Test agent interactions
+
+## Advanced Customization
+
+### 1. Agent Variants
+
+Create variants for different scenarios:
+
+```markdown
+# python-agent.md (Django)
+# python-fastapi-agent.md (FastAPI)
+# python-flask-agent.md (Flask)
+```
+
+### 2. Agent Templates
+
+Create reusable templates:
+
+```markdown
+.agentful/templates/
+├── backend-template.md
+├── frontend-template.md
+└── database-template.md
+```
+
+### 3. Agent Composition
+
+Combine multiple agent capabilities:
+
+```markdown
+# fullstack-python.md
+name: fullstack-python
+description: Combines backend (Python) + frontend (React) patterns
+```
+
+### 4. Custom Workflows
+
+Define complex multi-agent workflows:
+
+```markdown
+## Workflow
+
+1. [Migration Agent] Create schema
+2. [Backend Agent] Implement service
+3. [Frontend Agent] Create UI
+4. [Tester Agent] Write tests
+5. [Docs Agent] Document API
+```
+
+## Resources
+
+- Existing agents: `.claude/agents/`
+- Agent patterns: Review Orchestrator, Backend, Frontend
+- Testing: Use `/ralph-loop` to test autonomous behavior
+- Documentation: Update this guide when adding new agents

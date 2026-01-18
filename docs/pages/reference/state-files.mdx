@@ -1,0 +1,952 @@
+# State Files Reference
+
+Complete reference for all Agentful state file formats, schemas, and validation rules.
+
+## Overview
+
+Agentful maintains runtime state in `.agentful/` directory (gitignored). These files track:
+
+- **Current work progress** - What's being built
+- **Feature completion** - How much is done
+- **Decisions** - Pending and resolved user input
+- **Architecture** - Detected tech stack and agents
+
+## File Structure
+
+```
+.agentful/
+├── state.json           # Current work state and phase
+├── completion.json      # Feature completion percentages
+├── decisions.json       # Pending and resolved decisions
+├── architecture.json    # Detected tech stack
+└── last-validation.json # Most recent validation report
+```
+
+## state.json
+
+Tracks the current development state and active work.
+
+### Location
+
+`.agentful/state.json`
+
+### Schema
+
+```json
+{
+  "type": "object",
+  "required": ["version", "current_task", "current_phase", "iterations", "last_updated", "blocked_on"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "State format version",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "current_task": {
+      "type": ["string", "null"],
+      "description": "Currently active task description"
+    },
+    "current_phase": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "planning",
+        "architecture",
+        "backend-implementation",
+        "frontend-implementation",
+        "testing",
+        "validation",
+        "fixing",
+        "blocked"
+      ],
+      "description": "Current development phase"
+    },
+    "iterations": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Number of development loop iterations"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of last update"
+    },
+    "blocked_on": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of decision IDs blocking progress"
+    }
+  }
+}
+```
+
+### Example
+
+```json
+{
+  "version": "1.0.0",
+  "current_task": "Implementing JWT authentication service",
+  "current_phase": "backend-implementation",
+  "iterations": 7,
+  "last_updated": "2026-01-18T12:30:45Z",
+  "blocked_on": []
+}
+```
+
+### Field Descriptions
+
+| Field | Type | Description | Valid Values |
+|-------|------|-------------|--------------|
+| `version` | string | State format version | Semantic version (e.g., `&quot;1.0.0&quot;`) |
+| `current_task` | string&#124;null | Description of active task | Any string or null if idle |
+| `current_phase` | string | Current development phase | See Phase Values below |
+| `iterations` | number | Loop iteration count | Non-negative integer |
+| `last_updated` | string | Last update timestamp | ISO 8601 format |
+| `blocked_on` | array&lt;string&gt; | Decision IDs blocking work | Array of decision ID strings |
+
+### Phase Values
+
+| Phase | Description | When Used |
+|-------|-------------|-----------|
+| `idle` | No active work | Initial state, between tasks |
+| `planning` | Analyzing requirements | Reading PRODUCT.md, planning features |
+| `architecture` | Detecting tech stack | Generating specialized agents |
+| `backend-implementation` | Building backend | Services, APIs, repositories |
+| `frontend-implementation` | Building frontend | Components, pages, UI |
+| `testing` | Writing tests | Unit, integration, E2E tests |
+| `validation` | Running quality checks | Type checking, linting, coverage |
+| `fixing` | Resolving issues | Fixing validation failures |
+| `blocked` | Waiting on user input | Pending decisions |
+
+### Validation Rules
+
+1. **Version format**: Must be valid semver (e.g., "1.0.0", "2.1.3")
+2. **Timestamp**: Must be ISO 8601 format (e.g., "2026-01-18T12:30:45Z")
+3. **Iterations**: Cannot be negative
+4. **Blocked_on**: Must reference valid decision IDs from decisions.json
+
+### Migration Notes
+
+#### Version 1.0.0 → 1.1.0 (Future)
+
+Add `error_count` field for tracking validation failures:
+
+```json
+{
+  "error_count": 0
+}
+```
+
+Migration: Add field with default value `0`.
+
+---
+
+## completion.json
+
+Tracks feature completion progress and quality gate status.
+
+### Location
+
+`.agentful/completion.json`
+
+### Schema
+
+
+```json
+{
+  "type": "object",
+  "required": ["features", "gates", "overall", "last_updated"],
+  "properties": {
+    "features": {
+      "type": "object",
+      "patternProperties": {
+        ".*": {
+          "type": "object",
+          "required": ["status", "score"],
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["pending", "in_progress", "complete", "blocked"]
+            },
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "started_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "notes": {
+              "type": "string"
+            },
+            "acceptance": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "gates": {
+      "type": "object",
+      "required": ["tests_passing", "no_type_errors", "no_dead_code", "coverage_80", "security_clean"],
+      "properties": {
+        "tests_passing": { "type": "boolean" },
+        "no_type_errors": { "type": "boolean" },
+        "no_dead_code": { "type": "boolean" },
+        "coverage_80": { "type": "boolean" },
+        "security_clean": { "type": "boolean" }
+      }
+    },
+    "overall": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Overall completion percentage"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
+```
+
+### Example
+
+```json
+{
+  "features": {
+    "authentication": {
+      "status": "complete",
+      "score": 100,
+      "started_at": "2026-01-18T00:00:00Z",
+      "completed_at": "2026-01-18T02:30:00Z",
+      "notes": "JWT authentication fully implemented with tests",
+      "acceptance": {
+        "login_endpoint": true,
+        "registration_endpoint": true,
+        "jwt_generation": true,
+        "refresh_token": true
+      }
+    },
+    "user-profile": {
+      "status": "in_progress",
+      "score": 45,
+      "started_at": "2026-01-18T02:30:00Z",
+      "notes": "Backend service complete, frontend pending"
+    },
+    "dashboard": {
+      "status": "pending",
+      "score": 0
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "no_dead_code": true,
+    "coverage_80": false,
+    "security_clean": true
+  },
+  "overall": 48,
+  "last_updated": "2026-01-18T12:30:45Z"
+}
+```
+
+### Field Descriptions
+
+#### Features Object
+
+| Field | Type | Description | Valid Values |
+|-------|------|-------------|--------------|
+| `status` | string | Feature status | pending, in_progress, complete, blocked |
+| `score` | number | Completion percentage | 0-100 |
+| `started_at` | string | Work start timestamp | ISO 8601 (optional) |
+| `completed_at` | string | Completion timestamp | ISO 8601 (optional) |
+| `notes` | string | Progress notes | Any string (optional) |
+| `acceptance` | object | Acceptance criteria status | Map of criterion → boolean |
+
+#### Gates Object
+
+| Gate | Type | Description | Validation |
+|------|------|-------------|------------|
+| `tests_passing` | boolean | All tests pass | `npm test` |
+| `no_type_errors` | boolean | No type errors (adapts to stack) | `npx tsc --noEmit` |
+| `no_dead_code` | boolean | No unused code | `npx knip` |
+| `coverage_80` | boolean | Coverage ≥ 80% | `npm test -- --coverage` |
+| `security_clean` | boolean | No security issues | `npm audit` |
+
+#### Overall Field
+
+| Field | Type | Description | Calculation |
+|------|------|-------------|-------------|
+| `overall` | number | Weighted completion score | Average of feature scores - gate penalties |
+
+**Calculation Method**:
+
+```javascript
+// Average of all feature scores
+const featureScores = Object.values(features).map(f => f.score);
+const featureAverage = featureScores.reduce((a, b) => a + b, 0) / featureScores.length;
+
+// Subtract gate penalties (5% per failed gate)
+const failedGates = Object.values(gates).filter(g => !g).length;
+const gatePenalty = failedGates * 5;
+
+// Final score (minimum 0)
+const overall = Math.max(0, Math.round(featureAverage - gatePenalty));
+```
+
+### Status Values
+
+| Status | Score Range | Meaning |
+|--------|------------|---------|
+| `pending` | 0 | Not started |
+| `in_progress` | 1-99 | Work in progress |
+| `complete` | 100 | Fully done and validated |
+| `blocked` | any | Waiting on decision/dependency |
+
+### Validation Rules
+
+1. **Score range**: Must be 0-100 for all features
+2. **Timestamps**: ISO 8601 format if present
+3. **Acceptance criteria**: Optional, but if present must be boolean values
+4. **Gates**: All 5 gates must be present and boolean
+5. **Overall**: Must be 0-100, calculated automatically
+
+### Integration with PRODUCT.md
+
+Parse PRODUCT.md features section:
+
+```markdown
+## Features
+
+### 1. Authentication - CRITICAL
+**Acceptance Criteria**:
+- [x] Login endpoint
+- [x] Registration endpoint
+- [x] JWT token generation
+- [ ] Refresh token flow
+```
+
+Maps to completion.json:
+
+```json
+{
+  "features": {
+    "authentication": {
+      "status": "in_progress",
+      "score": 75,
+      "acceptance": {
+        "login_endpoint": true,
+        "registration_endpoint": true,
+        "jwt_generation": true,
+        "refresh_token": false
+      }
+    }
+  }
+}
+```
+
+---
+
+## decisions.json
+
+Tracks pending and resolved user decisions.
+
+### Location
+
+`.agentful/decisions.json`
+
+### Schema
+
+```json
+{
+  "type": "object",
+  "required": ["pending", "resolved"],
+  "properties": {
+    "pending": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "question", "timestamp"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^decision-\\d+$"
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "context": {
+            "type": "string"
+          },
+          "blocking": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "resolved": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "question", "answer", "timestamp", "timestamp_resolved"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "timestamp_resolved": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Example
+
+```json
+{
+  "pending": [
+    {
+      "id": "decision-001",
+      "question": "Should auth use JWT or session cookies?",
+      "options": [
+        "JWT (stateless, scalable)",
+        "Sessions (simpler, built-in)",
+        "Clerk (managed service)"
+      ],
+      "context": "Building authentication system for PRODUCT.md",
+      "blocking": ["auth-feature", "user-profile-feature"],
+      "timestamp": "2026-01-18T00:00:00Z"
+    }
+  ],
+  "resolved": [
+    {
+      "id": "decision-000",
+      "question": "Which database provider?",
+      "answer": "PostgreSQL (Supabase)",
+      "timestamp": "2026-01-17T23:00:00Z",
+      "timestamp_resolved": "2026-01-17T23:05:00Z"
+    }
+  ]
+}
+```
+
+### Field Descriptions
+
+#### Pending Decision
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | Yes | Unique decision ID (pattern: `decision-NNN`) |
+| `question` | string | Yes | Question text to present to user |
+| `options` | array&lt;string&gt; | No | Suggested answers (optional) |
+| `context` | string | No | Background information |
+| `blocking` | array&lt;string&gt; | No | Feature IDs blocked by this decision |
+| `timestamp` | string | Yes | When decision was created |
+
+#### Resolved Decision
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | Yes | Decision ID (matches pending) |
+| `question` | string | Yes | Original question text |
+| `answer` | string | Yes | User's chosen answer |
+| `timestamp` | string | Yes | When decision was created |
+| `timestamp_resolved` | string | Yes | When decision was resolved |
+
+### Validation Rules
+
+1. **ID format**: Must match pattern `decision-\d+` (e.g., `decision-001`, `decision-42`)
+2. **Timestamps**: ISO 8601 format
+3. **Blocking**: Feature IDs should reference actual features in PRODUCT.md
+4. **Unique IDs**: No duplicate IDs across pending and resolved
+
+### Decision Lifecycle
+
+```
+1. Agent needs input
+   ↓
+2. Add to pending array
+   ↓
+3. Update state.json blocked_on
+   ↓
+4. User runs /agentful-decide
+   ↓
+5. User selects answer
+   ↓
+6. Move from pending to resolved
+   ↓
+7. Update state.json (remove from blocked_on)
+   ↓
+8. Resume work on blocked features
+```
+
+---
+
+## architecture.json
+
+Tracks detected tech stack and generated agents.
+
+### Location
+
+`.agentful/architecture.json`
+
+### Schema
+
+```json
+{
+  "type": "object",
+  "required": ["detected_stack", "generated_agents", "decisions", "timestamp"],
+  "properties": {
+    "detected_stack": {
+      "type": "object",
+      "properties": {
+        "frontend": {
+          "type": "object",
+          "properties": {
+            "framework": { "type": "string" },
+            "language": { "type": "string" },
+            "styling": { "type": "string" },
+            "state_management": { "type": "string" }
+          }
+        },
+        "backend": {
+          "type": "object",
+          "properties": {
+            "runtime": { "type": "string" },
+            "framework": { "type": "string" },
+            "language": { "type": "string" }
+          }
+        },
+        "database": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string" },
+            "orm": { "type": "string" }
+          }
+        },
+        "testing": {
+          "type": "object",
+          "properties": {
+            "unit": { "type": "string" },
+            "e2e": { "type": "string" }
+          }
+        }
+      }
+    },
+    "generated_agents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "decision": { "type": "string" },
+          "rationale": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}
+```
+
+### Example
+
+```json
+{
+  "detected_stack": {
+    "frontend": {
+      "framework": "Next.js 14",
+      "language": "TypeScript",
+      "styling": "Tailwind CSS",
+      "state_management": "Zustand"
+    },
+    "backend": {
+      "runtime": "Node.js",
+      "framework": "Next.js API Routes",
+      "language": "TypeScript"
+    },
+    "database": {
+      "type": "PostgreSQL",
+      "orm": "Prisma"
+    },
+    "testing": {
+      "unit": "Vitest",
+      "e2e": "Playwright"
+    }
+  },
+  "generated_agents": [
+    "nextjs-backend-agent.md",
+    "prisma-agent.md",
+    "tailwind-agent.md",
+    "typescript-agent.md"
+  ],
+  "decisions": [
+    {
+      "decision": "Generate Prisma-specific agent for database operations",
+      "rationale": "Detected Prisma ORM in package.json and schema.prisma",
+      "timestamp": "2026-01-18T00:00:00Z"
+    }
+  ],
+  "timestamp": "2026-01-18T00:00:00Z"
+}
+```
+
+### Detection Sources
+
+Architecture detection uses multiple sources:
+
+| Source | What It Detects | Priority |
+|--------|----------------|----------|
+| PRODUCT.md | Explicit tech stack section | High |
+| package.json | Dependencies and frameworks | High |
+| Existing code | File patterns, imports | Medium |
+| Configuration files | tsconfig, next.config, etc. | Medium |
+
+### Generated Agents
+
+Common agent types generated:
+
+| Agent | When Generated | Purpose |
+|-------|---------------|---------|
+| `nextjs-backend-agent.md` | Next.js detected | API Routes, server components |
+| `prisma-agent.md` | Prisma detected | Database queries, migrations |
+| `tailwind-agent.md` | Tailwind detected | Styling, components |
+| `react-query-agent.md` | React Query detected | Data fetching, caching |
+| `vitest-agent.md` | Vitest detected | Unit test patterns |
+
+---
+
+## last-validation.json (Optional)
+
+Most recent validation report.
+
+### Location
+
+`.agentful/last-validation.json`
+
+### Schema
+
+```json
+{
+  "type": "object",
+  "required": ["timestamp", "results"],
+  "properties": {
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "results": {
+      "type": "object",
+      "properties": {
+        "typescript": {
+          "type": "object",
+          "properties": {
+            "passed": { "type": "boolean" },
+            "errors": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "tests": {
+          "type": "object",
+          "properties": {
+            "passed": { "type": "boolean" },
+            "total": { "type": "number" },
+            "failed": { "type": "number" }
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "properties": {
+            "percentage": { "type": "number" },
+            "passes_threshold": { "type": "boolean" }
+          }
+        },
+        "dead_code": {
+          "type": "object",
+          "properties": {
+            "passed": { "type": "boolean" },
+            "issues": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "security": {
+          "type": "object",
+          "properties": {
+            "passed": { "type": "boolean" },
+            "issues": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Example
+
+```json
+{
+  "timestamp": "2026-01-18T12:30:45Z",
+  "results": {
+    "typescript": {
+      "passed": true,
+      "errors": []
+    },
+    "tests": {
+      "passed": true,
+      "total": 47,
+      "failed": 0
+    },
+    "coverage": {
+      "percentage": 82.5,
+      "passes_threshold": true
+    },
+    "dead_code": {
+      "passed": true,
+      "issues": []
+    },
+    "security": {
+      "passed": false,
+      "issues": [
+        "console.log in src/auth/login.ts:45",
+        "Hardcoded API key in .env.example"
+      ]
+    }
+  }
+}
+```
+
+---
+
+## Quick Reference Tables
+
+### State Files Summary
+
+| File | Purpose | Updated By | Required |
+|------|---------|------------|----------|
+| `state.json` | Current work state | Orchestrator | Yes |
+| `completion.json` | Feature progress | Orchestrator, Reviewer | Yes |
+| `decisions.json` | User decisions | Orchestrator, User | Yes |
+| `architecture.json` | Tech stack | Architect | Yes |
+| `last-validation.json` | Validation report | Reviewer | No |
+
+### Common Fields
+
+| Field | Found In | Type | Format |
+|-------|----------|------|--------|
+| `timestamp` | All except state.json | string | ISO 8601 |
+| `last_updated` | state.json, completion.json | string | ISO 8601 |
+| `version` | state.json | string | semver |
+| `id` | decisions.json | string | `decision-NNN` |
+| `status` | completion.json features | string | enum |
+| `score` | completion.json features | number | 0-100 |
+
+---
+
+## Validation Tools
+
+### Using jq
+
+```bash
+# Validate JSON syntax
+jq empty .agentful/state.json
+
+# Check overall completion
+jq '.overall' .agentful/completion.json
+
+# Count pending decisions
+jq '.pending | length' .agentful/decisions.json
+
+# List failed gates
+jq '.gates | to_entries[] | select(.value == false) | .key' \
+  .agentful/completion.json
+```
+
+### Using Node.js
+
+```javascript
+// Load and validate state
+const state = JSON.parse(
+  fs.readFileSync('.agentful/state.json', 'utf8')
+);
+
+// Check if blocked
+if (state.blocked_on.length > 0) {
+  console.log('Blocked on decisions:', state.blocked_on);
+}
+
+// Calculate progress
+const completion = JSON.parse(
+  fs.readFileSync('.agentful/completion.json', 'utf8')
+);
+console.log(`Progress: ${completion.overall}%`);
+```
+
+---
+
+## Best Practices
+
+### 1. Atomic Updates
+
+Always read, modify, and write in one operation:
+
+```bash
+# BAD: Separate read/write
+STATE=$(cat .agentful/state.json)
+echo "$STATE" | jq '.iterations += 1' > .agentful/state.json
+
+# GOOD: Atomic operation
+jq '.iterations += 1' .agentful/state.json > .agentful/state.tmp
+mv .agentful/state.tmp .agentful/state.json
+```
+
+### 2. Timestamps
+
+Always use UTC ISO 8601:
+
+```javascript
+const timestamp = new Date().toISOString(); // ✅ Good
+const timestamp = Date.now(); // ❌ Bad (not ISO format)
+```
+
+### 3. Backups
+
+Before major changes:
+
+```bash
+cp .agentful/state.json .agentful/state.backup.json
+```
+
+### 4. Validation
+
+Validate after updates:
+
+```bash
+jq empty .agentful/state.json && echo "Valid JSON"
+```
+
+---
+
+## Troubleshooting
+
+### "Invalid JSON"
+
+```bash
+# Find syntax error
+jq . .agentful/state.json
+
+# Fix with jq (auto-formats)
+jq '.' .agentful/state.json > .agentful/state.tmp
+mv .agentful/state.tmp .agentful/state.json
+```
+
+### "Missing required field"
+
+```bash
+# Check schema compliance
+cat .agentful/completion.json | \
+  jq 'has("features") and has("gates") and has("overall")'
+```
+
+### "Stale state"
+
+```bash
+# Check timestamp
+jq '.last_updated' .agentful/state.json
+
+# Force update
+jq '.last_updated = now | todate' .agentful/state.json
+```
+
+---
+
+## Migration Guide
+
+### Version Upgrades
+
+When state.json version changes:
+
+1. **Backup current state**
+   ```bash
+   cp .agentful/state.json .agentful/state.v1.0.0.json
+   ```
+
+2. **Read old version**
+   ```javascript
+   const oldState = JSON.parse(readFileSync('.agentful/state.json'));
+   ```
+
+3. **Migrate to new format**
+   ```javascript
+   const newState = {
+     ...oldState,
+     version: '1.1.0',
+     new_field: oldState.old_field || defaultValue
+   };
+   ```
+
+4. **Write new state**
+   ```javascript
+   writeFileSync('.agentful/state.json', JSON.stringify(newState, null, 2));
+   ```
+
+5. **Validate**
+   ```bash
+   jq empty .agentful/state.json
+   ```
+
+---
+
+## See Also
+
+- [CLI Reference](./cli-reference.mdx) - Command-line usage
+- [Settings Reference](./settings-reference.mdx) - Configuration options
+- [Commands](../commands/agentful-status.mdx) - Status command details
+- [Agents](../agents/orchestrator.mdx) - State management by agents

@@ -1,0 +1,769 @@
+# Fixer Agent
+
+The Fixer Agent automatically resolves validation failures identified by the Reviewer, ensuring code meets quality standards.
+
+## Overview
+
+The Fixer reads issues from `.agentful/last-review.json` and fixes them:
+
+- Removes dead code (unused exports, imports, files)
+- Adds missing tests to meet coverage threshold
+- Removes debug statements (console.log)
+- Fixes hardcoded secrets
+- Resolves type errors
+- Fixes lint errors
+
+## Configuration
+
+```yaml
+name: fixer
+description: Automatically fixes validation failures identified by reviewer. Removes dead code, adds tests, resolves issues.
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+```
+
+**Why Sonnet?** Fixing issues requires understanding code patterns but doesn't need the highest reasoning level.
+
+## Input
+
+The Fixer reads issues from `.agentful/last-review.json`:
+
+```json
+{
+  "passed": false,
+  "checks": {
+    "deadCode": {
+      "passed": false,
+      "issues": [
+        "Unused export: formatDate in src/utils/date.ts",
+        "Unused file: src/components/OldWidget.tsx"
+      ]
+    },
+    "coverage": {
+      "passed": false,
+      "actual": 72,
+      "required": 80
+    },
+    "security": {
+      "passed": false,
+      "issues": [
+        "console.log in src/auth/login.ts:45",
+        "Possible hardcoded secret in src/config/api.ts:12"
+      ]
+    }
+  },
+  "mustFix": [
+    "Remove unused export formatDate from src/utils/date.ts",
+    "Delete unused file src/components/OldWidget.tsx",
+    "Add tests to reach 80% coverage (currently at 72%)",
+    "Remove console.log from src/auth/login.ts:45",
+    "Fix hardcoded secret in src/config/api.ts:12"
+  ]
+}
+```
+
+## Fix Patterns
+
+### 1. Dead Code - Unused Exports
+
+Remove functions/constants that are never used.
+
+**Before:**
+
+```typescript
+// src/utils/date.ts
+export function formatDate(date: Date): string {  // ❌ Unused
+  return date.toISOString();
+}
+
+export function parseDate(str: string): Date {  // ✅ Used
+  return new Date(str);
+}
+
+export function formatTime(date: Date): string {  // ❌ Unused
+  return date.toLocaleTimeString();
+}
+```
+
+**After:**
+
+```typescript
+// src/utils/date.ts
+export function parseDate(str: string): Date {
+  return new Date(str);
+}
+```
+
+**Process:**
+1. Search for export usage across codebase
+2. If truly unused, delete the export
+3. If used but not detected, keep and document
+
+### 2. Dead Code - Unused Files
+
+Delete entire files that are never imported.
+
+```bash
+# Delete unused file
+rm src/components/OldWidget.tsx
+
+# Also remove any imports of this file
+grep -r "OldWidget" src/ --include="*.ts" --include="*.tsx"
+```
+
+**Process:**
+1. Search for file imports across codebase
+2. If truly unused, delete file
+3. Check for any side effects (CSS, etc.)
+
+### 3. Dead Code - Unused Imports
+
+Clean up import statements.
+
+**Before:**
+
+```typescript
+import { unused, used1, used2 } from './module';  // ❌ unused import
+```
+
+**After:**
+
+```typescript
+import { used1, used2 } from './module';
+```
+
+**Process:**
+1. Remove unused import from import statement
+2. Verify code still works
+3. Run TypeScript check
+
+### 4. Dead Code - Unused Dependencies
+
+Remove npm packages that aren't used.
+
+```bash
+# Check for unused dependencies
+npx depcheck
+
+# Remove from package.json
+npm uninstall lodash moment
+
+# Update package-lock.json
+npm install
+```
+
+**Process:**
+1. Use depcheck to find unused packages
+2. Uninstall unused packages
+3. Verify no build errors
+
+### 5. Test Coverage - Add Tests
+
+Identify uncovered code and write tests.
+
+**Step 1: Find uncovered code**
+
+```bash
+npm test -- --coverage --reporter=json
+
+# Check coverage report
+cat coverage/coverage-summary.json
+```
+
+**Step 2: Add tests for uncovered functions**
+
+```typescript
+// src/utils/__tests__/string.test.ts
+import { describe, it, expect } from 'vitest';
+import { capitalize, slugify } from '../string';
+
+describe('string utils', () => {
+  describe('capitalize', () => {
+    it('should capitalize first letter', () => {
+      expect(capitalize('hello')).toBe('Hello');
+    });
+
+    it('should handle empty string', () => {
+      expect(capitalize('')).toBe('');
+    });
+
+    it('should handle single character', () => {
+      expect(capitalize('a')).toBe('A');
+    });
+
+    it('should handle already capitalized', () => {
+      expect(capitalize('Hello')).toBe('Hello');
+    });
+  });
+
+  describe('slugify', () => {
+    it('should convert to slug', () => {
+      expect(slugify('Hello World!')).toBe('hello-world');
+    });
+
+    it('should handle special characters', () => {
+      expect(slugify('Café & Restaurant')).toBe('cafe-restaurant');
+    });
+
+    it('should handle multiple spaces', () => {
+      expect(slugify('Hello    World')).toBe('hello-world');
+    });
+
+    it('should handle empty string', () => {
+      expect(slugify('')).toBe('');
+    });
+  });
+});
+```
+
+**Step 3: Re-run coverage**
+
+```bash
+npm test -- --coverage
+```
+
+**Process:**
+1. Identify files with low coverage
+2. Write tests for uncovered branches
+3. Test edge cases and error paths
+4. Re-run coverage until 80% threshold met
+
+### 6. Code Quality - Console.log
+
+Remove all debug statements.
+
+**Before:**
+
+```typescript
+async function login(email: string, password: string) {
+  console.log('Login attempt:', email);  // ❌ Remove
+  const user = await authenticate(email, password);
+  console.log('User found:', user);  // ❌ Remove
+  console.log('User ID:', user.id);  // ❌ Remove
+  return user;
+}
+```
+
+**After:**
+
+```typescript
+async function login(email: string, password: string) {
+  const user = await authenticate(email, password);
+  return user;
+}
+```
+
+**Also check for:**
+- `console.debug`
+- `console.warn` (unless intentional)
+- `console.error` (unless in error handler)
+- `console.table`
+- `console.trace`
+
+**Process:**
+1. Search for all console statements
+2. Remove debug statements
+3. Keep intentional logging (if using proper logger)
+4. Verify no remaining debug logs
+
+### 7. Security - Hardcoded Secrets
+
+Replace hardcoded secrets with environment variables.
+
+**Before:**
+
+```typescript
+// src/config/api.ts
+const API_KEY = "sk-1234567890abcdef";  // ❌ NEVER commit this
+const DATABASE_URL = "postgres://user:pass@localhost:5432/db";  // ❌ NEVER commit this
+```
+
+**After:**
+
+```typescript
+// src/config/api.ts
+const API_KEY = process.env.API_KEY;
+const DATABASE_URL = process.env.DATABASE_URL;
+```
+
+**Add to .env.example:**
+
+```bash
+# .env.example
+API_KEY=your_api_key_here
+DATABASE_URL=your_database_url_here
+```
+
+**Document in README if needed:**
+
+```markdown
+## Environment Variables
+
+Create a `.env` file with:
+
+```bash
+API_KEY=your_api_key_here
+DATABASE_URL=your_database_url_here
+```
+```
+
+**Process:**
+1. Extract secret to environment variable
+2. Add to .env.example (not actual value)
+3. Add to .gitignore if not already
+4. Document in README
+5. Verify secret is not in git history
+
+### 8. Type Errors
+
+Fix TypeScript type issues.
+
+**Before:**
+
+```typescript
+// ❌ Type error: any type
+function processData(data: any) {
+  return data.map((item: any) => item.value);
+}
+
+// ❌ Type error: missing return type
+function getUser(id) {
+  return db.user.findUnique({ where: { id } });
+}
+```
+
+**After:**
+
+```typescript
+// ✅ Proper types
+interface DataItem {
+  value: number;
+  label: string;
+}
+
+function processData(data: DataItem[]): number[] {
+  return data.map(item => item.value);
+}
+
+// ✅ Explicit return type
+function getUser(id: string): Promise<User | null> {
+  return db.user.findUnique({ where: { id } });
+}
+```
+
+**Common type fixes:**
+- Replace `any` with proper types
+- Add return type annotations
+- Fix generic type parameters
+- Add proper prop types to components
+- Fix type mismatches
+
+### 9. Lint Errors
+
+Fix linting issues.
+
+**Before:**
+
+```typescript
+// ❌ Inconsistent spacing
+import {Component} from 'react'
+
+// ❌ Unused variable
+const unused = 5;
+
+// ❌ Missing semicolon (if required)
+const x = 10
+```
+
+**After:**
+
+```typescript
+// ✅ Proper spacing
+import { Component } from 'react';
+
+// ✅ Remove unused
+// const unused = 5;  // Removed
+
+// ✅ Add semicolon
+const x = 10;
+```
+
+**Common lint fixes:**
+- Fix spacing issues
+- Remove unused variables
+- Add missing semicolons
+- Fix quote style
+- Fix import ordering
+
+## Fixing Strategy
+
+### Priority Order
+
+Fix issues in this order:
+
+1. **Blocking Issues** - Type errors, test failures (break the build)
+2. **Dead Code** - Remove unused exports, imports, files
+3. **Coverage** - Add tests to reach 80%
+4. **Code Quality** - Remove debug statements, fix lint
+5. **Security** - Fix any hardcoded secrets
+
+### Fix Process
+
+For each issue:
+
+1. **Read the file** - Understand the context
+2. **Identify the problem** - Pinpoint exact issue
+3. **Apply the fix** - Make the change
+4. **Verify completeness** - Ensure fix is complete (not partial)
+5. **Move to next issue** - Continue until all fixed
+
+### Example Fix Session
+
+```
+[Read last-review.json]
+  ↓
+Issue: "Remove unused export formatDate from src/utils/date.ts"
+  ↓
+[Read src/utils/date.ts]
+  ↓
+Identify: formatDate function exists but never imported
+  ↓
+[Fix] Remove the entire function
+  ↓
+Verify: No other files reference formatDate
+  ↓
+[Next issue]
+```
+
+## What NOT To Do
+
+- ❌ Don't just comment out code - remove it or fix it
+- ❌ Don't add `@ts-ignore` to silence errors
+- ❌ Don't leave `// TODO: fix this` comments
+- ❌ Don't make partial fixes (fix completely or skip)
+- ❌ Don't skip issues
+- ❌ Don't use `any` type to fix type errors
+- ❌ Don't disable lint rules instead of fixing issues
+
+## When You Can't Fix
+
+If an issue is too complex or requires user input:
+
+### 1. Add to decisions.json
+
+```json
+{
+  "id": "fix-blocker-001",
+  "question": "Unable to fix issue automatically",
+  "context": "Complex refactoring needed in src/app/dashboard.tsx - circular dependencies between components",
+  "blocking": ["review-pass"],
+  "timestamp": "2026-01-18T00:00:00Z",
+  "suggestions": [
+    "Refactor to extract shared state",
+    "Use context API instead of prop drilling",
+    "Consider state management library"
+  ]
+}
+```
+
+### 2. Document what you tried
+
+```json
+{
+  "attempted_fixes": [
+    "Attempted to extract shared logic but caused circular dependency",
+    "Tried using React.forwardRef but didn't resolve issue"
+  ],
+  "why_failed": "Requires architectural decision on state management approach"
+}
+```
+
+### 3. Move to next fixable issue
+
+Continue with other issues in the list.
+
+## Re-validation
+
+After fixing all issues:
+
+1. **DO NOT re-run validation yourself**
+   - The orchestrator will invoke @reviewer again
+   - Just report what you fixed
+
+2. **Report fixes**
+
+```json
+{
+  "fixed": [
+    "Removed unused export formatDate from src/utils/date.ts",
+    "Deleted unused file src/components/OldWidget.tsx",
+    "Removed console.log from src/auth/login.ts:45",
+    "Fixed hardcoded secret in src/config/api.ts:12"
+  ],
+  "remaining": [
+    "Coverage still at 78% (added tests but need 2 more percentage points)"
+  ],
+  "blocked": [
+    "Complex refactoring in src/app/dashboard.tsx requires user input"
+  ]
+}
+```
+
+## Output Format
+
+### All Issues Fixed
+
+```json
+{
+  "fixed": [
+    "Removed unused export formatDate from src/utils/date.ts",
+    "Deleted unused file src/components/OldWidget.tsx",
+    "Removed console.log from src/auth/login.ts:45",
+    "Fixed hardcoded secret in src/config/api.ts:12",
+    "Added tests to reach 80% coverage"
+  ],
+  "remaining": [],
+  "blocked": []
+}
+```
+
+### Some Issues Remain
+
+```json
+{
+  "fixed": [
+    "Removed unused export formatDate from src/utils/date.ts",
+    "Deleted unused file src/components/OldWidget.tsx",
+    "Removed console.log from src/auth/login.ts:45"
+  ],
+  "remaining": [
+    "Coverage at 78% (need 2 more percentage points)",
+    "Type error in src/app/dashboard.tsx:156 (complex generic)"
+  ],
+  "blocked": []
+}
+```
+
+### Some Issues Blocked
+
+```json
+{
+  "fixed": [
+    "Removed unused export formatDate from src/utils/date.ts",
+    "Deleted unused file src/components/OldWidget.tsx"
+  ],
+  "remaining": [],
+  "blocked": [
+    "Complex refactoring in src/app/dashboard.tsx requires architectural decision",
+    "Added to decisions.json as fix-blocker-001"
+  ]
+}
+```
+
+## Rules
+
+### ALWAYS
+
+1. Fix issues COMPLETELY, not partially
+2. Delete unused code, don't comment it out
+3. Use proper TypeScript types (no `any` or `@ts-ignore`)
+4. Run tests after fixes to ensure nothing broke
+5. Be specific about what was fixed
+6. Follow the priority order
+
+### NEVER
+
+1. Leave TODO comments - either fix or document blocker
+2. Use `@ts-ignore` or similar hacks
+3. Make partial fixes
+4. Skip issues without trying
+5. Re-run validation yourself (reviewer will do it)
+6. Introduce new issues while fixing
+
+## Best Practices
+
+### Dead Code Removal
+
+```typescript
+// Good: Remove completely
+// Before
+export function unused() { ... }
+export function used() { ... }
+
+// After
+export function used() { ... }
+
+// Bad: Comment out
+// export function unused() { ... }  // ❌ Don't do this
+export function used() { ... }
+```
+
+### Test Addition
+
+```typescript
+// Good: Test all paths
+describe('function', () => {
+  it('handles normal case');
+  it('handles edge case');
+  it('handles error case');
+});
+
+// Bad: Only happy path
+describe('function', () => {
+  it('works'); // ❌ Incomplete
+});
+```
+
+### Type Fixes
+
+```typescript
+// Good: Proper types
+function process(data: UserData[]): ProcessedData[] { ... }
+
+// Bad: Lazy fixes
+function process(data: any): any { ... } // ❌
+function process(data: any) { // ❌
+  return data as any as ProcessedData[];
+}
+```
+
+## Common Tasks
+
+### Fixing Dead Code
+
+1. Search for export usage
+2. Verify truly unused
+3. Remove export/function
+4. Verify build still works
+
+### Increasing Coverage
+
+1. Run coverage to see gaps
+2. Identify untested branches
+3. Write tests for uncovered code
+4. Re-run coverage until 80%
+
+### Removing Debug Logs
+
+1. Grep for console statements
+2. Remove debug logs
+3. Keep intentional logging (with proper logger)
+4. Verify all removed
+
+### Fixing Security Issues
+
+1. Extract secrets to env variables
+2. Update .env.example
+3. Document in README
+4. Rotate exposed secrets if needed
+
+## After Fixing
+
+Report to orchestrator:
+
+```json
+{
+  "files_modified": [
+    "src/utils/date.ts",
+    "src/auth/login.ts",
+    "src/config/api.ts"
+  ],
+  "files_deleted": [
+    "src/components/OldWidget.tsx"
+  ],
+  "files_created": [
+    "src/utils/__tests__/string.test.ts"
+  ],
+  "summary": "Fixed 4 out of 5 issues. 1 issue blocked on user decision.",
+  "recommendations": [
+    "Address blocked issue in decisions.json",
+    "Re-run reviewer to verify all fixes"
+  ]
+}
+```
+
+## Troubleshooting
+
+### Can't Find Unused Export
+
+**Symptom:** Reviewer says unused, but Fixer finds usage
+
+**Solutions:**
+1. Check for dynamic imports
+2. Check for string-based imports
+3. Check for type-only imports
+4. Verify it's actually unused before removing
+
+### Coverage Won't Increase
+
+**Symptom:** Adding tests but coverage not increasing
+
+**Solutions:**
+1. Verify tests are actually running
+2. Check test file naming conventions
+3. Ensure tests cover all branches
+4. Look for conditional compilation
+
+### Type Error Can't Be Fixed
+
+**Symptom:** Type error too complex to fix automatically
+
+**Solutions:**
+1. Add to decisions.json with context
+2. Suggest refactoring approach
+3. Move to next fixable issue
+4. Document what was attempted
+
+## Integration
+
+### With Reviewer
+
+```
+[Reviewer] → Finds issues in last-review.json
+  ↓
+[Fixer] → Reads issues
+  ↓
+[Fixer] → Fixes all fixable issues
+  ↓
+[Fixer] → Reports fixed/remaining/blocked
+  ↓
+[Reviewer] → Re-runs validation
+```
+
+### With Orchestrator
+
+```
+[Orchestrator] → "Fix reviewer issues"
+  ↓
+[Fixer] → Fixes issues
+  ↓
+[Fixer] → Reports results
+  ↓
+[Orchestrator] → If issues remain, re-delegate to Fixer
+  ↓
+[Orchestrator] → If all fixed, update completion state
+```
+
+### With Backend
+
+```
+[Backend] → Implements service
+  ↓
+[Reviewer] → Finds: type error, console.log
+  ↓
+[Fixer] → Fixes: adds types, removes console.log
+  ↓
+[Backend] → Still works correctly
+```
+
+### With Frontend
+
+```
+[Frontend] → Creates component
+  ↓
+[Reviewer] → Finds: unused import, low coverage
+  ↓
+[Fixer] → Fixes: removes import, adds tests
+  ↓
+[Frontend] → Component still works, now tested
+```

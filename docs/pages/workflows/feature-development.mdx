@@ -1,0 +1,1370 @@
+---
+title: Feature Development Workflow - Agentful
+description: End-to-end feature development workflow from requirements to production-ready code with Agentful.
+---
+
+# Feature Development Workflow
+
+Complete guide to building features from requirements to production-ready code using Agentful's autonomous development workflow.
+
+---
+
+## Overview
+
+The Feature Development workflow takes a feature requirement from `PRODUCT.md` and transforms it into fully implemented, tested, and validated code through autonomous agent collaboration.
+
+### What This Workflow Delivers
+
+- ✅ Complete feature implementation (frontend + backend)
+- ✅ Comprehensive test coverage (≥80%)
+- ✅ All validation gates passing
+- ✅ No type errors (adapts to stack)
+- ✅ No dead code
+- ✅ Security-clean code
+
+### Typical Timeline
+
+| Feature Complexity | Time | Iterations |
+|-------------------|------|------------|
+| **Simple** (CRUD, forms) | 5-30 minutes | 2-5 |
+| **Medium** (auth, APIs) | 30-90 minutes | 5-15 |
+| **Complex** (real-time, integrations) | 1-4 hours | 15-40 |
+
+---
+
+## Prerequisites
+
+Before starting feature development, ensure:
+
+### 1. Product Specification Complete
+
+Your `PRODUCT.md` should have:
+
+```markdown
+### 1. Feature Name - PRIORITY
+**Description**: Clear description of what the feature does
+
+**Acceptance Criteria**:
+- [ ] Specific requirement 1
+- [ ] Specific requirement 2
+- [ ] Specific requirement 3
+
+**User Stories** (optional):
+- As a [user type]
+- I want [action]
+- So that [benefit]
+
+**Technical Notes** (optional):
+- API endpoints needed
+- Database schema changes
+- Third-party integrations
+```
+
+### 2. Tech Stack Defined
+
+```markdown
+## Tech Stack
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL + Prisma
+- **Testing**: Vitest + Playwright
+- **Styling**: Tailwind CSS
+```
+
+### 3. Agentful Initialized
+
+```bash
+# Already initialized?
+ls .claude/agents/
+ls .agentful/
+
+# If not, initialize:
+npx agentful init
+```
+
+---
+
+## The Feature Development Loop
+
+### Complete Workflow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  START: /agentful-start                                     │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  1. ARCHITECT ANALYSIS (once per session)                   │
+│     • Read PRODUCT.md tech stack                            │
+│     • Generate tech-specific agents                        │
+│     • Create architecture.json                             │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  2. ORCHESTRATOR PLANNING                                   │
+│     • Read state.json (current progress)                   │
+│     • Read completion.json (what's done)                   │
+│     • Read PRODUCT.md (requirements)                       │
+│     • Select next feature to implement                     │
+│     • Check for blockers                                   │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  3. FEATURE BREAKDOWN                                       │
+│     • Analyze feature requirements                         │
+│     • Identify backend tasks (APIs, services, DB)          │
+│     • Identify frontend tasks (UI, hooks, pages)           │
+│     • Identify testing tasks (unit, integration, E2E)      │
+│     • Create implementation plan                           │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  4. BACKEND IMPLEMENTATION                                  │
+│     • Delegate to @backend agent                           │
+│     • Implement repositories                               │
+│     • Implement services                                   │
+│     • Implement API routes/controllers                     │
+│     • Database schema changes                              │
+│     • Input validation schemas                            │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  5. FRONTEND IMPLEMENTATION                                 │
+│     • Delegate to @frontend agent                          │
+│     • Create UI components                                 │
+│     • Create pages/views                                   │
+│     • Create custom hooks                                  │
+│     • Implement state management                          │
+│     • Style with chosen framework                         │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  6. TESTING                                                 │
+│     • Delegate to @tester agent                            │
+│     • Write unit tests for services                       │
+│     • Write unit tests for components                     │
+│     • Write integration tests for APIs                    │
+│     • Write E2E tests for user flows                      │
+│     • Ensure ≥80% coverage                                │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+┌─────────────────────────────────────────────────────────────┐
+│  7. VALIDATION                                              │
+│     • Delegate to @reviewer agent                          │
+│     • Run TypeScript check (tsc --noEmit)                 │
+│     • Run lint check                                       │
+│     • Run dead code detection                             │
+│     • Run all tests                                        │
+│     • Check coverage ≥80%                                  │
+│     • Run security scan                                    │
+└─────────────────────────────────────────────────────────────┘
+                           ↓
+                    Issues found?
+                         │
+              ┌──────────┴──────────┐
+              ↓                     ↓
+┌─────────────────────────┐  ┌─────────────────────────┐
+│  8a. FIX ITERATION(S)   │  │  8b. FEATURE COMPLETE   │
+│     • @fixer resolves   │  │     • All checks pass   │
+│     • Re-validate       │  │     • Update progress   │
+│     • Loop until pass   │  │     • Mark feature done │
+└─────────────────────────┘  └─────────────────────────┘
+              │                     │
+              └──────────┬──────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│  9. UPDATE COMPLETION                                       │
+│     • Update completion.json                               │
+│       feature.status = "complete"                          │
+│       feature.score = 100                                  │
+│     • Update state.json                                    │
+│       increment iterations                                 │
+│       clear current_task                                   │
+└─────────────────────────────────────────────────────────────┘
+                         ↓
+┌─────────────────────────────────────────────────────────────┐
+│  10. NEXT FEATURE                                          │
+│      • Loop back to step 2                                 │
+│      • Select next priority feature                       │
+│      • Continue until 100% complete                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Step-by-Step Guide
+
+### Step 1: Start the Workflow
+
+```bash
+# In Claude Code CLI
+/agentful-start
+```
+
+**What happens:**
+1. Orchestrator reads all state files
+2. Checks for pending decisions
+3. Selects next feature to work on
+4. Begins implementation
+
+**Expected output:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         Agentful Development Session
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Loaded state: 5 features, 32% complete
+Pending decisions: 0
+Blocked tasks: 0
+
+Starting development loop...
+
+🏗️  Architect analyzing tech stack...
+Detected: Next.js 14, TypeScript, Tailwind, Prisma
+Generated: nextjs-agent, prisma-agent, tailwind-agent
+
+📋 Next feature: User Authentication (CRITICAL)
+Priority: #1
+Status: Not started
+
+→ Delegating to specialists...
+```
+
+---
+
+### Step 2: Backend Implementation
+
+**Agent:** @backend
+**Time:** 5-30 minutes
+
+**What gets built:**
+
+```typescript
+// 1. Repository Layer (data access)
+// src/repositories/user.repository.ts
+export class UserRepository {
+  async findById(id: string): Promise<User | null> {
+    return db.user.findUnique({ where: { id } });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return db.user.findUnique({ where: { email } });
+  }
+
+  async create(data: CreateUserInput): Promise<User> {
+    return db.user.create({ data });
+  }
+}
+
+// 2. Service Layer (business logic)
+// src/services/auth.service.ts
+export class AuthService {
+  async register(input: RegisterInput): Promise<User> {
+    const existing = await this.userRepo.findByEmail(input.email);
+    if (existing) throw new ConflictError('User exists');
+
+    const hashed = await hashPassword(input.password);
+    return this.userRepo.create({ ...input, password: hashed });
+  }
+
+  async login(email: string, password: string): Promise<AuthResult> {
+    const user = await this.userRepo.findByEmail(email);
+    if (!user) throw new UnauthorizedError('Invalid credentials');
+
+    const valid = await comparePassword(password, user.password);
+    if (!valid) throw new UnauthorizedError('Invalid credentials');
+
+    const token = generateJWT(user);
+    return { user, token };
+  }
+}
+
+// 3. API Routes (HTTP endpoints)
+// src/app/api/auth/login/route.ts
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const service = new AuthService();
+
+  try {
+    const result = await service.login(body.email, body.password);
+    return NextResponse.json(result);
+  } catch (error) {
+    if (error instanceof UnauthorizedError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 401 }
+      );
+    }
+    throw error;
+  }
+}
+
+// 4. Validation Schemas
+// src/schemas/auth.schema.ts
+export const loginSchema = z.object({
+  email: z.string().email('Invalid email'),
+  password: z.string().min(8, 'Password min 8 chars'),
+});
+```
+
+**Backend agent follows this order:**
+1. ✅ Repository layer (database access)
+2. ✅ Service layer (business logic)
+3. ✅ Controller/routes (HTTP endpoints)
+4. ✅ Validation schemas (input validation)
+5. ✅ Error handling (proper HTTP status codes)
+
+**Output:**
+```
+🔧 Backend Agent implementing User Authentication...
+
+Created repositories:
+  ✓ src/repositories/user.repository.ts
+
+Created services:
+  ✓ src/services/auth.service.ts
+
+Created API routes:
+  ✓ src/app/api/auth/login/route.ts
+  ✓ src/app/api/auth/register/route.ts
+  ✓ src/app/api/auth/logout/route.ts
+
+Created schemas:
+  ✓ src/schemas/auth.schema.ts
+
+Backend implementation complete!
+Time: 8 minutes
+Files: 6 created
+```
+
+---
+
+### Step 3: Frontend Implementation
+
+**Agent:** @frontend
+**Time:** 5-30 minutes
+
+**What gets built:**
+
+```tsx
+// 1. Custom Hooks (state management)
+// src/hooks/useAuth.ts
+export function useAuth() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const login = async (email: string, password: string) => {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    setUser(data.user);
+    return data;
+  };
+
+  const logout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    setUser(null);
+  };
+
+  return { user, isLoading, login, logout };
+}
+
+// 2. UI Components
+// src/components/ui/Button.tsx
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ variant = 'primary', size = 'md', isLoading, children, ...props }, ref) => {
+    const baseStyles = 'rounded-lg font-medium transition-colors';
+    const variants = {
+      primary: 'bg-blue-600 text-white hover:bg-blue-700',
+      secondary: 'bg-gray-200 text-gray-900',
+    };
+
+    return (
+      <button
+        ref={ref}
+        disabled={isLoading}
+        className={`${baseStyles} ${variants[variant]}`}
+        {...props}
+      >
+        {isLoading ? 'Loading...' : children}
+      </button>
+    );
+  }
+);
+
+// 3. Feature Components
+// src/components/auth/LoginForm.tsx
+export function LoginForm() {
+  const { login, isLoading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await login(email, password);
+      // Redirect on success
+    } catch (error) {
+      // Show error
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+        required
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+        required
+      />
+      <Button type="submit" isLoading={isLoading}>
+        Sign In
+      </Button>
+    </form>
+  );
+}
+
+// 4. Pages
+// src/app/login/page.tsx
+export default function LoginPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <LoginForm />
+    </div>
+  );
+}
+```
+
+**Frontend agent follows this order:**
+1. ✅ Custom hooks (business logic hooks)
+2. ✅ UI primitives (Button, Input, Modal)
+3. ✅ Feature components (LoginForm, UserProfile)
+4. ✅ Pages/views (route pages)
+5. ✅ Styling (Tailwind classes or chosen framework)
+
+**Output:**
+```
+🎨 Frontend Agent implementing User Authentication...
+
+Created hooks:
+  ✓ src/hooks/useAuth.ts
+  ✓ src/hooks/useForm.ts
+
+Created UI components:
+  ✓ src/components/ui/Button.tsx
+  ✓ src/components/ui/Input.tsx
+  ✓ src/components/ui/Modal.tsx
+
+Created feature components:
+  ✓ src/components/auth/LoginForm.tsx
+  ✓ src/components/auth/RegisterForm.tsx
+
+Created pages:
+  ✓ src/app/login/page.tsx
+  ✓ src/app/register/page.tsx
+
+Frontend implementation complete!
+Time: 12 minutes
+Files: 9 created
+```
+
+---
+
+### Step 4: Testing
+
+**Agent:** @tester
+**Time:** 10-30 minutes
+
+**What gets built:**
+
+```typescript
+// 1. Unit Tests (Services)
+// src/services/__tests__/auth.service.test.ts
+describe('AuthService', () => {
+  it('should register new user with hashed password', async () => {
+    const service = new AuthService();
+    const result = await service.register({
+      email: 'test@example.com',
+      password: 'password123',
+    });
+
+    expect(result.email).toBe('test@example.com');
+    expect(result.password).not.toBe('password123'); // Hashed
+  });
+
+  it('should reject duplicate email', async () => {
+    const service = new AuthService();
+    await service.register({
+      email: 'test@example.com',
+      password: 'password123',
+    });
+
+    await expect(
+      service.register({
+        email: 'test@example.com',
+        password: 'password456',
+      })
+    ).rejects.toThrow('User already exists');
+  });
+});
+
+// 2. Unit Tests (Components)
+// src/components/__tests__/LoginForm.test.tsx
+describe('LoginForm', () => {
+  it('should render login form', () => {
+    render(<LoginForm />);
+    expect(screen.getByPlaceholderText('Email')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
+  });
+
+  it('should call login on submit', async () => {
+    const { login } = useAuth();
+    render(<LoginForm />);
+
+    await fireEvent.change(screen.getByPlaceholderText('Email'), {
+      target: { value: 'test@example.com' },
+    });
+    await fireEvent.click(screen.getByText('Sign In'));
+
+    expect(login).toHaveBeenCalledWith('test@example.com', 'password123');
+  });
+});
+
+// 3. Integration Tests (API)
+// src/app/api/auth/__tests__/login.test.ts
+describe('POST /api/auth/login', () => {
+  it('should login with valid credentials', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'test@example.com',
+        password: 'password123',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('token');
+    expect(res.body.user).toHaveProperty('email', 'test@example.com');
+  });
+
+  it('should reject invalid credentials', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'test@example.com',
+        password: 'wrongpassword',
+      });
+
+    expect(res.status).toBe(401);
+  });
+});
+
+// 4. E2E Tests (User Flows)
+// e2e/auth.spec.ts
+test.describe('Authentication Flow', () => {
+  test('should register and login user', async ({ page }) => {
+    await page.goto('/register');
+
+    await page.fill('[name="email"]', 'test@example.com');
+    await page.fill('[name="password"]', 'password123');
+    await page.click('button[type="submit"]');
+
+    await expect(page).toHaveURL('/dashboard');
+    await expect(page.locator('text=Welcome')).toBeVisible();
+  });
+});
+```
+
+**Tester agent ensures:**
+- ✅ All services have unit tests
+- ✅ All components have unit tests
+- ✅ All API endpoints have integration tests
+- ✅ Critical flows have E2E tests
+- ✅ Coverage ≥ 80%
+
+**Output:**
+```
+🧪 Tester Agent writing tests...
+
+Created unit tests:
+  ✓ src/services/__tests__/auth.service.test.ts (8 tests)
+  ✓ src/components/__tests__/LoginForm.test.tsx (5 tests)
+  ✓ src/hooks/__tests__/useAuth.test.ts (4 tests)
+
+Created integration tests:
+  ✓ src/app/api/auth/__tests__/login.test.ts (3 tests)
+  ✓ src/app/api/auth/__tests__/register.test.ts (3 tests)
+
+Created E2E tests:
+  ✓ e2e/auth.spec.ts (2 tests)
+
+Running tests...
+✓ 23 tests passed
+✓ Coverage: 87%
+
+Testing complete!
+Time: 15 minutes
+Tests: 23 created
+Coverage: 87% (target: 80%)
+```
+
+---
+
+### Step 5: Validation
+
+**Agent:** @reviewer
+**Time:** 1-2 minutes
+
+**What gets checked:**
+
+```bash
+# 1. TypeScript
+npx tsc --noEmit
+✓ No type errors
+
+# 2. Lint
+npm run lint
+✓ No lint errors
+
+# 3. Dead Code
+npx knip
+✓ No unused exports, files, or dependencies
+
+# 4. Tests
+npm test
+✓ 23 tests passed
+
+# 5. Coverage
+npm test -- --coverage
+✓ 87% coverage (≥80% threshold)
+
+# 6. Security
+npm audit --production
+✓ No vulnerabilities
+grep -r "console.log" src/
+✓ No debug logs
+grep -rE "password.*=" src/
+✓ No hardcoded secrets
+```
+
+**Reviewer agent runs all checks:**
+
+**Output:**
+```
+🔍 Reviewer Agent validating...
+
+Quality Gates:
+  ✅ TypeScript: No errors (0 issues)
+  ✅ Lint: No errors (0 issues)
+  ✅ Dead Code: None found (0 issues)
+  ✅ Tests: All passing (23/23)
+  ✅ Coverage: 87% (≥80% threshold)
+  ✅ Security: No issues (0 vulnerabilities)
+
+Overall: ✅ PASSED
+
+Feature validation complete!
+Time: 45 seconds
+```
+
+---
+
+### Step 6: Handle Validation Issues
+
+If validation finds issues:
+
+```
+❌ VALIDATION FAILED
+
+Issues found:
+1. Coverage at 72% (needs 80%)
+2. console.log in src/auth/login.ts:45
+3. Unused export: formatDate in src/utils/date.ts
+
+Delegating to @fixer...
+```
+
+**Agent:** @fixer
+**Time:** 2-5 minutes
+
+**What gets fixed:**
+
+```typescript
+// 1. Add tests to reach 80% coverage
+// src/services/__tests__/auth.service.test.ts
+describe('AuthService edge cases', () => {
+  it('should handle empty password', async () => {
+    await expect(
+      service.login('test@example.com', '')
+    ).rejects.toThrow('Invalid credentials');
+  });
+
+  it('should handle malformed email', async () => {
+    await expect(
+      service.register({ email: 'invalid', password: 'pass123' })
+    ).rejects.toThrow();
+  });
+});
+
+// 2. Remove console.log
+// Before:
+async function login(email: string, password: string) {
+  console.log('Login attempt:', email);  // ❌ Remove
+  // ...
+}
+
+// After:
+async function login(email: string, password: string) {
+  // ...
+}
+
+// 3. Remove unused export
+// Before:
+export function formatDate(date: Date): string { ... }  // ❌ Unused
+export function parseDate(str: string): Date { ... }
+
+// After:
+export function parseDate(str: string): Date { ... }
+```
+
+**Output:**
+```
+🔧 Fixer Agent resolving issues...
+
+Fixed:
+  ✓ Added 5 edge case tests (coverage 72% → 84%)
+  ✓ Removed console.log from src/auth/login.ts:45
+  ✓ Removed unused export formatDate from src/utils/date.ts
+
+Delegating to @reviewer for re-validation...
+
+🔍 Reviewer Agent re-validating...
+✅ All checks passed!
+
+Feature complete after fixes.
+Time: 3 minutes
+```
+
+---
+
+### Step 7: Completion Update
+
+**Agent:** @orchestrator
+**Time:** Instant
+
+**What gets updated:**
+
+```json
+// .agentful/completion.json
+{
+  "features": {
+    "authentication": {
+      "status": "complete",
+      "score": 100,
+      "started_at": "2026-01-18T00:00:00Z",
+      "completed_at": "2026-01-18T00:45:00Z",
+      "notes": "JWT authentication fully implemented with tests"
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "no_dead_code": true,
+    "coverage_80": true
+  },
+  "overall": 25
+}
+
+// .agentful/state.json
+{
+  "version": "1.0",
+  "current_task": null,
+  "current_phase": "idle",
+  "iterations": 12,
+  "last_updated": "2026-01-18T00:45:00Z",
+  "blocked_on": []
+}
+```
+
+**Output:**
+```
+✅ Feature Complete: User Authentication
+
+Files created: 18
+Tests added: 23
+Coverage: 87%
+Quality gates: All passing
+
+Progress updated:
+  Authentication: 0% → 100%
+  Overall: 0% → 25%
+
+Next feature: User Profile
+Priority: #2
+```
+
+---
+
+### Step 8: Next Feature
+
+Workflow automatically loops back to Step 2 for the next feature.
+
+---
+
+## Real Example: Building a Todo App
+
+Let's see the complete workflow for a simple Todo app feature.
+
+### PRODUCT.md Specification
+
+```markdown
+## Features
+
+### 1. Add Todo - CRITICAL
+**Description**: Users can add new todo items
+
+**Acceptance Criteria**:
+- [ ] Input field for new todos
+- [ ] Add button
+- [ ] Todo appears in list
+- [ ] Validation: non-empty text
+- [ ] Success feedback
+
+### 2. Toggle Todo - HIGH
+**Description**: Users can mark todos as complete
+
+**Acceptance Criteria**:
+- [ ] Click todo to toggle completion
+- [ ] Visual indicator for completed todos
+- [ ] Strike-through text
+
+### 3. Delete Todo - MEDIUM
+**Description**: Users can delete todos
+
+**Acceptance Criteria**:
+- [ ] Delete button on each todo
+- [ ] Confirmation prompt
+- [ ] Removes from list
+```
+
+---
+
+### Execution Timeline
+
+#### Iteration 1: Add Todo Feature (8 minutes)
+
+```
+🔧 Frontend Agent implementing Add Todo...
+
+Created:
+  ✓ src/hooks/useTodos.ts (todo state management)
+  ✓ src/components/TodoInput.tsx (input form)
+  ✓ src/components/TodoList.tsx (todo list display)
+  ✓ src/app/page.tsx (main page)
+
+🧪 Tester Agent writing tests...
+
+Created:
+  ✓ src/hooks/__tests__/useTodos.test.ts (6 tests)
+  ✓ src/components/__tests__/TodoInput.test.tsx (4 tests)
+  ✓ src/components/__tests__/TodoList.test.tsx (5 tests)
+
+Coverage: 89%
+
+🔍 Reviewer Agent validating...
+✅ All checks passed
+
+✅ Feature Complete: Add Todo (100%)
+```
+
+**Files created:** 7
+**Tests added:** 15
+**Coverage:** 89%
+
+---
+
+#### Iteration 2: Toggle Todo Feature (5 minutes)
+
+```
+🔧 Frontend Agent implementing Toggle Todo...
+
+Modified:
+  ✓ src/hooks/useTodos.ts (added toggleTodo function)
+  ✓ src/components/TodoList.tsx (click to toggle)
+
+🧪 Tester Agent writing tests...
+
+Added:
+  ✓ 3 tests for toggleTodo in useTodos.test.ts
+  ✓ 2 tests for click interaction in TodoList.test.tsx
+
+Coverage: 91%
+
+🔍 Reviewer Agent validating...
+✅ All checks passed
+
+✅ Feature Complete: Toggle Todo (100%)
+```
+
+**Files modified:** 2
+**Tests added:** 5
+**Coverage:** 91%
+
+---
+
+#### Iteration 3: Delete Todo Feature (6 minutes)
+
+```
+🔧 Frontend Agent implementing Delete Todo...
+
+Modified:
+  ✓ src/hooks/useTodos.ts (added deleteTodo function)
+  ✓ src/components/TodoList.tsx (added delete button with confirmation)
+
+🧪 Tester Agent writing tests...
+
+Added:
+  ✓ 3 tests for deleteTodo in useTodos.test.ts
+  ✓ 2 tests for delete interaction in TodoList.test.tsx
+
+Coverage: 92%
+
+🔍 Reviewer Agent validating...
+⚠️  Found 1 issue:
+  - Missing test for cancel on confirmation dialog
+
+🔧 Fixer Agent resolving issue...
+Added test for cancel case
+Coverage: 93%
+
+🔍 Reviewer Agent re-validating...
+✅ All checks passed
+
+✅ Feature Complete: Delete Todo (100%)
+```
+
+**Files modified:** 2
+**Tests added:** 6 (including fix)
+**Coverage:** 93%
+
+---
+
+### Final Results
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          Development Session Complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Project: Todo App
+Duration: 19 minutes
+Iterations: 3
+
+Features Delivered:
+  ✅ Add Todo (100%)
+  ✅ Toggle Todo (100%)
+  ✅ Delete Todo (100%)
+
+Files Created: 7
+Files Modified: 4
+Tests Added: 26
+Test Coverage: 93%
+
+Quality Gates:
+  ✅ Tests: 26/26 passing
+  ✅ TypeScript: No errors
+  ✅ Lint: No issues
+  ✅ Dead Code: None
+  ✅ Coverage: 93% (≥80%)
+  ✅ Security: Clean
+
+🎉 Todo app complete! Ready for deployment.
+```
+
+---
+
+## Manual vs Autonomous Execution
+
+### Manual Mode (Step-by-Step)
+
+**Best for:** Learning, debugging, complex decisions
+
+```bash
+# Run one iteration at a time
+/agentful-start
+
+# Review output
+# Check files created
+# Run tests manually
+
+# Run next iteration
+/agentful-start
+```
+
+**Pros:**
+- Full control
+- Learn how agents work
+- Debug issues easily
+- Make decisions at each step
+
+**Cons:**
+- Slower overall
+- Requires constant attention
+- Interrupt-driven
+
+---
+
+### Autonomous Mode (24/7)
+
+**Best for:** Fast delivery, well-defined features
+
+```bash
+# Ralph loop - runs continuously
+/ralph-loop "/agentful-start" \
+  --max-iterations 50 \
+  --completion-promise "AGENTFUL_COMPLETE"
+
+# Let it run overnight
+# Wake up to completed features
+```
+
+**Pros:**
+- Fastest delivery
+- No manual intervention
+- 24/7 development
+- Optimal for batches of features
+
+**Cons:**
+- Less control
+- Can't see progress in real-time
+- May need decision interrupts
+
+---
+
+### Hybrid Mode (Recommended)
+
+**Best of both worlds:**
+
+```bash
+# Start autonomous
+/agentful-start
+
+# [Let it run 30-60 minutes]
+
+# Check progress
+/agentful-status
+
+# If decisions needed:
+/agentful-decide
+
+# Resume autonomous
+/agentful-start
+
+# Check after major milestone
+/agentful-validate
+
+# Continue if good, stop if issues
+/agentful-start
+```
+
+---
+
+## Monitoring Progress
+
+### Real-time Status
+
+```bash
+/agentful-status
+```
+
+**Output:**
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           Agentful Development Status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Product: Todo App
+Overall Progress: ████████░░░░░░░░░░░ 40%
+Phase: implementation
+Iterations: 8
+
+┌─────────────────────┬──────────┬─────────┬────────────────┐
+│ Feature             │ Status   │ Score   │ Notes          │
+├─────────────────────┼──────────┼─────────┼────────────────┤
+│ Add Todo            │ ✅ Done  │ 100%    │                │
+│ Toggle Todo         │ 🔄 Active│ 60%     │ Testing        │
+│ Delete Todo         │ ⏸ Pending│ 0%      │                │
+└─────────────────────┴──────────┴─────────┴────────────────┘
+
+Quality Gates:
+  ✅ Tests Passing
+  ✅ No Type Errors
+  ✅ Coverage 91%
+  ✅ No Dead Code
+  ✅ Security Clean
+
+🔧 Currently Working On:
+   Task: toggle-todo-testing
+   Agent: tester
+   Started: 2 minutes ago
+
+   Last output: "Writing interaction tests for toggle..."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Next Actions:
+  • /agentful-start    - Continue development
+  • /agentful-decide  - Answer pending decisions
+  • /agentful-validate- Run quality checks
+```
+
+---
+
+### Inspect State Files
+
+```bash
+# See what's done
+cat .agentful/completion.json
+
+# See current work
+cat .agentful/state.json
+
+# Check validation results
+cat .agentful/last-review.json
+```
+
+---
+
+## Best Practices
+
+### 1. Write Clear Requirements
+
+**Good:**
+```markdown
+### 1. User Login - CRITICAL
+**Description**: Users can log in with email/password
+
+**Acceptance Criteria**:
+- [ ] Email input (validation: valid email format)
+- [ ] Password input (validation: min 8 chars)
+- [ ] Login button (disabled while loading)
+- [ ] Success: redirect to dashboard
+- [ ] Error: show inline message
+- [ ] API: POST /api/auth/login
+```
+
+**Bad:**
+```markdown
+### 1. Login
+Users can log in
+```
+
+---
+
+### 2. Prioritize Features
+
+Use priority levels:
+
+```markdown
+### 1. Core feature - CRITICAL
+### 2. Important feature - HIGH
+### 3. Nice to have - MEDIUM
+```
+
+Agentful works in priority order.
+
+---
+
+### 3. Be Specific About Tech Stack
+
+```markdown
+## Tech Stack
+- Frontend: Next.js 14 (App Router)
+- Styling: Tailwind CSS
+- State: React Context + hooks
+- Testing: Vitest + Testing Library
+```
+
+Specific stack = better code generation.
+
+---
+
+### 4. Let It Complete Features
+
+Don't interrupt mid-feature:
+
+```bash
+# Good: Let feature finish
+/agentful-start
+# [Wait for "Feature Complete" message]
+
+# Bad: Stop early
+/agentful-start
+# [Interrupt after 5 minutes]
+# Feature left incomplete
+```
+
+---
+
+### 5. Use Quality Gates
+
+Always validate after features:
+
+```bash
+/agentful-start  # Complete feature
+/agentful-validate  # Verify quality
+/agentful-start  # Next feature
+```
+
+---
+
+## Troubleshooting
+
+### Issue: Feature Not Starting
+
+**Symptoms:** `/agentful-start` picks wrong feature
+
+**Solution:**
+```bash
+# Check completion.json
+cat .agentful/completion.json
+
+# Manually update priority
+# Set score of desired feature to 0
+# Set others to higher values
+
+/agentful-start
+```
+
+---
+
+### Issue: Tests Failing
+
+**Symptoms:** Reviewer keeps failing on tests
+
+**Solution:**
+```bash
+# Run tests manually to see output
+npm test
+
+# Check specific test failures
+npm test -- --reporter=verbose
+
+# Let Fixer handle it
+/agentful-start
+```
+
+---
+
+### Issue: Coverage Below 80%
+
+**Symptoms:** Reviewer fails coverage gate
+
+**Solution:**
+```bash
+# See coverage report
+npm test -- --coverage
+
+# Let Fixer add tests
+/agentful-start
+
+# Or add tests manually
+# Then run /agentful-start
+```
+
+---
+
+### Issue: Stuck in Validation Loop
+
+**Symptoms:** Fixer → Reviewer → Fixer → Reviewer...
+
+**Solution:**
+```bash
+# Check last-review.json
+cat .agentful/last-review.json
+
+# Identify recurring issue
+# Fix manually if Fixer can't resolve
+
+# Reset state
+echo '{"current_task":null}' > .agentful/state.json
+
+# Resume
+/agentful-start
+```
+
+---
+
+## Next Steps
+
+<div className="grid gap-4 md:grid-cols-2 mt-8">
+
+<div>
+
+### Bug Fixing Workflow
+
+When features have issues, use the bug fixing workflow
+→ [Bug Fixing Guide](./bug-fixing)
+
+</div>
+
+<div>
+
+### Refactoring Workflow
+
+Improve existing feature code
+→ [Refactoring Guide](./refactoring)
+
+</div>
+
+<div>
+
+### Testing Workflow
+
+Deep dive on testing strategies
+→ [Testing Guide](./testing)
+
+</div>
+
+</div>
+
+---
+
+## Quick Reference
+
+**Start Feature Development:**
+```bash
+/agentful-start
+```
+
+**Check Progress:**
+```bash
+/agentful-status
+```
+
+**Resolve Blockers:**
+```bash
+/agentful-decide
+```
+
+**Validate Quality:**
+```bash
+/agentful-validate
+```
+
+**24/7 Mode:**
+```bash
+/ralph-loop "/agentful-start" \
+  --max-iterations 50 \
+  --completion-promise "AGENTFUL_COMPLETE"
+```

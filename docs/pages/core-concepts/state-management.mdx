@@ -1,0 +1,684 @@
+---
+title: "State Management"
+description: "How Agentful tracks progress, decisions, and work state"
+sidebar_position: 6
+---
+
+# State Management
+
+State management is **Agentful's memory and truth source** - the system of record that tracks what's done, what's blocked, what's pending, and what decisions have been made. All coordination happens through simple JSON files that serve as the single source of truth.
+
+## What Is State Management in Agentful?
+
+State management in Agentful means:
+
+- **Progress tracking** - What features are complete, partial, or pending
+- **Work coordination** - What's currently being worked on
+- **Decision tracking** - What user input is needed
+- **Quality gates** - What validation checks are passing/failing
+- **Blocker management** - What's waiting on what
+
+All stored in **simple, human-readable JSON files** in `.agentful/`:
+
+```
+.agentful/
+├── state.json           # Current work state
+├── completion.json      # Feature progress
+├── decisions.json       # Pending and resolved decisions
+├── last-review.json     # Most recent validation
+└── architecture.json    # Detected tech stack
+```
+
+## Why JSON State Files?
+
+### The Problem
+
+Traditional state management approaches have issues:
+
+| Approach | Problems |
+|----------|----------|
+| **In-memory only** | Lost on restart, not inspectable |
+| **Database** | Overhead, dependency, not human-readable |
+| **Proprietary format** | Hard to debug, requires tools |
+| **Scattered across files** | No single source of truth |
+
+### The Agentful Solution
+
+**JSON state files** provide:
+
+- **Human-readable** - Open in any text editor
+- **Git-friendly** - Track changes over time
+- **Inspectable** - See exactly what's happening
+- **Simple** - No special tools needed
+- **Explicit** - Clear structure, no ambiguity
+- **Recoverable** - Easy to fix if corrupted
+
+```json
+{
+  "features": {
+    "authentication": {
+      "status": "complete",
+      "score": 100
+    }
+  },
+  "overall": 48
+}
+```
+
+You can **literally see** your progress at a glance.
+
+## The Four Core State Files
+
+### 1. state.json - Current Work State
+
+**Purpose:** Track what's happening right now
+
+**Location:** `.agentful/state.json`
+
+**Structure:**
+```json
+{
+  "version": "1.0",
+  "current_task": "user-profile-backend",
+  "current_phase": "implementing",
+  "iterations": 12,
+  "last_updated": "2026-01-18T00:00:00Z",
+  "blocked_on": []
+}
+```
+
+**Field meanings:**
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `version` | string | State schema version (for migrations) |
+| `current_task` | string \| null | ID of task currently being worked on |
+| `current_phase` | string | Phase: idle, planning, implementing, validating, blocked |
+| `iterations` | number | How many loop iterations have run |
+| `last_updated` | ISO 8601 timestamp | When state was last modified |
+| `blocked_on` | string[] | List of feature IDs blocked on decisions |
+
+**Phases explained:**
+
+```
+idle          → Not working, waiting for /agentful-start
+planning      → Analyzing PRODUCT.md, picking next task
+implementing  → Specialist agent is working
+validating    → Reviewer is checking quality
+blocked       → Waiting on user decision
+```
+
+**Usage:**
+```bash
+# Orchestrator always reads this first
+cat .agentful/state.json
+
+# Check if blocked
+if [ $(jq '.blocked_on | length' .agentful/state.json) -gt 0 ]; then
+  echo "Blocked on decisions, run /agentful-decide"
+fi
+```
+
+### 2. completion.json - Progress Tracking
+
+**Purpose:** Track feature completion and quality gates
+
+**Location:** `.agentful/completion.json`
+
+**Structure:**
+```json
+{
+  "features": {
+    "authentication": {
+      "status": "complete",
+      "score": 100,
+      "completed_at": "2026-01-18T01:00:00Z",
+      "notes": "JWT auth with login/register/logout"
+    },
+    "user-profile": {
+      "status": "in_progress",
+      "score": 45,
+      "notes": "Backend done, frontend pending"
+    },
+    "dashboard": {
+      "status": "pending",
+      "score": 0,
+      "notes": "Blocked on UX decision"
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "no_dead_code": false,
+    "coverage_80": false
+  },
+  "overall": 48,
+  "last_updated": "2026-01-18T00:00:00Z"
+}
+```
+
+**Feature statuses:**
+
+| Status | Score Range | Meaning |
+|--------|-------------|---------|
+| `pending` | 0 | Not started |
+| `in_progress` | 1-99 | Partially complete |
+| `complete` | 100 | Fully done and validated |
+
+**Quality gates:**
+
+```json
+{
+  "gates": {
+    "tests_passing": true,    // All tests pass
+    "no_type_errors": true,   // TypeScript clean
+    "no_dead_code": false,    // Has unused code
+    "coverage_80": false      // Coverage below 80%
+  }
+}
+```
+
+**Overall calculation:**
+```javascript
+// Pseudocode
+overall = average(
+  ...Object.values(features).map(f => f.score),
+  gates.tests_passing ? 100 : 0,
+  gates.no_type_errors ? 100 : 0,
+  gates.no_dead_code ? 100 : 0,
+  gates.coverage_80 ? 100 : 0
+) / (features.length + 4)
+```
+
+**Usage:**
+```bash
+# Check if project is complete
+if [ $(jq '.overall' .agentful/completion.json) -eq 100 ]; then
+  echo "Project complete!"
+fi
+
+# See what's in progress
+jq '.features | to_entries[] | select(.value.status == "in_progress")'
+```
+
+### 3. decisions.json - Decision Tracking
+
+**Purpose:** Track pending and resolved user decisions
+
+**Location:** `.agentful/decisions.json`
+
+**Structure:**
+```json
+{
+  "pending": [
+    {
+      "id": "decision-001",
+      "question": "Should auth use JWT or session cookies?",
+      "options": [
+        "JWT (stateless, scalable)",
+        "Sessions (simpler, built-in)",
+        "Clerk (managed service)"
+      ],
+      "context": "Building authentication system for PRODUCT.md",
+      "blocking": ["auth-feature", "user-profile-feature"],
+      "timestamp": "2026-01-18T00:00:00Z",
+      "priority": "high"
+    }
+  ],
+  "resolved": [
+    {
+      "id": "decision-000",
+      "question": "Which database provider?",
+      "answer": "PostgreSQL (robust, scalable)",
+      "timestamp_resolved": "2026-01-18T00:30:00Z",
+      "resolution_time_minutes": 5
+    }
+  ]
+}
+```
+
+**Decision lifecycle:**
+
+```
+1. Orchestrator needs input
+   ↓
+2. Add to pending array
+   ↓
+3. Add to state.json blocked_on
+   ↓
+4. User runs /agentful-decide
+   ↓
+5. Move from pending to resolved
+   ↓
+6. Remove from state.json blocked_on
+   ↓
+7. Unblocked features can proceed
+```
+
+**Usage:**
+```bash
+# Check if decisions needed
+pending_count=$(jq '.pending | length' .agentful/decisions.json)
+if [ $pending_count -gt 0 ]; then
+  echo "⚠️  $pending_count decisions needed"
+  echo "Run /agentful-decide to resolve"
+fi
+```
+
+### 4. last-review.json - Validation Results
+
+**Purpose:** Store most recent validation check results
+
+**Location:** `.agentful/last-review.json`
+
+**Structure:**
+```json
+{
+  "passed": false,
+  "timestamp": "2026-01-18T00:00:00Z",
+  "checks": {
+    "typescript": {
+      "passed": true,
+      "summary": "No type errors found"
+    },
+    "lint": {
+      "passed": true,
+      "summary": "No lint errors"
+    },
+    "deadCode": {
+      "passed": false,
+      "issues": [
+        "Unused export: formatDate in src/utils/date.ts",
+        "Unused file: src/components/OldWidget.tsx",
+        "Unused dependency: lodash in package.json"
+      ]
+    },
+    "tests": {
+      "passed": true,
+      "summary": "47 tests passed"
+    },
+    "coverage": {
+      "passed": false,
+      "actual": 72,
+      "required": 80,
+      "summary": "8 percentage points below threshold"
+    },
+    "security": {
+      "passed": false,
+      "issues": [
+        "console.log in src/auth/login.ts:45",
+        "Possible hardcoded secret in src/config/api.ts:12"
+      ]
+    }
+  },
+  "mustFix": [
+    "Remove unused export formatDate from src/utils/date.ts",
+    "Delete unused file src/components/OldWidget.tsx",
+    "Add tests to reach 80% coverage (currently at 72%)",
+    "Remove console.log from src/auth/login.ts:45",
+    "Investigate possible hardcoded secret in src/config/api.ts:12"
+  ],
+  "canIgnore": []
+}
+```
+
+**Usage:**
+```bash
+# Check if last validation passed
+if jq -e '.passed' .agentful/last-review.json > /dev/null; then
+  echo "✅ Last validation passed"
+else
+  echo "❌ Last validation failed"
+  echo "Issues:"
+  jq -r '.mustFix[]' .agentful/last-review.json
+fi
+```
+
+## State File Interactions
+
+### How State Files Work Together
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                       Orchestrator                           │
+│                  "What should I do?"                         │
+└────────┬────────────────────────────────────────────────────┘
+         │
+         │ 1. Read all state files
+         ▼
+┌─────────────────────────────────────────────────────────────┐
+│  state.json → current_phase = "idle"                       │
+│  completion.json → overall = 48%                            │
+│  decisions.json → pending = ["decision-001"]                │
+└────────┬────────────────────────────────────────────────────┘
+         │
+         │ 2. Check for decisions
+         ▼
+      Has decisions?
+         │
+    ┌────┴────┐
+    │         │
+   Yes       No
+    │         │
+    │         ▼
+    │    Pick next task
+    │         │
+    ▼         ▼
+Work on    Delegate
+unblocked  to agent
+features    │
+    │         ▼
+    │    3. Update state.json
+    │    current_phase = "implementing"
+    │         │
+    │         ▼
+    │    Agent completes
+    │         │
+    │         ▼
+    │    4. Run reviewer
+    │         │
+    │         ▼
+    │    Update last-review.json
+    │         │
+    │         ▼
+    │    5. If issues, fixer fixes
+    │         │
+    │         ▼
+    │    6. Update completion.json
+    │    feature.score = 100
+    │         │
+    │         ▼
+    │    7. Update state.json
+    │    current_phase = "idle"
+    │    current_task = null
+    │         │
+    └─────────┤
+              ▼
+         Loop again
+```
+
+### Example Flow
+
+**Initial state:**
+```json
+// state.json
+{
+  "current_task": null,
+  "current_phase": "idle",
+  "blocked_on": []
+}
+
+// completion.json
+{
+  "features": {
+    "authentication": { "status": "pending", "score": 0 }
+  },
+  "overall": 0
+}
+```
+
+**Orchestrator picks task:**
+```json
+// state.json
+{
+  "current_task": "authentication",
+  "current_phase": "implementing"
+}
+```
+
+**Backend agent completes:**
+```json
+// state.json
+{
+  "current_task": "authentication",
+  "current_phase": "validating"
+}
+```
+
+**Reviewer passes:**
+```json
+// completion.json
+{
+  "features": {
+    "authentication": { "status": "complete", "score": 100 }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "no_dead_code": true,
+    "coverage_80": true
+  },
+  "overall": 100
+}
+
+// state.json
+{
+  "current_task": null,
+  "current_phase": "idle"
+}
+```
+
+## State File Operations
+
+### Reading State
+
+**Bash (jq):**
+```bash
+# Get current phase
+jq -r '.current_phase' .agentful/state.json
+
+# Get overall completion
+jq '.overall' .agentful/completion.json
+
+# Count pending decisions
+jq '.pending | length' .agentful/decisions.json
+
+# Check if validation passed
+jq '.passed' .agentful/last-review.json
+```
+
+**Node.js:**
+```javascript
+import state from '../.agentful/state.json' assert { type: 'json' };
+
+if (state.current_phase === 'blocked') {
+  console.log('Blocked on:', state.blocked_on);
+}
+```
+
+**Python:**
+```python
+import json
+
+with open('.agentful/completion.json') as f:
+    completion = json.load(f)
+
+print(f"Progress: {completion['overall']}%")
+```
+
+### Updating State
+
+**Direct (careful!):**
+```bash
+# Update phase
+jq '.current_phase = "implementing"' .agentful/state.json > tmp.json
+mv tmp.json .agentful/state.json
+```
+
+**Through orchestrator (preferred):**
+```javascript
+// Orchestrator updates state
+await fs.writeJSON('.agentful/state.json', {
+  current_task: 'user-profile',
+  current_phase: 'implementing',
+  iterations: state.iterations + 1,
+  last_updated: new Date().toISOString()
+});
+```
+
+### Resetting State
+
+```bash
+# Start over (careful!)
+rm -rf .agentful/
+
+# Or just reset completion
+echo '{
+  "features": {},
+  "gates": {
+    "tests_passing": false,
+    "no_type_errors": false,
+    "no_dead_code": false,
+    "coverage_80": false
+  },
+  "overall": 0
+}' > .agentful/completion.json
+```
+
+## State File Best Practices
+
+### DO ✅
+
+- **Always read before writing** - Avoid race conditions
+- **Use atomic writes** - Write to temp, then move
+- **Validate JSON** - Ensure it's valid before saving
+- **Include timestamps** - Track when things changed
+- **Add context** - Use notes field for why something happened
+- **Gitignore appropriately** - Don't commit sensitive state
+
+### DON'T ❌
+
+- **Don't edit manually while running** - Let orchestrator manage
+- **Don't use complex nested structures** - Keep it flat and readable
+- **Don't store binary data** - Only JSON-serializable data
+- **Don't put secrets in state** - Use environment variables
+- **Don't ignore state files** - They're the source of truth
+
+## State File in Git
+
+### What to Commit
+
+```gitignore
+# .gitignore
+
+# State files (generally don't commit)
+.agentful/state.json
+.agentful/last-review.json
+
+# But DO commit these
+!.agentful/completion.json      # Track progress
+!.agentful/decisions.json       # Track decisions
+!.agentful/architecture.json    # Track tech stack
+```
+
+**Why:**
+- `state.json` - Changes constantly, not useful in history
+- `last-review.json` - Temporary validation output
+- `completion.json` - Useful to see progress over time
+- `decisions.json` - Useful audit trail
+- `architecture.json` - Useful for documentation
+
+### Viewing State History
+
+```bash
+# See how completion progressed
+git log --oneline -- .agentful/completion.json
+
+# Diff completion between commits
+git diff HEAD~5 HEAD -- .agentful/completion.json
+
+# See when decisions were made
+git log --oneline -- .agentful/decisions.json
+```
+
+## Advanced State Patterns
+
+### Checkpoint State
+
+```bash
+# Save checkpoint
+cp .agentful/completion.json .agentful/checkpoints/before-auth.json
+
+# Restore if needed
+cp .agentful/checkpoints/before-auth.json .agentful/completion.json
+```
+
+### State Migrations
+
+When state schema changes:
+
+```javascript
+// migrate-state-v1-to-v2.js
+import fs from 'fs';
+
+const state = JSON.parse(fs.readFileSync('.agentful/state.json', 'utf8'));
+
+// v1 had 'task', v2 renamed to 'current_task'
+if (state.task) {
+  state.current_task = state.task;
+  delete state.task;
+  state.version = '2.0';
+}
+
+fs.writeFileSync('.agentful/state.json', JSON.stringify(state, null, 2));
+```
+
+### State Validation
+
+```javascript
+// validate-state.js
+import Ajv from 'ajv';
+
+const stateSchema = {
+  type: 'object',
+  required: ['version', 'current_phase', 'iterations'],
+  properties: {
+    version: { type: 'string' },
+    current_phase: { enum: ['idle', 'planning', 'implementing', 'validating', 'blocked'] },
+    iterations: { type: 'number', minimum: 0 }
+  }
+};
+
+const ajv = new Ajv();
+const validate = ajv.compile(stateSchema);
+
+const state = JSON.parse(fs.readFileSync('.agentful/state.json', 'utf8'));
+if (!validate(state)) {
+  console.error('Invalid state:', validate.errors);
+  process.exit(1);
+}
+```
+
+## State vs. Database
+
+Why not use a database for state?
+
+| Aspect | JSON Files | Database |
+|--------|-----------|----------|
+| **Setup** | Zero | Need server |
+| **Inspectability** | Text editor | SQL client |
+| **Version control** | Git-friendly | Requires migrations |
+| **Debugging** | Open and read | Need queries |
+| **Dependencies** | None | Database driver |
+| **Complexity** | Simple | Overkill for this use case |
+
+JSON files are **perfect for Agentful's needs** because state is:
+- Low volume (few KB, not GB)
+- Read/written by single process (no concurrent access)
+- Simple structure (flat JSON)
+- Human-inspectable (debugging is easier)
+
+## Summary
+
+State management in Agentful is **simple, explicit, and effective**:
+
+- **JSON files** - Human-readable, git-friendly
+- **Four core files** - State, completion, decisions, validation
+- **Source of truth** - All coordination goes through them
+- **Inspectable** - See exactly what's happening
+- **Trackable** - Progress over time in git
+- **Recoverable** - Easy to fix if something goes wrong
+
+They're the **memory that makes autonomous development possible** - without them, the orchestrator wouldn't know what to do next.
+
+**Next:** [Return to core concepts overview](./index)

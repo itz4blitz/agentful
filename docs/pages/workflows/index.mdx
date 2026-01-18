@@ -1,0 +1,835 @@
+---
+title: Workflows - Agentful
+description: Learn the complete workflows for autonomous product development with Agentful. From feature development to bug fixing, testing, and refactoring.
+---
+
+# Workflows
+
+Complete end-to-end workflows for autonomous product development with Agentful.
+
+---
+
+## Overview
+
+Agentful provides specialized workflows for different development scenarios. Each workflow orchestrates the appropriate agents, commands, and validation steps to achieve specific goals efficiently.
+
+## Available Workflows
+
+<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-8">
+
+### [Feature Development](./feature-development)
+
+**End-to-end feature implementation**
+
+Build new features from requirements to production-ready code.
+
+- Requirements analysis
+- Architecture design
+- Implementation (frontend + backend)
+- Testing and validation
+- Quality gates
+
+**Time:** 30 min - 4 hours per feature
+**Agents:** Orchestrator → Architect → Specialists → Tester → Reviewer
+
+[Learn More →](./feature-development)
+
+---
+
+### [Bug Fixing](./bug-fixing)
+
+**Systematic bug resolution**
+
+Identify, isolate, fix, and validate bug fixes with proper testing.
+
+- Bug reproduction
+- Root cause analysis
+- Fix implementation
+- Regression testing
+- Validation
+
+**Time:** 10 min - 2 hours per bug
+**Agents:** Orchestrator → Specialists → Tester → Reviewer → Fixer
+
+[Learn More →](./bug-fixing)
+
+---
+
+### [Refactoring](./refactoring)
+
+**Code quality improvement**
+
+Improve code structure, maintainability, and performance while preserving functionality.
+
+- Code analysis
+- Refactoring plan
+- Incremental changes
+- Validation after each step
+- Documentation updates
+
+**Time:** 1 - 6 hours per module
+**Agents:** Orchestrator → Specialists → Reviewer → Fixer
+
+[Learn More →](./refactoring)
+
+---
+
+### [Testing](./testing)
+
+**Comprehensive test coverage**
+
+Achieve 80%+ test coverage with unit, integration, and E2E tests.
+
+- Test strategy design
+- Unit test implementation
+- Integration tests
+- E2E test scenarios
+- Coverage optimization
+
+**Time:** 1 - 4 hours per feature suite
+**Agents:** Tester → Reviewer → Fixer
+
+[Learn More →](./testing)
+
+---
+
+### [Manual vs Autonomous]
+
+**Choose your approach**
+
+Interactive step-by-step or hands-off autonomous development.
+
+- Manual: Full control, step-by-step
+- Autonomous: 24/7 continuous development
+- Hybrid: Start autonomous, intervene when needed
+
+[Learn More →](#manual-vs-autonomous)
+
+</div>
+
+---
+
+## Workflow Components
+
+Every Agentful workflow consists of these core components:
+
+### 1. Agents
+
+Specialized AI agents that handle specific aspects of development:
+
+| Agent | Role | Workflow Stage |
+|-------|------|----------------|
+| **@orchestrator** | Coordinates work, delegates tasks | Planning & Coordination |
+| **@architect** | Analyzes tech stack, generates agents | Initialization |
+| **@frontend** | Builds UI components, pages, hooks | Implementation |
+| **@backend** | Implements APIs, services, databases | Implementation |
+| **@tester** | Writes comprehensive tests | Testing |
+| **@reviewer** | Validates quality gates | Validation |
+| **@fixer** | Auto-fixes validation issues | Remediation |
+
+### 2. Commands
+
+Slash commands that control workflows:
+
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| `/agentful-start` | Start/resume autonomous development | Main workflow trigger |
+| `/agentful-status` | Check progress and state | Monitoring |
+| `/agentful-decide` | Resolve pending decisions | Unblocking work |
+| `/agentful-validate` | Run quality checks | Validation gates |
+
+### 3. State Files
+
+Track progress and decisions:
+
+| File | Purpose | Updated By |
+|------|---------|------------|
+| `.agentful/state.json` | Current work, phase, iterations | Orchestrator |
+| `.agentful/completion.json` | Feature completion percentages | Orchestrator |
+| `.agentful/decisions.json` | Pending user decisions | Orchestrator |
+| `.agentful/last-review.json` | Latest validation results | Reviewer |
+
+### 4. Quality Gates
+
+Validation checkpoints that must pass:
+
+- **Tests Passing** - All tests must pass
+- **No Type Errors** - TypeScript validation
+- **No Dead Code** - Unused code elimination
+- **Coverage ≥ 80%** - Test coverage threshold
+- **Security Clean** - No secrets or vulnerabilities
+
+---
+
+## The Universal Development Loop
+
+All Agentful workflows follow this core pattern:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  1. PLAN                                                  │
+│     • Read state (state.json, completion.json)           │
+│     • Read requirements (PRODUCT.md)                     │
+│     • Identify next task                                 │
+│     • Check for blockers                                 │
+└──────────────────────────────────────────────────────────┘
+                           ↓
+┌──────────────────────────────────────────────────────────┐
+│  2. DELEGATE                                              │
+│     • Select appropriate specialist agent                │
+│     • Provide clear task description                     │
+│     • Wait for completion                                │
+└──────────────────────────────────────────────────────────┘
+                           ↓
+┌──────────────────────────────────────────────────────────┐
+│  3. IMPLEMENT                                             │
+│     • Specialist agent executes task                     │
+│     • Creates/modifies files                             │
+│     • Follows best practices                             │
+│     • Reports completion                                 │
+└──────────────────────────────────────────────────────────┘
+                           ↓
+┌──────────────────────────────────────────────────────────┐
+│  4. VALIDATE                                              │
+│     • Reviewer runs all checks                           │
+│     • TypeScript, lint, tests, coverage, security       │
+│     • Generates report                                   │
+└──────────────────────────────────────────────────────────┘
+                           ↓
+                    Issues found?
+                         │
+              ┌──────────┴──────────┐
+              ↓                     ↓
+┌─────────────────────────┐  ┌─────────────────────────┐
+│  5a. FIX                │  │  5b. COMPLETE           │
+│     • Fixer resolves    │  │     • Update completion  │
+│     • Re-validate       │  │     • Mark feature done  │
+│     • Loop until pass   │  │     • Prepare next task  │
+└─────────────────────────┘  └─────────────────────────┘
+              │                     │
+              └──────────┬──────────┘
+                         ↓
+┌──────────────────────────────────────────────────────────┐
+│  6. UPDATE STATE                                          │
+│     • Update completion.json                             │
+│     • Update state.json                                  │
+│     • Log progress                                       │
+└──────────────────────────────────────────────────────────┘
+                         ↓
+┌──────────────────────────────────────────────────────────┐
+│  7. LOOP                                                  │
+│     • Return to step 1                                   │
+│     • Continue until all features complete               │
+│     • Or until max iterations reached                    │
+└──────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Workflow Examples
+
+### Example 1: Simple Feature (5-10 minutes)
+
+**Task:** Add a "Contact Us" form
+
+```
+1. /agentful-start
+2. Orchestrator reads PRODUCT.md → "Contact form" feature
+3. Delegates to @frontend → Creates contact form component
+4. Delegates to @backend → Creates submission endpoint
+5. Delegates to @tester → Writes form validation tests
+6. Delegates to @reviewer → Validates all checks pass
+7. Updates completion.json → contact-form: 100%
+8. Reports success
+```
+
+**Output:**
+- 3 files created (form component, API route, tests)
+- 100% test coverage
+- All validation gates passing
+- Ready for production
+
+---
+
+### Example 2: Complex Feature (1-3 hours)
+
+**Task:** User authentication system
+
+```
+Iteration 1: Backend auth service
+  @backend → Auth service, JWT tokens → @reviewer → Pass
+
+Iteration 2: Frontend login page
+  @frontend → Login form, useAuth hook → @reviewer → Pass
+
+Iteration 3: Registration flow
+  @backend → Register endpoint → @frontend → Register form
+  → @tester → Integration tests → @reviewer → Fail (coverage 72%)
+
+Iteration 4: Fix coverage
+  @fixer → Add edge case tests → @reviewer → Pass (coverage 84%)
+
+Iteration 5: Password reset
+  @backend → Reset flow → @tester → E2E tests → @reviewer → Pass
+
+Final: Auth feature 100% complete
+```
+
+**Output:**
+- 15 files created
+- 47 tests passing
+- 84% coverage
+- All quality gates passing
+
+---
+
+### Example 3: Bug Fix (15-30 minutes)
+
+**Task:** Fix navigation bug on mobile
+
+```
+1. Report bug to orchestrator
+2. Orchestrator delegates to @frontend
+3. Frontend agent reproduces bug
+4. Identifies root cause: z-index conflict
+5. Implements fix
+6. Delegates to @tester → Regression tests
+7. Delegates to @reviewer → Validates
+8. Updates completion.json → bugs-resolved++
+9. Reports fix complete
+```
+
+---
+
+## Manual vs Autonomous
+
+### Manual Workflows
+
+**Characteristics:**
+- Step-by-step control
+- Review each change
+- Make decisions at each step
+- Learn how Agentful works
+- Debug and understand issues
+
+**When to use:**
+- First time using Agentful
+- Complex architectural decisions
+- Learning the codebase
+- Small, quick tasks
+- When you want full control
+
+**How to use:**
+```bash
+/agentful-start  # Run one task
+# Review the output
+/agentful-start  # Run next task
+# Review the output
+```
+
+---
+
+### Autonomous Workflows
+
+**Characteristics:**
+- Hands-off continuous development
+- Agentful makes most decisions
+- Only interrupt for major decisions
+- Fastest path to completion
+- 24/7 development capability
+
+**When to use:**
+- Large feature sets
+- Overnight development
+- Well-defined requirements
+- Clear tech stack
+- When you want speed
+
+**How to use:**
+```bash
+# Ralph loop mode - runs 24/7 until complete
+/ralph-loop "/agentful-start" \
+  --max-iterations 50 \
+  --completion-promise "AGENTFUL_COMPLETE"
+```
+
+---
+
+### Hybrid Workflow (Recommended)
+
+**Best of both worlds:**
+
+1. **Start autonomous** for straightforward tasks
+2. **Monitor periodically** with `/agentful-status`
+3. **Intervene** when Agentful asks for decisions
+4. **Let it run** again after resolving blockers
+5. **Review milestones** at feature boundaries
+
+**Example:**
+```bash
+# Start autonomous development
+/agentful-start
+
+# [Let it run 30-60 minutes]
+
+# Check progress
+/agentful-status
+
+# If decisions needed:
+/agentful-decide
+
+# Resume autonomous mode
+/agentful-start
+```
+
+---
+
+## Choosing the Right Workflow
+
+### Decision Tree
+
+```
+Start
+  │
+  ├─ What do you need to build?
+  │    ├─ New feature
+  │    │   → Feature Development Workflow
+  │    │
+  │    ├─ Fix broken code
+  │    │   → Bug Fixing Workflow
+  │    │
+  │    ├─ Improve existing code
+  │    │   → Refactoring Workflow
+  │    │
+  │    └─ Add/improve tests
+  │        → Testing Workflow
+  │
+  └─ How do you want to work?
+       ├─ Full control, learn system
+       │   → Manual mode
+       │
+       ├─ Fast, hands-off
+       │   → Autonomous mode
+       │
+       └─ Balance of both
+           → Hybrid mode (recommended)
+```
+
+---
+
+## Timeline Expectations
+
+### By Project Size
+
+| Project Type | Features | Time | Iterations |
+|--------------|----------|------|------------|
+| **Small** | 3-5 | 30 min - 2 hours | 10-20 |
+| **Medium** | 6-12 | 2-6 hours | 30-60 |
+| **Large** | 13-25 | 6-12 hours | 70-150 |
+
+### By Feature Complexity
+
+| Complexity | Description | Time per Feature |
+|------------|-------------|------------------|
+| **Simple** | CRUD, forms, basic UI | 5-15 min |
+| **Medium** | Auth, APIs, state management | 30-60 min |
+| **Complex** | Real-time, payments, integrations | 1-3 hours |
+
+### By Workflow Type
+
+| Workflow | Avg Time | Variables |
+|----------|----------|-----------|
+| Feature Development | 30 min - 4 hours | Feature complexity |
+| Bug Fixing | 10 min - 2 hours | Bug severity |
+| Refactoring | 1-6 hours | Codebase size |
+| Testing | 1-4 hours | Coverage requirements |
+
+---
+
+## Monitoring Workflows
+
+### Real-time Monitoring
+
+Track progress as Agentful works:
+
+```bash
+# Check current status
+/agentful-status
+
+# Typical output:
+🔧 Working on: User Authentication Backend
+   Phase: implementation
+   Iterations: 8
+   Progress: ████████░░░░░░░░░░░ 40%
+
+Quality Gates:
+   ✅ Tests Passing
+   ✅ No Type Errors
+   ⚠️  Coverage 76% (needs 80%)
+   ✅ No Dead Code
+
+Next Actions:
+   • /agentful-start    - Continue development
+   • /agentful-decide  - Answer pending decision
+```
+
+### Progress Indicators
+
+Watch these metrics:
+
+1. **Completion Percentage** - Overall progress
+2. **Iterations** - Tasks completed
+3. **Quality Gates** - Validation status
+4. **Pending Decisions** - Blockers to resolve
+
+### State File Inspection
+
+Inspect raw state files:
+
+```bash
+# Current work
+cat .agentful/state.json
+
+# Completion status
+cat .agentful/completion.json
+
+# Pending decisions
+cat .agentful/decisions.json
+
+# Last validation
+cat .agentful/last-review.json
+```
+
+---
+
+## Troubleshooting Workflows
+
+### Issue: Workflow Not Starting
+
+**Symptoms:** `/agentful-start` doesn't begin work
+
+**Solutions:**
+```bash
+# Check for pending decisions
+/agentful-decide
+
+# Verify state files exist
+ls -la .agentful/
+
+# Check PRODUCT.md exists
+cat PRODUCT.md
+
+# Try running orchestrator directly
+Task("orchestrator", "Test orchestrator")
+```
+
+---
+
+### Issue: Stuck in Loop
+
+**Symptoms:** High iterations, no progress
+
+**Solutions:**
+```bash
+# Check status
+/agentful-status
+
+# Run validation to see issues
+/agentful-validate
+
+# If validation keeps failing:
+# 1. Review last-review.json
+# 2. Fix manually if needed
+# 3. Restart: /agentful-start
+```
+
+---
+
+### Issue: Quality Gates Failing
+
+**Symptoms:** Reviewer keeps finding issues
+
+**Solutions:**
+```bash
+# See specific failures
+/agentful-validate
+
+# Let Fixer auto-fix
+/agentful-start
+
+# If Fixer can't resolve:
+# Manual intervention needed
+# Review .agentful/last-review.json
+```
+
+---
+
+### Issue: Slow Progress
+
+**Symptoms:** Taking too long per feature
+
+**Solutions:**
+1. **Check feature complexity** - Break into smaller chunks
+2. **Review tech stack** - Ensure clear in PRODUCT.md
+3. **Reduce scope** - Focus on MVP features
+4. **Use autonomous mode** - Faster than manual
+
+---
+
+## Best Practices
+
+### 1. Clear Requirements
+
+**Good PRODUCT.md:**
+```markdown
+### 1. User Authentication - CRITICAL
+**Description**: Email/password authentication with JWT
+
+**Acceptance Criteria**:
+- [ ] Login endpoint: POST /api/auth/login
+- [ ] Register endpoint: POST /api/auth/register
+- [ ] JWT token generation
+- [ ] Token refresh flow
+- [ ] Secure password hashing (bcrypt)
+
+**Tech Stack**:
+- Frontend: Next.js 14
+- Backend: Next.js API Routes
+- Auth: JWT (jsonwebtoken)
+- Database: PostgreSQL + Prisma
+```
+
+**Bad PRODUCT.md:**
+```markdown
+## Features
+1. Authentication
+2. User management
+3. Dashboard
+```
+
+---
+
+### 2. Let Agents Work
+
+**Do:**
+- Start the workflow and let it run
+- Check in periodically
+- Answer decisions when prompted
+- Review completed features
+
+**Don't:**
+- Interrupt after every file
+- Micromanage agent decisions
+- Change PRODUCT.md mid-workflow
+- Edit files while agents work
+
+---
+
+### 3. Use Quality Gates
+
+Quality gates are your friend:
+
+- ✅ **Prevent bad code** from entering codebase
+- ✅ **Ensure test coverage** before marking complete
+- ✅ **Catch security issues** early
+- ✅ **Maintain code quality** over time
+
+**Don't skip validation:**
+```bash
+# Good: Always validate after major features
+/agentful-start  # Complete feature
+/agentful-validate  # Verify quality
+
+# Bad: Skip validation
+/agentful-start  # Complete feature
+# Move on immediately without checking
+```
+
+---
+
+### 4. Monitor Progress
+
+Check status regularly:
+
+```bash
+# Every 30-60 minutes during active development
+/agentful-status
+
+# After each completed feature
+/agentful-status
+```
+
+Look for:
+- ✅ Increasing completion percentage
+- ✅ Features moving to "complete"
+- ✅ Quality gates passing
+- ⚠️ Pending decisions (resolve quickly)
+- ⚠️ Stuck iterations (investigate)
+
+---
+
+### 5. Resolve Decisions Quickly
+
+Pending decisions block progress:
+
+```bash
+# When warned about decisions:
+⚠️  Pending decisions need your input
+
+# Resolve immediately:
+/agentful-decide
+
+# Then resume:
+/agentful-start
+```
+
+**Why:** Each decision can block multiple features. Fast resolution = faster development.
+
+---
+
+## Advanced Workflow Patterns
+
+### Parallel Feature Development
+
+```bash
+# Work on 2 features simultaneously
+# .agentful/state.json
+{
+  "parallel_tasks": 2,
+  "active_tasks": [
+    "auth-backend",
+    "user-profile-frontend"
+  ]
+}
+
+/agentful-start
+```
+
+---
+
+### Feature Branching
+
+```bash
+# Create branch for feature
+git checkout -b feature/authentication
+
+# Run autonomous workflow
+/agentful-start
+
+# When complete, commit and merge
+git add .
+git commit -m "feat: authentication system"
+git checkout main
+git merge feature/authentication
+```
+
+---
+
+### Incremental Delivery
+
+```bash
+# Deliver features in batches
+# PRODUCT.md
+## Phase 1 - MVP
+- Authentication
+- User profile
+- Basic dashboard
+
+## Phase 2 - Enhancement
+- Advanced search
+- Notifications
+- Settings
+
+# Run for Phase 1 only
+/agentful-start
+
+# Deliver Phase 1, then run for Phase 2
+/agentful-start
+```
+
+---
+
+### Rollback Workflow
+
+```bash
+# If something goes wrong:
+# 1. Stop Agentful
+# 2. Review changes
+git diff
+
+# 3. Rollback if needed
+git reset --hard HEAD
+
+# 4. Reset state
+echo '{"version":"1.0","current_task":null,"current_phase":"idle","iterations":0}' > .agentful/state.json
+
+# 5. Start fresh
+/agentful-start
+```
+
+---
+
+## Next Steps
+
+<div className="grid gap-4 md:grid-cols-2 mt-8">
+
+<div>
+
+### Start Building
+
+Learn the feature development workflow end-to-end
+→ [Feature Development Guide](./feature-development)
+
+</div>
+
+<div>
+
+### Fix Bugs Fast
+
+Master systematic bug resolution
+→ [Bug Fixing Workflow](./bug-fixing)
+
+</div>
+
+<div>
+
+### Improve Code Quality
+
+Learn refactoring workflows
+→ [Refactoring Workflow](./refactoring)
+
+</div>
+
+<div>
+
+### Achieve Test Coverage
+
+Comprehensive testing strategies
+→ [Testing Workflow](./testing)
+
+</div>
+
+</div>
+
+---
+
+## Quick Reference
+
+**Essential Commands:**
+- `/agentful-start` - Start autonomous development
+- `/agentful-status` - Check progress
+- `/agentful-decide` - Resolve decisions
+- `/agentful-validate` - Run quality checks
+
+**State Files:**
+- `.agentful/state.json` - Current work state
+- `.agentful/completion.json` - Feature progress
+- `.agentful/decisions.json` - Pending decisions
+- `.agentful/last-review.json` - Validation results
+
+**24/7 Development:**
+```bash
+/ralph-loop "/agentful-start" \
+  --max-iterations 50 \
+  --completion-promise "AGENTFUL_COMPLETE"
+```

@@ -1,0 +1,670 @@
+# /agentful-decide
+
+Answer pending decisions that are blocking development progress.
+
+## Purpose
+
+The `/agentful-decide` command resolves architectural and product decisions that are blocking feature development. When the orchestrator encounters a choice that requires human input, it records a decision in `.agentful/decisions.json`. This command presents those decisions interactively, allows you to choose from options or provide custom input, and unblocks the affected features.
+
+## Why Decisions Block Development
+
+Autonomous development requires clear direction. When you need to make choices like:
+
+- "Should auth use JWT or session cookies?"
+- "Which database provider for deployment?"
+- "UI framework for dashboard components?"
+
+The orchestrator **stops** and waits for your input because:
+
+1. **Architectural impact** - These choices affect how code is written
+2. **Avoiding rework** - Wrong choice = wasted development time
+3. **Product direction** - Some decisions reflect product strategy
+4. **Team coordination** - Decisions should be consistent across team
+
+Once you decide, the orchestrator resumes with clear direction.
+
+## Usage
+
+### Basic Usage
+
+```bash
+/agentful-decide
+```
+
+This will:
+1. Read pending decisions from `.agentful/decisions.json`
+2. Present each decision with options
+3. Accept your choice (number or custom input)
+4. Record the decision
+5. Remove from pending list
+6. Unblock affected features
+
+### After Warning from /agentful-start
+
+```bash
+$ /agentful-start
+
+⚠️  Pending decisions need your input:
+1. "Should auth use JWT or session cookies?"
+   Run: /agentful-decide
+
+$ /agentful-decide
+# Resolve decisions
+$ /agentful-start
+# Continue development
+```
+
+### Interactive Mode
+
+When multiple decisions are pending:
+
+```bash
+$ /agentful-decide
+
+You have 3 pending decisions to resolve:
+
+[1/3] Should auth use JWT or session cookies?
+
+  Context: Building authentication system for PRODUCT.md
+  Blocking: auth-feature, user-profile-feature
+
+  Options:
+    [1] JWT (stateless, scalable)
+    [2] Sessions (simpler, built-in)
+    [3] Clerk (managed service)
+    [4] Custom input...
+
+  Your choice: > 1
+
+  ✅ Recorded: JWT (stateless, scalable)
+
+[2/3] Which database provider for production?
+
+  Context: Deployment infrastructure setup
+  Blocking: deployment-feature
+
+  Options:
+    [1] PostgreSQL (standard, relational)
+    [2] MongoDB (flexible, document)
+    [3] SQLite (simple, embedded)
+    [4] Custom input...
+
+  Your choice: > 4
+  Enter custom option: > Supabase (PostgreSQL + Auth)
+
+  ✅ Recorded: Supabase (PostgreSQL + Auth)
+
+[3/3] State management library?
+
+  Context: Frontend state architecture
+  Blocking: dashboard-feature
+
+  Options:
+    [1] Redux (standard, verbose)
+    [2] Zustand (simple, modern)
+    [3] Jotai (atomic, flexible)
+    [4] Custom input...
+
+  Your choice: > 2
+
+  ✅ Recorded: Zustand (simple, modern)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ All 3 decisions resolved!
+
+Features Unblocked:
+  • auth-feature
+  • user-profile-feature
+  • deployment-feature
+  • dashboard-feature
+
+Run /agentful-start to continue development.
+```
+
+## Decision Format
+
+### Decision Structure
+
+Each decision in `.agentful/decisions.json` follows this structure:
+
+```json
+{
+  "pending": [
+    {
+      "id": "decision-001",
+      "question": "Should auth use JWT or session cookies?",
+      "options": [
+        "JWT (stateless, scalable)",
+        "Sessions (simpler, built-in)",
+        "Clerk (managed service)"
+      ],
+      "context": "Building authentication system for PRODUCT.md",
+      "blocking": ["auth-feature", "user-profile-feature"],
+      "timestamp": "2026-01-18T00:00:00Z",
+      "priority": "high"
+    }
+  ],
+  "resolved": [
+    {
+      "id": "decision-002",
+      "question": "Deployment platform?",
+      "answer": "Vercel (serverless, edge)",
+      "timestamp_resolved": "2026-01-18T00:30:00Z",
+      "resolved_by": "user"
+    }
+  ]
+}
+```
+
+### Decision Fields
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `id` | string | Unique identifier (decision-XXX) |
+| `question` | string | What needs to be decided |
+| `options` | array[string] | Predefined choices (can be empty) |
+| `context` | string | Why this decision matters |
+| `blocking` | array[string] | Features/tasks blocked by this |
+| `timestamp` | string | When decision was created |
+| `priority` | string | high/medium/low urgency |
+| `answer` | string | What was chosen (resolved only) |
+| `timestamp_resolved` | string | When resolved (resolved only) |
+| `resolved_by` | string | Who resolved (user/agent) |
+
+## How It Works
+
+### 1. Read Pending Decisions
+
+```javascript
+// .agentful/decisions.json
+{
+  "pending": [
+    {
+      "id": "decision-001",
+      "question": "Should auth use JWT or session cookies?",
+      "options": ["JWT", "Sessions", "Clerk"],
+      "blocking": ["auth-feature"]
+    }
+  ]
+}
+```
+
+### 2. Present to User
+
+```
+┌────────────────────────────────────────────────────────────┐
+│ Decision #1                                                │
+├────────────────────────────────────────────────────────────┤
+│ Question: Should auth use JWT or session cookies?          │
+│                                                            │
+│ Context: Building authentication system for PRODUCT.md    │
+│                                                            │
+│ Options:                                                   │
+│   [1] JWT (stateless, scalable)                            │
+│   [2] Sessions (simpler, built-in)                         │
+│   [3] Clerk (managed service)                              │
+│   [4] Custom input...                                      │
+│                                                            │
+│ Blocking: auth-feature, user-profile-feature              │
+└────────────────────────────────────────────────────────────┘
+
+Your choice:
+```
+
+### 3. Record Decision
+
+After user selects option [1]:
+
+```javascript
+// Move from pending to resolved
+{
+  "resolved": [
+    {
+      "id": "decision-001",
+      "question": "Should auth use JWT or session cookies?",
+      "answer": "JWT (stateless, scalable)",
+      "timestamp_resolved": "2026-01-18T00:30:00Z",
+      "resolved_by": "user"
+    }
+  ],
+  "pending": []  // Removed from pending
+}
+```
+
+### 4. Update State
+
+Remove from `.agentful/state.json` blocked_on array:
+
+```javascript
+// Before
+{
+  "blocked_on": ["auth-feature", "user-profile-feature"]
+}
+
+// After
+{
+  "blocked_on": []  // Unblocked!
+}
+```
+
+### 5. Notify Orchestrator
+
+The orchestrator can now proceed with auth implementation using JWT.
+
+## When to Use
+
+### After Warning
+
+```bash
+$ /agentful-start
+
+⚠️  Pending decisions need your input:
+1. "Should auth use JWT or session cookies?"
+   Run: /agentful-decide
+
+$ /agentful-decide
+# Required - can't proceed without this
+```
+
+### Proactive Decision Making
+
+```bash
+# Check if any decisions pending
+/agentful-status
+
+# If yes, resolve them before they block
+/agentful-decide
+```
+
+### After Manual Changes
+
+```bash
+# You implemented auth with JWT manually
+# Update decision log so orchestrator knows
+/agentful-decide
+# Select: JWT
+# Orchestrator now consistent with your choice
+```
+
+## Examples by Scenario
+
+### Scenario 1: First Decision
+
+```bash
+$ /agentful-start
+
+⚠️  CANNOT START - Pending decisions
+
+$ /agentful-decide
+
+You have 1 pending decision:
+
+[1/1] Authentication approach?
+
+  Context: Starting auth implementation
+  Blocking: auth-feature
+
+  Options:
+    [1] JWT (stateless)
+    [2] Sessions (simple)
+    [3] Clerk (managed)
+
+  Your choice: > 1
+
+✅ Decision resolved: JWT
+
+Run /agentful-start to continue.
+```
+
+### Scenario 2: Multiple Related Decisions
+
+```bash
+$ /agentful-decide
+
+You have 4 pending decisions:
+
+[1/4] Auth strategy? > 1 (JWT)
+[2/4] Database provider? > 1 (PostgreSQL)
+[3/4] Deployment platform? > 2 (Vercel)
+[4/4] Monitoring setup? > 4 (Custom: Datadog)
+
+✅ All 4 decisions resolved
+Features unblocked: auth, database, deployment, monitoring
+```
+
+### Scenario 3: Custom Input
+
+```bash
+$ /agentful-decide
+
+[1/1] UI component library?
+
+  Options:
+    [1] Material-UI
+    [2] Chakra UI
+    [3] Ant Design
+    [4] Custom input...
+
+  Your choice: > 4
+  Enter custom option: > Tailwind UI + Headless UI
+
+✅ Decision resolved: Tailwind UI + Headless UI
+```
+
+### Scenario 4: No Pending Decisions
+
+```bash
+$ /agentful-decide
+
+✅ No pending decisions!
+
+All features are unblocked. Run /agentful-start to continue development.
+```
+
+## Tips
+
+### Decision-Making Tips
+
+1. **Read context carefully**
+   - Context explains why the decision matters
+   - Helps you understand architectural implications
+
+2. **Consider what's blocking**
+   - See which features are affected
+   - High-impact decisions need more thought
+
+3. **Custom input is okay**
+   - Predefined options are suggestions
+   - Your specific situation may require custom approach
+
+4. **Decisions are recorded**
+   - All decisions logged to decisions.json
+   - Can review later for architectural history
+
+### Best Practices
+
+1. **Resolve decisions quickly**
+   - Pending decisions immediately block progress
+   - Don't let them accumulate
+
+2. **Be consistent**
+   - Similar decisions should have similar logic
+   - Check previous decisions in resolved array
+
+3. **Document tradeoffs**
+   - If choosing custom, note why in answer
+   - Example: "Vercel (team has experience)"
+
+4. **Review periodically**
+   ```bash
+   # See all decisions (pending + resolved)
+   cat .agentful/decisions.json | jq '.'
+   ```
+
+### Team Collaboration
+
+1. **Share decisions.json**
+   ```bash
+   # Commit decisions for team visibility
+   git add .agentful/decisions.json
+   git commit -m "decide: Choose JWT for auth"
+   git push
+   ```
+
+2. **Discuss blockers**
+   - If unsure about decision, discuss with team first
+   - Then run `/agentful-decide` to record
+
+3. **Override if needed**
+   ```bash
+   # Edit decisions.json directly
+   # Change pending decision options
+   # Then run /agentful-decide
+   ```
+
+## Troubleshooting
+
+### Issue: Decisions.json is empty
+
+**Cause:** No decisions recorded yet
+
+**Solution:**
+```bash
+# Initialize file
+echo '{"pending":[],"resolved":[]}' > .agentful/decisions.json
+
+# Decisions will be added by orchestrator as needed
+```
+
+### Issue: Decision doesn't show in /agentful-decide
+
+**Cause:** Decision already resolved or not in pending array
+
+**Solution:**
+```bash
+# Check current state
+cat .agentful/decisions.json | jq '.pending'
+
+# If in resolved, move back to pending if needed
+# Or create new decision with correct id
+```
+
+### Issue: Features still blocked after deciding
+
+**Cause:** state.json blocked_on not updated
+
+**Solution:**
+```bash
+# Check blocked_on
+cat .agentful/state.json | jq '.blocked_on'
+
+# Manually clear if needed
+jq '.blocked_on = []' .agentful/state.json > temp.json
+mv temp.json .agentful/state.json
+```
+
+### Issue: Want to change a decision
+
+**Cause:** Need to update previous choice
+
+**Solution:**
+```bash
+# 1. Move from resolved to pending
+jq '.pending += [.resolved[0]] | .resolved = .resolved[1:]' \
+  .agentful/decisions.json > temp.json
+mv temp.json .agentful/decisions.json
+
+# 2. Re-run decide
+/agentful-decide
+```
+
+## Advanced Usage
+
+### Batch Decision Resolution
+
+```bash
+# Pre-define all decisions at once
+cat > .agentful/decisions.json << 'EOF'
+{
+  "pending": [
+    {
+      "id": "decision-001",
+      "question": "Auth strategy?",
+      "options": ["JWT", "Sessions"],
+      "blocking": ["auth"]
+    },
+    {
+      "id": "decision-002",
+      "question": "Database?",
+      "options": ["PostgreSQL", "MongoDB"],
+      "blocking": ["database"]
+    }
+  ],
+  "resolved": []
+}
+EOF
+
+# Then resolve all at once
+/agentful-decide
+```
+
+### Decision Templates
+
+Create reusable decision patterns:
+
+```json
+// .agentful/decision-templates.json
+{
+  "templates": {
+    "auth-strategy": {
+      "question": "Authentication approach?",
+      "options": ["JWT", "Sessions", "OAuth", "Clerk"],
+      "default": "JWT"
+    },
+    "database": {
+      "question": "Database provider?",
+      "options": ["PostgreSQL", "MongoDB", "SQLite"],
+      "default": "PostgreSQL"
+    }
+  }
+}
+```
+
+### Priority-Based Decisions
+
+```json
+{
+  "pending": [
+    {
+      "id": "decision-001",
+      "question": "Critical architectural choice?",
+      "priority": "high",
+      "blocking": ["core-feature"]
+    },
+    {
+      "id": "decision-002",
+      "question": "Nice-to-have feature option?",
+      "priority": "low",
+      "blocking": ["optional-feature"]
+    }
+  ]
+}
+
+# /agentful-decide will show high priority first
+```
+
+### Decision History Analysis
+
+```bash
+# See all past decisions
+jq '.resolved[] | {question, answer, timestamp}' \
+  .agentful/decisions.json
+
+# Count by type
+jq '.resolved[] | .question' .agentful/decisions.json | \
+  sort | uniq -c
+
+# Export to CSV for analysis
+jq -r '.resolved[] | [.question, .answer, .timestamp_resolved] | @csv' \
+  .agentful/decisions.json > decisions.csv
+```
+
+## Integration Examples
+
+### Pre-Development Checklist
+
+```bash
+#!/bin/bash
+# check-decisions.sh
+
+PENDING=$(jq '.pending | length' .agentful/decisions.json)
+
+if [ "$PENDING" -gt 0 ]; then
+  echo "⚠️  You have $PENDING pending decisions:"
+  jq -r '.pending[] | "  • \(.question)"' .agentful/decisions.json
+  echo ""
+  echo "Run /agentful-decide before starting development."
+  exit 1
+else
+  echo "✅ No pending decisions. Ready to develop!"
+  exit 0
+fi
+```
+
+### Decision Review Bot
+
+```bash
+# Run daily to review recent decisions
+jq '.resolved[] |
+  select(.timestamp_resolved >= now - 86400) |
+  "Resolved: \(.question) → \(.answer)"' \
+  .agentful/decisions.json
+```
+
+### Sync with Project Management
+
+```bash
+# Create GitHub issues from decisions
+jq -r '.pending[] |
+  "gh issue create --title \"Decision: \(.question)\" --body \"\(.context)\""' \
+  .agentful/decisions.json | bash
+```
+
+## Common Decision Patterns
+
+### Authentication
+
+```json
+{
+  "question": "Authentication strategy?",
+  "options": [
+    "JWT (stateless, scalable)",
+    "Sessions (simple, server-managed)",
+    "Clerk/Auth0 (managed service)",
+    "NextAuth (framework-specific)"
+  ],
+  "context": "Affects entire auth architecture",
+  "blocking": ["auth-feature", "user-management"]
+}
+```
+
+### Database
+
+```json
+{
+  "question": "Database provider?",
+  "options": [
+    "PostgreSQL (relational, ACID)",
+    "MongoDB (document, flexible)",
+    "SQLite (embedded, simple)",
+    "Supabase (PostgreSQL + services)"
+  ],
+  "context": "Affects data modeling and queries",
+  "blocking": ["database-setup", "data-modeling"]
+}
+```
+
+### Deployment
+
+```json
+{
+  "question": "Deployment platform?",
+  "options": [
+    "Vercel (serverless, edge)",
+    "Netlify (static, JAMstack)",
+    "AWS (cloud, flexible)",
+    "Railway/Render (simple PaaS)"
+  ],
+  "context": "Affects CI/CD and infrastructure",
+  "blocking": ["deployment-feature"]
+}
+```
+
+## See Also
+
+- [/agentful-start](./agentful-start) - Continue after resolving decisions
+- [/agentful-status](./agentful-status) - Check if decisions are pending
+- [Decision Templates](/commands/agentful-decide) - Creating reusable decision patterns
+- [State Management](/core-concepts/state-management) - How decisions affect state
+- [Orchestrator](/agents/orchestrator) - How orchestrator uses decisions

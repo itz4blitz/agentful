@@ -1,0 +1,694 @@
+# Tester Agent
+
+The Tester Agent ensures code quality through comprehensive testing, achieving 80% code coverage across all features.
+
+## Overview
+
+The Tester Agent is responsible for all testing activities:
+
+- Unit tests (services, components, utilities)
+- Integration tests (API endpoints, module interactions)
+- E2E tests (full user flows)
+- Test fixtures and mocks
+- Coverage reporting and improvement
+
+## Configuration
+
+```yaml
+name: tester
+description: Writes comprehensive unit, integration, and E2E tests. Ensures coverage meets 80% threshold.
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+```
+
+**Why Sonnet?** Test writing requires understanding patterns and frameworks but doesn't need the highest reasoning level.
+
+## Test Framework Selection
+
+Based on the project's existing setup:
+
+| Framework | Use Case | Examples |
+|-----------|----------|----------|
+| **Vitest** | Modern Vite projects, fast execution | `describe`, `it`, `expect`, `vi` |
+| **Jest** | React, Next.js, Node.js, Create React App | `describe`, `test`, `expect`, `jest` |
+| **Playwright** | E2E browser testing, cross-browser | `page`, `locator`, `expect` |
+| **Cypress** | E2E testing with real browser | `cy`, commands, custom queries |
+| **Testing Library** | Component testing (React, Vue, etc.) | `render`, `screen`, `fireEvent` |
+| **Supertest** | API endpoint testing | `request(app).get('/api')` |
+
+## Implementation Patterns
+
+### 1. Unit Tests
+
+Test individual functions, classes, components in isolation.
+
+#### Service Testing
+
+```typescript
+// src/services/__tests__/user.service.test.ts
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { UserService } from '../user.service';
+import { UserRepository } from '../../repositories/user.repository';
+
+describe('UserService', () => {
+  let service: UserService;
+  let mockRepo: UserRepository;
+
+  beforeEach(() => {
+    // Create mock repository
+    mockRepo = {
+      findByEmail: vi.fn(),
+      create: vi.fn(),
+    } as any;
+    service = new UserService(mockRepo);
+  });
+
+  describe('registerUser', () => {
+    it('should create a new user with hashed password', async () => {
+      const input = {
+        email: 'test@example.com',
+        password: 'password123',
+        name: 'Test User',
+      };
+
+      // Setup mock return values
+      mockRepo.findByEmail = vi.fn().mockResolvedValue(null);
+      mockRepo.create = vi.fn().mockResolvedValue({
+        id: '1',
+        email: input.email,
+        name: input.name,
+      });
+
+      // Execute
+      const result = await service.registerUser(input);
+
+      // Verify
+      expect(mockRepo.findByEmail).toHaveBeenCalledWith(input.email);
+      expect(mockRepo.create).toHaveBeenCalled();
+      expect(result.email).toBe(input.email);
+    });
+
+    it('should throw error if user already exists', async () => {
+      const input = {
+        email: 'existing@example.com',
+        password: 'password123',
+        name: 'Test User',
+      };
+
+      mockRepo.findByEmail = vi.fn().mockResolvedValue({ id: '1' });
+
+      // Verify error
+      await expect(service.registerUser(input)).rejects.toThrow('User already exists');
+      expect(mockRepo.create).not.toHaveBeenCalled();
+    });
+
+    it('should handle database errors gracefully', async () => {
+      const input = {
+        email: 'test@example.com',
+        password: 'password123',
+        name: 'Test User',
+      };
+
+      mockRepo.findByEmail = vi.fn().mockRejectedValue(new Error('Database connection failed'));
+
+      await expect(service.registerUser(input)).rejects.toThrow('Database connection failed');
+    });
+  });
+});
+```
+
+**Key Principles:**
+- Mock external dependencies
+- Test all code paths (happy path + errors)
+- Use descriptive test names
+- One assertion per test when possible
+- Arrange-Act-Assert pattern
+
+#### Component Testing
+
+```tsx
+// src/components/__tests__/Button.test.tsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Button } from '../Button';
+
+describe('Button', () => {
+  it('should render children', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+
+  it('should call onClick when clicked', () => {
+    const handleClick = vi.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+
+    fireEvent.click(screen.getByText('Click me'));
+
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('should be disabled when isLoading is true', () => {
+    render(<Button isLoading>Click me</Button>);
+
+    const button = screen.getByRole('button');
+    expect(button).toBeDisabled();
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
+
+  it('should apply variant classes correctly', () => {
+    const { rerender } = render(<Button variant="primary">Test</Button>);
+    expect(screen.getByRole('button')).toHaveClass('bg-blue-600');
+
+    rerender(<Button variant="danger">Test</Button>);
+    expect(screen.getByRole('button')).toHaveClass('bg-red-600');
+  });
+
+  it('should not call onClick when disabled', () => {
+    const handleClick = vi.fn();
+    render(<Button onClick={handleClick} disabled>Click me</Button>);
+
+    fireEvent.click(screen.getByRole('button'));
+
+    expect(handleClick).not.toHaveBeenCalled();
+  });
+});
+```
+
+**Key Principles:**
+- Test user behavior, not implementation
+- Use Testing Library queries (getBy*, queryBy*)
+- Test interactions (click, change, submit)
+- Test edge cases (disabled, loading, error)
+- Accessibility testing
+
+### 2. Integration Tests
+
+Test how multiple modules work together.
+
+#### API Integration Testing
+
+```typescript
+// src/app/api/auth/__tests__/login.test.ts
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { app } from '../../../app';
+import request from 'supertest';
+
+describe('POST /api/auth/login', () => {
+  let testUserId: string;
+
+  beforeAll(async () => {
+    // Setup: create test user
+    const res = await request(app)
+      .post('/api/auth/register')
+      .send({
+        email: 'test@example.com',
+        password: 'password123',
+        name: 'Test User',
+      });
+    testUserId = res.body.id;
+  });
+
+  afterAll(async () => {
+    // Cleanup: delete test user
+    await request(app).delete(`/api/users/${testUserId}`);
+  });
+
+  it('should login with valid credentials', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'test@example.com',
+        password: 'password123',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveProperty('token');
+    expect(res.body.user).toHaveProperty('email', 'test@example.com');
+    expect(res.body.user).not.toHaveProperty('password');
+  });
+
+  it('should reject invalid credentials', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'test@example.com',
+        password: 'wrongpassword',
+      });
+
+    expect(res.status).toBe(401);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('should validate required fields', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'test@example.com' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('password');
+  });
+
+  it('should reject non-existent users', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        email: 'nonexistent@example.com',
+        password: 'password123',
+      });
+
+    expect(res.status).toBe(401);
+  });
+});
+```
+
+**Key Principles:**
+- Test real HTTP requests/responses
+- Use test database (not production)
+- Setup/teardown test data
+- Test status codes, headers, body
+- Test validation and error handling
+
+### 3. E2E Tests
+
+Test complete user flows in a real browser.
+
+```typescript
+// e2e/auth.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Authentication Flow', () => {
+  test('should register and login a new user', async ({ page }) => {
+    // Navigate to register
+    await page.goto('/register');
+
+    // Fill registration form
+    await page.fill('[name="email"]', 'test@example.com');
+    await page.fill('[name="password"]', 'password123');
+    await page.fill('[name="name"]', 'Test User');
+    await page.click('button[type="submit"]');
+
+    // Should redirect to dashboard
+    await expect(page).toHaveURL('/dashboard');
+    await expect(page.locator('text=Welcome, Test User')).toBeVisible();
+  });
+
+  test('should show error on invalid login', async ({ page }) => {
+    await page.goto('/login');
+
+    await page.fill('[name="email"]', 'test@example.com');
+    await page.fill('[name="password"]', 'wrongpassword');
+    await page.click('button[type="submit"]');
+
+    await expect(page.locator('text=Invalid credentials')).toBeVisible();
+    await expect(page).toHaveURL('/login');
+  });
+
+  test('should logout and redirect to login', async ({ page }) => {
+    // Login first
+    await page.goto('/login');
+    await page.fill('[name="email"]', 'test@example.com');
+    await page.fill('[name="password"]', 'password123');
+    await page.click('button[type="submit"]');
+
+    // Wait for dashboard
+    await expect(page).toHaveURL('/dashboard');
+
+    // Logout
+    await page.click('button:has-text("Logout")');
+
+    // Should redirect to login
+    await expect(page).toHaveURL('/login');
+  });
+});
+```
+
+**Key Principles:**
+- Test real user flows
+- Use realistic test data
+- Test navigation and redirects
+- Test error handling
+- Make tests deterministic
+
+## Coverage Strategy
+
+### 1. Achieve 80% Coverage
+
+Run tests with coverage:
+
+```bash
+# Vitest
+npm test -- --coverage
+
+# Jest
+npm test -- --coverage
+```
+
+Coverage thresholds in `package.json`:
+
+```json
+{
+  "vitest": {
+    "coverage": {
+      "provider": "v8",
+      "reporter": ["text", "json", "html"],
+      "threshold": {
+        "lines": 80,
+        "functions": 80,
+        "branches": 80,
+        "statements": 80
+      }
+    }
+  }
+}
+```
+
+### 2. Test Priority
+
+1. **Critical Path Tests** - Happy path for core features
+2. **Edge Cases** - Null, empty, boundary values
+3. **Error Handling** - What happens when things fail
+4. **Integration** - How modules work together
+
+### 3. Coverage Report Analysis
+
+```bash
+# Generate HTML coverage report
+npm test -- --coverage --reporter=html
+
+# Open report
+open coverage/index.html
+```
+
+Look for:
+- Red files (low coverage)
+- Uncovered branches (if/else)
+- Uncovered lines
+- Missing edge cases
+
+## Test Fixtures
+
+### Mock Data
+
+```typescript
+// __tests__/fixtures/user.ts
+export const mockUser = {
+  id: '1',
+  email: 'test@example.com',
+  name: 'Test User',
+  createdAt: new Date('2026-01-01'),
+};
+
+export const mockUsers = [
+  mockUser,
+  {
+    id: '2',
+    email: 'another@example.com',
+    name: 'Another User',
+    createdAt: new Date('2026-01-02'),
+  },
+];
+```
+
+### Test Utilities
+
+```typescript
+// __tests__/utils/test-helpers.ts
+import { render } from '@testing-library/react';
+import { UserContext } from '@/contexts/UserContext';
+
+export function renderWithUser(ui, user) {
+  return render(
+    <UserContext.Provider value={{ user }}>
+      {ui}
+    </UserContext.Provider>
+  );
+}
+
+export function waitForLoading() {
+  return new Promise(resolve => setTimeout(resolve, 100));
+}
+```
+
+### Database Seeding
+
+```typescript
+// __tests__/setup.ts
+import { db } from '@/db';
+
+export async function setupTestDatabase() {
+  // Clean database
+  await db.user.deleteMany();
+
+  // Seed test data
+  await db.user.create({
+    data: {
+      email: 'test@example.com',
+      password: 'hashed_password',
+      name: 'Test User',
+    },
+  });
+}
+
+export async function cleanupTestDatabase() {
+  await db.user.deleteMany();
+}
+```
+
+## Testing Checklist
+
+For each feature, ensure:
+
+- [ ] Unit tests for all services
+- [ ] Unit tests for all components
+- [ ] Integration tests for API endpoints
+- [ ] E2E tests for critical user flows
+- [ ] Coverage threshold met (80%)
+- [ ] All edge cases covered
+- [ ] Error paths tested
+- [ ] Tests are deterministic (no flakiness)
+- [ ] Tests run quickly (optimize slow tests)
+- [ ] Accessibility tested
+
+## File Structure
+
+```
+src/
+├── services/
+│   ├── user.service.ts
+│   └── __tests__/
+│       └── user.service.test.ts
+├── components/
+│   ├── Button.tsx
+│   └── __tests__/
+│       └── Button.test.tsx
+├── app/
+│   └── api/
+│       └── auth/
+│           └── __tests__/
+│               └── login.test.ts
+└── __mocks__/
+    └── database.ts          # Mocked database
+
+e2e/
+├── auth.spec.ts
+├── dashboard.spec.ts
+└── fixtures/
+    └── test-data.ts
+```
+
+## Rules
+
+### ALWAYS
+
+1. Mock external dependencies (APIs, databases)
+2. Clean up test data (beforeAll, afterAll)
+3. Use descriptive test names ("should X when Y")
+4. Test error cases, not just happy paths
+5. Use Testing Library queries (getBy*, queryBy*)
+6. Make tests deterministic (no random data, timeouts)
+7. Run tests before committing
+
+### NEVER
+
+1. Test third-party libraries (trust they work)
+2. Write flaky tests (avoid timeouts, race conditions)
+3. Test implementation details (test behavior, not internals)
+4. Skip error path testing
+5. Use production databases in tests
+6. Leave commented-out test code
+
+## Best Practices
+
+### Test Organization
+
+```typescript
+// Good: Logical grouping
+describe('UserService', () => {
+  describe('registerUser', () => {
+    it('should create user with valid data');
+    it('should throw error if user exists');
+    it('should hash password');
+  });
+  describe('authenticateUser', () => {
+    it('should return user with valid credentials');
+    it('should throw error with invalid credentials');
+  });
+});
+
+// Bad: Flat structure
+describe('UserService', () => {
+  it('should create user');
+  it('should throw error');
+  it('should authenticate');
+  // ❌ Hard to find related tests
+});
+```
+
+### Mocking
+
+```typescript
+// Good: Mock only what's needed
+vi.mock('@/lib/email', () => ({
+  sendEmail: vi.fn(),
+}));
+
+// Bad: Over-mocking
+vi.mock('@/lib/*'); // ❌ Everything mocked
+```
+
+### Test Speed
+
+```typescript
+// Good: Use fake timers
+vi.useFakeTimers();
+// ... run code with setTimeout
+vi.runAllTimers();
+
+// Bad: Real timers
+await new Promise(r => setTimeout(r, 5000)); // ❌ Slow test
+```
+
+## Common Tasks
+
+### Writing Unit Tests
+
+1. Identify what to test (function, component)
+2. Mock dependencies
+3. Write happy path test
+4. Write error path tests
+5. Write edge case tests
+6. Verify coverage
+
+### Writing Integration Tests
+
+1. Setup test database/fixtures
+2. Test API endpoint
+3. Verify status code, headers, body
+4. Test validation
+5. Test error handling
+6. Cleanup test data
+
+### Writing E2E Tests
+
+1. Identify user flow
+2. Create test with realistic data
+3. Test navigation and interactions
+4. Verify expected outcomes
+5. Test error scenarios
+6. Make test deterministic
+
+## After Implementation
+
+Report to orchestrator:
+
+```json
+{
+  "test_files_created": [
+    "src/services/__tests__/user.service.test.ts",
+    "src/components/__tests__/Button.test.tsx",
+    "e2e/auth.spec.ts"
+  ],
+  "coverage": {
+    "lines": 85,
+    "functions": 82,
+    "branches": 78,
+    "statements": 85
+  },
+  "passing": true,
+  "failing_tests": [],
+  "recommendations": [
+    "Add tests for error boundary component",
+    "Increase branch coverage in userService"
+  ]
+}
+```
+
+## Troubleshooting
+
+### Flaky Tests
+
+**Symptom:** Tests pass sometimes, fail sometimes
+
+**Solutions:**
+1. Remove random data generation
+2. Use fake timers instead of real timeouts
+3. Ensure proper cleanup between tests
+4. Avoid race conditions with proper waiting
+
+### Slow Tests
+
+**Symptom:** Test suite takes minutes
+
+**Solutions:**
+1. Use mocks instead of real HTTP calls
+2. Use in-memory database for testing
+3. Parallelize test execution
+4. Optimize test database operations
+
+### Coverage Not Increasing
+
+**Symptom:** Adding tests but coverage stays same
+
+**Solutions:**
+1. Check if tests are actually executing the code
+2. Run tests with coverage flag
+3. Verify test files match pattern
+4. Check for conditional compilation
+
+## Integration
+
+### With Backend
+
+```
+[Backend] → Implements UserService
+  ↓
+[Tester] → Writes unit tests for UserService
+  ↓
+[Tester] → Writes integration tests for API
+  ↓
+[Backend] → Fixes any failing tests
+```
+
+### With Frontend
+
+```
+[Frontend] → Creates Button component
+  ↓
+[Tester] → Writes component tests
+  ↓
+[Tester] → Tests accessibility
+  ↓
+[Frontend] → Fixes issues
+```
+
+### With Reviewer
+
+```
+[Tester] → Writes tests
+  ↓
+[Reviewer] → Runs tests
+  ↓
+[Reviewer] → Checks coverage (must be 80%)
+  ↓
+[Tester] → Adds more tests if below threshold
+```

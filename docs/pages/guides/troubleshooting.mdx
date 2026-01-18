@@ -1,0 +1,1021 @@
+---
+title: "Troubleshooting Guide"
+description: "Solve common Agentful issues with step-by-step solutions"
+sidebar_position: 3
+---
+
+# Troubleshooting Guide
+
+Agentful usually runs smoothly, but when issues arise, this guide helps you diagnose and resolve them quickly.
+
+---
+
+## Quick Diagnostic Steps
+
+Before diving into specific issues, run these checks:
+
+```bash
+# 1. Check Agentful state
+/agentful-status
+
+# 2. Check validation status
+/agentful-validate
+
+# 3. Check for decisions
+cat .agentful/decisions.json
+
+# 4. Check for TypeScript errors
+npx tsc --noEmit
+
+# 5. Check tests
+npm test
+```
+
+**This tells you**:
+- Where Agentful is stuck
+- What's failing validation
+- If decisions are blocking progress
+- If there are basic code issues
+
+---
+
+## Common Issues by Category
+
+## Category 1: Agentful Seems Stuck
+
+### Symptom 1.1: No Progress After Many Iterations
+
+**What you see**:
+```
+Running iteration 25...
+Working on: User authentication
+No changes in last 10 iterations
+```
+
+**Diagnosis**:
+```bash
+# Check what's happening
+/agentful-status
+
+# Check state file
+cat .agentful/state.json
+
+# Check if decisions are blocking
+cat .agentful/decisions.json | jq '.pending'
+```
+
+**Common causes**:
+1. **Pending decision blocking work**
+2. **Validation loop (can't pass gates)**
+3. **Agent doesn't know what to do next**
+4. **PRODUCT.md unclear**
+
+---
+
+### Solution 1.1: Check for Decisions
+
+**If pending decisions exist**:
+```json
+{
+  "pending": [
+    {
+      "id": "decision-003",
+      "question": "Should auth use JWT or sessions?",
+      "blocking": ["authentication", "user-profile"]
+    }
+  ]
+}
+```
+
+**Fix**: Run decision handler
+```bash
+/agentful-decide
+
+# Provide your answer:
+Option 1: JWT (stateless, scalable)
+```
+
+Agentful will resume immediately.
+
+---
+
+### Solution 1.2: Check for Validation Loops
+
+**If status shows validation passing and failing repeatedly**:
+```bash
+# Check last validation
+cat .agentful/last-validation.json
+
+# Check what's failing
+jq '.checks | to_entries[] | select(.value.passed == false)'
+```
+
+**Common validation loop causes**:
+
+#### Cause A: Dead Code Can't Be Fixed
+
+**Symptom**: Reviewer finds dead code, Fixer can't remove it
+
+**Example**:
+```typescript
+// Export is marked unused, but it IS used
+export function utilityFunction() { ... }
+
+// ts-prune says unused, but dynamic import uses it:
+const module = await import('./utils');
+module.utilityFunction();
+```
+
+**Fix**: Add technical note to PRODUCT.md
+```markdown
+**Technical Notes**:
+- utilityFunction in src/utils/index.ts is dynamically imported
+- Ignore dead code warnings for this function
+```
+
+Or whitelist in reviewer agent:
+```markdown
+## Dead Code Whitelist
+- src/utils/index.ts:utilityFunction (dynamically imported)
+```
+
+---
+
+#### Cause B: Test Coverage Stuck Below 80%
+
+**Symptom**:
+```
+Coverage at 72%, needs 80%
+Coverage at 75%, needs 80%
+Coverage at 77%, needs 80%
+[Stuck here]
+```
+
+**Why**: Agentful adding tests but not enough
+
+**Fix**: Identify uncovered code
+```bash
+npm test -- --coverage --reporters=json
+# Check coverage report for uncovered files
+```
+
+**Manual intervention**: Add critical tests yourself
+```bash
+# Let Agentful handle easy tests, you write complex ones
+# Then re-run:
+/agentful-validate
+```
+
+**Or temporarily lower threshold** (for MVP):
+Edit `.claude/agents/reviewer.md`:
+```markdown
+### 6. Coverage Check
+
+**FAIL if:** Coverage < 70%  # Temporarily lowered
+```
+
+---
+
+#### Cause C: Type Errors Agentful Can't Resolve
+
+**Symptom**: Same type error appears repeatedly
+
+**Example**:
+```typescript
+// Error: Property 'userId' does not exist on type 'Session'
+const userId = session.userId;
+```
+
+**Fix**: Run type check manually to see full error
+```bash
+npx tsc --noEmit
+
+# Output:
+src/app/api/auth/route.ts:15:25 - error TS2339:
+Property 'userId' does not exist on type 'Session'.
+```
+
+**Fix the type definition yourself**:
+```typescript
+// Add missing property
+interface Session {
+  userId: string;
+  token: string;
+}
+```
+
+**Then resume**:
+```bash
+/agentful-start
+```
+
+---
+
+### Solution 1.3: Unclear PRODUCT.md
+
+**If Agentful keeps reading PRODUCT.md but not building**:
+
+**Check**:
+```bash
+# See what Agentful is trying to understand
+# Look in conversation history for:
+# "Reading PRODUCT.md..."
+# "Analyzing feature X..."
+# "Need clarification on..."
+```
+
+**Fix**: Add detail to unclear features
+```markdown
+# Before (vague)
+### 3. User Profile - HIGH
+Users can see their profile.
+
+# After (specific)
+### 3. User Profile - HIGH
+**Description**: Users can view and edit their profile information
+
+**Acceptance Criteria**:
+- [ ] Display user name, email, avatar
+- [ ] Edit form for name and avatar URL
+- [ ] Email is read-only (can't change)
+- [ ] Save button updates user in database
+- [ ] Cancel button reverts changes
+```
+
+---
+
+### Symptom 1.4: Agentful Stops Without Completing
+
+**What you see**:
+```
+Feature complete: User authentication (100%)
+[Agentful exits]
+```
+
+**But**: More features remain in PRODUCT.md
+
+**Diagnosis**:
+```bash
+# Check completion
+cat .agentful/completion.json
+
+# Check state
+cat .agentful/state.json
+```
+
+**Possible causes**:
+
+#### Cause A: Ralph Loop Reached Max Iterations
+
+**If using Ralph loop**:
+```bash
+/ralph-loop "/agentful-start" --max-iterations 50
+```
+
+Agentful stops after 50 iterations even if incomplete.
+
+**Fix**: Increase limit or remove it
+```bash
+/ralph-loop "/agentful-start" --max-iterations 100
+```
+
+Or run without limit (use caution):
+```bash
+/ralph-loop "/agentful-start"
+```
+
+#### Cause B: All Remaining Features Blocked
+
+**Decisions blocking all remaining work**
+
+**Fix**: Run `/agentful-decide` to unblock
+
+#### Cause C: Completion.json Marked Complete Incorrectly
+
+**Manual correction needed**:
+```bash
+# Edit .agentful/completion.json
+# Change feature status from "complete" to "in_progress"
+# Then resume:
+/agentful-start
+```
+
+---
+
+## Category 2: Validation Failures
+
+### Symptom 2.1: Tests Keep Failing
+
+**What you see**:
+```
+Test: User login
+  Expected: 200 status
+  Received: 401 status
+  ❌ FAIL
+```
+
+**Diagnosis**:
+```bash
+# Run tests manually to see full output
+npm test
+
+# Check test file
+cat src/__tests__/auth.test.ts
+```
+
+**Common causes**:
+
+#### Cause A: Test Out of Sync with Implementation
+
+**Code changed, test didn't update**
+
+**Example**:
+```typescript
+// Test expects:
+expect(response.status).toBe(200);
+
+// But code returns:
+return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+```
+
+**Fix**: Update test to match implementation (or vice versa)
+
+**Prevention**: Tell Agentful to regenerate tests
+```markdown
+**Technical Notes**:
+- Regenerate all tests for this feature to match current implementation
+```
+
+---
+
+#### Cause B: Missing Test Setup
+
+**Test uses data that doesn't exist**
+
+**Example**:
+```typescript
+// Test expects:
+const user = await createUser({ email: "test@example.com" });
+
+// But createUser not mocked or doesn't exist
+```
+
+**Fix**: Add setup/teardown to test
+```typescript
+beforeEach(async () => {
+  await setupTestData();
+});
+
+afterEach(async () => {
+  await cleanupTestData();
+});
+```
+
+---
+
+#### Cause C: Async/ Await Issues
+
+**Test doesn't wait for async code**
+
+**Example**:
+```typescript
+// Wrong (missing await):
+act(() => {
+  render(<Login />);
+});
+expect(screen.getByText("Welcome")).toBeInTheDocument();
+
+// Correct:
+await act(async () => {
+  render(<Login />);
+});
+expect(await screen.findByText("Welcome")).toBeInTheDocument();
+```
+
+**Fix**: Add `await` and `async` properly
+
+---
+
+### Symptom 2.2: TypeScript Errors Won't Go Away
+
+**What you see**:
+```
+error TS2322: Type 'string' is not assignable to type 'number'
+```
+
+**Diagnosis**:
+```bash
+npx tsc --noEmit
+```
+
+**Common causes**:
+
+#### Cause A: Type Mismatch
+
+```typescript
+// Function expects number, receives string
+function setId(id: number) { ... }
+setId("123");  // Error: string not assignable to number
+```
+
+**Fix**: Convert type
+```typescript
+setId(parseInt("123"));
+// OR update function to accept string
+function setId(id: string | number) { ... }
+```
+
+#### Cause B: Missing Type Definition
+
+```typescript
+// Using library without types
+import { someLibrary } from 'untyped-library';
+
+// Error: Could not find namespace for someLibrary
+```
+
+**Fix**: Install types
+```bash
+npm install --save-dev @types/untyped-library
+```
+
+Or add declaration:
+```typescript
+declare module 'untyped-library';
+```
+
+#### Cause C: Strict null Checks
+
+```typescript
+// Might be undefined
+const user = users.find(id);
+
+// Error: Object is possibly 'undefined'
+console.log(user.name);
+```
+
+**Fix**: Add check
+```typescript
+const user = users.find(id);
+if (!user) {
+  throw new Error("User not found");
+}
+console.log(user.name);
+```
+
+---
+
+### Symptom 2.3: Dead Code Detection Issues
+
+**What you see**:
+```
+Unused export: validateEmail in src/utils/auth.ts
+But export IS used!
+```
+
+**Diagnosis**:
+```bash
+# Check where it's used
+grep -r "validateEmail" src/
+
+# Might be dynamically imported
+# Or used in way tool can't detect
+```
+
+**Common causes**:
+
+#### Cause A: Dynamic Import
+
+```typescript
+// Export seems unused
+export function validateEmail() { ... }
+
+// But imported dynamically
+const module = await import('./auth');
+module.validateEmail();
+```
+
+**Fix**: Add to whitelist or comment
+```typescript
+// Used dynamically - don't remove
+export function validateEmail() { ... }
+```
+
+#### Cause B: Exported for Side Effects
+
+```typescript
+// Function not called, but has side effects when imported
+export function setupLogging() {
+  configureGlobalLogger();
+}
+
+// Import triggers side effects
+import './utils/logging';
+```
+
+**Fix**: Rename to show side effect
+```typescript
+// Side effect - don't remove
+export function _setupLogging() { ... }
+```
+
+---
+
+## Category 3: Performance Issues
+
+### Symptom 3.1: Agentful Runs Very Slowly
+
+**What you see**: One feature takes hours instead of minutes
+
+**Diagnosis**:
+```bash
+# Check what's taking time
+# Look for repeated operations:
+# - Running tests many times
+# - Reading same files repeatedly
+# - Checking dead code over and over
+```
+
+**Common causes**:
+
+#### Cause A: Large Codebase
+
+**1000+ files, Agentful scans everything each iteration**
+
+**Fix**: Exclude directories from agent searches
+```markdown
+# In .claude/agents/orchestrator.md
+
+## Search Scope
+Only search these directories:
+- src/
+- tests/
+
+Ignore:
+- node_modules/
+- .next/
+- build/
+- dist/
+- public/
+```
+
+#### Cause B: Expensive Validation
+
+**Running all tests takes 10+ minutes**
+
+**Fix**: Run faster subset during development
+```bash
+# Quick test mode during Agentful runs
+npm test -- --passWithNoTests --maxWorkers=4
+
+# Full test suite only on final validation
+npm test -- --coverage
+```
+
+#### Cause C: Dead Code Detection on Large Projects
+
+**knip or ts-prune takes forever**
+
+**Fix**: Disable or reduce scope
+```bash
+# Skip dead code check during iteration
+# Only run on final validation
+
+# In reviewer.md, comment out:
+# ### 3. Dead Code Detection
+```
+
+---
+
+### Symptom 3.2: High Memory Usage
+
+**What you see**: Claude Code using 2GB+ RAM, system slows down
+
+**Diagnosis**: Agentful reading too much into context
+
+**Fix**: Reduce file reading
+```markdown
+# In agent instructions:
+
+## File Reading Limits
+- Only read files directly related to current task
+- Don't read entire directories at once
+- Use Glob to find files, Read only what's needed
+- Limit file size: skip files > 10KB unless necessary
+```
+
+**Or restart Claude periodically**:
+```bash
+# Let context flush
+# Exit and restart every 20-30 iterations
+```
+
+---
+
+## Category 4: State File Issues
+
+### Symptom 4.1: State.json Corrupted
+
+**What you see**:
+```bash
+cat .agentful/state.json
+# Parse error: Invalid JSON
+```
+
+**Diagnosis**: File was edited manually or write interrupted
+
+**Fix**: Restore from backup or reset
+```bash
+# Check git history
+git log .agentful/state.json
+
+# Restore last good version
+git checkout abc123 -- .agentful/state.json
+
+# OR reset to initial state
+rm .agentful/state.json
+/agentful-start  # Will recreate file
+```
+
+**Prevention**: Don't edit state files manually
+
+---
+
+### Symptom 4.2: State Not Updating
+
+**What you see**:
+```
+Feature complete, but state.json still shows "in_progress"
+```
+
+**Fix**: Manual update
+```bash
+# Edit .agentful/completion.json
+{
+  "features": {
+    "authentication": {
+      "status": "complete",  # Change from "in_progress"
+      "score": 100
+    }
+  }
+}
+```
+
+---
+
+## Category 5: Integration Issues
+
+### Symptom 5.1: Git Conflicts with Agentful
+
+**What you see**:
+```
+git pull
+CONFLICT (content): Merge conflict in .agentful/state.json
+```
+
+**Diagnosis**: Multiple sources updating state files
+
+**Fix**:
+```bash
+# Decide which state to keep
+# Usually: Keep local (your work takes precedence)
+
+git checkout --ours .agentful/state.json
+git add .agentful/state.json
+git commit
+
+# Or for remote changes
+git checkout --theirs .agentful/state.json
+git add .agentful/state.json
+git commit
+```
+
+**Prevention**: Don't push state files frequently. Only on milestones.
+
+---
+
+### Symptom 5.2: Environment Variables Missing
+
+**What you see**:
+```
+Error: process.env.DATABASE_URL is undefined
+```
+
+**Diagnosis**: Agentful trying to use env var that's not set
+
+**Fix**: Add to `.env.local`:
+```bash
+DATABASE_URL="postgresql://..."
+NEXT_PUBLIC_API_URL="https://..."
+```
+
+**And document in PRODUCT.md**:
+```markdown
+## Environment Variables Required
+
+- `DATABASE_URL` - PostgreSQL connection string
+- `NEXT_PUBLIC_API_URL` - API base URL
+- `JWT_SECRET` - Secret for token signing
+```
+
+---
+
+## Category 6: Agent Behavior Issues
+
+### Symptom 6.1: Agent Builds Wrong Thing
+
+**What you see**: Agentful builds X when you asked for Y
+
+**Diagnosis**: PRODUCT.md unclear or ambiguous
+
+**Example from PRODUCT.md**:
+```markdown
+### 1. User Management - CRITICAL
+Users can manage their accounts.
+
+# Agentful might build:
+# - Account creation
+# - Profile editing
+# - Account deletion
+
+# But you wanted:
+# - Login/Logout only
+```
+
+**Fix**: Be explicit about what NOT to build
+```markdown
+### 1. User Authentication - CRITICAL
+**Description**: Users can login and logout
+
+**Acceptance Criteria**:
+- [ ] Login form with email/password
+- [ ] JWT token generation
+- [ ] Logout functionality
+- [ ] Protected routes
+
+**Out of Scope**:
+- User registration (use admin panel)
+- Profile editing (feature #2)
+- Account deletion (feature #3)
+```
+
+---
+
+### Symptom 6.2: Agent Overwrites Manual Edits
+
+**What you see**: You edit code, Agentful changes it back
+
+**Diagnosis**: Agentful doesn't know you edited it
+
+**Fix**: Document your edits
+```typescript
+// Human-modified: Added custom error handling for edge case
+// Date: 2026-01-18
+// Reason: Needed to handle malformed responses from API
+// Do not modify without consulting team
+
+function handleApiResponse(response: Response) {
+  // Custom logic here...
+}
+```
+
+**Or tell Agentful in technical notes**:
+```markdown
+**Technical Notes**:
+- src/app/api/handler.ts has custom error handling
+- Do NOT modify the try/catch block (lines 25-40)
+- Build around it
+```
+
+---
+
+### Symptom 6.3: Agent Won't Stop
+
+**What you see**: Agentful keeps working past completion
+
+**Diagnosis**: Completion criteria not met
+
+**Fix**: Check what's incomplete
+```bash
+cat .agentful/completion.json
+```
+
+**Might be**:
+- One gate not passing (e.g., coverage at 79%)
+- One checkbox not checked in PRODUCT.md
+- Quality gate failing
+
+**Manual override** (if truly done):
+```bash
+# Mark complete manually
+# Edit .agentful/completion.json:
+{
+  "overall": 100,
+  "features": {
+    "all": "complete"
+  }
+}
+
+# Then stop Agentful
+# Don't let it continue looping
+```
+
+---
+
+## Emergency Recovery Procedures
+
+### Recovery 1: Complete Reset
+
+**When everything is broken and you need to start over**
+
+```bash
+# 1. Backup current work
+cp -r .agentful .agentful.backup
+git add .
+git commit -m "Backup before reset"
+
+# 2. Remove Agentful state
+rm -rf .agentful/
+
+# 3. Start fresh
+/agentful-start
+
+# Agentful will re-analyze PRODUCT.md and start over
+```
+
+**Warning**: You lose all progress tracking, but code remains.
+
+---
+
+### Recovery 2: Rollback to Working State
+
+**When Agentful broke something that worked**
+
+```bash
+# 1. Find last good commit
+git log --oneline
+
+# 2. Reset to that commit
+git reset abc123 --hard
+
+# 3. Remove bad state
+rm -rf .agentful/
+
+# 4. Restart from good point
+/agentful-start
+```
+
+---
+
+### Recovery 3: Manual Feature Completion
+
+**When Agentful can't complete a feature, you need to**
+
+```bash
+# 1. Stop Agentful
+# Let it finish current task, then exit
+
+# 2. Complete feature yourself
+# Write remaining code, tests, etc.
+
+# 3. Update completion.json
+{
+  "features": {
+    "your-feature": {
+      "status": "complete",
+      "score": 100,
+      "completedManually": true
+    }
+  }
+}
+
+# 4. Validate
+/agentful-validate
+
+# 5. Resume Agentful for next feature
+/agentful-start
+```
+
+---
+
+## Getting Help
+
+### When to Ask for Help
+
+**Self-solvable** (use this guide):
+- Validation loops
+- Type errors
+- Test failures
+- State issues
+
+**Ask for help**:
+- Agentful crashes Claude Code
+- Data loss or corruption
+- Can't diagnose after 30 minutes
+- Same issue repeats after fix
+
+### How to Report Issues
+
+**Good issue report**:
+```markdown
+## Agentful Issue Report
+
+### What I was doing
+Running `/agentful-start` on authentication feature
+
+### What happened
+Agentful entered validation loop, stuck at 78% coverage
+
+### Steps to reproduce
+1. Run `/agentful-start`
+2. Wait for authentication feature
+3. Coverage stuck at 78%
+
+### Environment
+- Node.js: v20
+- Framework: Next.js 14
+- Database: PostgreSQL + Prisma
+- Testing: Vitest
+
+### State files
+[Attach .agentful/state.json, completion.json, last-validation.json]
+
+### PRODUCT.md
+[Attach relevant feature section]
+
+### Error logs
+[Paste relevant errors]
+```
+
+**Where to report**:
+- GitHub Issues: https://github.com/blitz/agentful/issues
+- Discord: [Agentful Discord channel]
+
+---
+
+## Prevention Checklist
+
+**Before starting Agentful**:
+- [ ] PRODUCT.md is complete and specific
+- [ ] Tech stack fully specified
+- [ ] All features prioritized
+- [ ] Acceptance criteria are testable
+- [ ] Environment variables set
+- [ ] Dependencies installed
+- [ ] Git repository initialized
+
+**During Agentful run**:
+- [ ] Check status every 5-10 iterations
+- [ ] Monitor for decisions needing answers
+- [ ] Don't interrupt mid-task
+- [ ] Let validation loops run a few times
+- [ ] Push code to Git periodically
+
+**When issues arise**:
+- [ ] Run diagnostics first
+- [ ] Check state files
+- [ ] Review validation output
+- [ ] Try solutions from this guide
+- [ ] Ask for help if stuck > 30 minutes
+
+---
+
+## Summary: Troubleshooting Mindset
+
+**Effective troubleshooting**:
+
+1. **Diagnose first** - Use quick diagnostic steps
+2. **Find root cause** - Don't just treat symptoms
+3. **Apply targeted fix** - Use the right solution
+4. **Verify it worked** - Run `/agentful-validate`
+5. **Prevent recurrence** - Update PRODUCT.md or config
+
+**Most common fixes**:
+- Run `/agentful-decide` for decisions
+- Add detail to PRODUCT.md for unclear requirements
+- Update tests manually if they're out of sync
+- Fix type errors manually (Agentful struggles with complex types)
+- Reset state if corrupted
+
+**When in doubt**:
+1. Check state files
+2. Run validation
+3. Ask for help
+
+---
+
+## Next Steps
+
+Fixed your issue? Great! Now:
+
+1. **[Write Better PRODUCT.md](./writing-product-md)** - Prevent future issues
+2. **[Follow Best Practices](./best-practices)** - Avoid common pitfalls
+3. **[Review Team Adoption](./team-adoption)** - If working with others
+
+---
+
+**Related Guides:**
+
+- [Best Practices](./best-practices) - Prevention strategies
+- [Team Adoption](./team-adoption) - Team troubleshooting
+- [Writing PRODUCT.md](./writing-product-md) - Clearer specs

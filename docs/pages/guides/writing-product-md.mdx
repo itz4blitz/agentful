@@ -1,0 +1,1410 @@
+---
+title: "Writing Effective PRODUCT.md"
+description: "Master the art of writing clear, actionable product specifications for Agentful"
+sidebar_position: 1
+---
+
+# Writing Effective PRODUCT.md
+
+The quality of your PRODUCT.md directly determines how well Agentful can build your product. A well-written spec leads to autonomous development success. A vague spec leads to confusion, decisions, and delays.
+
+---
+
+## Why PRODUCT.md Matters
+
+PRODUCT.md is the **single source of truth** for Agentful. It's where you define:
+
+- **What** you're building (overview and features)
+- **How** it should work (acceptance criteria)
+- **With what** technologies (tech stack)
+- **When** it's done (success criteria)
+
+Agentful reads this file on every iteration. The clearer and more specific it is, the less it needs to ask you for decisions.
+
+## The Golden Rule
+
+> **Be specific. Be explicit. Use checklists.**
+
+Vague requirements force Agentful to stop and ask. Specific requirements let Agentful work autonomously.
+
+---
+
+## The Hierarchical Domain-Based Approach
+
+Agentful recommends organizing features into a **hierarchical domain-based structure**. This approach helps Agentful better understand feature relationships, dependencies, and implementation order.
+
+### What Are Domains?
+
+**Domains** are high-level business areas that group related features together. Think of them as logical containers for functionality that belongs together.
+
+**Examples of domains**:
+- **Authentication & User Management** - User accounts, profiles, permissions
+- **Content & Data Management** - CRUD operations, search, categorization
+- **Communication & Collaboration** - Messaging, notifications, sharing
+- **Commerce & Transactions** - Orders, payments, inventory
+- **Analytics & Reporting** - Dashboards, charts, exports
+
+### Why Use Domains?
+
+1. **Better Organization**: Related features stay together, making the spec easier to navigate
+2. **Clearer Dependencies**: Domains show what functionality depends on what
+3. **Focused Development**: Agentful can complete one domain before moving to the next
+4. **Parallelizable Work**: Different domains can often be developed in parallel
+5. **Easier Maintenance**: Future features have a clear place to belong
+
+### How to Structure Domains
+
+Use a three-level hierarchy:
+
+```
+Domain 1: [Domain Name]
+  ├─ Feature 1.1 - [Priority]
+  ├─ Feature 1.2 - [Priority]
+  └─ Feature 1.3 - [Priority]
+
+Domain 2: [Domain Name]
+  ├─ Feature 2.1 - [Priority]
+  └─ Feature 2.2 - [Priority]
+```
+
+### Example: Task Management App
+
+**Instead of a flat list**:
+```markdown
+## Features
+1. User Authentication - CRITICAL
+2. Task Management - HIGH
+3. Real-time Updates - MEDIUM
+4. User Profile - LOW
+5. Team Collaboration - MEDIUM
+```
+
+**Use domains**:
+```markdown
+## Features
+
+### Domain 1: Authentication & User Management
+#### 1.1 User Authentication - CRITICAL
+[Details...]
+
+#### 1.2 User Profile - LOW
+[Details...]
+
+### Domain 2: Task & Project Management
+#### 2.1 Task Management - HIGH
+[Details...]
+
+#### 2.2 Real-time Updates - MEDIUM
+[Details...]
+
+### Domain 3: Team Collaboration
+#### 3.1 Team Features - MEDIUM
+[Details...]
+```
+
+### Domain Best Practices
+
+1. **Start with Critical Domains**: Begin with domains that contain CRITICAL priority features
+2. **Limit Domain Count**: 3-6 domains is optimal for most projects
+3. **Balance Features**: Each domain should have 2-5 features
+4. **Clear Boundaries**: Features should clearly belong to one domain (no overlap)
+5. **Logical Flow**: Order domains by dependency (authentication → content → analytics)
+
+### Identifying Your Domains
+
+Ask yourself:
+
+1. **What are the main business areas?**
+   - E-commerce: Products, Orders, Customers, Marketing
+   - SaaS: Users, Billing, Content, Analytics
+   - Social: Profiles, Connections, Content, Messaging
+
+2. **What features belong together?**
+   - Group features that share data models
+   - Group features used by the same users
+   - Group features with similar technical requirements
+
+3. **What depends on what?**
+   - Authentication usually comes first
+   - Core content before analytics
+   - Basic CRUD before advanced features
+
+---
+
+## PRODUCT.md Structure
+
+### Complete Template
+
+```markdown
+# Product Specification
+
+## Overview
+
+[2-3 sentences describing what you're building and who it's for]
+
+## Goals
+
+- [ ] [Primary goal 1]
+- [ ] [Primary goal 2]
+- [ ] [Primary goal 3]
+
+## Tech Stack
+
+### Frontend
+- **Framework**: [Next.js 14 / React + Vite / Vue + Nuxt / SvelteKit]
+- **Language**: [TypeScript / JavaScript]
+- **Styling**: [Tailwind CSS / CSS Modules / styled-components / shadcn/ui]
+- **State Management**: [Zustand / Context API / Redux / Jotai]
+
+### Backend
+- **Runtime**: [Node.js / Bun / Deno]
+- **Framework**: [Next.js API Routes / Express / Fastify / NestJS / Hono]
+- **Language**: [TypeScript / JavaScript]
+
+### Database
+- **Database**: [PostgreSQL / MySQL / SQLite / MongoDB / PlanetScale]
+- **ORM**: [Prisma / Drizzle / TypeORM / Mongoose]
+
+### Authentication
+- **Method**: [JWT / NextAuth / Clerk / Auth0 / Lucia]
+
+### Testing
+- **Unit**: [Vitest / Jest]
+- **E2E**: [Playwright / Cypress]
+
+### Deployment
+- **Hosting**: [Vercel / Netlify / Railway / Fly.io]
+
+## Features (Hierarchical Domain-Based Structure)
+
+Organize features into domains, then prioritize within each domain:
+
+### Domain 1: [Domain Name]
+
+#### 1.1 [Feature Name] - CRITICAL
+**Description**: [What this feature does in one sentence]
+
+**User Stories**:
+- As a [user type], I want [feature] so that [benefit]
+
+**Acceptance Criteria**:
+- [ ] [Specific, testable requirement 1]
+- [ ] [Specific, testable requirement 2]
+- [ ] [Specific, testable requirement 3]
+
+**Technical Notes** (Optional):
+- [API endpoints, components, libraries, etc.]
+
+---
+
+#### 1.2 [Feature Name] - HIGH
+**Description**: [What this feature does]
+
+**User Stories**:
+- As a [user type], I want [feature] so that [benefit]
+
+**Acceptance Criteria**:
+- [ ] [Specific requirement 1]
+- [ ] [Specific requirement 2]
+
+**Technical Notes** (Optional):
+- [Relevant implementation details]
+
+---
+
+### Domain 2: [Domain Name]
+
+#### 2.1 [Feature Name] - HIGH
+**Description**: [What this feature does]
+
+**User Stories**:
+- As a [user type], I want [feature] so that [benefit]
+
+**Acceptance Criteria**:
+- [ ] [Specific requirement 1]
+- [ ] [Specific requirement 2]
+
+---
+
+#### 2.2 [Feature Name] - MEDIUM
+**Description**: [What this feature does]
+
+**User Stories**:
+- As a [user type], I want [feature] so that [benefit]
+
+**Acceptance Criteria**:
+- [ ] [Specific requirement 1]
+- [ ] [Specific requirement 2]
+
+---
+
+### Domain 3: [Domain Name]
+
+#### 3.1 [Feature Name] - MEDIUM
+**Description**: [What this feature does]
+
+**Acceptance Criteria**:
+- [ ] [Specific requirement 1]
+
+---
+
+#### 3.2 [Feature Name] - LOW
+**Description**: [What this feature does]
+
+**Acceptance Criteria**:
+- [ ] [Specific requirement 1]
+
+---
+
+**Note**: Repeat for as many domains and features as needed. Aim for 3-6 domains with 2-5 features each.
+
+## Architecture Notes (Optional)
+
+### Folder Structure
+
+If you have a preferred structure:
+
+    src/
+    ├── app/              # Next.js app router
+    ├── components/       # React components
+    ├── lib/              # Utilities
+    ├── hooks/            # Custom hooks
+    └── styles/           # Global styles
+
+Or:
+
+    src/
+    ├── app/              # Next.js app router
+    ├── components/       # React components
+    │   ├── ui/          # Reusable UI components
+    │   └── features/    # Feature-specific components
+    ├── lib/              # Utilities and helpers
+    ├── hooks/            # Custom React hooks
+    ├── services/         # API services
+    └── types/            # TypeScript types
+
+### Design Patterns
+
+- [Any specific patterns to use]
+- [Any patterns to avoid]
+
+### Constraints
+
+- [Performance requirements]
+- [Accessibility requirements]
+- [Browser support requirements]
+
+## Third-Party Integrations (Optional)
+
+- [API 1]: [Purpose and usage notes]
+- [API 2]: [Purpose and usage notes]
+
+## Out of Scope (for MVP)
+
+List what you're explicitly NOT building:
+
+- [Feature X] - Will add in v2
+- [Feature Y] - Out of scope
+- [Feature Z] - Not needed
+
+## Success Criteria
+
+The product is complete when:
+
+1. [All critical features implemented and tested]
+2. [All tests passing with 80%+ coverage]
+3. [No type errors (adapts to stack)]
+4. [No security vulnerabilities]
+5. [Deployed to production]
+
+## Notes
+
+[Any additional context, links, or documentation]
+```
+
+---
+
+## Section by Section Guide
+
+### Overview
+
+**Purpose**: Quick understanding of what you're building.
+
+**Length**: 2-3 sentences.
+
+**Include**:
+- What the product is
+- Who it's for
+- Key value proposition
+
+**Good Example**:
+```markdown
+## Overview
+A task management application for remote teams. Users can create projects, add tasks with deadlines, assign team members, and track progress with real-time updates.
+```
+
+**Bad Example**:
+```markdown
+## Overview
+A task app.  # Too vague - Agentful doesn't know what features to include
+```
+
+---
+
+### Goals
+
+**Purpose**: Define success metrics.
+
+**Format**: Checkbox list (so you can track progress).
+
+**Good Example**:
+```markdown
+## Goals
+
+- [ ] Users can register and login
+- [ ] Users can create projects and tasks
+- [ ] Users can assign tasks to team members
+- [ ] Real-time updates when tasks change
+- [ ] Mobile-responsive design
+```
+
+**Tip**: Keep goals high-level. Features are where you get specific.
+
+---
+
+### Tech Stack
+
+**Purpose**: Tell Agentful what technologies to use.
+
+**Critical**: Be explicit. Don't make Agentful guess.
+
+#### Frontend
+
+```markdown
+### Frontend
+- **Framework**: Next.js 14
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: Zustand
+```
+
+**Why this matters**:
+- Agentful generates specialized agents based on your stack
+- Different frameworks have different patterns (Next.js app router vs pages)
+- Testing setup depends on the framework
+
+#### Backend
+
+```markdown
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Next.js API Routes
+- **Language**: TypeScript
+```
+
+**Tip**: If using Next.js, backend is often integrated. Specify if using a separate backend server.
+
+#### Database
+
+```markdown
+### Database
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+```
+
+**Common choices**:
+- **PostgreSQL + Prisma** - Most common, production-ready
+- **SQLite + Prisma** - Good for local development, simple apps
+- **MongoDB + Mongoose** - Flexible schema, document-based
+- **None** - In-memory state for simple apps
+
+**Be specific** about the ORM. Prisma != Drizzle != TypeORM.
+
+#### Authentication
+
+```markdown
+### Authentication
+- **Method**: JWT with httpOnly cookies
+```
+
+**Options**:
+- **JWT** - Stateless, scalable, common
+- **Sessions** - Simple, built-in to many frameworks
+- **Clerk/Auth0** - Managed services, faster setup
+- **None** - If no auth needed for MVP
+
+#### Testing
+
+```markdown
+### Testing
+- **Unit**: Vitest
+- **E2E**: Playwright
+```
+
+**Common pairs**:
+- **Vitest + Playwright** - Modern, fast
+- **Jest + Cypress** - Traditional, widely-used
+
+#### Deployment
+
+```markdown
+### Deployment
+- **Hosting**: Vercel
+```
+
+**Agentful uses this to**:
+- Set build configurations
+- Configure environment variables
+- Add deployment scripts
+
+---
+
+### Features (The Most Important Section)
+
+**This is where most PRODUCT.md files fail.** Follow these patterns carefully.
+
+#### Structure
+
+Every feature needs:
+
+```markdown
+### [Priority Number]. [Feature Name] - [PRIORITY LEVEL]
+
+**Description**: [One sentence explaining what this feature does]
+
+**Acceptance Criteria**:
+- [ ] [Specific, testable requirement]
+- [ ] [Specific, testable requirement]
+- [ ] [Specific, testable requirement]
+
+**User Stories** (optional):
+- As a [user type], I want [feature] so that [benefit]
+
+**Technical Notes** (optional):
+- [Implementation hints or constraints]
+```
+
+#### Priority Levels
+
+Use these consistently:
+
+- **CRITICAL** - Must have for MVP. Agentful works on these first.
+- **HIGH** - Important, but can wait slightly.
+- **MEDIUM** - Nice to have.
+- **LOW** - Future improvements.
+
+#### Acceptance Criteria (The Secret Sauce)
+
+**Good acceptance criteria are:**
+
+1. **Specific** - Clear what "done" looks like
+2. **Testable** - Can write a test for it
+3. **Complete** - Cover all key aspects
+4. **Checkable** - Can verify with a checkbox
+
+##### Examples
+
+**❌ Vague (Bad)**:
+```markdown
+**Acceptance Criteria**:
+- [ ] User can login
+- [ ] Authentication works
+- [ ] Security is good
+```
+
+**Why this fails**: Agentful doesn't know:
+- What fields to include (email? username?)
+- What validation to apply
+- How to handle errors
+- What "good security" means
+
+**✅ Specific (Good)**:
+```markdown
+**Acceptance Criteria**:
+- [ ] Login form with email and password fields
+- [ ] Email validation: required, valid format
+- [ ] Password validation: required, min 8 characters
+- [ ] On success: store JWT token in httpOnly cookie, redirect to /dashboard
+- [ ] On failure: show inline error message with specific reason
+- [ ] Prevent login for unverified emails (show "check your email" message)
+- [ ] Rate limiting: max 5 attempts per 15 minutes per IP
+```
+
+**Why this works**: Agentful knows exactly what to build. No decisions needed.
+
+---
+
+#### Writing Great Acceptance Criteria
+
+##### Pattern 1: User Input
+
+```markdown
+**Acceptance Criteria**:
+- [ ] Input field for [field name]
+- [ ] Validation: [required, format, min/max length]
+- [ ] Placeholder text: "[example]"
+- [ ] Error messages for invalid input
+- [ ] Submit button that validates before submitting
+```
+
+##### Pattern 2: API Endpoints
+
+```markdown
+**Acceptance Criteria**:
+- [ ] POST /api/auth/login endpoint
+- [ ] Request body: { email: string, password: string }
+- [ ] Response success: { user: {...}, token: "..." } with 200 status
+- [ ] Response error: { error: "specific message" } with 401 status
+- [ ] Hash passwords with bcrypt before comparing
+- [ ] Return JWT token valid for 7 days
+```
+
+##### Pattern 3: Data Display
+
+```markdown
+**Acceptance Criteria**:
+- [ ] Display list of [items]
+- [ ] Show [field 1], [field 2], [field 3] for each item
+- [ ] Loading state while fetching data
+- [ ] Empty state with message when no items exist
+- [ ] Error state with retry button when fetch fails
+```
+
+##### Pattern 4: User Actions
+
+```markdown
+**Acceptance Criteria**:
+- [ ] [Button/Action] triggers [action]
+- [ ] Confirmation prompt: "[message]"
+- [ ] On confirm: [what happens]
+- [ ] On cancel: [what happens]
+- [ ] Success notification: "[message]"
+- [ ] Error handling with specific message
+```
+
+---
+
+#### User Stories (Optional but Helpful)
+
+**Format**:
+```markdown
+**User Stories**:
+- As a [user type], I want [feature] so that [benefit]
+```
+
+**Example**:
+```markdown
+**User Stories**:
+- As a registered user, I want to login with my email and password so that I can access my projects
+- As a security-conscious user, I want rate limiting on login attempts so that my account can't be brute-forced
+```
+
+**Why include these**: Helps Agentful understand context and make better decisions when ambiguity exists.
+
+---
+
+#### Technical Notes (When Needed)
+
+Use this section to guide implementation when you have specific requirements:
+
+```markdown
+**Technical Notes**:
+- Use React Hook Form for form validation
+- Store session in httpOnly cookie for security
+- Implement rate limiting using Redis (or in-memory if Redis unavailable)
+- Follow existing auth pattern in src/lib/auth.ts
+```
+
+**When to include**:
+- You have existing code Agentful should follow
+- You need a specific library or pattern
+- There are performance constraints
+- There are security requirements
+
+**When to skip**:
+- Let Agentful decide the implementation
+- You don't have a strong preference
+- The "how" doesn't matter, only the "what"
+
+---
+
+### Architecture Notes (Optional)
+
+**Purpose**: Guide structural decisions without micromanaging.
+
+**Use when**:
+- You have an existing codebase to match
+- You have strong architectural preferences
+- You're working with a team that needs consistency
+
+**Example**:
+```markdown
+### Folder Structure
+```
+src/
+├── app/              # Next.js app router
+├── components/       # React components
+│   ├── ui/          # Reusable UI components
+│   └── features/    # Feature-specific components
+├── lib/              # Utilities and helpers
+├── hooks/            # Custom React hooks
+├── services/         # API services
+└── types/            # TypeScript types
+```
+
+### Design Patterns
+- Use React Hook Form for all forms
+- Use TanStack Query for data fetching
+- Use Zod for runtime validation
+- Follow atomic design for components
+
+### Constraints
+- All API routes must return { data, error } format
+- All components must be TypeScript strict
+- Mobile-first responsive design
+- WCAG 2.1 AA accessibility compliance
+```
+
+---
+
+### Out of Scope (for MVP)
+
+**Purpose**: Explicitly state what you're NOT building.
+
+**Why this matters**: Prevents Agentful from wasting time on features you don't want.
+
+**Example**:
+```markdown
+## Out of Scope (for MVP)
+
+- **User profiles** - Will add in v2, focus on core functionality first
+- **Email notifications** - Out of scope for now, users check dashboard
+- **Real-time collaboration** - Too complex for MVP, will use polling
+- **Mobile apps** - Web-only for MVP
+- **Payment processing** - Free tier only for launch
+```
+
+**Tip**: Be explicit. If you don't list it here, Agentful might add it if it seems related to your features.
+
+---
+
+### Success Criteria
+
+**Purpose**: Define when Agentful is "done".
+
+**Example**:
+```markdown
+## Success Criteria
+
+The product is complete when:
+
+1. All CRITICAL and HIGH priority features are implemented and tested
+2. All tests passing with 80%+ coverage
+3. No type errors (adapts to stack)
+4. No security vulnerabilities (npm audit passes)
+5. Manual testing confirms all user stories work
+6. Deployed to production and accessible
+```
+
+**Agentful uses this to**:
+- Know when to stop working
+- Prioritize validation checks
+- Determine if a feature is truly complete
+
+---
+
+## Real Examples
+
+### Example 1: Simple Todo App (Good)
+
+```markdown
+# Product Specification
+
+## Overview
+A simple todo list application for personal task management.
+
+## Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **State Management**: React Context API
+
+### Backend
+- **Framework**: Next.js API Routes
+- **Language**: TypeScript
+
+### Database
+- **Database**: None (in-memory for MVP)
+
+### Testing
+- **Unit**: Vitest
+
+## Features
+
+### 1. Add Todo - CRITICAL
+**Description**: Users can add new todo items to their list
+
+**Acceptance Criteria**:
+- [ ] Input field for todo text
+- [ ] Text validation: required, max 200 characters
+- [ ] "Add" button that creates todo
+- [ ] New todo appears at top of list
+- [ ] Input clears after adding
+- [ ] Enter key also submits todo
+
+### 2. Toggle Todo - HIGH
+**Description**: Users can mark todos as complete or incomplete
+
+**Acceptance Criteria**:
+- [ ] Click todo to toggle completion status
+- [ ] Completed todos show strikethrough text
+- [ ] Completed todos have gray opacity
+- [ ] Toggle persists across page reloads
+
+### 3. Delete Todo - MEDIUM
+**Description**: Users can delete todos they no longer need
+
+**Acceptance Criteria**:
+- [ ] Delete button on each todo (trash icon)
+- [ ] Confirmation dialog before delete
+- [ ] Todo immediately removed on confirm
+- [ ] Delete cancels if user clicks outside dialog
+
+### 4. Filter Todos - LOW
+**Description**: Users can view all, active, or completed todos
+
+**Acceptance Criteria**:
+- [ ] Filter tabs: All, Active, Completed
+- [ ] Active filter shows only incomplete todos
+- [ ] Completed filter shows only completed todos
+- [ ] All filter shows everything
+
+## Success Criteria
+
+1. All CRITICAL and HIGH features implemented
+2. All tests passing with 80%+ coverage
+3. No type errors (adapts to stack)
+4. Manual testing confirms all features work
+```
+
+**Why this works**:
+- Clear, specific acceptance criteria
+- Tech stack fully specified
+- Priorities clearly marked
+- Success criteria defined
+
+---
+
+### Example 2: E-commerce Platform (Advanced)
+
+```markdown
+# Product Specification
+
+## Overview
+A modern e-commerce platform for selling digital products. Customers can browse products, add to cart, and checkout with Stripe payment.
+
+## Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **State Management**: Zustand
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Next.js API Routes
+- **Language**: TypeScript
+
+### Database
+- **Database**: PostgreSQL (Supabase)
+- **ORM**: Prisma
+
+### Authentication
+- **Method**: JWT with httpOnly cookies
+
+### Payment
+- **Provider**: Stripe
+- **Mode**: Checkout Session (redirect-based)
+
+### Testing
+- **Unit**: Vitest
+- **E2E**: Playwright
+
+### Deployment
+- **Hosting**: Vercel
+
+## Features
+
+### 1. Product Listing - CRITICAL
+**Description**: Customers can browse all available digital products
+
+**Acceptance Criteria**:
+- [ ] Grid layout showing product cards
+- [ ] Each card shows: product image, name, price, description (truncated)
+- [ ] Responsive grid: 1 column mobile, 2 tablet, 3 desktop, 4 large screens
+- [ ] Loading skeleton while fetching products
+- [ ] Empty state with "No products available" message
+- [ ] Hover effect on cards (slight elevation)
+- [ ] Click card to navigate to product detail page
+
+### 2. Product Detail - CRITICAL
+**Description**: Customers can view detailed information about a product
+
+**Acceptance Criteria**:
+- [ ] Large product image (800x600)
+- [ ] Product name, price, full description
+- [ ] "Add to Cart" button
+- [ ] "Back to Products" link
+- [ ] Loading state while fetching
+- [ ] Error state if product not found (404)
+- [ ] Metadata for SEO (title, description, OG tags)
+
+### 3. Shopping Cart - CRITICAL
+**Description**: Customers can manage items in their cart
+
+**Acceptance Criteria**:
+- [ ] Cart icon in header showing item count badge
+- [ ] Click cart icon to open cart drawer/slide-over
+- [ ] Cart shows list of items with:
+  - Product thumbnail
+  - Product name
+  - Price
+  - Quantity selector (+/- buttons)
+  - Remove button
+- [ ] Subtotal calculation
+- [ ] "Checkout" button (disabled if cart empty)
+- [ ] Cart persists in localStorage
+- [ ] Close button on cart drawer
+
+### 4. Add to Cart - HIGH
+**Description**: Customers can add products to their cart
+
+**Acceptance Criteria**:
+- [ ] "Add to Cart" button on product detail page
+- [ ] Button shows loading state while adding
+- [ ] Success toast notification: "Added [Product] to cart"
+- [ ] Error toast if add fails
+- [ ] Cart count badge updates immediately
+- [ ] If item already in cart, increment quantity instead of duplicate
+
+### 5. Stripe Checkout - HIGH
+**Description**: Customers can pay for their cart items using Stripe
+
+**Acceptance Criteria**:
+- [ ] Checkout button creates Stripe Checkout Session
+- [ ] Request includes: line_items, success_url, cancel_url
+- [ ] User redirects to Stripe-hosted checkout page
+- [ ] Success URL: /checkout/success?session_id=xxx
+- [ ] Cancel URL: /checkout/cancel
+- [ ] Environment variable STRIPE_SECRET_KEY for API calls
+- [ ] Environment variable NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY for client
+- [ ] Webhook endpoint at /api/webhooks/stripe
+- [ ] Webhook verifies signature using Stripe SDK
+- [ ] Webhook handles checkout.session.completed event
+- [ ] On success: clear cart, show order confirmation
+- [ ] On cancel: return to cart, show "Payment cancelled" message
+
+### 6. Order Confirmation - HIGH
+**Description**: Customers see confirmation after successful payment
+
+**Acceptance Criteria**:
+- [ ] Page at /checkout/success
+- [ ] Show order ID from Stripe session
+- [ ] Show list of purchased items
+- [ ] Show total amount paid
+- [ ] "Continue Shopping" button to /products
+- [ ] Email notification with order details (optional for MVP)
+
+**Technical Notes**:
+- Store order in database on webhook receipt
+- Order schema: id, stripeSessionId, items, total, createdAt
+
+### 7. Product Search - MEDIUM
+**Description**: Customers can search products by name or description
+
+**Acceptance Criteria**:
+- [ ] Search input in header
+- [ ] Debounced search (300ms delay)
+- [ ] Search filters by product name and description
+- [ ] Search results update product listing grid
+- [ ] Clear search button (X icon in input)
+- [ ] "No results found" message for empty searches
+- [ ] URL query param ?search=query for shareable links
+
+### 8. Admin Product Management - LOW
+**Description**: Admin users can add, edit, and delete products
+
+**Acceptance Criteria**:
+- [ ] Admin route: /admin/products
+- [ ] Protected: only accessible if ADMIN_EMAIL env var matches user email
+- [ ] List all products with edit/delete buttons
+- [ ] Add product form: name, price, description, image URL
+- [ ] Edit product pre-fills form
+- [ ] Delete product requires confirmation
+- [ ] All changes update database immediately
+
+**Out of Scope (for MVP)**:
+- User authentication (simple email check for admin)
+- Product image upload (use URL for now)
+- Order history for customers
+- Inventory management
+- Product categories
+- Product reviews/ratings
+- Discount codes
+- Shipping (digital products only)
+
+## Success Criteria
+
+1. All CRITICAL and HIGH features implemented and tested
+2. All tests passing with 80%+ coverage
+3. No type errors (adapts to stack)
+4. Stripe test mode checkout works end-to-end
+5. Webhook successfully processes test payments
+6. Deployed to Vercel with environment variables configured
+7. Manual testing confirms complete purchase flow
+```
+
+**Why this works**:
+- Extremely detailed acceptance criteria
+- Technical notes guide implementation
+- Out of scope prevents feature creep
+- Real-world constraints included (webhook, Stripe flow)
+- Testing considerations mentioned
+
+---
+
+## Common PRODUCT.md Mistakes
+
+### Mistake 1: Vague Requirements
+
+**❌ Bad**:
+```markdown
+### 1. User Authentication - CRITICAL
+**Description**: Users can login
+
+**Acceptance Criteria**:
+- [ ] Login works
+- [ ] Security is good
+```
+
+**✅ Good**:
+```markdown
+### 1. User Authentication - CRITICAL
+**Description**: Users can login with email and password
+
+**Acceptance Criteria**:
+- [ ] Login form with email and password fields
+- [ ] Email validation: required, valid format
+- [ ] Password validation: required, min 8 chars
+- [ ] On success: JWT in httpOnly cookie, redirect to /dashboard
+- [ ] On failure: inline error with specific reason
+- [ ] Rate limiting: max 5 attempts per 15 min per IP
+```
+
+---
+
+### Mistake 2: Missing Tech Stack Details
+
+**❌ Bad**:
+```markdown
+## Tech Stack
+- Next.js
+- TypeScript
+- Database
+```
+
+**✅ Good**:
+```markdown
+## Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+
+### Backend
+- **Framework**: Next.js API Routes
+- **Language**: TypeScript
+
+### Database
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+```
+
+---
+
+### Mistake 3: No Priorities
+
+**❌ Bad**:
+```markdown
+## Features
+1. Authentication
+2. User profiles
+3. Email notifications
+4. Dark mode
+5. Admin panel
+```
+
+**✅ Good**:
+```markdown
+## Features
+
+### 1. Authentication - CRITICAL
+...
+
+### 2. User profiles - HIGH
+...
+
+### 3. Email notifications - MEDIUM
+...
+
+### 4. Dark mode - LOW
+...
+
+### 5. Admin panel - LOW
+...
+```
+
+**Why priorities matter**: Agentful works CRITICAL → HIGH → MEDIUM → LOW. Without priorities, it might work on dark mode before authentication.
+
+---
+
+### Mistake 4: No Acceptance Criteria
+
+**❌ Bad**:
+```markdown
+### 1. Shopping Cart - CRITICAL
+Users can add items to cart and checkout.
+```
+
+**✅ Good**:
+```markdown
+### 1. Shopping Cart - CRITICAL
+**Description**: Users can add items to cart and checkout
+
+**Acceptance Criteria**:
+- [ ] Cart icon shows item count badge
+- [ ] Add to cart button on product page
+- [ ] Cart drawer shows items with quantities
+- [ ] Update quantity with +/- buttons
+- [ ] Remove items from cart
+- [ ] Subtotal calculation
+- [ ] Checkout button (disabled if empty)
+- [ ] Cart persists in localStorage
+```
+
+---
+
+### Mistake 5: Acceptance Criteria That Aren't Testable
+
+**❌ Bad**:
+```markdown
+**Acceptance Criteria**:
+- [ ] UI looks good
+- [ ] Code is clean
+- [ ] Performance is fast
+```
+
+**✅ Good**:
+```markdown
+**Acceptance Criteria**:
+- [ ] Components follow design system spacing (4px grid)
+- [ ] All functions have single responsibility
+- [ ] Page load time < 2 seconds on 3G
+```
+
+---
+
+### Mistake 6: Too Much Implementation Detail
+
+**❌ Bad** (over-specifying):
+```markdown
+**Acceptance Criteria**:
+- [ ] Use React Hook Form with useForm hook
+- [ ] Validate with Zod schema on line 15
+- [ ] Call API endpoint /api/auth/login exactly
+- [ ] Store token in cookie named 'auth_token'
+- [ ] Use useEffect to fetch user data on mount
+- [ ] Use useState for form state
+```
+
+**✅ Good** (focus on what, not how):
+```markdown
+**Acceptance Criteria**:
+- [ ] Login form with email/password fields
+- [ ] Client-side validation before submission
+- [ ] POST to /api/auth/login with credentials
+- [ ] Store auth token securely
+- [ ] Fetch and display user data on successful login
+```
+
+**Let Agentful figure out the "how"**. You specify the "what".
+
+---
+
+## PRODUCT.md Checklist
+
+Use this checklist before starting Agentful:
+
+### Content
+- [ ] Overview is clear and concise (2-3 sentences)
+- [ ] Goals are listed with checkboxes
+- [ ] Tech stack is fully specified (frontend, backend, database, auth, testing, deployment)
+- [ ] All features have priorities (CRITICAL/HIGH/MEDIUM/LOW)
+- [ ] Each feature has a description
+- [ ] Each feature has specific acceptance criteria
+- [ ] Acceptance criteria are testable and verifiable
+- [ ] Out of scope section lists what NOT to build
+- [ ] Success criteria define when Agentful is done
+
+### Quality
+- [ ] No vague requirements ("works well", "good performance")
+- [ ] No missing tech stack details
+- [ ] Acceptance criteria use checkboxes
+- [ ] Features are prioritized
+- [ ] Implementation details only when necessary
+- [ ] User stories included for complex features
+- [ ] Technical notes for specific constraints
+
+### Review
+- [ ] Had a teammate review (if working in team)
+- [ ] Tested clarity by asking: "Could I build this without questions?"
+- [ ] Removed ambiguity
+- [ ] Added examples where helpful
+
+---
+
+## Tips for Success
+
+### 1. Start Simple, Then Expand
+
+**First version**:
+```markdown
+### 1. Todo List - CRITICAL
+**Description**: Users can see their todos
+
+**Acceptance Criteria**:
+- [ ] Display list of todos
+- [ ] Each todo shows text
+```
+
+**Then expand**:
+```markdown
+### 1. Todo List - CRITICAL
+**Description**: Users can see and manage their todos
+
+**Acceptance Criteria**:
+- [ ] Display list of todos
+- [ ] Each todo shows text and completion status
+- [ ] Filter: all / active / completed
+- [ ] Sort by date added (newest first)
+- [ ] Empty state with illustration
+- [ ] Loading state while fetching
+- [ ] Error state with retry button
+```
+
+**Why**: Start with core functionality, then add polish after Agentful completes the basics.
+
+---
+
+### 2. Use Examples in Acceptance Criteria
+
+```markdown
+**Acceptance Criteria**:
+- [ ] Email validation accepts formats like:
+  - user@example.com
+  - first.last@example.co.uk
+  - user+tag@example.com
+- [ ] Email validation rejects formats like:
+  - user@ (no domain)
+  - @example.com (no user)
+  - user.example (no @)
+```
+
+**Why**: Examples make requirements concrete and testable.
+
+---
+
+### 3. Be Explicit About Edge Cases
+
+```markdown
+**Acceptance Criteria**:
+- [ ] Handle empty input gracefully
+- [ ] Handle network errors with retry button
+- [ ] Handle duplicate submissions (disable button on submit)
+- [ ] Handle malicious input (sanitize user input)
+- [ ] Handle expired auth tokens (auto-refresh or re-login)
+```
+
+**Why**: Agentful will handle edge cases if you specify them. Otherwise, it might miss them.
+
+---
+
+### 4. Reference Existing Patterns
+
+If you have existing code:
+
+```markdown
+**Technical Notes**:
+- Follow existing auth pattern in src/lib/auth.ts
+- Match component structure in src/components/ui/
+- Use same error handling pattern as src/app/api/products/route.ts
+```
+
+**Why**: Ensures consistency with your existing codebase.
+
+---
+
+### 5. Think About User Experience
+
+```markdown
+**Acceptance Criteria**:
+- [ ] Show loading state within 100ms of action (optimistic UI)
+- [ ] Display success message for 3 seconds before auto-dismissing
+- [ ] Confirm destructive actions with dialog
+- [ ] Provide undo for non-destructive actions (like delete)
+- [ ] Keyboard shortcuts: Enter to submit, Escape to cancel
+```
+
+**Why**: Great products are about UX, not just functionality.
+
+---
+
+### 6. Consider Performance Early
+
+```markdown
+**Acceptance Criteria**:
+- [ ] List items render with virtualization for 100+ items
+- [ ] Images lazy load below the fold
+- [ ] API responses include pagination (max 50 items per page)
+- [ ] Cache GET requests for 5 minutes
+- [ ] Debounce search input by 300ms
+```
+
+**Why**: Performance is easier to build in than retrofit later.
+
+---
+
+### 7. Plan for Testing
+
+```markdown
+**Acceptance Criteria**:
+- [ ] Unit tests for all business logic functions
+- [ ] Integration tests for API endpoints
+- [ ] E2E tests for critical user flows (login, checkout)
+- [ ] Mock external dependencies (Stripe API, email service)
+```
+
+**Why**: Agentful's tester agent needs to know what to test.
+
+---
+
+### 8. Use "Don't" Sections
+
+```markdown
+**What NOT to do**:
+- Don't use alerts for errors (use toast notifications)
+- Don't hardcode strings (use i18n keys for future localization)
+- Don't store sensitive data in localStorage
+- Don't use any for types (be specific)
+```
+
+**Why**: Explicitly preventing bad patterns saves time.
+
+---
+
+## Updating PRODUCT.md Mid-Development
+
+### When to Update
+
+**Safe to update**:
+- Adding new LOW priority features
+- Clarifying ambiguous acceptance criteria
+- Adding technical notes for current work
+- Updating success criteria
+
+**Risky to update**:
+- Changing priorities of in-progress features
+- Removing features Agentful is working on
+- Completely changing tech stack mid-development
+- Modifying acceptance criteria of completed features
+
+### How to Update Safely
+
+1. **Run /agentful-status** to see what's in progress
+2. **Only update features not yet started**
+3. **Check .agentful/state.json** for current phase
+4. **If changing priorities**, explain why in "Notes" section
+
+**Example safe update**:
+```markdown
+## Notes
+
+**[2026-01-18]** - Adding feature #8 (Dark mode) as LOW priority.
+All CRITICAL and HIGH features complete, so this is safe to add.
+```
+
+---
+
+## Tools for Better PRODUCT.md
+
+### PRODUCT.md Validators
+
+```bash
+# Check for common issues
+npx agentful validate-product
+
+# Output:
+✓ Overview present
+✓ Tech stack specified
+✓ Features prioritized
+⚠ Feature 3 has no acceptance criteria
+⚠ Feature 5 is vague: "Make it fast"
+```
+
+### PRODUCT.md Templates
+
+```bash
+# Generate a template for your stack
+npx agentful template --stack nextjs,prisma,tailwind
+
+# Outputs a ready-to-fill PRODUCT.md with your stack pre-configured
+```
+
+---
+
+## Summary: The Perfect PRODUCT.md
+
+The perfect PRODUCT.md is:
+
+1. **Specific** - No vague requirements
+2. **Complete** - Covers all critical aspects
+3. **Prioritized** - Clear order of work
+4. **Testable** - Every requirement can be verified
+5. **Explicit** - Tech stack fully specified
+6. **Scoped** - Out of scope section prevents creep
+7. **Achievable** - Success criteria are realistic
+
+**Invest time in PRODUCT.md upfront, and Agentful will reward you with autonomous development success.**
+
+---
+
+## Next Steps
+
+Now that you have a great PRODUCT.md:
+
+1. **[Start Agentful](../getting-started/quick-start)** - Begin autonomous development
+2. **[Monitor Progress](../commands/agentful-status)** - Track completion
+3. **[Handle Decisions](../commands/agentful-decide)** - Answer when Agentful asks
+4. **[Validate Quality](../commands/agentful-validate)** - Ensure all gates pass
+
+---
+
+**Related Guides:**
+
+- [Team Adoption](./team-adoption) - Standardize PRODUCT.md across your team
+- [Best Practices](./best-practices) - More patterns for great specs
+- [Troubleshooting](./troubleshooting) - Fix PRODUCT.md related issues

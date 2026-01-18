@@ -1,0 +1,530 @@
+# /agentful-start
+
+Start or resume autonomous product development loop by delegating to the orchestrator agent.
+
+## Purpose
+
+The `/agentful-start` command is the primary entry point for autonomous development. It:
+
+- Reads current project state from `.agentful/state.json`
+- Checks for pending decisions that might block progress
+- Delegates to the orchestrator agent to pick and execute tasks
+- Continues the development loop until interrupted or complete
+- Updates completion tracking in `.agentful/completion.json`
+
+## Usage
+
+### Basic Usage
+
+```bash
+/agentful-start
+```
+
+This will:
+1. Check for pending decisions (and warn if any exist)
+2. Read current state and completion status
+3. Pick the next task to work on
+4. Delegate to specialist agents
+5. Validate the completed work
+6. Update state and completion tracking
+7. Report progress
+
+### Autonomous Loop Mode
+
+For continuous development, wrap in Ralph loop:
+
+```bash
+/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+```
+
+This runs 24/7 until:
+- All features reach 100% completion
+- All quality gates pass
+- Maximum iterations reached (safety limit)
+
+### After Resolving Decisions
+
+```bash
+# If /agentful-start reports pending decisions
+/agentful-decide
+
+# Then continue development
+/agentful-start
+```
+
+## Startup Sequence
+
+### 1. Load State
+
+The command reads these files in order:
+
+| File | Purpose |
+|------|---------|
+| `PRODUCT.md` | What we're building (requirements) |
+| `.agentful/state.json` | Current work state and progress |
+| `.agentful/completion.json` | Feature completion percentages |
+| `.agentful/decisions.json` | Pending user decisions |
+
+### 2. Check Decisions
+
+If pending decisions exist, the command warns you:
+
+```
+⚠️  Pending decisions need your input:
+1. "Should auth use JWT or session cookies?"
+   Run: /agentful-decide
+
+Cannot proceed until decisions are resolved.
+```
+
+**Why this check?** Decisions often represent architectural choices that affect implementation. Proceeding without resolution could lead to wasted work.
+
+### 3. Initialize State (if needed)
+
+If `.agentful/state.json` doesn't exist:
+
+```json
+{
+  "version": "1.0",
+  "current_task": null,
+  "current_phase": "idle",
+  "iterations": 0,
+  "last_updated": "2026-01-18T00:00:00Z",
+  "blocked_on": []
+}
+```
+
+### 4. Delegate to Orchestrator
+
+The command **does not** execute work directly. Instead, it delegates:
+
+```
+Task("orchestrator", "Run autonomous development loop. Read state, pick next task,
+delegate to specialist agents, validate, update state, continue until complete.")
+```
+
+## How It Works
+
+### Example Flow
+
+```
+1. Orchestrator reads state.json
+   → "backend-auth" in progress, 30% complete
+
+2. Orchestrator reads completion.json
+   → Auth feature at 30%, needs implementation
+
+3. Orchestrator reads PRODUCT.md
+   → Auth requirements: JWT tokens, refresh, logout
+
+4. Orchestrator delegates to @backend
+   → "Complete auth implementation: login, refresh, logout"
+
+5. Backend agent implements auth system
+
+6. Orchestrator delegates to @reviewer
+   → "Review auth changes for quality and standards"
+
+7. Reviewer finds issues (e.g., missing tests)
+
+8. Orchestrator delegates to @fixer
+   → "Add missing auth tests"
+
+9. Orchestrator delegates to @reviewer again
+   → "Re-review auth changes"
+
+10. Reviewer approves
+
+11. Orchestrator updates completion.json
+    → Auth feature: 30% → 100%
+
+12. Orchestrator loops back: What's next?
+    → Picks "user-profile" feature
+```
+
+### Task Selection Logic
+
+The orchestrator picks tasks based on:
+
+1. **Blocking dependencies** - Unblocked tasks first
+2. **Completion priority** - Lowest completion % first
+3. **Feature dependencies** - Prerequisites before dependents
+4. **Current state** - Resume in-progress tasks before starting new ones
+
+## Output Examples
+
+### Successful Task Completion
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         Agentful Development Session
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Loaded state: 3 features, 48% complete
+Pending decisions: 0
+Blocked tasks: 0
+
+Starting development loop...
+
+🔄 Task 1/5: User Authentication Backend
+   Agent: backend
+   Requirements: JWT tokens, refresh flow, logout
+
+   → Implementing auth service layer...
+   → Adding token refresh logic...
+   → Creating logout endpoint...
+   → Writing unit tests...
+   ✅ Complete
+
+   📊 Validation:
+      • TypeScript: ✅ PASS
+      • Tests: ✅ PASS (12/12)
+      • Coverage: ✅ 94%
+      • Security: ✅ PASS
+
+   → Updated completion: auth 30% → 100%
+
+🔄 Task 2/5: User Profile API
+   Agent: backend
+   Requirements: CRUD operations, avatar upload
+
+   → Implementing profile model...
+   → Creating CRUD endpoints...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Session Progress:
+  Tasks Completed: 1/5
+  Overall Completion: 48% → 58%
+  Quality Gates: All passing
+
+Run /agentful-status for details or /agentful-start to continue.
+```
+
+### Blocked by Decisions
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         Agentful Development Session
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  CANNOT START - Pending Decisions Required
+
+You have 2 pending decisions that block progress:
+
+1. "Should auth use JWT or session cookies?"
+   Options: JWT (stateless), Sessions (simpler), Clerk (managed)
+   Blocking: auth-feature, user-profile-feature
+
+2. "Database provider for deployment?"
+   Options: PostgreSQL (standard), MongoDB (flexible), SQLite (simple)
+   Blocking: deployment-feature
+
+Run /agentful-decide to resolve these decisions before continuing.
+```
+
+### Development Complete
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         Agentful Development Session
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ ALL FEATURES COMPLETE!
+
+Product: My Awesome App
+Completion: 100%
+Quality Gates: All passing
+
+Features Delivered:
+  ✅ Authentication (100%)
+  ✅ User Profile (100%)
+  ✅ Dashboard (100%)
+  ✅ Settings (100%)
+
+Quality Status:
+  ✅ Tests: 47/47 passing
+  ✅ TypeScript: No errors
+  ✅ Lint: No issues
+  ✅ Coverage: 87%
+  ✅ Security: No vulnerabilities
+
+Total Iterations: 23
+Time Elapsed: 2 hours 14 minutes
+
+🎉 Product development complete! Ready for deployment.
+```
+
+## When to Use
+
+### Ideal Times to Run /agentful-start
+
+| Situation | Command | Why |
+|-----------|---------|-----|
+| Starting a new session | `/agentful-start` | Begin autonomous work |
+| After resolving decisions | `/agentful-start` | Continue unblocked development |
+| After manual changes | `/agentful-start` | Integrate your changes with autonomous flow |
+| Checking progress | `/agentful-status` first, then `/agentful-start` | See state before continuing |
+| Quality issues found | `/agentful-validate` first, then `/agentful-start` | Validate before proceeding |
+
+### When NOT to Use
+
+| Situation | Alternative |
+|-----------|-------------|
+| Pending decisions exist | `/agentful-decide` first |
+| Want to see what's done | `/agentful-status` |
+| Quality check needed | `/agentful-validate` |
+| Manual development | Just code, then run commands to integrate |
+
+## Tips
+
+### Productivity Tips
+
+1. **Run in parallel with other work**
+   ```bash
+   # Start autonomous development
+   /agentful-start
+
+   # While it runs, work on something else
+   # Come back later to check progress
+   ```
+
+2. **Use autonomous mode for long sessions**
+   ```bash
+   /ralph-loop "/agentful-start" --max-iterations 50
+   # Go get coffee, come back to completed features
+   ```
+
+3. **Check status periodically**
+   ```bash
+   /agentful-status
+   # Quick check without interrupting work
+   ```
+
+4. **Let it iterate through small tasks**
+   ```bash
+   # Start once, let it run 5-10 iterations
+   /agentful-start
+   # Each iteration = one task completed
+   ```
+
+### Best Practices
+
+1. **Keep PRODUCT.md updated**
+   - Clear requirements = better autonomous decisions
+   - Update as requirements evolve
+
+2. **Resolve decisions quickly**
+   - Pending decisions immediately block progress
+   - Use `/agentful-decide` as soon as warned
+
+3. **Monitor iteration count**
+   - High iterations without progress = possible issue
+   - Check `/agentful-status` if stuck
+
+4. **Run validation after major features**
+   ```bash
+   /agentful-start  # Complete feature
+   /agentful-validate  # Verify quality
+   /agentful-start  # Continue
+   ```
+
+## Troubleshooting
+
+### Issue: "Cannot proceed until decisions are resolved"
+
+**Cause:** Pending decisions in `.agentful/decisions.json`
+
+**Solution:**
+```bash
+/agentful-decide
+# Resolve all pending decisions
+/agentful-start
+```
+
+### Issue: "No tasks available to work on"
+
+**Cause:** All features complete or everything blocked
+
+**Solution:**
+```bash
+/agentful-status
+# Check if truly complete (100%)
+# Or identify what's blocking progress
+```
+
+### Issue: Stuck in loop, not making progress
+
+**Cause:** Validation failing repeatedly
+
+**Solution:**
+```bash
+/agentful-validate
+# See specific failures
+# Fix manually or let /agentful-start auto-fix
+```
+
+### Issue: "state.json not found"
+
+**Cause:** First-time run or missing initialization
+
+**Solution:**
+```bash
+mkdir -p .agentful
+cat > .agentful/state.json << 'EOF'
+{
+  "version": "1.0",
+  "current_task": null,
+  "current_phase": "idle",
+  "iterations": 0,
+  "last_updated": "2026-01-18T00:00:00Z",
+  "blocked_on": []
+}
+EOF
+
+/agentful-start
+```
+
+### Issue: Orchestrator not starting
+
+**Cause:** Agent not configured or system error
+
+**Solution:**
+```bash
+# Check agent configuration
+ls .claude/agents/
+
+# Verify PRODUCT.md exists
+cat PRODUCT.md
+
+# Try running orchestrator directly
+Task("orchestrator", "Test orchestrator agent")
+```
+
+## Advanced Usage
+
+### Custom Task Selection
+
+Force specific task by updating state:
+
+```json
+// .agentful/state.json
+{
+  "current_task": "user-profile-backend",
+  "current_phase": "implementing",
+  "force_task": true
+}
+```
+
+Then run `/agentful-start`
+
+### Iteration Control
+
+Limit work per session:
+
+```bash
+# Run 3 tasks then stop
+/agentful-start --max-tasks 3
+
+# Run for 30 minutes then stop
+/agentful-start --max-time 30m
+```
+
+### Parallel Development
+
+Work on multiple features simultaneously:
+
+```json
+// .agentful/state.json
+{
+  "parallel_tasks": 2,
+  "active_tasks": [
+    "auth-backend",
+    "user-profile-frontend"
+  ]
+}
+```
+
+### State Restoration
+
+Restore from previous session:
+
+```bash
+# Check last state
+cat .agentful/state.json
+
+# Resume from specific iteration
+echo '{"iteration": 15}' > .agentful/resume.json
+/agentful-start
+```
+
+## Integration Examples
+
+### CI/CD Pipeline
+
+```yaml
+# .github/workflows/agentful-dev.yml
+name: Autonomous Development
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Every 2 hours
+  workflow_dispatch:
+
+jobs:
+  develop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - name: Install dependencies
+        run: npm install
+      - name: Run autonomous development
+        run: |
+          echo "Starting autonomous development loop..."
+          /agentful-start
+      - name: Validate results
+        run: /agentful-validate
+      - name: Commit progress
+        run: |
+          git config user.name "Agentful Bot"
+          git add .
+          git commit -m "feat: autonomous development progress"
+          git push
+```
+
+### Pre-commit Hook
+
+```bash
+# .git/hooks/pre-commit
+#!/bin/bash
+echo "Running pre-commit validation..."
+/agentful-validate
+
+if [ $? -ne 0 ]; then
+  echo "❌ Validation failed. Commit aborted."
+  echo "Run /agentful-start to auto-fix issues."
+  exit 1
+fi
+```
+
+### Monitoring Script
+
+```bash
+#!/bin/bash
+# watch-agentful.sh
+
+while true; do
+  clear
+  /agentful-status
+  echo "Refreshing in 30 seconds..."
+  sleep 30
+done
+```
+
+## See Also
+
+- [/agentful-status](./agentful-status) - Check development progress
+- [/agentful-decide](./agentful-decide) - Resolve blocking decisions
+- [/agentful-validate](./agentful-validate) - Run quality checks
+- [Orchestrator Agent](/agents/orchestrator) - How task selection works
+- [State Management](/core-concepts/state-management) - Understanding state files

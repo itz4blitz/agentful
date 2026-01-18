@@ -1,0 +1,974 @@
+# Workflow Configuration
+
+Agentful workflows are defined as slash commands. You can customize existing commands, create new workflows, and integrate with your development processes.
+
+## Command Structure
+
+Commands are Markdown files with YAML frontmatter in `.claude/commands/`:
+
+```markdown
+---
+name: command-name
+description: What this command does
+---
+
+# Command Name
+
+Detailed instructions...
+```
+
+### Built-in Commands
+
+| Command | File | Purpose |
+|---------|------|---------|
+| `/agentful-start` | `agentful-start.md` | Start autonomous development |
+| `/agentful-status` | `agentful-status.md` | Check progress |
+| `/agentful-decide` | `agentful-decide.md` | Answer pending decisions |
+| `/agentful-validate` | `agentful-validate.md` | Run quality checks |
+
+## Customizing Existing Commands
+
+### Modifying /agentful-start
+
+Edit `.claude/commands/agentful-start.md`:
+
+```markdown
+---
+name: agentful-start
+description: Start or resume autonomous development with custom workflow
+---
+
+# Agentful Start
+
+## Custom Startup Sequence
+
+### 1. Pre-Flight Checks
+- [ ] Check if git working directory is clean
+- [ ] Verify all dependencies installed
+- [ ] Confirm database is running
+- [ ] Validate environment variables
+
+### 2. Load State
+Read in order:
+1. `PRODUCT.md` - Product requirements
+2. `.agentful/state.json` - Current state
+3. `.agentful/completion.json` - Progress
+4. `.agentful/decisions.json` - Pending decisions
+
+### 3. Custom Initialization
+
+If state.json doesn't exist:
+```bash
+# Run custom setup
+npm run setup:dev
+
+# Seed database if needed
+npm run db:seed
+
+# Run initial validation
+npx tsc --noEmit
+```
+
+### 4. Delegate to Orchestrator
+
+Task("orchestrator", "Run autonomous development loop with custom priorities")
+```
+
+### Custom Status Display
+
+Edit `.claude/commands/agentful-status.md`:
+
+```markdown
+---
+name: agentful-status
+description: Display detailed project status with custom metrics
+---
+
+# Agentful Status
+
+## Display Format
+
+### Progress Overview
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           Agentful Development Status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Progress: [████████████░░░░░░░░] 60%
+
+Features:
+  ✅ Authentication (100%)
+  🔄 User Profile (75%)
+  ⏳ Dashboard (0%)
+
+Quality Gates:
+  ✅ Tests passing (47/47)
+  ✅ No type errors
+  ❌ Dead code (3 issues)
+  ⚠️  Coverage (72%, needs 80%)
+
+Last Activity: Implementing user avatar upload
+Next Task: Complete dashboard layout
+```
+
+### Custom Metrics
+
+Add project-specific metrics:
+```
+Database Migrations: ✅ Up to date
+API Documentation: ⏳ Not generated
+Deployment Status: ✅ Production v2.3.1
+```
+```
+
+## Creating Custom Commands
+
+### Feature-Specific Commands
+
+Create `.claude/commands/deploy.md`:
+
+```markdown
+---
+name: deploy
+description: Deploy application to production with safety checks
+---
+
+# Deploy Command
+
+## Pre-Deployment Checklist
+
+1. **Run all tests**
+```bash
+npm test
+```
+
+2. **Type check**
+```bash
+npx tsc --noEmit
+```
+
+3. **Build production bundle**
+```bash
+npm run build
+```
+
+4. **Check for security issues**
+```bash
+npm audit --production
+```
+
+5. **Run E2E tests**
+```bash
+npm run test:e2e
+```
+
+## Deployment Steps
+
+If all checks pass:
+1. Create git tag
+2. Push to main branch
+3. Trigger deployment pipeline
+4. Verify health checks
+5. Run smoke tests
+
+## Rollback Plan
+
+If deployment fails:
+1. Identify failure point
+2. Revert to previous version
+3. Investigate logs
+4. Fix issue
+5. Retry deployment
+```
+
+Usage: `/deploy`
+
+### Database Migration Command
+
+Create `.claude/commands/migrate.md`:
+
+```markdown
+---
+name: migrate
+description: Run database migrations with safety checks
+---
+
+# Database Migration
+
+## Safety Checks
+
+1. **Backup database**
+```bash
+npm run db:backup
+```
+
+2. **Check current migration status**
+```bash
+npm run db:status
+```
+
+3. **Review migration files**
+```bash
+# Read migration files to validate safety
+```
+
+## Migration Process
+
+1. Generate migration if needed:
+```bash
+npx prisma migrate dev --name migration_name
+```
+
+2. Review generated SQL
+3. Test migration on staging
+4. Apply to production:
+```bash
+npx prisma migrate deploy
+```
+
+5. Verify data integrity
+6. Update application schema
+
+## Rollback Plan
+
+If migration fails:
+1. Restore from backup
+2. Identify issue in migration
+3. Fix migration
+4. Retry process
+```
+
+Usage: `/migrate`
+
+### Code Review Command
+
+Create `.claude/commands/review.md`:
+
+```markdown
+---
+name: review
+description: Perform comprehensive code review of changes
+---
+
+# Code Review
+
+## Review Scope
+
+1. **Git Changes**
+```bash
+git diff main...HEAD
+```
+
+2. **Changed Files**
+Identify all modified, added, and deleted files
+
+3. **Review Checklist**
+- [ ] Code follows project patterns
+- [ ] TypeScript strict mode passes
+- [ ] Tests added/updated
+- [ ] Documentation updated
+- [ ] No security vulnerabilities
+- [ ] Performance considered
+- [ ] Error handling proper
+- [ ] Logging added where needed
+
+## Review Process
+
+1. Delegate to reviewer agent:
+```
+Task("reviewer", "Perform comprehensive review of recent changes")
+```
+
+2. If issues found:
+```
+Task("fixer", "Fix issues found during review")
+```
+
+3. Re-review until clean
+
+## Report Format
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+              Code Review Report
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Files Changed: 7
+Lines Added: +342
+Lines Removed: -89
+
+Issues Found:
+  🔴 Critical: 0
+  🟡 Warning: 3
+  🔵 Info: 5
+
+Recommendations:
+  1. Add error handling to AuthService.login
+  2. Extract magic strings to constants
+  3. Add JSDoc comments to public APIs
+
+Status: ✅ Approved (with minor suggestions)
+```
+```
+
+Usage: `/review`
+
+### Documentation Generation Command
+
+Create `.claude/commands/docs.md`:
+
+```markdown
+---
+name: docs
+description: Generate API documentation from code
+---
+
+# Generate Documentation
+
+## API Documentation
+
+1. **Scan for API routes**
+```bash
+find src/app/api -name "route.ts"
+```
+
+2. **Extract endpoints**
+- HTTP methods
+- Request/response schemas
+- Authentication requirements
+- Rate limits
+
+3. **Generate OpenAPI spec**
+```bash
+npm run docs:generate
+```
+
+## Component Documentation
+
+1. **Scan for components**
+```bash
+find src/components -name "*.tsx" -o -name "*.jsx"
+```
+
+2. **Extract component props**
+3. **Generate usage examples**
+4. **Create Storybook stories**
+
+## Output
+
+Generate:
+- `docs/api/` - API reference
+- `docs/components/` - Component catalog
+- `OPENAPI.json` - OpenAPI specification
+```
+
+Usage: `/docs`
+
+## Workflow Automation
+
+### Pre-Commit Workflow
+
+Create `.claude/commands/pre-commit.md`:
+
+```markdown
+---
+name: pre-commit
+description: Run all checks before committing code
+---
+
+# Pre-Commit Checks
+
+## Sequence
+
+1. **Type Check**
+```bash
+npx tsc --noEmit
+```
+
+2. **Lint**
+```bash
+npm run lint
+```
+
+3. **Tests**
+```bash
+npm test
+```
+
+4. **Coverage**
+```bash
+npm test -- --coverage
+```
+
+5. **Dead Code**
+```bash
+npx knip
+```
+
+6. **Security**
+```bash
+npm audit --production
+```
+
+## Results
+
+If all pass:
+```
+✅ All checks passed - Ready to commit
+```
+
+If any fail:
+```
+❌ Pre-commit checks failed:
+  - TypeScript: 3 errors
+  - Lint: 7 warnings
+  - Coverage: 72% (needs 80%)
+
+Run /fix to auto-fix issues
+```
+```
+
+### Integration with Git Hooks
+
+Add to `package.json`:
+
+```json
+{
+  "scripts": {
+    "prepare": "husky install",
+    "pre-commit": "echo 'Running Agentful pre-commit checks' && claude /pre-commit || exit 1"
+  }
+}
+```
+
+Or use `.husky/pre-commit`:
+
+```bash
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run Agentful pre-commit checks
+npx agentful pre-commit
+
+# Exit on failure
+if [ $? -ne 0 ]; then
+  echo "❌ Pre-commit checks failed. Commit aborted."
+  exit 1
+fi
+```
+
+### CI/CD Integration
+
+#### GitHub Actions
+
+Create `.github/workflows/agentful.yml`:
+
+```yaml
+name: Agentful Validation
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Agentful validation
+        run: |
+          npx agentful init --bare
+          npx agentful validate
+
+      - name: Upload validation report
+        uses: actions/upload-artifact@v3
+        with:
+          name: validation-report
+          path: .agentful/last-validation.json
+```
+
+#### GitLab CI
+
+Create `.gitlab-ci.yml`:
+
+```yaml
+stages:
+  - validate
+
+agentful-validation:
+  stage: validate
+  image: node:18
+
+  script:
+    - npm ci
+    - npx agentful init --bare
+    - npx agentful validate
+
+  artifacts:
+    paths:
+      - .agentful/last-validation.json
+    reports:
+      junit: .agentful/validation-report.xml
+```
+
+## Advanced Workflows
+
+### Feature Development Workflow
+
+Create `.claude/commands/feature.md`:
+
+```markdown
+---
+name: feature
+description: Complete workflow for implementing a new feature
+---
+
+# Feature Development
+
+## Inputs
+
+Feature name from user input or PRODUCT.md
+
+## Workflow
+
+### 1. Planning Phase
+- Read PRODUCT.md for feature requirements
+- Create feature branch
+- Document implementation plan
+
+### 2. Design Phase
+Task("architect", "Design database schema and API endpoints for feature")
+
+### 3. Backend Phase
+Task("backend", "Implement backend services and API routes")
+
+### 4. Frontend Phase
+Task("frontend", "Implement UI components and pages")
+
+### 5. Testing Phase
+Task("tester", "Write comprehensive tests")
+
+### 6. Review Phase
+Task("reviewer", "Review implementation")
+
+### 7. Fix Phase (if needed)
+Task("fixer", "Fix any issues found in review")
+
+### 8. Documentation Phase
+Task("docs", "Generate API documentation")
+
+### 9. Validation Phase
+Run all quality checks
+
+### 10. Completion
+- Update completion.json
+- Mark feature as complete
+- Report summary
+
+## Example Usage
+
+User: `/feature user-profile`
+
+Agentful:
+1. Reads user-profile from PRODUCT.md
+2. Creates feature branch feature/user-profile
+3. Implements all requirements
+4. Validates quality
+5. Reports completion
+```
+
+### Refactoring Workflow
+
+Create `.claude/commands/refactor.md`:
+
+```markdown
+---
+name: refactor
+description: Safe refactoring workflow with automated testing
+---
+
+# Refactor Workflow
+
+## Pre-Refactor
+
+1. **Baseline tests**
+```bash
+npm test
+```
+
+2. **Create backup branch**
+```bash
+git checkout -b refactor/backup-$(date +%s)
+```
+
+3. **Document current state**
+- Capture test results
+- Document current behavior
+- Create rollback point
+
+## Refactor Process
+
+1. **Make changes**
+   - Small, incremental changes
+   - Run tests after each change
+   - Commit working states
+
+2. **Validate behavior**
+```bash
+# All tests must pass
+npm test
+
+# No regressions
+npm run test:e2e
+
+# Performance maintained
+npm run benchmark
+```
+
+3. **Code review**
+```
+Task("reviewer", "Review refactored code")
+```
+
+## Post-Refactor
+
+1. **Update tests**
+2. **Update documentation**
+3. **Remove deprecated code**
+4. **Update CHANGELOG**
+
+## Safety
+
+If tests fail at any point:
+1. Stop immediately
+2. Identify breaking change
+3. Fix or revert
+4. Re-validate
+
+## Example
+
+User: `/refactor Extract user service logic`
+
+Agentful:
+1. Reads current user service code
+2. Identifies extraction points
+3. Creates new service modules
+4. Updates all imports
+5. Runs tests continuously
+6. Completes when all tests pass
+```
+
+### Hotfix Workflow
+
+Create `.claude/commands/hotfix.md`:
+
+```markdown
+---
+name: hotfix
+description: Emergency fix workflow for production issues
+---
+
+# Hotfix Workflow
+
+## Priority: CRITICAL
+
+This workflow bypasses normal process for urgent fixes.
+
+## Process
+
+1. **Create hotfix branch**
+```bash
+git checkout -b hotfix/$(date +%s)
+```
+
+2. **Minimal fix only**
+- Fix the specific issue
+- No refactoring
+- No new features
+- Minimal changes
+
+3. **Quick validation**
+```bash
+# Type check only
+npx tsc --noEmit
+
+# Critical tests only
+npm test -- --testNamePattern="critical"
+```
+
+4. **Deploy to staging**
+```bash
+npm run deploy:staging
+```
+
+5. **Smoke test**
+```bash
+npm run test:smoke
+```
+
+6. **Deploy to production**
+```bash
+npm run deploy:prod
+```
+
+7. **Verify fix**
+- Check production logs
+- Verify issue resolved
+- Monitor metrics
+
+8. **Follow-up**
+- Create regular issue for proper fix
+- Add tests for issue
+- Update documentation
+
+## Example
+
+User: `/hotfix Users cannot login due to auth token error`
+
+Agentful:
+1. Identifies auth token bug
+2. Creates minimal fix
+3. Runs type check
+4. Deploys to staging
+5. Verifies fix works
+6. Deploys to production
+7. Creates follow-up ticket
+```
+
+## Environment-Specific Workflows
+
+### Development Workflow
+
+`.claude/commands/dev.md`:
+
+```markdown
+---
+name: dev
+description: Start development environment with watchers
+---
+
+# Development Mode
+
+## Start Services
+
+1. **Database**
+```bash
+npm run db:start
+```
+
+2. **Backend** (if separate)
+```bash
+npm run dev:api
+```
+
+3. **Frontend**
+```bash
+npm run dev
+```
+
+4. **Watchers**
+```bash
+# TypeScript watcher
+npx tsc --watch
+
+# Test watcher
+npm test -- --watch
+
+# Lint watcher
+npm run lint -- --watch
+```
+
+## Development Features
+
+- Hot module replacement
+- Fast refresh
+- Source maps
+- Error overlay
+- Debug logging
+
+## Integration
+
+Open browser to http://localhost:3000 with dev tools enabled.
+```
+
+### Staging Workflow
+
+`.claude/commands/staging.md`:
+
+```markdown
+---
+name: staging
+description: Deploy to staging environment for testing
+---
+
+# Staging Deployment
+
+## Pre-Deploy
+
+1. **Run full test suite**
+```bash
+npm test
+npm run test:e2e
+```
+
+2. **Build staging bundle**
+```bash
+npm run build:staging
+```
+
+3. **Security scan**
+```bash
+npm audit --production
+```
+
+## Deploy
+
+1. **Deploy to staging**
+```bash
+npm run deploy:staging
+```
+
+2. **Run smoke tests**
+```bash
+npm run test:smoke:staging
+```
+
+3. **Verify deployment**
+- Check staging URL
+- Verify key features
+- Check error logs
+
+## Report
+
+```
+✅ Deployed to staging
+URL: https://staging.example.com
+Commit: abc123
+Tests: ✅ All passing
+```
+```
+
+### Production Workflow
+
+`.claude/commands/production.md`:
+
+```markdown
+---
+name: production
+description: Deploy to production with full validation
+---
+
+# Production Deployment
+
+## Pre-Deploy Checklist
+
+- [ ] All tests passing (100%)
+- [ ] Coverage ≥ 80%
+- [ ] No type errors (adapts to stack)
+- [ ] No lint errors
+- [ ] No dead code
+- [ ] No security vulnerabilities
+- [ ] Staging tests passed
+- [ ] Performance benchmarks met
+- [ ] Documentation updated
+- [ ] CHANGELOG updated
+- [ ] Migration plan tested
+- [ ] Rollback plan ready
+
+## Deployment Steps
+
+1. **Create release tag**
+```bash
+git tag -a v1.0.0 -m "Release v1.0.0"
+git push origin v1.0.0
+```
+
+2. **Run database migrations**
+```bash
+npm run db:migrate:prod
+```
+
+3. **Deploy application**
+```bash
+npm run deploy:prod
+```
+
+4. **Smoke tests**
+```bash
+npm run test:smoke:prod
+```
+
+5. **Monitor**
+- Error rates
+- Response times
+- Resource usage
+- Business metrics
+
+## Rollback Plan
+
+If deployment fails:
+```bash
+npm run rollback:prod
+git revert HEAD
+npm run deploy:prod
+```
+
+## Post-Deploy
+
+- Monitor for 1 hour
+- Check error logs
+- Verify key metrics
+- Notify team of success
+```
+
+## Workflow Best Practices
+
+### 1. Keep Workflows Simple
+- One purpose per workflow
+- Clear success criteria
+- Handle failures gracefully
+
+### 2. Always Validate
+- Type check before committing
+- Test before deploying
+- Monitor after deploying
+
+### 3. Provide Feedback
+- Show progress clearly
+- Report errors helpfully
+- Suggest next actions
+
+### 4. Enable Automation
+- Integrate with CI/CD
+- Use git hooks
+- Automate repetitive tasks
+
+### 5. Document Everything
+- Comment complex logic
+- Provide examples
+- Maintain CHANGELOG
+
+## Workflow Examples Repository
+
+See `.claude/workflows/` for more examples:
+
+- `feature.mdx` - Feature development
+- `bugfix.mdx` - Bug fixing workflow
+- `release.mdx` - Release management
+- `performance.mdx` - Performance optimization
+- `security.mdx` - Security audit workflow
+
+## Next Steps
+
+- [Configuration Overview](./index) - Back to configuration overview
+- [Project Structure](./project-structure) - File and directory requirements

@@ -1,0 +1,225 @@
+# Agentful Agents
+
+Agentful uses a multi-agent system where each agent has specialized responsibilities. The agents work together autonomously to build, test, and validate production-ready applications.
+
+## Agent Architecture
+
+Agentful follows a hierarchical agent architecture with clear separation of concerns:
+
+```
+Orchestrator (Coordinator)
+    ├── Architect (Tech Stack Analyzer)
+    ├── Backend (Server-Side Implementation)
+    ├── Frontend (Client-Side Implementation)
+    ├── Tester (Quality Assurance)
+    ├── Reviewer (Code Quality Validator)
+    └── Fixer (Issue Resolution)
+```
+
+## Core Agents
+
+### Orchestrator Agent
+
+The central coordinator that manages the entire development lifecycle.
+
+**Responsibilities:**
+- Reads and tracks project state
+- Delegates work to specialist agents
+- Manages completion tracking
+- Handles user decisions and blockers
+- Never writes code directly
+
+**When to use:**
+- Automatically invoked by `/agentful-start` or `/ralph-loop`
+- Coordinates all other agents
+- Should not be manually invoked
+
+**Key files:**
+- `.agentful/state.json` - Current work state
+- `.agentful/completion.json` - Feature completion tracking
+- `.agentful/decisions.json` - Pending user decisions
+
+### Architect Agent
+
+Analyzes the tech stack and generates framework-specific agents dynamically.
+
+**Responsibilities:**
+- Reads `PRODUCT.md` to identify technologies
+- Generates specialized agents for frameworks (Next.js, Vue, NestJS, etc.)
+- Creates architecture documentation
+- Updates agents when tech stack changes
+
+**When to use:**
+- Automatically invoked on project initialization
+- When tech stack changes in `PRODUCT.md`
+- When new frameworks are added
+
+**Key files:**
+- `.agentful/architecture.json` - Detected tech stack
+- `.claude/agents/generated/` - Dynamic agents
+
+### Backend Agent
+
+Implements server-side code following clean architecture patterns.
+
+**Responsibilities:**
+- API routes and controllers
+- Service layer (business logic)
+- Repository layer (data access)
+- Database schemas and migrations
+- Authentication and authorization
+- Input validation
+
+**When to use:**
+- Delegated by Orchestrator for backend features
+- Manual invocation: `@backend Implement user authentication`
+
+**Scope:**
+- ✅ API routes, services, repositories, database
+- ❌ UI components, frontend pages, styles
+
+### Frontend Agent
+
+Implements client-side code and user interfaces.
+
+**Responsibilities:**
+- UI components and pages
+- Custom React hooks
+- State management
+- Form handling and validation
+- Styling and responsive design
+- User interactions
+
+**When to use:**
+- Delegated by Orchestrator for frontend features
+- Manual invocation: `@frontend Create login page`
+
+**Scope:**
+- ✅ Components, pages, hooks, styles
+- ❌ API routes, database operations
+
+### Tester Agent
+
+Writes comprehensive tests to ensure code quality.
+
+**Responsibilities:**
+- Unit tests (services, components)
+- Integration tests (API endpoints)
+- E2E tests (user flows)
+- Test fixtures and mocks
+- Coverage reporting
+
+**When to use:**
+- Delegated by Orchestrator after implementation
+- Manual invocation: `@tester Write tests for auth service`
+
+**Key metric:**
+- 80% code coverage threshold
+
+### Reviewer Agent
+
+Validates code quality and production readiness.
+
+**Responsibilities:**
+- TypeScript type checking
+- Lint validation
+- Dead code detection
+- Test validation
+- Coverage verification
+- Security scanning
+- Manual code review
+
+**When to use:**
+- Automatically invoked after any implementation
+- Before marking features complete
+- Manual invocation: `@reviewer Check all changes`
+
+**Key files:**
+- `.agentful/last-review.json` - Last review results
+
+### Fixer Agent
+
+Automatically fixes issues found by the Reviewer.
+
+**Responsibilities:**
+- Removes dead code (unused exports, imports, files)
+- Adds missing tests
+- Removes debug statements
+- Fixes hardcoded secrets
+- Resolves type errors
+- Fixes lint errors
+
+**When to use:**
+- Automatically invoked when Reviewer finds issues
+- Manual invocation: `@fixer Fix all issues`
+
+**Input:** `.agentful/last-review.json`
+
+## Agent Workflow
+
+The typical agent workflow follows this pattern:
+
+```
+1. Orchestrator reads state
+   ↓
+2. Delegates to Backend/Frontend (implementation)
+   ↓
+3. Delegates to Tester (test coverage)
+   ↓
+4. Delegates to Reviewer (validation)
+   ↓
+5. If issues found → Fixer → Back to Reviewer
+   ↓
+6. Update completion state
+   ↓
+7. Loop until complete
+```
+
+## Agent Communication
+
+Agents communicate through:
+
+1. **State Files** - JSON files in `.agentful/`
+2. **Task Tool** - Agent spawning and delegation
+3. **File System** - Shared codebase
+4. **Review Reports** - Validation results
+
+## Agent Capabilities by Model
+
+### Opus (Highest Reasoning)
+- **Orchestrator** - Complex coordination, decision making
+- **Architect** - Tech stack analysis, agent generation
+
+### Sonnet (Balanced)
+- **Backend** - Implementation with patterns
+- **Frontend** - UI development
+- **Tester** - Test writing
+- **Reviewer** - Code validation
+- **Fixer** - Issue resolution
+
+## Best Practices
+
+### For Users
+
+1. **Let agents work autonomously** - Use `/ralph-loop` for hands-off development
+2. **Check state files** - Monitor progress in `.agentful/completion.json`
+3. **Respond to decisions** - Run `/agentful-decide` when blocked
+4. **Trust the process** - Agents will iterate until completion
+
+### For Customization
+
+1. **Edit agent files** - Modify `.claude/agents/*.md` to customize behavior
+2. **Add custom agents** - Create new agents in `.claude/agents/`
+3. **Adjust thresholds** - Modify coverage requirements, rules, etc.
+4. **Extend architecture** - Add new validation checks or patterns
+
+## Next Steps
+
+- Learn about the [Orchestrator Agent](/agents/orchestrator)
+- Learn about the [Architect Agent](/agents/architect)
+- Learn about the [Backend Agent](/agents/backend)
+- Learn about the [Frontend Agent](/agents/frontend)
+- Learn about the [Tester Agent](/agents/tester)
+- Learn about the [Reviewer Agent](/agents/reviewer)
+- Learn about the [Fixer Agent](/agents/fixer)
+- Create [Custom Agents](/agents/custom-agents)
