@@ -40,5 +40,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_CREDENTIALS: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN != '' && secrets.NPM_TOKEN || env.NODE_AUTH_TOKEN }}
         run: npx semantic-release
+
+      - name: Publish to npm
+        if: steps.semantic.outputs.released == 'true'
+        run: npm publish --provenance
