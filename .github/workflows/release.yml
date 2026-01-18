@@ -40,10 +40,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_CREDENTIALS: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
-            export NPM_TOKEN="${{ secrets.NPM_TOKEN }}"
-          else
-            export NPM_TOKEN="$NODE_AUTH_TOKEN"
-          fi
-          npx semantic-release
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN != '' && secrets.NPM_TOKEN || env.NODE_AUTH_TOKEN }}
+        run: npx semantic-release
