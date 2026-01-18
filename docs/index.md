@@ -8,7 +8,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /docs/getting-started/installation
+      link: /getting-started/installation
     - theme: alt
       text: View on GitHub
       link: https://github.com/itz4blitz/agentful
@@ -32,7 +32,7 @@ features:
 ## How It Works
 
 1. **Define** your product in simple Markdown (`PRODUCT.md`)
-2. **Chat** with agentful: "Add user profiles" or "Fix the authentication bug"
+2. **Chat** with agentful: "Add user authentication with JWT"
 3. **Watch** as specialized agents analyze, implement, test, and validate
 4. **Ship** continuously with automatic quality gates
 
@@ -51,15 +51,15 @@ agentful init
 
 ## Documentation
 
-Explore the [full documentation](/docs/) to learn about:
-- [Getting Started](/docs/getting-started/)
-- [Core Concepts](/docs/core-concepts/)
-- [Slash Commands](/docs/commands/)
-- [Autonomous Development](/docs/autonomous-development/)
+Explore the documentation to learn about:
+- [Getting Started](/getting-started/)
+- [Core Concepts](/core-concepts/)
+- [Slash Commands](/commands/)
+- [Autonomous Development](/autonomous-development/)
 
 ## Join the Community
 
-- 📖 [Read the docs](/docs/)
+- 📖 [Read the docs](/)
 - 💬 [Join Discord](https://discord.gg/SMDvJXUe)
 - 🐛 [Report issues](https://github.com/itz4blitz/agentful/issues)
 - ✨ [Star on GitHub](https://github.com/itz4blitz/agentful)
