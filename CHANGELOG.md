@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/itz4blitz/agentful/compare/v0.2.0...v0.2.1) (2026-01-18)
+
+
+### Bug Fixes
+
+* remove old HTML landing page in favor of vocs MD layout ([4fb1b78](https://github.com/itz4blitz/agentful/commit/4fb1b783020df9575533d62d3e360b41e0071a47))
+
 # [0.2.0](https://github.com/itz4blitz/agentful/compare/v0.1.0...v0.2.0) (2026-01-18)
 
 
