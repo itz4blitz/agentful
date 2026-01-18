@@ -1,3 +1,11 @@
+## [0.2.3](https://github.com/itz4blitz/agentful/compare/v0.2.2...v0.2.3) (2026-01-18)
+
+
+### Bug Fixes
+
+* revert docs to root path and fix landing page links ([cb72858](https://github.com/itz4blitz/agentful/commit/cb72858812f7411b0cf9eb24a8fe8736e7246ce9))
+* update workflow to always publish and fix landing page ([0760412](https://github.com/itz4blitz/agentful/commit/0760412786e946ea36aec944d27d011c38a7bdba))
+
 ## [0.2.2](https://github.com/itz4blitz/agentful/compare/v0.2.1...v0.2.2) (2026-01-18)
 
 
