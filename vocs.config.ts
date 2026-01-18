@@ -24,7 +24,7 @@ export default defineConfig({
   ogImageUrl: 'https://agentful.app/assets/agentful.jpeg',
 
   sidebar: {
-    '/': [
+    '/docs': [
       {
         text: 'Philosophy',
         items: [
@@ -70,11 +70,11 @@ export default defineConfig({
         text: 'Commands',
         items: [
           { text: 'Commands Overview', link: '/commands' },
-          { text: 'agentful', link: '/commands/agentful' },
-          { text: 'agentful-start', link: '/commands/agentful-start' },
-          { text: 'agentful-status', link: '/commands/agentful-status' },
-          { text: 'agentful-decide', link: '/commands/agentful-decide' },
-          { text: 'agentful-validate', link: '/commands/agentful-validate' },
+          { text: '/agentful', link: '/commands/agentful' },
+          { text: '/agentful-start', link: '/commands/agentful-start' },
+          { text: '/agentful-status', link: '/commands/agentful-status' },
+          { text: '/agentful-decide', link: '/commands/agentful-decide' },
+          { text: '/agentful-validate', link: '/commands/agentful-validate' },
         ],
       },
       {
@@ -136,9 +136,9 @@ export default defineConfig({
   },
 
   topNav: [
-    { text: 'Docs', link: '/' },
-    { text: 'Guides', link: '/guides' },
-    { text: 'Examples', link: '/examples' },
+    { text: 'Docs', link: '/docs/' },
+    { text: 'Guides', link: '/docs/guides' },
+    { text: 'Examples', link: '/docs/examples' },
     { text: 'GitHub', link: 'https://github.com/itz4blitz/agentful' },
     { text: 'Discord', link: 'https://discord.gg/SMDvJXUe' },
   ],
