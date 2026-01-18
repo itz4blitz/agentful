@@ -123,3 +123,4 @@ The Release workflow:
 - ✅ No manual intervention needed
 
 Just push to `main` and everything happens automatically!
+# Test OIDC trusted publishing
