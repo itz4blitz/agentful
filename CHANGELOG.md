@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/itz4blitz/agentful/compare/v0.1.0...v0.2.0) (2026-01-18)
+
+
+### Features
+
+* restructure docs with landing page and add /agentful command ([18f030c](https://github.com/itz4blitz/agentful/commit/18f030c6ee1fa30a25c5cfd006ff9d1ac75c64d1))
+
 # 1.0.0 (2026-01-18)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@itz4blitz/agentful",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Autonomous product development kit for Claude Code with smart project analysis and natural conversation",
   "type": "module",
   "bin": {
