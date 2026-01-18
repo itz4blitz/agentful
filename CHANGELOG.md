@@ -1,3 +1,21 @@
+# 1.0.0 (2026-01-18)
+
+
+### Bug Fixes
+
+* add contents:write permission to Release workflow ([debdd5a](https://github.com/itz4blitz/agentful/commit/debdd5a836d98dfb9b232927743b5dd2835cc3a5))
+* add NPM_TOKEN to Release workflow ([015be42](https://github.com/itz4blitz/agentful/commit/015be4267512af29e6857f013a3e189d9335576f))
+* correct docs output path in Deploy workflow ([bdcf8ce](https://github.com/itz4blitz/agentful/commit/bdcf8ce219347630413bfe6a78a31d0df8bdd3c9))
+* streamline GitHub Actions for automated publishing ([a389f08](https://github.com/itz4blitz/agentful/commit/a389f08023a6a9841a27dac4798e965e5aea7a82))
+* support both NPM_TOKEN and OIDC for publishing ([163e8e3](https://github.com/itz4blitz/agentful/commit/163e8e3613a4f4a98e8d2b187ec7306f00f61ed9))
+* use GitHub Actions expression for NPM_TOKEN and cleanup docs ([84a7305](https://github.com/itz4blitz/agentful/commit/84a7305a8fe3033dfd99c5f8589eceb7914dfe8e))
+* use npm publish directly with OIDC instead of semantic-release ([c71456f](https://github.com/itz4blitz/agentful/commit/c71456fce4744a5a530cf273b63d6feba1383cb6))
+
+
+### Features
+
+* add smart analysis, conversational interface, and dual product structure ([1659d32](https://github.com/itz4blitz/agentful/commit/1659d324a085aceef8ad04fb1756936787cd8287))
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
