@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/itz4blitz/agentful/compare/v0.2.1...v0.2.2) (2026-01-18)
+
+
+### Bug Fixes
+
+* publish npm package on every release attempt ([460b487](https://github.com/itz4blitz/agentful/commit/460b4870eb60ebd3d00ed77d3bf0717361f8e9bc))
+
 ## [0.2.1](https://github.com/itz4blitz/agentful/compare/v0.2.0...v0.2.1) (2026-01-18)
 
 
