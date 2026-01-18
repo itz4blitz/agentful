@@ -8,16 +8,35 @@ This repository requires GitHub Actions workflows to function properly. Follow t
 
 The `Release` workflow needs an NPM token to publish packages to the npm registry.
 
-#### Creating an NPM Token
+#### Creating an NPM Token (Updated for 2025)
+
+⚠️ **Important**: npm permanently revoked all classic tokens on December 9, 2025. You must now use granular access tokens.
 
 1. Go to [npmjs.com](https://www.npmjs.com/) and log in
 2. Click on your profile picture → **Access Tokens**
-3. Click **Generate New Token** → **Automation** (or **Granular Access Token**)
-4. Set expiration (90 days maximum for automation tokens)
-5. Select the `@itz4blitz/agentful` package or enable for all packages
-6. Set permissions: **Publish** (required)
-7. Click **Generate Token**
-8. **Copy the token immediately** - you won't be able to see it again!
+3. Click **Generate New Token** → **Granular Access Token** (NOT "Automation" - these are deprecated)
+4. Configure the token:
+   - **Name**: agentful-ci (or similar)
+   - **Expiration**: 90 days maximum (set a reminder to renew!)
+   - **Packages**: Select `@itz4blitz/agentful` OR choose "All packages"
+   - **Permissions**: Enable **Publish** and **Read**
+   - **Automation**: Enable **"Bypass 2FA for non-interactive workflows"** (recommended for CI/CD)
+5. Click **Generate Token**
+6. **Copy the token immediately** - you won't be able to see it again!
+
+**Alternative CLI Method**:
+```bash
+npm token create --ci
+# Or for more control:
+npm token create --name agentful-ci
+```
+
+#### Important Notes
+
+- **90-day maximum**: Granular tokens expire after 90 days maximum
+- **2FA Bypass**: Enable the "Bypass 2FA" option for automated workflows
+- **Session tokens**: For local development, use `npm login` which creates 2-hour sessions
+- **OIDC (Recommended)**: For maximum security, consider using GitHub OIDC trusted publishing instead of tokens
 
 #### Adding NPM_TOKEN to GitHub Secrets
 
