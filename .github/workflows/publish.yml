@@ -21,21 +21,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-
-      - name: Upgrade npm for OIDC support
-        run: |
-          npm install -g npm@latest
-          npm --version
-
-      - name: Configure npm for OIDC
-        shell: bash
-        run: |
-          echo "Configuring npm for OIDC..."
-          # GitHub Actions provides OIDC token in ACTIONS_ID_TOKEN_REQUEST_TOKEN
-          # npm needs it in .npmrc format
-          echo "//registry.npmjs.org/:_authToken=\$ACTIONS_ID_TOKEN_REQUEST_TOKEN" > ~/.npmrc
-          echo "registry=https://registry.npmjs.org/" >> ~/.npmrc
-          cat ~/.npmrc
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci

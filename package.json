@@ -1,6 +1,6 @@
 {
   "name": "@itz4blitz/agentful",
-  "version": "0.1.2",
+  "version": "0.1.0",
   "description": "Autonomous product development kit for Claude Code with smart product analysis and natural conversation",
   "type": "module",
   "bin": {
@@ -10,6 +10,7 @@
     "init": "node bin/cli.js init",
     "release": "semantic-release",
     "release:dry-run": "semantic-release --dry-run",
+    "version": "node -e \"const pkg=require('./package.json'); const v=require('./version.json'); v.version=pkg.version; require('fs').writeFileSync('version.json', JSON.stringify(v, null, 2));\"",
     "docs:dev": "vocs dev",
     "docs:build": "vocs build",
     "docs:preview": "vocs preview"

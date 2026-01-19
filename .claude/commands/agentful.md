@@ -3,211 +3,327 @@ name: agentful
 description: Quick reference for agentful autonomous development kit
 ---
 
-# agentful Quick Reference
+# agentful
 
-## What is agentful?
+Autonomous product development with Claude Code.
 
-agentful is an autonomous product development kit for Claude Code that helps teams build products faster by:
+## What It Does
 
-- **Smart project analysis** - Auto-detects tech stack and architecture
-- **Product spec generation** - Creates optimal structure (flat or hierarchical)
-- **Specialized agent creation** - Generates backend/frontend/tester agents for your stack
-- **Autonomous development** - Orchestrator agent coordinates feature development
-- **Quality gates** - Automatic validation and review
+agentful transforms product specifications into working software by:
+
+1. **Understanding your stack** - Auto-detects languages, frameworks, patterns
+2. **Planning the work** - Organizes features into domains and priorities
+3. **Building autonomously** - Specialized agents implement, test, validate
+4. **Ensuring quality** - Automatic code review, testing, security checks
+5. **Tracking progress** - Real-time completion metrics and state
+
+**Result**: Ship features faster with consistent quality.
 
 ## Quick Start
 
 ```bash
-# Initialize agentful in your project
+# Install in your project
 npx @itz4blitz/agentful init
 
-# Start autonomous development (in Claude Code)
+# Start autonomous development
 /agentful-start
 
-# Check progress
+# Monitor progress
 /agentful-status
 ```
 
-## Available Commands
+## Commands
 
-| Command | Purpose |
-|---------|---------|
+| Command | What It Does |
+|---------|--------------|
 | `/agentful-start` | Start autonomous development loop |
-| `/agentful-status` | View progress, completion percentage, current work |
-| `/agentful-validate` | Run quality gates (tests, linting, security) |
-| `/agentful-decide` | Answer pending decisions that block development |
-| `/agentful` | This quick reference |
+| `/agentful-status` | Show completion percentage, current work |
+| `/agentful-validate` | Run quality gates (tests, lint, security) |
+| `/agentful-decide` | Answer blocking decisions |
+| `/agentful` | Show this reference |
 
-## Project Structure Options
+## How It Works
 
-agentful automatically detects the best structure for your project:
+### 1. Define Your Product
 
-**Flat Structure (PRODUCT.md)**
-- Best for: Small to medium projects (< 5 domains)
-- Simple, single-file product specification
-- All features in one place
+Create a product specification (choose one):
 
-**Hierarchical Structure (.claude/product/domains/)**
-- Best for: Large projects, multiple domains, complex architectures
-- Separate index.md for each domain
-- Better organization for teams
+**Flat structure** (simple projects):
+```markdown
+# PRODUCT.md
 
-Detection factors:
-- Number of distinct domains
-- Framework complexity
-- Monorepo vs single package
-- Team size considerations
+## Features
 
-## Real-World Examples
+- [CRITICAL] User authentication (login, register, password reset)
+- [HIGH] User profiles (edit, avatar, preferences)
+- [MEDIUM] Dashboard (analytics, activity feed)
+```
 
-### Example 1: Stripe Integration
-**Input:** "I need to add Stripe subscription management"
+**Hierarchical structure** (complex projects):
+```
+.claude/product/
+├── index.md                 # Product overview
+└── domains/
+    ├── authentication/      # Auth domain
+    │   ├── index.md        # Domain overview
+    │   └── features/
+    │       ├── login.md
+    │       ├── register.md
+    │       └── password-reset.md
+    ├── user-management/     # User domain
+    │   ├── index.md
+    │   └── features/
+    │       ├── profile.md
+    │       └── settings.md
+    └── dashboard/           # Dashboard domain
+        └── features/
+            ├── analytics.md
+            └── reports.md
+```
 
-**What agentful does:**
-1. Orchestrator analyzes product spec for "Billing & Subscriptions" domain
-2. Delegates to @backend agent:
-   - Integrates Stripe SDK
-   - Creates webhook endpoints
-   - Implements subscription CRUD
-3. Delegates to @frontend agent:
-   - Builds payment method UI
-   - Creates subscription management dashboard
-4. Delegates to @tester agent:
-   - Writes tests for payment flows
-   - Tests webhook processing
-5. Runs quality gates
-6. Reports completion with metrics
+### 2. Start Development
 
-**Result:** Production-ready billing feature in one autonomous session
+```
+/agentful-start
+```
 
-### Example 2: Production Bug
-**Input:** "File uploads fail for files larger than 50MB"
+**What happens:**
+- Orchestrator reads product spec
+- Detects your tech stack (language, framework, patterns)
+- Generates specialized agents matching your conventions
+- Picks highest-priority incomplete feature
+- Delegates to appropriate specialist agents
+- Validates quality gates
+- Updates completion status
+- Repeats until 100% complete
 
-**What agentful does:**
-1. Orchestrator starts bug investigation workflow
-2. Searches relevant code (upload routes, middleware configs)
-3. Identifies root cause:
-   - Found multer limit at 50MB in src/config/multer.ts:12
-   - Express limit at 100MB was being overridden
-4. Implements fix and updates tests
-5. Validates with quality gates
-6. Reports fix location and validation results
+### 3. Monitor Progress
 
-**Result:** Bug fixed with root cause analysis and test coverage
+```
+/agentful-status
+```
 
-### Example 3: Complex Feature
-**Input:** "Add collaborative workspaces with real-time editing"
+**Example output:**
+```
+Overall Progress: 47% (6/13 features complete)
 
-**What agentful does:**
-1. Orchestrator identifies multi-domain scope:
-   - User Management (permissions)
-   - Collaboration (workspaces)
-   - Real-time infrastructure
-2. @architect agent designs system:
-   - Data models (workspaces, members, invites)
-   - Permission roles (OWNER, ADMIN, EDITOR, VIEWER)
-   - Tech selection (Yjs for CRDTs, Hocuspocus for WebSocket)
-3. Parallel execution:
-   - @backend: Invite API, workspace CRUD, WebSocket auth
-   - @frontend: Workspace UI, member management, real-time editor
-   - @tester: Multi-user scenario tests
-4. Quality gates validate all components
-5. Creates deployment checklist (Redis, Yjs server, docker-compose)
+┌─ Authentication Domain ──────────────────── 100% ✓
+│  ✓ Login feature
+│  ✓ Register feature
+│  ✓ Password reset feature
+│
+├─ User Management Domain ───────────────────  60% │
+│  ✓ Profile feature
+│  ⟳ Settings feature (backend complete, frontend pending)
+│
+└─ Dashboard Domain ─────────────────────────   0% ○
+   ○ Analytics feature (not started)
+   ○ Reports feature (not started)
 
-**Result:** Production-ready collaboration system with architecture docs
+Quality Gates:
+  ✅ Tests passing (47/47)
+  ✅ No type errors
+  ⚠️  Coverage at 78% (need 80%)
+  ✅ No security issues
+```
 
-## Autonomous Development Loop
+## Agent System
 
-When you run `/agentful-start`, here's what happens:
+### Orchestrator
+**Role**: Coordinates all development work
+- Classifies work type (feature, bugfix, refactor, maintenance)
+- Routes to appropriate workflow
+- Delegates to specialist agents
+- Tracks progress and blocks on decisions
+- Never writes code directly
 
-1. **Read state** - Loads state.json, completion.json, decisions.json
-2. **Identify next task** - Finds highest-priority incomplete feature
-3. **Delegate to specialists** - Routes to appropriate agent (@backend, @frontend, etc.)
-4. **Implement & test** - Agent builds feature and writes tests
-5. **Quality validation** - Runs all quality gates
-6. **Update completion** - Marks feature complete, updates progress
-7. **Repeat** - Continues until all features complete or blocked by decisions
+### Specialist Agents
+
+| Agent | Responsibility |
+|-------|----------------|
+| **@architect** | Analyzes project patterns, generates specialized agents |
+| **@backend** | APIs, database schemas, services, repositories, auth |
+| **@frontend** | UI components, pages, state management, forms, styling |
+| **@tester** | Unit tests, integration tests, E2E tests, 80% coverage |
+| **@reviewer** | Code quality, dead code detection, security, lint |
+| **@fixer** | Fixes validation failures, removes dead code, adds tests |
+
+### How Delegation Works
+
+```
+User: "Build authentication system"
+
+Orchestrator:
+  → Classifies as FEATURE_DEVELOPMENT
+  → Delegates to @backend: "Implement JWT login API"
+  → Delegates to @frontend: "Create login form UI"
+  → Delegates to @tester: "Write auth tests"
+  → Delegates to @reviewer: "Review auth implementation"
+  → Updates completion.json: auth = 100%
+  → Continues to next feature
+```
 
 ## Quality Gates
 
-agentful automatically runs these checks:
+Every change automatically passes through:
 
-- ✅ TypeScript compilation (no type errors)
-- ✅ Linting (ESLint/Prettier/BIome)
-- ✅ Unit tests (minimum 80% coverage)
-- ✅ Integration tests
-- ✅ Security audit (npm audit or equivalent)
-- ✅ Dead code detection
-- ✅ Performance benchmarks (if configured)
+- **Type checking** - No type errors
+- **Linting** - Consistent code style
+- **Tests** - All tests passing
+- **Coverage** - Minimum 80% code coverage
+- **Security** - No vulnerabilities, hardcoded secrets
+- **Dead code** - No unused exports, imports, files
+- **Performance** - Benchmarks (if configured)
 
-## State Management
+**If gates fail** → @fixer automatically resolves issues → re-validates
 
-agentful tracks progress in `.agentful/`:
+## State Tracking
+
+Progress lives in `.agentful/`:
 
 ```
 .agentful/
-├── state.json          # Current work, agent assignments
-├── completion.json     # Feature completion status
-├── decisions.json      # Pending user decisions
-└── conversation-history.json  # Chat history (future)
+├── state.json              # Current work, phase, iterations
+├── completion.json         # Feature completion (domains → features)
+├── decisions.json          # Pending user decisions
+└── architecture.json       # Detected tech stack, patterns
 ```
 
-## Best Practices
+**Example completion.json:**
+```json
+{
+  "domains": {
+    "authentication": {
+      "status": "complete",
+      "score": 100,
+      "features": {
+        "login": { "status": "complete", "score": 100 },
+        "register": { "status": "complete", "score": 100 }
+      }
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "coverage_80": false
+  },
+  "overall": 65
+}
+```
 
-1. **Write clear product specs** - Good specs = better autonomous development
-2. **Answer decisions promptly** - Decisions block the autonomous loop
-3. **Review commits** - agentful creates commits, you should review
-4. **Run validation often** - `/agentful-validate` catches issues early
-5. **Check status before merging** - `/agentful-status` shows true completion
+## Decision Handling
+
+When agentful needs input:
+
+1. **Pauses development** on blocked features
+2. **Adds decision** to `decisions.json`
+3. **Continues** with unblocked work
+4. **Notifies you** to run `/agentful-decide`
+
+**Example decision:**
+```json
+{
+  "id": "decision-001",
+  "question": "Should auth use JWT or session cookies?",
+  "options": [
+    "JWT (stateless, scalable)",
+    "Sessions (simpler, built-in)",
+    "Clerk (managed service)"
+  ],
+  "blocking": ["authentication/login", "authentication/register"]
+}
+```
+
+## Work Types
+
+| Type | Trigger | Workflow |
+|------|---------|----------|
+| **Feature** | "Build X", "Add Y feature" | Autonomous loop until complete |
+| **Bugfix** | "Fix X bug", "Y is broken" | Quick fix → test → validate → stop |
+| **Enhancement** | "Add X to Y", "Enhance Z" | Enhance → test → validate → stop |
+| **Refactor** | "Refactor X", "Improve Y code" | Refactor → test → validate → stop |
+| **Maintenance** | "Update deps", "Security scan" | Update → test → validate → stop |
 
 ## Continuous Development
 
-For 24/7 autonomous development, use Claude Code's ralph-loop:
+For 24/7 autonomous development:
 
-```
+```bash
 /ralph-loop "/agentful-start" \
   --max-iterations 50 \
   --completion-promise "AGENTFUL_COMPLETE"
 ```
 
-This runs agentful continuously until:
-- All features are complete
-- A decision is needed (pauses for you to answer)
+Stops when:
+- All features complete (100%)
+- Decision needed (pauses for input)
 - Quality gates fail (pauses for review)
+
+## Best Practices
+
+**1. Write Clear Specifications**
+- Define features with acceptance criteria
+- Set priority levels (CRITICAL, HIGH, MEDIUM, LOW)
+- Group related features into domains (for complex projects)
+
+**2. Answer Decisions Promptly**
+- Decisions block the autonomous loop
+- Use `/agentful-decide` to resolve multiple at once
+
+**3. Review Commits**
+- agentful creates commits after each validated change
+- Review before pushing to main
+
+**4. Run Validation Often**
+- `/agentful-validate` catches issues early
+- Fix small problems before they compound
+
+**5. Check Status Before Merging**
+- `/agentful-status` shows true completion
+- Ensure all gates passing before deploying
+
+## Technology Detection
+
+agentful works with **any** tech stack:
+
+- **Languages**: TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, Elixir, etc.
+- **Frameworks**: React, Vue, Angular, Svelte, Next.js, Django, Flask, ASP.NET, Spring, Express, Fastify, etc.
+- **Databases**: PostgreSQL, MySQL, MongoDB, Redis, etc.
+- **Testing**: Jest, Vitest, Pytest, JUnit, Go test, etc.
+
+It learns **your project's patterns** and generates agents that match your conventions.
 
 ## Architecture
 
-agentful consists of:
+```
+┌─────────────────────────────────────────────┐
+│              agentful Framework              │
+├─────────────────────────────────────────────┤
+│  CLI Tool (npx @itz4blitz/agentful init)    │
+│  ├─ Project initialization                  │
+│  ├─ Tech stack detection                    │
+│  └─ Template creation                       │
+├─────────────────────────────────────────────┤
+│  Slash Commands (Claude Code)               │
+│  ├─ /agentful-start  (orchestrator)        │
+│  ├─ /agentful-status (progress)             │
+│  ├─ /agentful-validate (quality gates)      │
+│  └─ /agentful-decide  (decisions)          │
+├─────────────────────────────────────────────┤
+│  Agent System                               │
+│  ├─ Orchestrator (coordination)             │
+│  ├─ Architect (pattern detection)           │
+│  ├─ Backend (APIs, database)                │
+│  ├─ Frontend (UI, components)               │
+│  ├─ Tester (tests, coverage)                │
+│  ├─ Reviewer (quality, security)            │
+│  └─ Fixer (validation failures)             │
+└─────────────────────────────────────────────┘
+```
 
-1. **CLI tool** (`npx @itz4blitz/agentful`)
-   - Project initialization
-   - Tech stack detection
-   - Agent generation
-   - Template creation
+## Get Help
 
-2. **Claude Code slash commands**
-   - `/agentful-start` - Orchestrator entry point
-   - `/agentful-status` - Progress tracking
-   - `/agentful-validate` - Quality gates
-   - `/agentful-decide` - Decision resolution
-
-3. **Specialized agents** (auto-generated)
-   - @orchestrator - Coordinates all work
-   - @backend - Builds APIs, database schemas
-   - @frontend - Builds UI components, pages
-   - @tester - Writes and runs tests
-   - @reviewer - Code quality and security
-   - @architect - System design (complex features)
-   - @fixer - Bug fixes and validation failures
-
-## Getting Help
-
-- Documentation: https://agentful.app
-- GitHub: https://github.com/itz4blitz/agentful
-- Issues: https://github.com/itz4blitz/agentful/issues
-
-## Version
-
-Current version: 0.1.1
-
-Check for updates: `npm outdated @itz4blitz/agentful`
+- **Documentation**: https://agentful.app
+- **GitHub**: https://github.com/itz4blitz/agentful
+- **Issues**: https://github.com/itz4blitz/agentful/issues
+- **Version**: 0.1.1 (check updates: `npm outdated @itz4blitz/agentful`)
