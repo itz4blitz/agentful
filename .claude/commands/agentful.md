@@ -40,7 +40,18 @@ npx @itz4blitz/agentful init
 | `/agentful-status` | Show completion percentage, current work |
 | `/agentful-validate` | Run quality gates (tests, lint, security) |
 | `/agentful-decide` | Answer blocking decisions |
+| `/agentful-product` | Smart product requirements planning and analysis |
 | `/agentful` | Show this reference |
+
+### Product Planning (Optional)
+
+Before starting development, you can use `/agentful-product` to:
+- Create and refine product specifications
+- Analyze requirements for gaps and ambiguities
+- Get a readiness score before development begins
+- Resolve blocking issues interactively
+
+This is optional but recommended for complex projects. Run `/agentful-product` to get started.
 
 ## How It Works
 

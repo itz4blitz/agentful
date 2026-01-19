@@ -9,6 +9,43 @@ This command shows the current state of autonomous product development.
 
 ## Display Format
 
+### Product Readiness (if `.agentful/product-analysis.json` exists)
+
+Display this section FIRST, before the header:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Product Readiness: 85% ⚠️
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Completeness:    92% ✅
+Clarity:         88% ⚠️
+Feasibility:     78% ⚠️
+Testability:     85% ⚠️
+Consistency:     82% ⚠️
+
+⚠️  2 blocking issues - run /agentful-product to resolve
+
+⚠️  Product spec has minor gaps - recommend refinement
+
+Last analyzed: 2 hours ago
+Update: /agentful-product
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+Emoji guidelines for scores:
+- 90-100%: ✅
+- 70-89%: ⚠️
+- Below 70%: ❌
+
+Overall readiness status:
+- Score >= 90%: "✅ Product spec is ready for development"
+- Score >= 70%: "⚠️  Product spec has minor gaps - recommend refinement"
+- Score < 70%: "❌ Product spec needs refinement before development"
+
+Blocking issues line only shows if there are blocking issues (count > 0).
+
 ### Header
 
 ```
@@ -81,10 +118,16 @@ Iterations: 24
 
 Read and display:
 
-1. `.agentful/state.json` - Current work, phase, iterations
-2. `.agentful/completion.json` - Features and gates
-3. `.agentful/decisions.json` - Pending decisions
-4. `.claude/product/index.md` - Product name and overview
+1. `.agentful/product-analysis.json` (optional) - Product readiness score and breakdown
+   - Only display product readiness section if this file exists
+   - Calculate emoji based on score thresholds (90-100: ✅, 70-89: ⚠️, <70: ❌)
+   - Show blocking issues count if > 0
+   - Format timestamp as relative time (e.g., "2 hours ago", "just now", "3 days ago")
+
+2. `.agentful/state.json` - Current work, phase, iterations
+3. `.agentful/completion.json` - Features and gates
+4. `.agentful/decisions.json` - Pending decisions
+5. `.claude/product/index.md` - Product name and overview
 
 Format the output nicely with ASCII art for readability.
 

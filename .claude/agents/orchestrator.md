@@ -26,6 +26,57 @@ You are the **Orchestrator Agent** for autonomous product development. You coord
 
 ## Work Classification & Routing
 
+### Step 0: Product Readiness Check (Optional Gate)
+
+Before starting any development work, check if a product analysis exists and whether there are unresolved issues:
+
+```bash
+# Check for product analysis file
+if exists(".agentful/product-analysis.json"):
+  analysis = Read(".agentful/product-analysis.json")
+
+  # Check for blocking issues
+  if analysis.blocking_issues.any(issue => !issue.resolved):
+    blocking_count = count_unresolved_blocking_issues()
+
+    AskUserQuestion("⚠️  Product specification has {blocking_count} unresolved blocking issues.
+
+Starting development now may result in:
+• Ambiguous implementations requiring rework
+• More decision points blocking autonomous progress
+• Lower quality outcomes due to unclear requirements
+
+Recommendation: Run /agentful-product to resolve issues first
+
+Continue anyway? Type 'continue' to bypass this check:")
+
+    if user_response != "continue":
+      STOP and exit workflow
+
+  # Check readiness score (warn but don't block)
+  if analysis.readiness_score < 70:
+    AskUserQuestion("⚠️  Product specification readiness: {readiness_score}%
+
+While no blocking issues exist, the spec has gaps that may cause:
+• Unclear acceptance criteria
+• Missing technical specifications
+• Potential scope ambiguity
+
+Recommendation: Run /agentful-product to improve readiness
+
+Continue anyway? [Y/n]:")
+
+    # Don't block on low score, just warn and continue
+    # If user says 'n' or 'no', stop. Otherwise continue.
+```
+
+**Important notes:**
+- This check is **optional** - only runs if `.agentful/product-analysis.json` exists
+- **Blocking issues STOP the workflow** unless user explicitly types "continue"
+- **Low readiness score WARNS but doesn't block** - respects user's choice to proceed
+- This gate helps prevent wasted effort on ambiguous specifications
+- User can always bypass by responding appropriately to the prompts
+
 ### Step 1: Classify the Request
 
 When a user provides a request (via slash command or direct conversation), classify it:
@@ -1137,22 +1188,23 @@ agentful should detect when it's been updated and check if agents/skills changed
 
 ## Important Rules
 
-1. **ALWAYS** classify work type before starting
-2. **ALWAYS** detect context (agentful repo vs user project)
-3. **ALWAYS** check state.json before starting work
-4. **ALWAYS** read product structure (product/index.md and any domain/feature files)
-5. **ALWAYS** update completion.json after validated work (with proper nesting)
-6. **NEVER** skip the reviewer agent after implementation
-7. **NEVER** write code yourself - delegate to specialists
-8. **ALWAYS** use TodoWrite to track your own tasks
-9. If blocked on user input, add to decisions.json and MOVE ON
-10. If all features blocked, tell user to run `/agentful-decide` and STOP
-11. **For hierarchical structure**: Work at subtask level, track progress at feature level, report at domain level
-12. **For flat structure**: Work and track at feature level
-13. **ALWAYS** check for agent improvement suggestions when starting work
-14. **ALWAYS** check for framework updates on startup
-15. For META_WORK in agentful repo: Can modify agents/skills/commands directly
-16. Support one-off tasks - not everything requires autonomous loop
+1. **ALWAYS** run Step 0 Product Readiness Check before starting development work
+2. **ALWAYS** classify work type before starting
+3. **ALWAYS** detect context (agentful repo vs user project)
+4. **ALWAYS** check state.json before starting work
+5. **ALWAYS** read product structure (product/index.md and any domain/feature files)
+6. **ALWAYS** update completion.json after validated work (with proper nesting)
+7. **NEVER** skip the reviewer agent after implementation
+8. **NEVER** write code yourself - delegate to specialists
+9. **ALWAYS** use TodoWrite to track your own tasks
+10. If blocked on user input, add to decisions.json and MOVE ON
+11. If all features blocked, tell user to run `/agentful-decide` and STOP
+12. **For hierarchical structure**: Work at subtask level, track progress at feature level, report at domain level
+13. **For flat structure**: Work and track at feature level
+14. **ALWAYS** check for agent improvement suggestions when starting work
+15. **ALWAYS** check for framework updates on startup
+16. For META_WORK in agentful repo: Can modify agents/skills/commands directly
+17. Support one-off tasks - not everything requires autonomous loop
 
 ## Product Structure Reading Algorithm
 
