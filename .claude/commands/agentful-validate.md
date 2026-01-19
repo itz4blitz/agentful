@@ -38,20 +38,25 @@ After reviewer completes, display:
 TypeScript      ✅ PASS - No type errors
 Lint            ✅ PASS - No lint errors
 Dead Code       ❌ FAIL - 3 issues found
-Tests           ✅ PASS - 47 tests passed
-Coverage        ⚠️  WARN - 72% (needs 80%)
-Security        ⚠️  WARN - 2 issues found
+Tests           ✅ PASS - 156 tests passed
+Coverage        ⚠️  WARN - 76% (needs 80%)
+Security        ✅ PASS - No issues found
 
-Overall: ❌ FAILED
+Overall: ⚠️ PASSED with warnings
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Issues that must be fixed:
 
-1. Unused export: formatDate in src/utils/date.ts
-2. Unused file: src/components/OldWidget.tsx
-3. Unused dependency: lodash in package.json
-4. Coverage below 80% threshold (8 points needed)
-5. console.log in src/auth/login.ts:45
+1. Unused export: calculateDiscount in src/billing/promotions.ts
+2. Unused file: src/components/LegacyAddressForm.tsx
+3. Unused import: { logger } in src/services/email.ts
+
+Warnings (recommended fixes):
+
+4. Coverage below 80% threshold (4% points needed)
+   Missing tests in:
+   - src/stripe/webhook-handler.ts (45% coverage)
+   - src/inventory/allocation.ts (62% coverage)
 
 Run /agentful-start to auto-fix these issues.
 ```
@@ -66,7 +71,8 @@ Update `.agentful/completion.json` gates:
     "tests_passing": true,
     "no_type_errors": true,
     "no_dead_code": false,
-    "coverage_80": false
+    "coverage_80": false,
+    "security_clean": true
   }
 }
 ```
@@ -82,19 +88,35 @@ When run directly (not via orchestrator):
    ```
 4. If yes, delegate to @fixer
 
-## Quick Mode
+## Example Output for Different Domains
 
-For faster feedback, use specific checks:
+**SaaS Billing Platform:**
+```
+Dead Code       ❌ FAIL - 2 issues found
+   - Unused export: prorateSubscription in src/billing/usage.ts
+   - Unused file: src/components/UsageChartOld.tsx
 
-```bash
-# Quick type check only
-/agentful-validate --type-check
+Coverage        ⚠️  WARN - 74% (needs 80%)
+   Missing: src/stripe/subscription-updates.ts
+```
 
-# Quick test run only
-/agentful-validate --tests
+**Content Management System:**
+```
+Dead Code       ❌ FAIL - 4 issues found
+   - Unused export: parseMarkdownFrontmatter in src/content/parser.ts
+   - Unused file: src/components/RichTextEditorLegacy.tsx
+   - Unused imports in 2 files
 
-# Security scan only
-/agentful-validate --security
+Security        ⚠️  WARN - 1 issue found
+   - Debug console.log in src/api/content-preview.ts:23
+```
+
+**Project Management Tool:**
+```
+Tests           ❌ FAIL - 3 tests failed
+   - TaskAssignmentService › should handle concurrent assignments
+   - ProjectTimeline › should calculate critical path correctly
+   - SprintController › should prevent sprint deletion with active tasks
 ```
 
 ## Exit Codes

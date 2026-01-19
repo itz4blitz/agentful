@@ -18,14 +18,14 @@ Read `.agentful/decisions.json`:
   "pending": [
     {
       "id": "decision-001",
-      "question": "Should auth use JWT or session cookies?",
+      "question": "How should we handle inventory race conditions during flash sales?",
       "options": [
-        "JWT (stateless, scalable)",
-        "Sessions (simpler, built-in)",
-        "Clerk (managed service)"
+        "Pessimistic locking (database row locks during checkout)",
+        "Optimistic locking with automatic retry on conflict",
+        "Queue-based processing (serialize checkout requests)"
       ],
-      "context": "Building authentication system for .claude/product/index.md",
-      "blocking": ["auth-feature", "user-profile-feature"],
+      "context": "Shopfinity e-commerce platform expects 1000+ concurrent checkouts during Black Friday. Current implementation allows overselling when multiple users attempt to purchase the same item simultaneously.",
+      "blocking": ["checkout-feature", "order-history-feature"],
       "timestamp": "2026-01-18T00:00:00Z"
     }
   ],
@@ -41,17 +41,30 @@ For each pending decision, display:
 ┌────────────────────────────────────────────────────────────┐
 │ Decision #1                                                │
 ├────────────────────────────────────────────────────────────┤
-│ Question: Should auth use JWT or session cookies?          │
+│ Question: How should we handle inventory race conditions   │
+│ during flash sales?                                        │
 │                                                            │
-│ Context: Building authentication system for .claude/product/index.md │
+│ Context: Shopfinity expects 1000+ concurrent checkouts     │
+│ during Black Friday. Current implementation allows          │
+│ overselling when multiple users attempt to purchase        │
+│ the same item simultaneously.                              │
 │                                                            │
 │ Options:                                                   │
-│   [1] JWT (stateless, scalable)                            │
-│   [2] Sessions (simpler, built-in)                         │
-│   [3] Clerk (managed service)                              │
+│   [1] Pessimistic locking (database row locks)             │
+│       Pros: Simple, guarantees consistency                 │
+│       Cons: Poor performance under high concurrency        │
+│                                                            │
+│   [2] Optimistic locking with automatic retry              │
+│       Pros: Better performance, handles spikes well        │
+│       Cons: Requires retry logic, potential starvation     │
+│                                                            │
+│   [3] Queue-based processing                               │
+│       Pros: Full control, can prioritize customers         │
+│       Cons: Complex, adds infrastructure                   │
+│                                                            │
 │   [4] Custom input...                                      │
 │                                                            │
-│ Blocking: auth-feature, user-profile-feature              │
+│ Blocking: checkout-feature, order-history-feature          │
 └────────────────────────────────────────────────────────────┘
 
 Your choice:
@@ -67,8 +80,8 @@ After user selects:
   "resolved": [
     {
       "id": "decision-001",
-      "question": "Should auth use JWT or session cookies?",
-      "answer": "JWT (stateless, scalable)",
+      "question": "How should we handle inventory race conditions during flash sales?",
+      "answer": "Queue-based processing",
       "timestamp_resolved": "2026-01-18T00:30:00Z"
     }
   ],
@@ -82,8 +95,58 @@ Remove from `.agentful/state.json` blocked_on array:
 
 ```json
 {
-  "blocked_on": []  // Was: ["auth-feature", "user-profile-feature"]
+  "blocked_on": []  // Was: ["checkout-feature", "order-history-feature"]
 }
+```
+
+## Example Decisions Across Different Domains
+
+**SaaS Billing Platform:**
+```
+Question: How should we prorate subscription changes mid-cycle?
+
+Options:
+  [1] Prorate to the day (calculate daily rate)
+  [2] Prorate to the week (simpler calculation)
+  [3] Charge full amount, credit next cycle
+  [4] Custom input...
+
+Context: Startup plan users frequently upgrade/downgrade.
+Complex daily proration may confuse customers on invoices.
+
+Blocking: subscription-management, invoice-generation
+```
+
+**Content Management System:**
+```
+Question: How should we handle concurrent content edits?
+
+Options:
+  [1] Last write wins (overwrite without warning)
+  [2] Optimistic locking (show conflict, let user merge)
+  [3] Pessimistic locking (lock document on edit)
+  [4] Google Docs-style real-time collaboration
+
+Context: Marketing team of 12 editors reports frequent
+conflicts when updating blog posts and landing pages.
+
+Blocking: content-editor, version-control
+```
+
+**Project Management Tool:**
+```
+Question: How should we calculate project completion percentage?
+
+Options:
+  [1] Equal weight (all tasks count equally)
+  [2] Story points (weighted by effort estimate)
+  [3] Time spent (weighted by actual hours logged)
+  [4] Custom (manual percentage per task)
+
+Context: Developers complain that completing 10 small tasks
+shows same progress as 1 complex architectural change.
+
+Blocking: dashboard, reporting-metrics
 ```
 
 ## Interactive Mode
@@ -93,14 +156,14 @@ If there are multiple pending decisions, process them one at a time:
 ```
 You have 3 pending decisions to resolve:
 
-[1/3] Should auth use JWT or session cookies?
+[1/3] How should we handle inventory race conditions?
+  > 3 (Queue-based processing)
+
+[2/3] Which payment gateway should we use?
   > 1
 
-[2/3] Which database provider?
-  > 2
-
-[3/3] Styling framework preference?
-  > 4 (custom: "Tailwind CSS")
+[3/3] Should we support international shipping from day 1?
+  > 4 (custom: "Only US and Canada, expand in Q2")
 
 ✅ All decisions resolved! Run /agentful-start to continue.
 ```
@@ -122,18 +185,30 @@ Use AskUserQuestion tool to present decisions interactively:
 ```
 AskUserQuestion({
   questions: [{
-    question: "Should auth use JWT or session cookies?",
+    id: "decision-001",
+    question: "How should we handle inventory race conditions?",
     options: [
-      { label: "JWT", description: "Stateless, scalable" },
-      { label: "Sessions", description: "Simpler, built-in" },
-      { label: "Clerk", description: "Managed service" }
-    ]
+      {
+        label: "Pessimistic locking",
+        description: "Database row locks during checkout"
+      },
+      {
+        label: "Optimistic locking",
+        description: "Automatic retry on conflict"
+      },
+      {
+        label: "Queue-based processing",
+        description: "Serialize checkout requests"
+      }
+    ],
+    context: "Expected 1000+ concurrent checkouts during Black Friday...",
+    blocking: ["checkout-feature", "order-history-feature"]
   }]
 })
 ```
 
 After receiving answers:
-1. Update decisions.json
-2. Update state.json blocked_on
+1. Update decisions.json (move to resolved)
+2. Update state.json blocked_on (clear the array)
 3. Show summary of what was resolved
 4. Suggest running /agentful-start

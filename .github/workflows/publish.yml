@@ -20,15 +20,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
-          # Do NOT set NODE_AUTH_TOKEN - we're using pure OIDC
+          node-version: '24'
 
-      - name: Configure npm for OIDC
+      - name: Upgrade npm for OIDC support
         run: |
-          # Create .npmrc that tells npm to use OIDC
-          echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > .npmrc
-          echo "registry=https://registry.npmjs.org/" >> .npmrc
+          npm install -g npm@latest
+          npm --version
 
       - name: Install dependencies
         run: npm ci

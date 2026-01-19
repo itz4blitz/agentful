@@ -287,7 +287,7 @@ function detect_ambiguity(message: string): AmbiguityAnalysis {
   const pronouns = message.match(pronounPattern);
   if (pronouns && pronouns.length > 0) {
     // If message starts with pronoun, highly likely needs context
-    if (message.trim().startsWith(/^(it|that|this|they|them)/i)) {
+    if (/^(it|that|this|they|them)/i.test(message.trim())) {
       ambiguities.push({
         type: 'pronoun_without_antecedent',
         severity: 'high',

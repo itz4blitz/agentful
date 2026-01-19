@@ -93,7 +93,46 @@ myapp/
 - Use __str__ method for display
 
 ## Real Examples from This Project
-[Paste actual Django code from the project]
+
+```python
+# Actual pattern found in src/users/views.py
+class UserDetailView(LoginRequiredMixin, DetailView):
+    model = User
+    template_name = 'users/detail.html'
+    context_object_name = 'user'
+    slug_field = 'username'
+    slug_url_kwarg = 'username'
+
+    def get_queryset(self):
+        return User.objects.filter(
+            is_active=True,
+            profile__is_private=False
+        ).select_related('profile')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['posts'] = self.object.posts.filter(
+            published=True
+        ).prefetch_related('tags')[:10]
+        return context
+```
+
+```python
+# Actual pattern found in src/users/models.py
+class User(models.Model):
+    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=30, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['email']),
+            models.Index(fields=['username']),
+        ]
+
+    def __str__(self):
+        return self.username
+```
 ```
 
 #### C#/.NET Project
@@ -123,7 +162,74 @@ From analyzing this project:
 - LINQ for queries, not raw SQL
 
 ## Real Examples from This Project
-[Paste actual C# code from the project]
+
+```csharp
+// Actual pattern found in Controllers/UsersController.cs
+[ApiController]
+[Route("api/[controller]")]
+public class UsersController : ControllerBase
+{
+    private readonly IUserService _userService;
+    private readonly ILogger<UsersController> _logger;
+
+    public UsersController(IUserService userService, ILogger<UsersController> logger)
+    {
+        _userService = userService;
+        _logger = logger;
+    }
+
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(UserViewModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<UserViewModel>> GetUser(Guid id)
+    {
+        try
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting user {UserId}", id);
+            return StatusCode(500, new { error = "Internal server error" });
+        }
+    }
+}
+```
+
+```csharp
+// Actual pattern found in Data/Repositories/UserRepository.cs
+public class UserRepository : IUserRepository
+{
+    private readonly AppDbContext _context;
+
+    public UserRepository(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<User?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .Include(u => u.Profile)
+            .FirstOrDefaultAsync(u => u.Id == id, ct);
+    }
+
+    public async Task<IEnumerable<User>> GetActiveUsersAsync(CancellationToken ct = default)
+    {
+        return await _context.Users
+            .AsNoTracking()
+            .Where(u => u.IsActive && u.EmailConfirmed)
+            .OrderBy(u => u.CreatedAt)
+            .ToListAsync(ct);
+    }
+}
+```
 ```
 
 #### Go Project
@@ -160,7 +266,79 @@ pkg/                  # Public packages
 - Named returns for clarity
 
 ## Real Examples from This Project
-[Paste actual Go code from the project]
+
+```go
+// Actual pattern found in internal/handlers/user.go
+package handlers
+
+import (
+    "context"
+    "net/http"
+    "github.com/gin-gonic/gin"
+)
+
+type UserHandler struct {
+    userService UserService
+    logger      *zap.Logger
+}
+
+func NewUserHandler(us UserService, l *zap.Logger) *UserHandler {
+    return &UserHandler{
+        userService: us,
+        logger:      l,
+    }
+}
+
+func (h *UserHandler) GetUser(c *gin.Context) {
+    ctx := c.Request.Context()
+    id := c.Param("id")
+
+    user, err := h.userService.GetUserByID(ctx, id)
+    if err != nil {
+        if errors.Is(err, ErrUserNotFound) {
+            c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+            return
+        }
+        h.logger.Error("failed to get user", zap.Error(err))
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+        return
+    }
+
+    c.JSON(http.StatusOK, user)
+}
+```
+
+```go
+// Actual pattern found in internal/services/user.go
+type UserService struct {
+    repo   UserRepository
+    cache  CacheService
+    logger *zap.Logger
+}
+
+func (s *UserService) GetUserByID(ctx context.Context, id string) (*User, error) {
+    // Try cache first
+    if user, err := s.cache.Get(ctx, "user:"+id); err == nil {
+        return user, nil
+    }
+
+    // Fall back to database
+    user, err := s.repo.FindByID(ctx, id)
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, ErrUserNotFound
+        }
+        return nil, fmt.Errorf("failed to find user: %w", err)
+    }
+
+    // Populate cache
+    if err := s.cache.Set(ctx, "user:"+id, user, 5*time.Minute); err != nil {
+        s.logger.Warn("failed to cache user", zap.Error(err))
+    }
+
+    return user, nil
+}
+```
 ```
 
 #### Node.js/Express Project
@@ -207,13 +385,97 @@ src/
 
 ## Examples from This Project
 
-[Insert actual code samples found during analysis]
+```typescript
+// Actual pattern found in src/app/api/auth/login/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { AuthService } from '@/services/auth.service';
+import { loginSchema } from '@/schemas/auth.schema';
+import { ZodError } from 'zod';
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const validated = loginSchema.parse(body);
+
+    const authService = new AuthService();
+    const result = await authService.login(validated.email, validated.password);
+
+    return NextResponse.json(
+      { user: result.user, token: result.token },
+      { status: 200 }
+    );
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    if (error instanceof AuthError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+```typescript
+// Actual pattern found in src/app/dashboard/page.tsx
+import { Suspense } from 'react';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { DashboardStats } from '@/components/dashboard-stats';
+import { RecentActivity } from '@/components/recent-activity';
+
+export default async function DashboardPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user) {
+    redirect('/login');
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+
+      <Suspense fallback={<StatsSkeleton />}>
+        <DashboardStats userId={session.user.id} />
+      </Suspense>
+
+      <Suspense fallback={<ActivitySkeleton />}>
+        <RecentActivity userId={session.user.id} />
+      </Suspense>
+    </div>
+  );
+}
+
+function StatsSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="h-32 bg-gray-200 animate-pulse rounded-lg" />
+      ))}
+    </div>
+  );
+}
+```
 
 ## Rules
 - Follow the exact patterns this project uses
 - Match the coding style (brackets, quotes, etc.)
 - Use the same folder structure
 - Import from the same paths
+- Always use TypeScript strict mode
+- Handle errors consistently
+- Use environment variables for secrets
 ```
 
 ### 3. Agent Template
@@ -221,10 +483,12 @@ src/
 When you create an agent, ALWAYS include:
 
 1. **Project-Specific Conventions** - What you learned from analyzing the code
-2. **Real Examples** - Paste actual code from the project
+2. **Real Examples** - Paste actual code from the project (never placeholders)
 3. **File Structure** - How THIS project organizes files
 4. **Naming Conventions** - How THIS project names things
 5. **Import Patterns** - How THIS project imports modules
+6. **Error Handling** - How THIS project handles errors
+7. **Authentication** - How THIS project implements auth
 
 ### 4. Update Architecture
 
@@ -242,7 +506,10 @@ Create/update `.agentful/architecture.json`:
     "state_management": "Zustand",
     "api_patterns": "Route handlers + NextResponse",
     "component_style": "Functional components with hooks",
-    "file_organization": "Feature-based folders"
+    "file_organization": "Feature-based folders",
+    "error_handling": "Try/catch with custom error classes",
+    "authentication": "NextAuth.js v5",
+    "testing": "Vitest + React Testing Library + Playwright"
   },
   "generated_agents": [
     "nextjs-specialist",
@@ -254,7 +521,11 @@ Create/update `.agentful/architecture.json`:
     "API routes in src/app/api/",
     "Zustand stores in src/store/",
     "Components use 'use client' directive",
-    "All TypeScript, strict mode enabled"
+    "All TypeScript, strict mode enabled",
+    "Environment variables via next-env",
+    "Error responses use NextResponse.json()",
+    "Database queries use Prisma Client",
+    "Auth session checks on server components"
   ]
 }
 ```
@@ -281,11 +552,12 @@ Task("tailwind-specialist", "Style the form following project conventions")
 1. **Language/Framework Agnostic** - You work with ANY codebase (.NET, Python, Go, Rust, Java, Node, Ruby, PHP, etc.)
 2. **NEVER hardcode patterns** - always LEARN from the actual code
 3. **ALWAYS sample real files** to understand conventions
-4. **ALWAYS include real examples** from the project in agents you create
+4. **ALWAYS include real examples** from the project in agents you create (NEVER use "[Paste actual code here]" placeholders)
 5. **NEVER assume** - if unsure, add a decision asking the user
 6. **Generated agents are marked** `auto-generated/` so users know they can customize
 7. **ALWAYS respect existing patterns** - don't introduce new conventions
 8. **Adapt to the project** - if it's Flask, learn Flask patterns. If it's ASP.NET, learn ASP.NET patterns
+9. **NEVER use placeholder code** - always show REAL examples from the codebase
 
 ## Language Detection Guide
 

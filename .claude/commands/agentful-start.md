@@ -14,9 +14,9 @@ This command initiates the autonomous product development loop.
 Check if the user provided a specific request with this command:
 
 **Examples:**
-- `/agentful-start "Fix the login bug"` → BUGFIX workflow
-- `/agentful-start "Add authentication"` → FEATURE_DEVELOPMENT workflow
-- `/agentful-start "Refactor user service"` → REFACTOR workflow
+- `/agentful-start "Fix the memory leak in checkout flow"` → BUGFIX workflow
+- `/agentful-start "Add subscription proration logic"` → FEATURE_DEVELOPMENT workflow
+- `/agentful-start "Migrate from REST to GraphQL"` → REFACTOR workflow
 - `/agentful-start` (no args) → Continue autonomous development loop
 
 **User Request Detection:**
@@ -99,7 +99,9 @@ If `.agentful/decisions.json` has pending items:
 
 ```
 ⚠️  Pending decisions need your input:
-1. "Should auth use JWT or session cookies?"
+1. "How should we handle race conditions in inventory allocation?"
+   Options: Pessimistic locking, Optimistic locking with retry, Queue-based
+   Blocking: checkout-feature
    Run: /agentful-decide
 
 Cannot proceed until decisions are resolved.
@@ -147,14 +149,14 @@ Output this **ONLY when truly complete** (all features done, all gates passing):
 ## Example Flow
 
 ```
-1. Read state.json → "backend-auth" in progress
-2. Read completion.json → auth: 30% complete
-3. Read .claude/product/index.md → auth requirements
-4. Delegate to @backend → "Complete auth implementation"
+1. Read state.json → "checkout-cart" in progress
+2. Read completion.json → checkout: 60% complete
+3. Read .claude/product/index.md → e-commerce requirements
+4. Delegate to @backend → "Implement tax calculation service"
 5. Wait for completion
-6. Delegate to @reviewer → "Review auth changes"
+6. Delegate to @reviewer → "Review checkout changes"
 7. If issues → @fixer → @reviewer again
-8. Update completion.json → auth: 100%
+8. Update completion.json → checkout: 80%
 9. Loop → What's next?
 ```
 
