@@ -15,7 +15,8 @@ import DomainStructureGenerator from '../lib/domain-structure-generator.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const VERSION = '0.1.0-alpha';
+// Read version from centralized config
+const VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '../version.json'), 'utf-8')).version;
 const AGENTFUL_DIR = path.resolve(__dirname, '..');
 const TEMPLATE_DIR = path.join(AGENTFUL_DIR, 'template');
 
@@ -67,11 +68,11 @@ function showHelp() {
   console.log(`  ${colors.green}--version${colors.reset}    Show version`);
   console.log('');
   console.log('AFTER INIT:');
-  console.log(`  1. ${colors.bright}Choose your product structure:${colors.reset}`);
-  console.log(`     ${colors.green}• Simple (recommended):${colors.reset} Edit PRODUCT.md at project root`);
-  console.log(`     ${colors.cyan}• Organized:${colors.reset} Use .claude/product/ with domain directories`);
-  console.log(`     ${colors.dim}(agentful auto-detects which format you use)${colors.reset}`);
-  console.log(`  2. Define features with priorities: CRITICAL, HIGH, MEDIUM, LOW`);
+  console.log(`  1. ${colors.bright}agentful automatically detects the best structure:${colors.reset}`);
+  console.log(`     ${colors.green}• Small projects:${colors.reset} Creates PRODUCT.md (simple, flat structure)`);
+  console.log(`     ${colors.cyan}• Large/complex projects:${colors.reset} Creates .claude/product/ with domains`);
+  console.log(`     ${colors.dim}(Detection based on: # of domains, frameworks, monorepo status)${colors.reset}`);
+  console.log(`  2. ${colors.bright}Edit your product specification${colors.reset}`);
   console.log(`  3. Run ${colors.bright}claude${colors.reset} to start Claude Code`);
   console.log(`  4. Type ${colors.bright}/agentful${colors.reset} for natural conversation or ${colors.bright}/agentful-start${colors.reset} for autonomous development`);
   console.log('');
@@ -230,6 +231,7 @@ async function initagentful(options = {}) {
 
     const claudeMdPath = path.join(targetDir, 'CLAUDE.md');
     const productMdPath = path.join(targetDir, 'PRODUCT.md');
+    const claudeProductDir = path.join(targetDir, '.claude/product');
 
     if (!fs.existsSync(claudeMdPath)) {
       fs.copyFileSync(
@@ -241,14 +243,93 @@ async function initagentful(options = {}) {
       log(colors.dim, '  ⊙ CLAUDE.md already exists, skipping');
     }
 
-    if (!fs.existsSync(productMdPath)) {
-      fs.copyFileSync(
-        path.join(TEMPLATE_DIR, 'PRODUCT.md'),
-        productMdPath
-      );
-      log(colors.green, '  ✓ Created PRODUCT.md');
+    // Determine if project should use hierarchical structure
+    const shouldUseHierarchical = analysis && (
+      analysis.domains.length >= 3 ||  // Multiple detected domains
+      (analysis.frameworks && analysis.frameworks.length >= 2) ||  // Multiple frameworks
+      (analysis.packageManager === 'workspace' || analysis.packageManager === 'monorepo')  // Monorepo
+    );
+
+    // Create appropriate product structure
+    const productExists = fs.existsSync(productMdPath) || fs.existsSync(claudeProductDir);
+
+    if (!productExists) {
+      if (shouldUseHierarchical) {
+        // Create hierarchical .claude/product/ structure
+        log(colors.dim, '  📁 Using hierarchical product structure (detected complex project)');
+        fs.mkdirSync(claudeProductDir, { recursive: true });
+        fs.mkdirSync(path.join(claudeProductDir, 'domains'), { recursive: true });
+
+        // Create main index.md
+        const indexContent = `# Product Specification
+
+## Overview
+[Describe your product here]
+
+## Tech Stack
+${analysis && analysis.language ? `- Language: ${analysis.language}` : ''}
+${analysis && analysis.frameworks && analysis.frameworks.length > 0 ? `- Frameworks: ${analysis.frameworks.join(', ')}` : ''}
+${analysis && analysis.packageManager && analysis.packageManager !== 'unknown' ? `- Package Manager: ${analysis.packageManager}` : ''}
+
+## Domains
+${analysis && analysis.domains.length > 0 ? analysis.domains.map((d, i) => `${i + 1}. [${d}] - Define details in \`domains/${d.toLowerCase().replace(/\s+/g, '-')}/index.md\``).join('\n') : '- [Domain 1] - Define in domains/domain-name/index.md\n- [Domain 2] - Define in domains/domain-name/index.md'}
+
+## Priority Legend
+- **CRITICAL**: Must have for launch
+- **HIGH**: Important for MVP
+- **MEDIUM**: Nice to have
+- **LOW**: Future consideration
+`;
+
+        fs.writeFileSync(path.join(claudeProductDir, 'index.md'), indexContent);
+
+        // Create domain directories with index files for detected domains
+        if (analysis && analysis.domains.length > 0) {
+          analysis.domains.slice(0, 8).forEach(domain => {
+            const domainDir = path.join(claudeProductDir, 'domains', domain.toLowerCase().replace(/\s+/g, '-'));
+            fs.mkdirSync(domainDir, { recursive: true });
+
+            const domainIndexContent = `# ${domain} Domain
+
+## Overview
+[Describe the ${domain} domain's purpose and scope]
+
+## Features
+1. [Feature 1] (CRITICAL)
+   - [Acceptance criteria]
+   - [Dependencies]
+
+2. [Feature 2] (HIGH)
+   - [Acceptance criteria]
+
+## Technical Notes
+- [Any technical considerations specific to this domain]
+`;
+            fs.writeFileSync(path.join(domainDir, 'index.md'), domainIndexContent);
+          });
+        } else {
+          // Create example domain structure
+          const exampleDomainDir = path.join(claudeProductDir, 'domains', 'example-domain');
+          fs.mkdirSync(exampleDomainDir, { recursive: true });
+          fs.writeFileSync(
+            path.join(exampleDomainDir, 'index.md'),
+            '# Example Domain\n\n## Overview\n[Describe this domain]\n\n## Features\n1. Example Feature (HIGH)\n'
+          );
+        }
+
+        log(colors.green, '  ✓ Created .claude/product/ with domain structure');
+        log(colors.dim, `     → Organized by ${analysis.domains.length > 0 ? analysis.domains.length : 'example'} domain(s)`);
+      } else {
+        // Create flat PRODUCT.md structure
+        log(colors.dim, '  📄 Using flat product structure (simple project)');
+        fs.copyFileSync(
+          path.join(TEMPLATE_DIR, 'PRODUCT.md'),
+          productMdPath
+        );
+        log(colors.green, '  ✓ Created PRODUCT.md');
+      }
     } else {
-      log(colors.dim, '  ⊙ PRODUCT.md already exists, skipping');
+      log(colors.dim, '  ⊙ Product spec already exists, skipping');
     }
   }
 
@@ -367,15 +448,40 @@ async function initagentful(options = {}) {
   console.log('');
   log(colors.green, '✅ agentful initialized successfully!');
   console.log('');
+
+  // Determine which structure was created
+  const productMdPath = path.join(targetDir, 'PRODUCT.md');
+  const claudeProductDir = path.join(targetDir, '.claude/product');
+  const usingHierarchical = fs.existsSync(claudeProductDir);
+  const usingFlat = fs.existsSync(productMdPath);
+
   log(colors.bright, 'Next steps:');
   console.log('');
   console.log(`  1. ${colors.cyan}Edit your product specification${colors.reset}`);
-  console.log(`     ${colors.green}• PRODUCT.md${colors.reset} (simple, at root)`);
-  console.log(`     ${colors.cyan}• .claude/product/index.md${colors.reset} (organized, with domains)`);
-  console.log(`     ${colors.dim}(agentful auto-detects which you use)${colors.reset}`);
+
+  if (usingHierarchical) {
+    console.log(`     ${colors.green}✓ Created .claude/product/index.md${colors.reset} (hierarchical structure)`);
+    console.log(`     ${colors.dim}→ Organized by domains (best for larger projects)${colors.reset}`);
+    if (analysis && analysis.domains.length > 0) {
+      console.log(`     ${colors.dim}→ Detected ${analysis.domains.length} domain(s) with pre-configured directories${colors.reset}`);
+    }
+  } else if (usingFlat) {
+    console.log(`     ${colors.green}✓ Created PRODUCT.md${colors.reset} (flat structure)`);
+    console.log(`     ${colors.dim}→ Simple, single-file format (best for small projects)${colors.reset}`);
+  }
+
   console.log(`  2. ${colors.cyan}Run: claude${colors.reset}`);
   console.log(`  3. ${colors.cyan}Type: /agentful${colors.reset} (natural) or ${colors.cyan}/agentful-start${colors.reset} (autonomous)`);
   console.log('');
+
+  if (usingHierarchical) {
+    log(colors.dim, '💡 Hierarchical structure benefits:');
+    log(colors.dim, '   • Organized by domain (e.g., Auth, Users, Billing)');
+    log(colors.dim, '   • Easier to manage large feature sets');
+    log(colors.dim, '   • Teams can work on different domains in parallel');
+    console.log('');
+  }
+
   log(colors.dim, 'For autonomous 24/7 development:');
   log(colors.cyan, `  /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"`);
   console.log('');

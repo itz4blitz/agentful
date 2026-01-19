@@ -5,14 +5,14 @@ description: Learn how to create your first autonomous project with agentful. A 
 
 # Your First Project
 
-Build your first complete autonomous project with agentful. We'll create a **Task Management App** together.
+Build your first complete autonomous project with agentful. We'll create a **Task Management App** together, demonstrating both simple and complex project structures.
 
 ---
 
 ## Project Overview
 
 **What we're building:**
-A simple task management application where users can:
+A task management application where users can:
 - Add tasks
 - Mark tasks as complete
 - Delete tasks
@@ -27,9 +27,16 @@ A simple task management application where users can:
 **Time:** 30-45 minutes
 **Difficulty:** Beginner
 
+**What you'll learn:**
+- How agentful intelligently detects your project structure
+- How to use both flat and hierarchical product structures
+- How to use `/agentful` for natural conversation
+- How to monitor progress with `/agentful-status`
+- How agentful builds complete features autonomously
+
 ---
 
-## Step 1: Initialize Project (5 minutes)
+## Step 1: Initialize Project
 
 ### Create Project Directory
 
@@ -54,55 +61,71 @@ npx @itz4blitz/agentful init
 
 **Expected output:**
 ```
-    ___    __  ____________  ____  ___   ____________
-   /   |  / / / /_  __/ __ \/ __ \/ _ | / ____/  _/ /
-  / /| | / / / / / / /_/ / /_/ /  __ |/ /    / // /
- / ___ |/ /_/ / / / / _, _/ _, _/ /_/ / /___/ // /
-/_/  |_|_____/ /_/_/ /_/ |_/_/ |_|\____/\____/___/
+   █████╗  ██████╗ ███████╗███╗   ██╗████████╗███████╗██╗   ██╗██╗
+  ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██╔════╝██║   ██║██║
+  ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   █████╗  ██║   ██║██║
+  ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ██╔══╝  ██║   ██║██║
+  ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ██║     ╚██████╔╝███████╗
+  ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝      ╚═════╝ ╚══════╝
 
-                   v1.0.0
+                   v0.1.1
 
-Creating .claude/ directory structure...
-Initializing state files...
-Creating template files...
+🔍 Analyzing your project...
+
+  Language:    TypeScript
+  Frameworks:  Next.js, React
+  Package Mgr: npm
+  Build:       Next.js
+
+📊 Detected domains:
+
+  • Task Management     ██████████ 90%
+  • UI Components      ████████░░ 75%
+
+  Analysis completed in 1.8s (82% confidence)
+
+📄 Using flat product structure (detected simple project)
+  ✓ Created PRODUCT.md
   ✓ Created CLAUDE.md
-  ✓ Created .claude/product/index.md (hierarchical structure)
 
 Added .agentful/ to .gitignore
 
 ✅ agentful initialized successfully!
 
 Next steps:
-  1. Edit your product specification (see options below)
+  1. Edit your product specification (PRODUCT.md)
   2. Run: claude
-  3. Type: /agentful-start
+  3. Type: /agentful (natural) or /agentful-start (autonomous)
 ```
 
-> **Choose Your Structure**
+**What just happened:**
+1. agentful analyzed your Next.js project
+2. Detected the tech stack (Next.js, TypeScript, Tailwind)
+3. Found 2 domains (Task Management, UI Components)
+3. Since < 3 domains, it chose the **flat structure** and created `PRODUCT.md`
+4. If you had ≥3 domains, it would have created `.claude/product/` with domain directories
+
+> **Understanding Structure Detection**
 >
-> agentful supports two ways to define your product:
+> **Simple Projects** (flat `PRODUCT.md`):
+> - Detected when project has < 3 domains, 0-1 frameworks, not a monorepo
+> - Everything in one file at project root
+> - Perfect for: learning, MVPs, single-purpose apps
 >
-> **Simple Projects** (recommended for first-time users):
-> - Use a flat `PRODUCT.md` file in your project root
-> - Everything in one place
-> - Easier to get started
+> **Complex Projects** (hierarchical `.claude/product/`):
+> - Detected when project has ≥3 domains, multiple frameworks, or is a monorepo
+> - Organized by domain directories
+> - Perfect for: multi-domain apps, large teams, long-term projects
 >
-> **Complex Projects** (for larger applications):
-> - Use `.claude/product/` directory with multiple files
-> - Organize by domains/features
-> - Scales better for big projects
->
-> Both work identically - agentful auto-detects which you're using. For this tutorial, we'll use the simple `PRODUCT.md` approach.
+> **You can switch anytime** - agentful auto-detects on each run!
 
 ---
 
-## Step 2: Define Product (10 minutes)
+## Step 2: Define Your Product
 
-Since we're building a simple task manager, we'll use the **flat `PRODUCT.md`** structure.
+For this tutorial, we'll use the **flat `PRODUCT.md`** structure that agentful created.
 
-Create a file called `PRODUCT.md` in your project root and add:
-
-> **Note**: If you prefer the hierarchical structure, you can edit `.claude/product/index.md` instead - the content is identical. agentful will auto-detect either approach.
+Create a file called `PRODUCT.md` in your project root:
 
 ```markdown
 # Product Specification
@@ -300,7 +323,205 @@ The product is complete when:
 
 ---
 
-## Step 3: Start Development (2 minutes)
+### Alternative: Hierarchical Structure Example
+
+If agentful had detected a complex project (≥3 domains), it would have created `.claude/product/` instead. Here's how the same product would look with hierarchical structure:
+
+**`.claude/product/index.md`:**
+```markdown
+# Product Specification
+
+## Overview
+A task management application for personal productivity.
+
+## Tech Stack
+- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes (not needed)
+- **Database**: None (local state)
+- **Testing**: Vitest
+
+## Domains
+1. **Task Management** - See domains/task-management/ for details
+2. **UI Components** - See domains/ui-components/ for details
+3. **User Interaction** - See domains/user-interaction/ for details
+```
+
+**`.claude/product/domains/task-management/index.md`:**
+```markdown
+# Task Management Domain
+
+## Overview
+Handle core task CRUD operations and state management.
+
+## Features
+
+### 1. Add Task - CRITICAL
+**Description**: Users can add new tasks to their list
+
+**Acceptance Criteria**:
+- [ ] Input field for task description
+- [ ] Add button
+- [ ] Task appears in list after adding
+- [ ] Input clears after adding
+- [ ] Validation: empty tasks not allowed
+- [ ] Validation: max 200 characters
+
+### 2. Delete Task - HIGH
+**Description**: Users can delete tasks they no longer need
+
+**Acceptance Criteria**:
+- [ ] Delete button on each task
+- [ ] Confirmation before deleting (optional)
+- [ ] Task removes from list after deletion
+```
+
+**`.claude/product/domains/ui-components/index.md`:**
+```markdown
+# UI Components Domain
+
+## Overview
+Task display and interaction components.
+
+## Features
+
+### 1. Task List Display - CRITICAL
+**Description**: Show tasks in a clean, organized list
+
+**Acceptance Criteria**:
+- [ ] Scrollable list container
+- [ ] Empty state message
+- [ ] Loading state (if needed)
+```
+
+**`.claude/product/domains/user-interaction/index.md`:**
+```markdown
+# User Interaction Domain
+
+## Overview
+User interactions with tasks (completion, filtering).
+
+## Features
+
+### 1. Toggle Task Completion - CRITICAL
+**Description**: Users can mark tasks as complete/incomplete
+
+**Acceptance Criteria**:
+- [ ] Checkbox or click to toggle
+- [ ] Visual indicator for completed tasks
+- [ ] Completion status persists
+
+### 2. Filter Tasks - MEDIUM
+**Description**: Users can filter tasks by completion status
+
+**Acceptance Criteria**:
+- [ ] Filter buttons: All, Active, Completed
+- [ ] Only show tasks matching selected filter
+- [ ] Active filter highlighted
+```
+
+**Key differences:**
+- Features organized by domain (logical grouping)
+- Multiple files, easier for team collaboration
+- Better for large projects with many features
+- agentful auto-detects and works with either structure
+
+---
+
+## Step 3: Choose Your Development Mode
+
+agentful supports two ways to build:
+
+### Option A: Natural Conversation Mode (Interactive)
+
+**Best for:** Learning, exploring, getting advice, making decisions
+
+```bash
+claude
+```
+
+Then type:
+```
+/agentful
+```
+
+**Example conversation:**
+```
+You: I want to start building this task manager
+agentful: Great! I've analyzed your PRODUCT.md. I can see you want to build a task
+        manager with Next.js 14 and TypeScript. I detected 5 features prioritized by
+        importance.
+
+        I recommend we start with the "Add Task" feature since it's CRITICAL.
+        This will create the foundation for the other features.
+
+        Does this approach work for you?
+
+You: Yes, that sounds good
+agentful: Perfect. I'll:
+        1. Create the Task type definition
+        2. Build the TodoInput component
+        3. Create the TodoList container
+        4. Add state management
+        5. Write comprehensive tests
+
+        Ready to start?
+
+You: Go ahead
+agentful: Starting implementation...
+        ✓ Created src/lib/types.ts
+        ✓ Created src/components/TodoInput.tsx
+        ...
+
+You: Wait, can we add a character limit to the input?
+agentful: Absolutely! I'll add a 200 character limit with validation.
+        Updating TodoInput component...
+        ✓ Added maxLength prop and validation
+        ✓ Updated tests to cover edge cases
+
+        Should I continue with the rest of the feature?
+
+You: Yes
+agentful: Continuing...
+```
+
+**Benefits:**
+- Talk naturally, like pairing with a senior developer
+- Make decisions as you go
+- Get explanations for choices
+- Change direction mid-stream
+- Learn best practices
+
+### Option B: Autonomous Mode (Hands-off)
+
+**Best for:** Hands-off development, 24/7 building, maximum productivity
+
+```bash
+claude
+```
+
+Then type:
+```
+/agentful-start
+```
+
+agentful will:
+1. Analyze your product spec
+2. Generate specialized agents for your stack
+3. Start building features autonomously
+4. Continue until complete or paused
+5. Only stop when it needs a decision
+
+**Benefits:**
+- No micromanagement needed
+- Works 24/7 with Ralph Wiggum
+- Maximum productivity
+- Predictable workflow
+
+**For this tutorial**, we'll use **autonomous mode** to see agentful's full power, but you can switch to conversation mode anytime!
+
+---
+
+## Step 4: Start Development (30 seconds)
 
 ### Start Claude Code
 
@@ -318,7 +539,7 @@ In the Claude prompt, type:
 
 ---
 
-## Step 4: Watch agentful Work (20-30 minutes)
+## Step 5: Watch agentful Work
 
 ### What You'll See
 
@@ -358,7 +579,7 @@ Feature queue:
 Starting: Add Task feature
 ```
 
-**Phase 3: Implementation (5-10 minutes)**
+**Phase 3: Implementation**
 
 ```
 🔧 Frontend Agent implementing...
@@ -374,7 +595,7 @@ Updated files:
 ✓ src/app/globals.css (Tailwind imports)
 ```
 
-**Phase 4: Testing (5-10 minutes)**
+**Phase 4: Testing**
 
 ```
 🧪 Tester Agent writing tests...
@@ -395,7 +616,7 @@ Running tests...
 14 tests passing
 ```
 
-**Phase 5: Validation (2 minutes)**
+**Phase 5: Validation**
 
 ```
 🔍 Reviewer Agent validating...
@@ -431,7 +652,7 @@ This continues until all features are complete.
 
 ---
 
-## Step 5: Monitor Progress (ongoing)
+## Step 6: Monitor Progress (ongoing)
 
 While agentful works, check progress anytime:
 
@@ -445,6 +666,7 @@ While agentful works, check progress anytime:
 🔧 Working on: Filter Tasks feature
    Phase: implementation
    Iterations: 15
+   Current task: Creating filter button group
 
 Progress:
    ████████████░░░░░░░ 60%
@@ -458,21 +680,58 @@ Features:
 
 Quality Gates:
    ✅ Tests Passing (42/42)
-   ✅ No Type Errors
+   ✅ No Type Errors (TypeScript detected)
    ✅ Coverage 87%
    ✅ No Dead Code
    ✅ No Security Issues
+
+Reading from: PRODUCT.md (flat structure)
+Detected stack: Next.js 14, TypeScript, Tailwind CSS
 
 No pending decisions.
 
 Next Actions:
    • /agentful-start    - Continue development
+   • /agentful-status   - Check progress (you are here)
+   • /agentful-decide   - Answer pending decisions
    • /agentful-validate - Run quality checks
+   • /agentful          - Switch to conversation mode
 ```
+
+**Try conversation mode mid-development:**
+```
+/agentful
+```
+```
+You: How's the filter feature coming along?
+agentful: Great! I'm 40% through the Filter Tasks feature. I've created:
+        ✓ FilterButtonGroup component
+        ✓ Filter state management
+        • Currently working on: Task filtering logic
+
+        Should be done in about 5 more iterations. Want me to continue?
+
+You: Yes, but can we also add a task counter showing how many are left?
+agentful: Good idea! I'll add the Task Counter feature after this one.
+        It's already in your product spec as LOW priority, so I'll get to it
+        after the current feature completes.
+
+        Anything else you'd like to adjust?
+
+You: No, that's it
+agentful: Perfect! Continuing with Filter Tasks...
+```
+
+**Benefits of checking status:**
+- See exactly what agentful is working on
+- Track completion percentage
+- View quality gate status
+- Know if decisions are pending
+- Switch to conversation mode to make changes
 
 ---
 
-## Step 6: Handle Decisions (if needed)
+## Step 7: Handle Decisions (if needed)
 
 agentful may ask for clarification:
 
@@ -487,7 +746,7 @@ Context: This affects user experience. Confirmation is safer but
 adds friction. Immediate delete is faster but riskier.
 ```
 
-**To answer:**
+**To answer using autonomous mode:**
 
 ```
 /agentful-decide
@@ -499,11 +758,28 @@ Option 2: Delete immediately without confirmation
 We can add undo functionality in v2 if needed.
 ```
 
+**Or answer using conversation mode:**
+
+```
+/agentful
+```
+```
+You: Let's go with option 2, no confirmation
+agentful: Got it! Immediate delete it is.
+        Updating implementation...
+        ✓ Removed confirmation dialog
+        ✓ Updated tests
+
+        Feature complete: Delete Task (100%)
+
+        Ready to move on to Filter Tasks?
+```
+
 agentful will immediately resume with your decision.
 
 ---
 
-## Step 7: Review Results (5 minutes)
+## Step 8: Review Results
 
 When agentful completes (100%), review what was built:
 
@@ -770,24 +1046,60 @@ You just built a complete task management application with:
 ✅ 5 features fully implemented
 ✅ 48 tests passing
 ✅ 87% test coverage
-✅ No type errors (adapts to stack)
+✅ No type errors (TypeScript detected automatically)
 ✅ Responsive design
 ✅ Accessibility features
 ✅ All in 30-45 minutes
 
 **What you learned:**
-- How to initialize agentful
-- How to choose between flat (`PRODUCT.md`) or hierarchical (`.claude/product/`) structure
-- How to write a clear product specification
-- How agentful's agents work together
-- How to monitor and guide development
-- How to handle decisions
-- How to review and validate results
+
+### 1. Intelligent Init
+- agentful analyzes your project during init
+- Automatically detects the best structure (flat vs hierarchical)
+- Creates appropriate files based on project complexity
+- Detects your tech stack and generates specialized agents
+
+### 2. Product Structures
+- **Flat (`PRODUCT.md`)** - Simple projects, everything in one file
+- **Hierarchical (`.claude/product/`)** - Complex projects, organized by domains
+- **Auto-detection** - agentful detects and works with either structure
+- **Switch anytime** - Change structures as your project grows
+
+### 3. Two Development Modes
+- **Autonomous (`/agentful-start`)** - Hands-off, 24/7 development
+- **Conversation (`/agentful`)** - Natural interaction, make decisions, explore options
+- **Switch mid-stream** - Use conversation mode to adjust course, then resume
+
+### 4. Progress Monitoring
+- `/agentful-status` - See what's being worked on
+- Track completion percentage and quality gates
+- Identify pending decisions
+- Switch modes to make changes
+
+### 5. Natural Conversation Interface
+- Talk to agentful like a senior developer
+- Get advice before implementing
+- Make mid-course corrections
+- Learn why agentful makes certain decisions
+
+### 6. Quality Automation
+- Tests written automatically
+- Type checking adapts to your stack
+- Linting and coverage enforced
+- Security scanning included
 
 **You're now ready to:**
 - Build more complex projects with hierarchical structure
-- Customize agentful for your stack
-- Use 24/7 development mode
-- Create your own agents and commands
+- Use natural conversation for exploratory development
+- Run 24/7 autonomous development for big projects
+- Switch between modes as needed
+- Customize agentful for your specific stack
+
+**Key Takeaways:**
+1. agentful does the hard work - it detects structure, stack, and patterns automatically
+2. No manual configuration needed - just edit your product spec and start building
+3. Use conversation mode when learning, autonomous mode for productivity
+4. Check status anytime to see progress and make adjustments
+5. agentful adapts to YOUR project - not the other way around
 
 Happy building! 🚀

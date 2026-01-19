@@ -36,11 +36,11 @@ cd your-project
 npx @itz4blitz/agentful init
 ```
 
-This creates:
-- `.claude/` - Pre-configured agents, commands, skills
-- `.agentful/` - Runtime state tracking (gitignored)
-- `PRODUCT.md` - Your product spec template
-- `CLAUDE.md` - Project instructions for Claude
+**What happens:**
+- agentful analyzes your project automatically
+- Creates the appropriate structure based on your project's complexity
+- Detects your tech stack
+- Sets up all necessary files
 
 ### Method 2: Initialize New Project
 
@@ -63,6 +63,19 @@ npx @itz4blitz/agentful init --bare
 
 This skips creating template files and only sets up `.claude/` and `.agentful/`.
 
+### Method 4: Global Install (Optional)
+
+For frequent use, you can install agentful globally:
+
+```bash
+npm install -g @itz4blitz/agentful
+
+# Then use from anywhere
+agentful init
+```
+
+> **Note:** Using `npx` (Method 1) is recommended as it always uses the latest version without manual updates.
+
 ---
 
 ## What Gets Created
@@ -73,30 +86,55 @@ After running `npx @itz4blitz/agentful init`, you'll see:
 ✅ agentful initialized successfully!
 
 Next steps:
-  1. Edit PRODUCT.md with your product specification
+  1. Edit your product specification (see options below)
   2. Run: claude
-  3. Type: /agentful-start
+  3. Type: /agentful (natural) or /agentful-start (autonomous)
 
 For autonomous 24/7 development:
   /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
 ```
 
+### Intelligent Structure Detection
+
+agentful automatically detects the best product structure for your project:
+
+**Simple Projects** → Creates `PRODUCT.md` (flat, single-file at root)
+- Best for: Learning projects, MVPs, single-purpose apps
+- Everything in one place
+- Easier to get started
+
+**Large/Complex Projects** → Creates `.claude/product/` with domain directories
+- Best for: Multi-domain apps, large teams, long-term projects
+- Organized by domains/features
+- Scales better for big projects
+
+**Detection Criteria:**
+- Number of detected domains (≥3 triggers hierarchical)
+- Multiple frameworks (≥2 triggers hierarchical)
+- Monorepo structure (triggers hierarchical)
+
 ### Directory Structure
 
 ```
 your-project/
-├── PRODUCT.md              # ← Edit this: your product spec
-├── CLAUDE.md               # Project instructions
+├── PRODUCT.md              # ← Edit this: your product spec (simple projects)
+├── CLAUDE.md               # Project instructions for Claude
 ├── .claude/                # agentful configuration
 │   ├── agents/             # 7 specialized agents
-│   ├── commands/           # 4 slash commands
+│   ├── commands/           # 5 slash commands
 │   ├── skills/             # Domain skills
+│   ├── product/            # Product spec (complex projects)
+│   │   ├── index.md        # Main product specification
+│   │   └── domains/        # Domain-specific specs
+│   │       ├── auth/       # Authentication domain
+│   │       ├── users/      # User management domain
+│   │       └── ...         # Other domains
 │   └── settings.json       # Hooks and permissions
 ├── .agentful/              # Runtime state (gitignored)
-│   ├── state.json
-│   ├── completion.json
-│   ├── decisions.json
-│   └── architecture.json
+│   ├── state.json          # Current work state
+│   ├── completion.json     # Progress tracking
+│   ├── decisions.json      # Pending decisions
+│   └── architecture.json   # Detected tech stack
 └── package.json
 ```
 
@@ -104,7 +142,7 @@ your-project/
 
 ## Verification
 
-Verify agentful is installed:
+Verify agentful is installed correctly:
 
 ```bash
 # Check that .claude directory exists
@@ -115,12 +153,60 @@ ls -la .agentful/
 
 # Verify state files
 cat .agentful/state.json
+
+# Check which structure was created
+ls -la PRODUCT.md              # Simple project
+ls -la .claude/product/        # Complex project
 ```
 
 You should see:
 - `.claude/` directory with agents, commands, skills
 - `.agentful/` directory with state files
+- Either `PRODUCT.md` (simple) OR `.claude/product/` (complex)
 - Initial state set to `idle`
+
+---
+
+## Understanding the Init Output
+
+When you run `npx @itz4blitz/agentful init`, you'll see detailed analysis:
+
+```
+🔍 Analyzing your project...
+
+  Language:    TypeScript
+  Frameworks:  Next.js, React
+  Package Mgr: npm
+  Build:       Next.js
+
+📊 Detected domains:
+
+  • Authentication       ██████████ 95%
+  • User Management     ████████░░ 80%
+  • Project Management  ██████░░░░ 60%
+
+  Analysis completed in 2.3s (85% confidence)
+
+📁 Using hierarchical product structure (detected complex project)
+  ✓ Created .claude/product/ with domain structure
+     → Organized by 3 domain(s)
+
+✓ Created CLAUDE.md
+✓ Created .claude/product/index.md
+  ✓ Created .claude/product/domains/authentication/
+  ✓ Created .claude/product/domains/user-management/
+  ✓ Created .claude/product/domains/project-management/
+
+Added .agentful/ to .gitignore
+
+✅ agentful initialized successfully!
+```
+
+This output shows:
+- What technologies were detected
+- Which domains were identified
+- What structure was chosen (and why)
+- What files were created
 
 ---
 
@@ -139,7 +225,7 @@ The `.agentful/` directory contains runtime state that shouldn't be committed:
 - `decisions.json` - Pending decisions
 - `architecture.json` - Detected tech stack
 
-**Note**: The `.claude/` directory **should** be committed to version control.
+**Important:** The `.claude/` directory **should** be committed to version control so your team has the same agentful configuration.
 
 ---
 
@@ -176,6 +262,36 @@ mv .claude .claude.backup
 npx @itz4blitz/agentful init
 ```
 
+### Issue: "Cannot detect project structure"
+
+**Symptom:** agentful shows warnings or skips analysis
+
+**Solution:** This is normal for empty projects. agentful will use the simple `PRODUCT.md` structure by default. You can manually switch to hierarchical later if needed.
+
+```bash
+# Continue with simple structure
+# Edit PRODUCT.md with your spec
+# Start development: claude
+```
+
+### Issue: Wrong structure detected
+
+**Symptom:** agentful chose hierarchical but you want flat (or vice versa)
+
+**Solution:** You can manually switch anytime:
+
+```bash
+# To switch to flat structure
+rm -rf .claude/product/
+# Create PRODUCT.md manually (see Quick Start guide)
+
+# To switch to hierarchical structure
+mv PRODUCT.md .claude/product/index.md
+# Create domain directories manually
+```
+
+agentful auto-detects the structure on each run.
+
 ### Issue: Permission denied
 
 **Solution:** Make sure you have write permissions in the directory:
@@ -197,6 +313,35 @@ sudo chown -R $USER:$USER .claude .agentful
 npm init -y
 
 # Then try again
+npx @itz4blitz/agentful init
+```
+
+### Issue: Network timeout during npx
+
+**Solution:** Check your internet connection and try again:
+
+```bash
+# Test npx connectivity
+npx --version
+
+# If behind proxy, configure npm
+npm config set proxy http://proxy.example.com:8080
+npm config set https-proxy http://proxy.example.com:8080
+
+# Then try again
+npx @itz4blitz/agentful init
+```
+
+### Issue: Outdated npx cache
+
+**Solution:** Clear npx cache and retry:
+
+```bash
+# Clear npx cache
+npx --yes @itz4blitz/agentful init --force
+
+# Or manually clear
+npm cache clean --force
 npx @itz4blitz/agentful init
 ```
 
@@ -231,31 +376,63 @@ rm PRODUCT.md CLAUDE.md
 
 ## Advanced Options
 
-### Custom Install Location
+### Skip Smart Analysis
 
-By default, agentful installs in the current directory. To install elsewhere:
-
-```bash
-npx @itz4blitz/agentful init --path /path/to/project
-```
-
-### Silent Installation
-
-For automation scripts:
+For faster init (no project analysis):
 
 ```bash
-npx @itz4blitz/agentful init --silent
+npx @itz4blitz/agentful init --no-smart
 ```
 
-Skips the confirmation prompt and creates a backup if `.claude/` exists.
+This skips the intelligent detection and always creates the simple `PRODUCT.md` structure.
+
+### Force Hierarchical Structure
+
+To force hierarchical structure regardless of project complexity:
+
+```bash
+npx @itz4blitz/agentful init --generate-domains
+```
+
+### Auto-Generate Agents
+
+To automatically generate specialized agents during init:
+
+```bash
+npx @itz4blitz/agentful init --generate-agents
+```
 
 ### Version Check
 
 Check which version of agentful you installed:
 
 ```bash
-npx agentful --version
+npx @itz4blitz/agentful --version
 ```
+
+---
+
+## Switching Between Structures
+
+You can switch between flat and hierarchical structures anytime:
+
+**Flat → Hierarchical:**
+```bash
+# Move PRODUCT.md to .claude/product/
+mkdir -p .claude/product/domains
+mv PRODUCT.md .claude/product/index.md
+# Split content into domain files
+```
+
+**Hierarchical → Flat:**
+```bash
+# Merge all domains into single file
+cat .claude/product/index.md > PRODUCT.md
+cat .claude/product/domains/*/*.md >> PRODUCT.md
+rm -rf .claude/product/
+```
+
+agentful auto-detects the change on next `/agentful-start`.
 
 ---
 

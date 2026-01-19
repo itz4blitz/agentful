@@ -13,7 +13,7 @@ Get agentful building your project autonomously in 5 minutes.
 
 This quick start will walk you through:
 
-1. ✅ Initializing agentful
+1. ✅ Initializing agentful with intelligent detection
 2. ✅ Defining your product
 3. ✅ Starting autonomous development
 4. ✅ Monitoring progress
@@ -24,58 +24,90 @@ This quick start will walk you through:
 
 ---
 
-## Step 1: Initialize agentful (30 seconds)
+## Step 1: Initialize agentful with Intelligent Detection (30 seconds)
 
 ```bash
 # In your project directory
 npx @itz4blitz/agentful init
 ```
 
-**What happens:**
-- Creates `.claude/` with 7 specialized agents
-- Creates `.agentful/` for state tracking
-- Creates `.claude/product/index.md` (hierarchical structure template)
-- Creates `CLAUDE.md` project instructions
+**What happens during init:**
 
-**Output:**
-```
-✅ agentful initialized successfully!
+agentful analyzes your project and **automatically detects the best structure**:
 
-Next steps:
-  1. Edit your product specification (see below)
-  2. Run: claude
-  3. Type: /agentful-start
 ```
+🔍 Analyzing your project...
+
+  Language:    TypeScript
+  Frameworks:  Next.js, React
+  Package Mgr: npm
+  Build:       Next.js
+
+📊 Detected domains:
+
+  • Authentication       ██████████ 95%
+  • User Management     ████████░░ 80%
+  • Project Management  ██████░░░░ 60%
+
+  Analysis completed in 2.3s (85% confidence)
+```
+
+Then agentful creates the appropriate structure:
+
+**For Simple Projects:**
+```
+📄 Using flat product structure (simple project)
+  ✓ Created PRODUCT.md
+```
+
+**For Complex Projects:**
+```
+📁 Using hierarchical product structure (detected complex project)
+  ✓ Created .claude/product/ with domain structure
+     → Organized by 3 domain(s)
+  ✓ Created .claude/product/domains/authentication/
+  ✓ Created .claude/product/domains/user-management/
+  ✓ Created .claude/product/domains/project-management/
+```
+
+### How Detection Works
+
+agentful automatically chooses the best structure based on:
+
+| Criteria | Simple (Flat) | Complex (Hierarchical) |
+|----------|---------------|------------------------|
+| **Domains detected** | < 3 domains | ≥ 3 domains |
+| **Frameworks** | 0-1 frameworks | ≥ 2 frameworks |
+| **Monorepo** | No | Yes (npm workspaces, pnpm, turborepo) |
+| **Project type** | Learning, MVP, single-purpose | Multi-domain, team, long-term |
+
+**Don't worry about the choice** - agentful does the hard work for you! You can switch between structures anytime if needed.
+
+### What Gets Created
+
+**Always created:**
+- `.claude/` - 7 specialized agents, 5 commands, skills
+- `.agentful/` - Runtime state tracking (gitignored)
+- `CLAUDE.md` - Project instructions for Claude
+
+**For simple projects:**
+- `PRODUCT.md` - Single-file product spec at root
+
+**For complex projects:**
+- `.claude/product/index.md` - Main product specification
+- `.claude/product/domains/*/index.md` - Domain-specific specs
 
 ---
 
 ## Step 2: Define Your Product (2 minutes)
 
-agentful supports two ways to define your product. Choose the one that fits your project.
+Edit the product spec that agentful created for you. The file location depends on your project structure.
 
 ---
 
-### Choose Your Adventure
+### For Simple Projects (Flat PRODUCT.md)
 
-**Simple Projects** (recommended for beginners and small apps):
-- Use a flat `PRODUCT.md` file in your project root
-- Everything in one place
-- Easier to get started
-- Best for: Learning projects, MVPs, single-purpose apps
-
-**Complex Projects** (for larger applications):
-- Use `.claude/product/` directory with multiple files
-- Organize by domains/features
-- Scales better for big projects
-- Best for: Multi-domain apps, large teams, long-term projects
-
-> **Both work identically** - agentful auto-detects which you're using. You can switch anytime.
-
----
-
-### Option A: Simple Structure (Flat PRODUCT.md)
-
-Create `PRODUCT.md` in your project root:
+If agentful created `PRODUCT.md` in your project root, edit it:
 
 ```markdown
 # Product Specification
@@ -118,122 +150,83 @@ A simple todo list application.
 
 ---
 
-### Option B: Hierarchical Structure (.claude/product/)
+### For Complex Projects (Hierarchical .claude/product/)
 
-Edit `.claude/product/index.md` (created during init):
+If agentful created `.claude/product/`, edit `.claude/product/index.md`:
 
 ```markdown
 # Product Specification
 
 ## Overview
-A simple todo list application.
+A todo list application with user accounts and sharing.
 
 ## Domains
+- Authentication
 - Tasks
-- UI
-- Storage
+- Sharing
 
 ## Tech Stack
 - **Frontend**: Next.js 14, TypeScript, Tailwind CSS
 - **Backend**: Next.js API Routes
-- **Database**: None (in-memory for now)
-- **Testing**: Vitest
+- **Database**: PostgreSQL with Prisma
+- **Testing**: Vitest + Playwright
 ```
 
-Then create `.claude/product/domains/tasks.md`:
+Then edit the domain files agentful created, like `.claude/product/domains/authentication/index.md`:
 
 ```markdown
-# Tasks Domain
+# Authentication Domain
+
+## Overview
+Handle user registration, login, and session management.
 
 ## Features
 
-### 1. Add Todo - CRITICAL
-**Description**: Users can add new todo items
+### 1. User Registration - CRITICAL
+**Description**: Users can create accounts with email/password
 
 **Acceptance Criteria**:
-- [ ] Input field for new todos
-- [ ] Add button
-- [ ] Todo appears in list
+- [ ] Email validation (required, valid format)
+- [ ] Password min 8 characters, 1 uppercase, 1 number
+- [ ] Unique email check
+- [ ] Success: redirect to dashboard
+- [ ] Error: show inline error message
 
-### 2. Toggle Todo - HIGH
-**Description**: Users can mark todos as complete
-
-**Acceptance Criteria**:
-- [ ] Click todo to toggle completion
-- [ ] Visual indicator for completed todos
-
-### 3. Delete Todo - MEDIUM
-**Description**: Users can delete todos
+### 2. User Login - CRITICAL
+**Description**: Users can log in with credentials
 
 **Acceptance Criteria**:
-- [ ] Delete button on each todo
-- [ ] Confirmation prompt
+- [ ] Email/password input
+- [ ] JWT token generation
+- [ ] Session persistence
+- [ ] Error handling for invalid credentials
 ```
 
-**More domains?** Create additional files like `ui.md`, `storage.md`, etc.
+Create additional domain files as needed:
+- `.claude/product/domains/tasks/index.md` - Task CRUD operations
+- `.claude/product/domains/sharing/index.md` - Share lists with others
 
 ---
 
-### Key Sections Explained
+### Switching Between Structures
 
-```markdown
-# Product Specification
+You can change your mind anytime:
 
-## Overview
-A simple todo list application.
-
-## Tech Stack
-- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: None (in-memory for now)
-- **Testing**: Vitest
-
-## Features
-
-### 1. Add Todo - CRITICAL
-**Description**: Users can add new todo items
-
-**Acceptance Criteria**:
-- [ ] Input field for new todos
-- [ ] Add button
-- [ ] Todo appears in list
-
-### 2. Toggle Todo - HIGH
-**Description**: Users can mark todos as complete
-
-**Acceptance Criteria**:
-- [ ] Click todo to toggle completion
-- [ ] Visual indicator for completed todos
-
-### 3. Delete Todo - MEDIUM
-**Description**: Users can delete todos
-
-**Acceptance Criteria**:
-- [ ] Delete button on each todo
-- [ ] Confirmation prompt
+**Simple → Complex:**
+```bash
+mkdir -p .claude/product/domains
+mv PRODUCT.md .claude/product/index.md
+# Split content into domain files
 ```
 
-### Key Sections Explained
+**Complex → Simple:**
+```bash
+cat .claude/product/index.md > PRODUCT.md
+cat .claude/product/domains/*/*.md >> PRODUCT.md
+rm -rf .claude/product/
+```
 
-**Overview** - 2-3 sentences describing what you're building
-
-**Tech Stack** - Your technology choices
-- Frontend framework
-- Backend framework
-- Database
-- Testing tools
-- Styling approach
-
-**Features** - What you want built, ordered by priority
-- **CRITICAL** - Must have for MVP
-- **HIGH** - Important but can wait
-- **MEDIUM** - Nice to have
-- **LOW** - Future improvements
-
-For each feature, include:
-- **Description** - What it does
-- **Acceptance Criteria** - Specific requirements (checkboxes)
-- **User Stories** (optional) - Who wants what and why
+agentful auto-detects the change!
 
 ---
 
@@ -262,22 +255,29 @@ In the Claude Code prompt, type:
 ```
 🏗️  Architect Agent analyzing...
 
-Detected tech stack:
+Detected tech stack from package.json:
 - Next.js 14
 - TypeScript
 - Tailwind CSS
+- Vitest
 
 Generated specialized agents:
-✓ nextjs-agent
-✓ typescript-agent
-✓ tailwind-agent
-✓ vitest-agent
+✓ nextjs-agent (knows App Router patterns)
+✓ typescript-agent (enforces strict typing)
+✓ tailwind-agent (utility-first styling)
+✓ vitest-agent (fast unit testing)
+
+Architecture analysis complete!
 ```
 
 ### Phase 2: Planning (10 seconds)
 
 ```
 📋 Orchestrator planning work...
+
+Reading product spec from: PRODUCT.md (or .claude/product/index.md)
+
+Detected structure: Flat (or Hierarchical with 3 domains)
 
 Priority queue:
 1. Add Todo feature (CRITICAL)
@@ -297,6 +297,8 @@ Created:
 - src/components/TodoList.tsx
 - src/components/TodoInput.tsx
 - src/hooks/useTodos.ts
+
+Following Next.js 14 App Router patterns...
 ```
 
 ### Phase 4: Testing (varies)
@@ -308,8 +310,8 @@ Created:
 - src/components/__tests__/TodoList.test.tsx
 - src/hooks/__tests__/useTodos.test.ts
 
-Running tests...
-✓ All tests passing
+Running tests with Vitest...
+✓ All tests passing (14/14)
 ```
 
 ### Phase 5: Validation (20 seconds)
@@ -317,9 +319,9 @@ Running tests...
 ```
 🔍 Reviewer Agent validating...
 
-Quality Gates:
+Quality Gates (adapts to your stack):
 ✅ All tests passing
-✅ No type errors (adapts to stack)
+✅ No type errors (TypeScript)
 ⚠️  Test coverage: 65% (target: 80%)
 ✅ No dead code
 ✅ No security issues
@@ -569,6 +571,7 @@ Don't micromanage. agentful works best when you:
 - Check in periodically with `/agentful-status`
 - Answer decisions when prompted
 - Review code at milestones
+- Use `/agentful` for natural conversation when you need to make changes
 
 ❌ **Don't:**
 - Interrupt after every file
@@ -576,9 +579,41 @@ Don't micromanage. agentful works best when you:
 - Manually edit files agentful created
 - Stop and start repeatedly
 
-> **Switching structures?** You can change between flat (`PRODUCT.md`) and hierarchical (`.claude/product/`) anytime. agentful auto-detects the change.
+> **Switching structures?** You can change between flat (`PRODUCT.md`) and hierarchical (`.claude/product/`) anytime. agentful auto-detects the change on the next run.
 
-### 5. Use 24/7 Mode for Big Projects
+### 5. Use Natural Conversation
+
+Instead of always using autonomous mode, you can talk to agentful naturally:
+
+```bash
+/agentful
+```
+
+```
+You: I need to add user authentication
+agentful: I'll help you add authentication. I can see you have Next.js set up.
+        Would you like to use NextAuth.js or implement custom JWT?
+
+You: Let's use NextAuth.js with Google provider
+agentful: Perfect. I'll:
+        1. Install next-auth
+        2. Configure Google OAuth
+        3. Create login/logout pages
+        4. Add session management
+        5. Write tests
+        Ready to proceed?
+
+You: Yes, go ahead
+agentful: Starting implementation...
+```
+
+This is great for:
+- Exploratory development
+- Getting advice before implementing
+- Making mid-course corrections
+- Learning why agentful makes certain decisions
+
+### 6. Use 24/7 Mode for Big Projects
 
 For complex projects, use Ralph Wiggum loops:
 
@@ -587,6 +622,57 @@ For complex projects, use Ralph Wiggum loops:
 ```
 
 Let it run overnight, wake up to progress.
+
+**Perfect for:**
+- Large projects with many features
+- When you want maximum progress overnight
+- Hands-off development
+
+---
+
+## Understanding agentful's Intelligence
+
+agentful is smart - it adapts to your project automatically:
+
+### Automatic Structure Detection
+
+**During init:**
+- Analyzes your project structure
+- Counts detected domains (features, modules, areas)
+- Checks for multiple frameworks
+- Detects monorepo setup
+- Chooses optimal structure (flat vs hierarchical)
+
+**During development:**
+- Auto-detects which structure you're using
+- Reads from `PRODUCT.md` OR `.claude/product/index.md`
+- No configuration needed
+
+### Tech Stack Detection
+
+**Automatically detects:**
+- Frontend framework (Next.js, React, Vue, etc.)
+- Backend framework (Express, NestJS, etc.)
+- Database/ORM (Prisma, Drizzle, etc.)
+- Testing tools (Vitest, Jest, Playwright)
+- Styling approach (Tailwind, CSS Modules, etc.)
+- Build tools (Vite, Webpack, tsup)
+
+**Generates specialized agents:**
+- Stack-specific agents (e.g., `nextjs-agent`, `prisma-agent`)
+- Knows your framework's patterns and conventions
+- Follows best practices for your stack
+
+### Quality Gate Adaptation
+
+Quality gates automatically adapt to your stack:
+
+- **TypeScript project?** → Checks for type errors
+- **JavaScript project?** → Skips type checking
+- **ESLint configured?** → Runs ESLint
+- **Biome configured?** → Runs Biome instead
+- **Playwright installed?** → Runs E2E tests
+- **No E2E framework?** → Skips E2E checks
 
 ---
 
@@ -679,25 +765,40 @@ Customize agentful for your needs
 ## Quick Reference
 
 **Essential Commands:**
-- `/agentful-start` - Begin autonomous development
-- `/agentful-status` - Check progress
-- `/agentful-decide` - Answer decisions
-- `/agentful-validate` - Run quality checks
+- `/agentful` - Natural conversation interface (talk to agentful like a senior developer)
+- `/agentful-start` - Begin or resume autonomous development
+- `/agentful-status` - Check progress and what's being worked on
+- `/agentful-decide` - Answer pending decisions
+- `/agentful-validate` - Run all quality checks
 
 **Key Files:**
-- `PRODUCT.md` - Your product spec (simple structure)
-- `.claude/product/index.md` - Main product spec (hierarchical structure)
-- `.claude/product/domains/*.md` - Domain-specific specs (hierarchical structure)
+- `PRODUCT.md` - Your product spec (simple structure, auto-detected)
+- `.claude/product/index.md` - Main product spec (hierarchical structure, auto-detected)
+- `.claude/product/domains/*` - Domain-specific specs (hierarchical only)
 - `CLAUDE.md` - Project instructions
 - `.agentful/state.json` - Current state
 - `.agentful/completion.json` - Progress tracking
+- `.agentful/architecture.json` - Detected tech stack
 
-**Choose Your Structure:**
-- **Simple**: Create `PRODUCT.md` in project root
-- **Complex**: Use `.claude/product/` with domain files
-- **Switch anytime**: agentful auto-detects both
+**Intelligent Structure Detection:**
+- **Simple projects** (< 3 domains) → `PRODUCT.md` created automatically
+- **Complex projects** (≥ 3 domains) → `.claude/product/` created automatically
+- **Switch anytime** → agentful auto-detects changes
+
+**Two Ways to Use agentful:**
+1. **Natural Conversation** (`/agentful`) - Talk to agentful, get advice, explore options
+2. **Autonomous Mode** (`/agentful-start`) - Hands-off development, 24/7 capability
 
 **24/7 Development:**
 ```bash
 /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
 ```
+
+**Quick Decision Guide:**
+| Need | Command |
+|------|---------|
+| Start building | `/agentful-start` |
+| Check progress | `/agentful-status` |
+| Answer questions | `/agentful-decide` |
+| Make changes mid-flight | `/agentful` (conversation mode) |
+| Run quality checks | `/agentful-validate` |
