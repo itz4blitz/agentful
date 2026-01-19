@@ -6,7 +6,7 @@ on:
       - 'v*.*.*'  # Trigger on version tags (v0.1.0, v1.2.3, etc.)
 
 permissions:
-  contents: read
+  contents: write  # Required for creating GitHub Releases
   id-token: write  # Required for OIDC
 
 jobs:
