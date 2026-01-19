@@ -19,7 +19,8 @@
     "bin/",
     "lib/",
     "template/",
-    ".claude/"
+    ".claude/",
+    "version.json"
   ],
   "keywords": [
     "claude-code",
