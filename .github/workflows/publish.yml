@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write  # Required for OIDC/npm provenance
+  id-token: write  # Required for OIDC
 
 jobs:
   publish:
@@ -39,7 +39,7 @@ jobs:
       - name: Publish to npm
         run: npm publish --provenance --access public
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         uses: actions/create-release@v1
