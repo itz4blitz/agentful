@@ -4,20 +4,9 @@ export default defineConfig({
   title: 'agentful',
   description: 'Autonomous product development kit for Claude Code. Transform any project into a 24/7 self-building system with specialized agents.',
 
-  url: 'https://agentful.app',
-
   editLink: {
     pattern: 'https://github.com/itz4blitz/agentful/edit/main/docs/:path',
   },
-
-  socials: [
-    {
-      icon: 'github',
-      link: 'https://github.com/itz4blitz/agentful',
-    },
-  ],
-
-  ogImageUrl: 'https://agentful.app/assets/agentful.jpeg',
 
   sidebar: {
     '/': [
@@ -66,6 +55,6 @@ export default defineConfig({
   ],
 
   theme: {
-    accentColor: '#10b981', // Green instead of blue
+    accentColor: '#10b981',
   },
 })
