@@ -12,7 +12,9 @@ export default defineConfig({
 
   url: 'https://agentful.app',
 
-  editLink: 'https://github.com/itz4blitz/agentful/edit/main/docs',
+  editLink: {
+    pattern: 'https://github.com/itz4blitz/agentful/edit/main/docs/:path',
+  },
 
   socials: [
     {
@@ -26,12 +28,6 @@ export default defineConfig({
   sidebar: {
     '/': [
       {
-        text: 'Philosophy',
-        items: [
-          { text: 'Core Principles', link: '/philosophy' },
-        ],
-      },
-      {
         text: 'Getting Started',
         items: [
           { text: 'Introduction', link: '/' },
@@ -39,17 +35,6 @@ export default defineConfig({
           { text: 'Quick Start', link: '/getting-started/quick-start' },
           { text: 'Your First Project', link: '/getting-started/first-project' },
           { text: 'Configuration', link: '/getting-started/configuration' },
-        ],
-      },
-      {
-        text: 'Core Concepts',
-        items: [
-          { text: 'Overview', link: '/core-concepts' },
-          { text: 'Agent System', link: '/core-concepts/agents' },
-          { text: 'The Orchestrator', link: '/core-concepts/orchestrator' },
-          { text: 'Slash Commands', link: '/core-concepts/slash-commands' },
-          { text: 'Skills', link: '/core-concepts/skills' },
-          { text: 'State Management', link: '/core-concepts/state-management' },
         ],
       },
       {
@@ -77,68 +62,11 @@ export default defineConfig({
           { text: '/agentful-validate', link: '/commands/agentful-validate' },
         ],
       },
-      {
-        text: 'Autonomous Development',
-        items: [
-          { text: 'Autonomous Mode', link: '/autonomous-development' },
-          { text: '24/7 Development', link: '/autonomous-development/24-7-development' },
-          { text: 'Quality Gates', link: '/autonomous-development/quality-gates' },
-          { text: 'Recovery Strategies', link: '/autonomous-development/recovery-strategies' },
-          { text: 'Monitoring', link: '/autonomous-development/monitoring' },
-        ],
-      },
-      {
-        text: 'Workflows',
-        items: [
-          { text: 'Workflow Patterns', link: '/workflows' },
-          { text: 'Feature Development', link: '/workflows/feature-development' },
-          { text: 'Bug Fixing', link: '/workflows/bug-fixing' },
-          { text: 'Refactoring', link: '/workflows/refactoring' },
-          { text: 'Testing', link: '/workflows/testing' },
-        ],
-      },
-      {
-        text: 'Configuration',
-        items: [
-          { text: 'Configuration Overview', link: '/configuration' },
-          { text: 'Project Structure', link: '/configuration/project-structure' },
-          { text: 'Agent Configuration', link: '/configuration/agent-configuration' },
-          { text: 'Workflow Configuration', link: '/configuration/workflow-configuration' },
-        ],
-      },
-      {
-        text: 'Guides',
-        items: [
-          { text: 'Guides Overview', link: '/guides' },
-          { text: 'Writing PRODUCT.md', link: '/guides/writing-product-md' },
-          { text: 'Team Adoption', link: '/guides/team-adoption' },
-          { text: 'Troubleshooting', link: '/guides/troubleshooting' },
-          { text: 'Best Practices', link: '/guides/best-practices' },
-        ],
-      },
-      {
-        text: 'Reference',
-        items: [
-          { text: 'CLI Reference', link: '/reference/cli-reference' },
-          { text: 'State Files', link: '/reference/state-files' },
-          { text: 'Settings Reference', link: '/reference/settings-reference' },
-        ],
-      },
-      {
-        text: 'Examples',
-        items: [
-          { text: 'Full-Stack App', link: '/examples/full-stack-app' },
-          { text: 'API Development', link: '/examples/api-development' },
-          { text: 'Frontend Project', link: '/examples/frontend-project' },
-        ],
-      },
     ],
   },
 
   topNav: [
     { text: 'Docs', link: '/' },
-    { text: 'Guides', link: '/guides' },
-    { text: 'Examples', link: '/examples' },
     { text: 'GitHub', link: 'https://github.com/itz4blitz/agentful' },
     { text: 'Discord', link: 'https://discord.gg/SMDvJXUe' },
   ],
@@ -146,8 +74,4 @@ export default defineConfig({
   theme: {
     accentColor: '#10b981', // Green instead of blue
   },
-
-  head: [
-    '<link rel="stylesheet" href="/custom.css">',
-  ],
 })
