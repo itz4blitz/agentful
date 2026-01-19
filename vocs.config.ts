@@ -4,12 +4,6 @@ export default defineConfig({
   title: 'agentful',
   description: 'Autonomous product development kit for Claude Code. Transform any project into a 24/7 self-building system with specialized agents.',
 
-  icon: '/assets/agentful.jpeg',
-  logo: {
-    light: '/assets/agentful.jpeg',
-    dark: '/assets/agentful.jpeg',
-  },
-
   url: 'https://agentful.app',
 
   editLink: {
