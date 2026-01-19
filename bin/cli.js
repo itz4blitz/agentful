@@ -339,79 +339,48 @@ ${analysis && analysis.domains.length > 0 ? analysis.domains.map((d, i) => `${i 
   // Update .gitignore
   checkGitignore();
 
-  // Perform smart project analysis (unless explicitly disabled)
+  // Perform essential project detection (unless explicitly disabled)
   if (smart) {
     console.log('');
-    log(colors.bright, '🔍 Analyzing your project...');
+    log(colors.bright, '🔍 Detecting project essentials...');
     console.log('');
 
     try {
-      const startTime = Date.now();
       analysis = await analyzeProject(targetDir);
       await exportToArchitectureJson(targetDir, analysis);
-      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
 
-      // Show detected tech stack
+      // Show only essential info
       if (analysis.language && analysis.language !== 'unknown') {
         log(colors.cyan, `  Language:    ${analysis.language}`);
-        if (analysis.primaryLanguage && analysis.primaryLanguage !== analysis.language) {
-          log(colors.dim, `  Primary:     ${analysis.primaryLanguage}`);
-        }
       }
 
       if (analysis.frameworks.length > 0) {
-        log(colors.cyan, `  Frameworks:  ${analysis.frameworks.join(', ')}`);
+        log(colors.cyan, `  Framework:   ${analysis.frameworks[0]}`);
       }
 
       if (analysis.packageManager && analysis.packageManager !== 'unknown') {
         log(colors.cyan, `  Package Mgr: ${analysis.packageManager}`);
       }
 
-      if (analysis.buildSystem && analysis.buildSystem !== 'unknown') {
-        log(colors.cyan, `  Build:       ${analysis.buildSystem}`);
-      }
-
       console.log('');
+      log(colors.dim, `  ✓ Detection complete`);
 
-      // Show detected domains
-      if (analysis.domains.length > 0) {
-        log(colors.bright, '📊 Detected domains:');
-        console.log('');
-
-        analysis.domains.slice(0, 5).forEach(domain => {
-          const confidence = analysis.domainConfidence[domain] || 0.5;
-          const confidenceBar = '█'.repeat(Math.round(confidence * 10)) + '░'.repeat(10 - Math.round(confidence * 10));
-          const confidencePct = Math.round(confidence * 100);
-
-          // Color code based on confidence
-          let confidenceColor = colors.red;
-          if (confidence >= 0.8) confidenceColor = colors.green;
-          else if (confidence >= 0.5) confidenceColor = colors.yellow;
-
-          log(confidenceColor, `  • ${domain.padEnd(20)} ${confidenceBar} ${confidencePct}%`);
-        });
-
-        if (analysis.domains.length > 5) {
-          log(colors.dim, `  ... and ${analysis.domains.length - 5} more`);
-        }
-
-        console.log('');
-      }
-
-      log(colors.dim, `  Analysis completed in ${duration}s (${Math.round(analysis.confidence * 100)}% confidence)`);
-
-      // Show warnings if any
+      // Show critical warnings only
       if (analysis.warnings && analysis.warnings.length > 0) {
-        console.log('');
-        log(colors.yellow, '⚠️  Warnings:');
-        analysis.warnings.slice(0, 3).forEach(warning => {
-          log(colors.dim, `  • ${warning}`);
-        });
+        const criticalWarnings = analysis.warnings.filter(w =>
+          w.includes('empty') || w.includes('not detect')
+        );
+        if (criticalWarnings.length > 0) {
+          console.log('');
+          log(colors.yellow, '⚠️  Warnings:');
+          criticalWarnings.forEach(warning => {
+            log(colors.dim, `  • ${warning}`);
+          });
+        }
       }
 
     } catch (error) {
-      log(colors.dim, '  ⊙ Smart analysis skipped (project may be empty or unsupported)');
-      log(colors.dim, `     Error: ${error.message}`);
+      log(colors.dim, '  ⊙ Detection skipped (project may be empty)');
       analysis = null;
     }
   }

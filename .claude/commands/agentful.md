@@ -319,6 +319,7 @@ It learns **your project's patterns** and generates agents that match your conve
 │  └─ Template creation                       │
 ├─────────────────────────────────────────────┤
 │  Slash Commands (Claude Code)               │
+│  ├─ /agentful-product (requirements)        │
 │  ├─ /agentful-start  (orchestrator)        │
 │  ├─ /agentful-status (progress)             │
 │  ├─ /agentful-validate (quality gates)      │

@@ -11,7 +11,7 @@ This command intelligently handles all product planning scenarios with auto-dete
 
 The command detects the current state and acts accordingly:
 
-1. **No product spec exists** → Interactive init mode
+1. **No product spec exists** → Check if codebase exists to reverse-engineer, else interactive init
 2. **Product spec exists, never analyzed** → Run analysis
 3. **Analysis exists with unresolved blocking issues** → Refinement mode
 4. **Analysis exists, ready** → Show status report
@@ -32,9 +32,15 @@ if user_text:
 product_spec_exists = exists(".claude/product/index.md") OR exists("PRODUCT.md")
 
 if !product_spec_exists:
-  # No product spec found
-  mode = "INIT"
-  goto INIT_MODE
+  # No product spec found - check if we can reverse-engineer from code
+  has_substantial_codebase = check_codebase_exists()
+
+  if has_substantial_codebase:
+    mode = "REVERSE_ENGINEER"
+    goto REVERSE_ENGINEER_MODE
+  else:
+    mode = "INIT"
+    goto INIT_MODE
 
 # Step 3: Check if analysis exists
 analysis_exists = exists(".claude/product/product-analysis.json")
@@ -60,9 +66,238 @@ goto STATUS_MODE
 
 ---
 
+## Mode 0: REVERSE_ENGINEER (Codebase Analysis)
+
+When no product spec exists but substantial codebase detected, offer to reverse-engineer the product spec from existing code.
+
+### Detection Criteria
+
+A "substantial codebase" is detected when:
+- Project has source directories (src/, app/, lib/, etc.)
+- Contains actual implementation files (not just config)
+- Has at least 10+ code files
+- Not an empty project
+
+### Process
+
+```
+🔍 Analyzing Existing Codebase
+
+I detected an existing codebase without a product specification.
+
+Would you like me to:
+
+  [A] Analyze your codebase and generate a product spec
+      I'll scan your code to detect domains, features, and tech stack,
+      then create a product specification based on what exists.
+
+  [B] Create product spec from scratch (ignore existing code)
+      Walk through interactive Q&A to define your product manually.
+
+Your choice: > _______________________________
+```
+
+**If user chooses [A]:**
+
+```
+🔍 Scanning codebase to detect domains and features...
+
+Reading project structure...
+Analyzing tech stack...
+Detecting domains from code organization...
+Identifying features and capabilities...
+```
+
+**Use the project analyzer** to scan the codebase:
+
+```bash
+# Read architecture.json if exists from init, otherwise run analysis
+architecture = Read(".agentful/architecture.json") OR analyzeProject()
+
+# Show detected domains with confidence
+```
+
+**Display results:**
+
+```
+📊 Detected Domains & Features
+
+Based on your codebase structure and code analysis:
+
+Domains detected:
+
+  • authentication       ████████░░ 82%
+    Features found:
+    - JWT token generation (src/auth/jwt.ts)
+    - Login/logout endpoints (src/auth/routes.ts)
+    - Password reset flow (src/auth/password.ts)
+
+  • user-management      █████████░ 87%
+    Features found:
+    - User CRUD operations (src/users/service.ts)
+    - Profile management (src/users/profile.ts)
+    - Role-based permissions (src/users/roles.ts)
+
+  • api-management       ██████░░░░ 65%
+    Features found:
+    - REST endpoints (src/api/routes/)
+    - Request validation (src/api/middleware/)
+    - Error handling (src/api/errors.ts)
+
+  • database             ████████░░ 81%
+    Features found:
+    - Prisma schema (prisma/schema.prisma)
+    - Migration system (prisma/migrations/)
+    - Database client (src/lib/db.ts)
+
+────────────────────────────────────────────────────────
+
+Tech Stack detected:
+  Language:    TypeScript
+  Framework:   Next.js 14
+  Database:    PostgreSQL with Prisma
+  Auth:        JWT tokens
+  Testing:     Jest + Playwright
+
+────────────────────────────────────────────────────────
+
+I'll now generate a product specification based on this analysis.
+This will create .claude/product/index.md with:
+  - Detected domains organized hierarchically
+  - Features extracted from your code
+  - Tech stack specifications
+  - Inferred acceptance criteria
+
+You can refine the generated spec afterward.
+
+Generate product spec? (y/n): > _______________________________
+```
+
+**If yes:**
+
+1. Generate `.claude/product/index.md` with hierarchical structure:
+
+```markdown
+# Product Specification
+
+> **Note**: This specification was reverse-engineered from existing codebase.
+> Review and refine as needed.
+
+## Overview
+
+[Inferred from package.json description or README if available]
+
+## Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14
+- **Language**: TypeScript
+- **Styling**: [Detected: Tailwind CSS]
+- **State Management**: [Detected: React Context]
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Next.js API Routes
+- **Language**: TypeScript
+
+### Database
+- **Database**: PostgreSQL
+- **ORM**: Prisma
+
+### Authentication
+- **Method**: JWT tokens
+
+### Testing
+- **Unit**: Jest
+- **E2E**: Playwright
+
+## Domains
+
+### 1. Authentication (CRITICAL) - 82% confidence
+
+**Features detected:**
+
+#### Login & Logout
+**Status**: Implemented
+**Location**: `src/auth/routes.ts`, `src/auth/jwt.ts`
+
+**Acceptance Criteria** (inferred):
+- [ ] User can login with email/password
+- [ ] JWT token generated on successful login
+- [ ] Token includes user ID and roles
+- [ ] Logout invalidates current session
+
+#### Password Reset
+**Status**: Implemented
+**Location**: `src/auth/password.ts`
+
+**Acceptance Criteria** (inferred):
+- [ ] User can request password reset via email
+- [ ] Reset link expires after 24 hours
+- [ ] User can set new password with reset token
+
+---
+
+### 2. User Management (HIGH) - 87% confidence
+
+**Features detected:**
+
+#### User CRUD Operations
+**Status**: Implemented
+**Location**: `src/users/service.ts`
+
+**Acceptance Criteria** (inferred):
+- [ ] Create new users
+- [ ] Read user profiles
+- [ ] Update user information
+- [ ] Delete user accounts
+
+#### Profile Management
+**Status**: Implemented
+**Location**: `src/users/profile.ts`
+
+**Acceptance Criteria** (inferred):
+- [ ] Users can view their profile
+- [ ] Users can edit profile fields
+- [ ] Avatar upload supported
+- [ ] Changes validated and saved
+
+---
+
+[Continue for each domain...]
+```
+
+2. Create `.claude/product/domains/` structure if confidence > 70%:
+
+```
+.claude/product/
+├── index.md
+└── domains/
+    ├── authentication/
+    │   ├── index.md
+    │   └── features/
+    │       ├── login.md
+    │       └── password-reset.md
+    ├── user-management/
+    │   └── features/
+    │       ├── crud.md
+    │       └── profile.md
+    └── api-management/
+        └── features/
+            └── rest-endpoints.md
+```
+
+3. Immediately run ANALYSIS mode on the generated spec
+
+**If user chooses [B]:**
+
+Fall through to INIT mode (interactive Q&A)
+
+---
+
 ## Mode 1: INIT (Interactive Initialization)
 
-When no product spec exists, guide the user through creation.
+When no product spec exists and no substantial codebase detected, guide the user through creation.
 
 ### Process
 
@@ -746,12 +981,46 @@ Since the product-analyzer agent doesn't exist as a file, the Task tool will use
 
 ## Example Flows
 
-### Flow 1: New User, Empty Project
+### Flow 1: Reverse Engineer from Production Codebase
+
+```
+User: /agentful-product
+      [Has production codebase, no product spec]
+
+Command: [Detects no product spec exists]
+         [Detects substantial codebase]
+         [Enters REVERSE_ENGINEER mode]
+         [Offers: analyze codebase or manual init]
+
+User: [Chooses option A - analyze codebase]
+
+Command: [Reads .agentful/architecture.json]
+         [Shows detected domains with confidence bars]
+         [Shows detected tech stack]
+         [Lists features found per domain]
+         [Asks: Generate product spec?]
+
+User: [Confirms yes]
+
+Command: [Generates .claude/product/index.md]
+         [Creates hierarchical structure for high-confidence domains]
+         [Runs ANALYSIS mode on generated spec]
+         [Shows readiness score]
+
+User: /agentful-product
+      [If blocking issues exist]
+
+Command: [Enters REFINEMENT mode]
+         [Walks through each issue]
+```
+
+### Flow 2: New User, Empty Project
 
 ```
 User: /agentful-product
 
 Command: [Detects no product spec exists]
+         [Detects no substantial codebase]
          [Enters INIT mode]
 
 Command: "📋 Product Specification Setup..."
@@ -779,7 +1048,7 @@ Command: [Updates product spec]
          [Suggests running /agentful-start]
 ```
 
-### Flow 2: Existing Product Spec, Never Analyzed
+### Flow 3: Existing Product Spec, Never Analyzed
 
 ```
 User: /agentful-product
@@ -791,7 +1060,7 @@ Command: [Detects product spec exists]
          [Shows readiness score and issues]
 ```
 
-### Flow 3: Ready Product, Status Check
+### Flow 4: Ready Product, Status Check
 
 ```
 User: /agentful-product
@@ -803,7 +1072,7 @@ Command: [Detects product spec exists]
          [Shows readiness score, warnings, next steps]
 ```
 
-### Flow 4: User Has Question
+### Flow 5: User Has Question
 
 ```
 User: /agentful-product "Should I use REST or GraphQL?"

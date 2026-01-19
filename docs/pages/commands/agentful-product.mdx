@@ -1,0 +1,521 @@
+# /agentful-product
+
+Smart product requirements planning and analysis command with auto-detection and guided workflows.
+
+## Overview
+
+The `/agentful-product` command helps you create, analyze, and refine product specifications before development begins. It automatically detects your current state and provides the appropriate workflow:
+
+- **New projects**: Interactive Q&A to create your product spec
+- **Existing specs**: Analysis for gaps, ambiguities, and blocking issues
+- **Refinement mode**: Walk through blocking issues with context-aware suggestions
+- **Status mode**: View readiness score and quality checklist
+- **Discussion mode**: Ask planning questions with full context
+
+## Usage
+
+```bash
+# Basic usage (auto-detects current state)
+/agentful-product
+
+# Ask a planning question
+/agentful-product "Should I use REST or GraphQL?"
+
+# Discuss requirements
+/agentful-product "How should I handle user permissions?"
+```
+
+## Auto-Detection Logic
+
+The command intelligently determines what you need:
+
+1. **No product spec exists** → Interactive init mode
+2. **Product spec exists, never analyzed** → Run analysis
+3. **Analysis exists with blocking issues** → Refinement mode
+4. **Analysis exists, ready** → Show status report
+5. **User provides text** → Discussion/Q&A mode
+
+## Modes
+
+### Mode 1: INIT (Interactive Initialization)
+
+When no product spec exists, guides you through creation with 4 questions:
+
+1. **What are you building?** - 1-2 sentence description
+2. **What tech stack?** - Frontend, backend, database choices
+3. **Core features?** - Comma-separated feature list
+4. **Constraints?** - Performance, accessibility, browser support
+
+**Output**: Creates `.claude/product/index.md` with complete product specification, then automatically runs analysis.
+
+### Mode 2: ANALYSIS (Product Analyzer)
+
+When product spec exists but never analyzed:
+
+- Reads product specification
+- Analyzes for completeness and clarity
+- Identifies blocking issues and warnings
+- Calculates readiness score (0-100)
+- Generates `.claude/product/product-analysis.json`
+
+**Analysis checks:**
+
+**Tech Stack:**
+- All stack choices specified (not placeholders)
+- Authentication method defined
+- Database technology chosen
+- Testing tools identified
+
+**Features:**
+- Feature descriptions clear
+- Acceptance criteria defined
+- User stories present (for context)
+- Technical constraints documented
+
+**Architecture:**
+- Folder structure defined
+- API structure specified
+- Error handling strategy
+- Deployment target identified
+
+**Output:**
+
+```
+📊 Analysis Complete
+
+Readiness Score: 65/100
+
+❌ Not ready for development
+   2 blocking issues must be resolved
+
+🚨 Blocking Issues:
+  1. Database not specified
+  2. Login feature has no acceptance criteria
+
+⚠️  Warnings (1):
+  1. API structure not defined
+```
+
+### Mode 3: REFINEMENT (Issue Resolution)
+
+When analysis exists with unresolved blocking issues:
+
+Walks through each blocking issue with:
+- Full context about why this matters
+- 3-4 context-aware suggestions (not generic options)
+- CUSTOM option to specify your own approach
+- Immediate product spec updates
+- Re-analysis after all issues resolved
+
+**Example issue walkthrough:**
+
+```
+🔧 Product Specification Refinement
+
+Issue 1 of 2: Database not specified
+
+Context:
+  The authentication and user management features require
+  database persistence. Tech stack section shows [Database
+  placeholder] instead of actual database choice.
+
+Choose an option:
+
+  [A] PostgreSQL with Prisma
+      Robust relational database, excellent TypeScript support
+      with Prisma ORM. Best for: Structured data, complex queries.
+
+  [B] MongoDB with Mongoose
+      Flexible document database, good for evolving schemas.
+      Best for: Rapid prototyping, flexible data models.
+
+  [C] SQLite with Prisma
+      Lightweight, serverless database, perfect for prototypes
+      and small apps. Best for: Local development, demos, MVPs.
+
+  [CUSTOM] Specify my own approach
+      I want to use a different database or configuration
+
+Your choice: > _______________________________
+```
+
+### Mode 4: STATUS (Readiness Report)
+
+When analysis exists and product spec is ready (no blocking issues):
+
+Shows:
+- Last analysis timestamp
+- Current readiness score
+- Summary of tech stack, features, architecture
+- Quality checklist with ✅/⚠️ indicators
+- Remaining warnings (if any)
+- Next steps
+
+**Example output:**
+
+```
+📊 Product Specification Status
+
+Last analyzed: 2 hours ago
+
+Readiness Score: 92/100
+
+✅ Ready for development
+
+────────────────────────────────────────────────────────
+
+Summary:
+  ✅ Tech stack: Complete and specified
+  ✅ Features: 5 features well-defined
+  ✅ Architecture: Clear structure and patterns
+  ⚠️  API design: Not defined (1 warning)
+
+────────────────────────────────────────────────────────
+
+Quality Checklist:
+  ✅ Database specified: PostgreSQL with Prisma
+  ✅ Authentication method: JWT tokens
+  ✅ All features have acceptance criteria
+  ✅ Critical features have user stories
+  ⚠️  API structure not defined
+  ✅ Folder structure defined
+  ✅ Constraints documented
+```
+
+### Mode 5: DISCUSSION (Q&A and Planning)
+
+When user provides text after the command:
+
+```bash
+/agentful-product "How should I handle user permissions?"
+```
+
+**Process:**
+- Reads current product spec for context
+- Analyzes question in context of your stack and features
+- Provides context-aware recommendations
+- **Always prefers in-stack solutions** over third-party
+- Offers to update product spec
+- Can continue discussion
+
+**Example:**
+
+```
+💬 Product Planning Discussion
+
+Your question: "How should I handle user permissions and roles?"
+
+Context Analysis:
+  - Your product: Task management app for teams
+  - Current features: User auth, task creation, team collab
+  - Tech stack: Next.js + Prisma + PostgreSQL
+  - Stage: Product spec defined, ready for development
+
+────────────────────────────────────────────────────────
+
+💡 Recommendation:
+
+For your task management app, I recommend a role-based
+access control (RBAC) system with these roles:
+
+1. Owner: Full permissions, billing, team management
+2. Admin: User management, all task operations
+3. Member: Create/edit own tasks, view team tasks
+4. Guest: View-only access
+
+Implementation approach:
+
+1. Add to product spec:
+   - New feature: "User Roles & Permissions" (HIGH priority)
+
+2. Database schema:
+   - Add 'role' enum to User model
+   - Use Prisma enums (in-stack, not third-party)
+
+3. Implementation:
+   - Prisma enum for roles
+   - API middleware for permission checks
+   - Next.js middleware for route protection
+
+Would you like me to:
+  [A] Add this as a feature to your product spec
+  [B] Show implementation example for your stack
+  [C] Discuss alternative approaches
+```
+
+## Important Principles
+
+### Always Prefer In-Stack Solutions
+
+When suggesting approaches, ALWAYS prefer solutions using the existing tech stack:
+
+**✅ Good:**
+- "Use Prisma's built-in validation instead of a separate library"
+- "Next.js middleware can handle this without adding a package"
+- "Django's permissions system covers this use case"
+
+**❌ Bad:**
+- "Install this third-party auth library"
+- "Use this npm package for validation"
+- "Add Clerk for authentication"
+
+**Only suggest third-party when:**
+- Truly complex (payment processing → Stripe)
+- Security-critical (OAuth → established providers)
+- Significant development time saved
+- No good in-stack alternative
+
+### No Time Estimates
+
+**Never provide time estimates:**
+- ❌ "This will take 2-3 days"
+- ❌ "Implement in 4 hours"
+- ❌ "Should be done by next week"
+
+**Instead:**
+- ✅ "This is a straightforward feature"
+- ✅ "This is complex and will require careful planning"
+- ✅ "This depends on X being completed first"
+
+### Context-Aware Options
+
+Options in refinement mode are **specific to context**, not generic:
+
+**❌ Bad (generic):**
+```
+[A] Use a library
+[B] Build it yourself
+[C] Use a service
+```
+
+**✅ Good (context-aware):**
+```
+[A] PostgreSQL with Prisma
+    Robust relational database, excellent TypeScript support.
+    Best for: Structured data, complex queries.
+
+[B] MongoDB with Mongoose
+    Flexible document database, good for evolving schemas.
+    Best for: Rapid prototyping, flexible data models.
+```
+
+## Files
+
+### Product Specification
+
+**Flat structure** (simple projects):
+- `PRODUCT.md` at project root
+
+**Hierarchical structure** (complex projects):
+- `.claude/product/index.md` - Product overview
+- `.claude/product/domains/*/index.md` - Domain overviews
+- `.claude/product/domains/*/features/*.md` - Feature specs
+
+### Analysis Results
+
+- `.claude/product/product-analysis.json` - Readiness score, issues, warnings
+
+**Example structure:**
+
+```json
+{
+  "analyzed_at": "2026-01-19T00:00:00Z",
+  "product_file": ".claude/product/index.md",
+  "readiness_score": 92,
+  "issues": [
+    {
+      "id": "issue-001",
+      "type": "tech_stack",
+      "severity": "blocking",
+      "title": "Database not specified",
+      "description": "...",
+      "context": "...",
+      "suggestions": [...],
+      "resolved": false
+    }
+  ],
+  "summary": {
+    "total_issues": 1,
+    "blocking_issues": 1,
+    "ready_for_development": false
+  }
+}
+```
+
+## Workflows
+
+### Workflow 1: New Project from Scratch
+
+```bash
+# Start with empty project
+/agentful-product
+
+# Answer 4 questions about your product
+# System creates product spec and analyzes it
+
+# Walk through any blocking issues
+/agentful-product
+
+# Resolve issues with guided options
+# System updates spec and re-analyzes
+
+# Check readiness
+/agentful-product
+
+# Start development when ready
+/agentful-start
+```
+
+### Workflow 2: Analyze Existing Spec
+
+```bash
+# You already have PRODUCT.md or .claude/product/index.md
+/agentful-product
+
+# System analyzes and shows readiness score
+# Shows blocking issues and warnings
+
+# Resolve blocking issues
+/agentful-product
+
+# Walk through each issue with suggestions
+# System updates spec automatically
+
+# Verify readiness
+/agentful-product
+
+# Start development
+/agentful-start
+```
+
+### Workflow 3: Planning Discussion
+
+```bash
+# Ask planning questions at any time
+/agentful-product "Should I use REST or GraphQL?"
+
+# Get context-aware recommendation
+# System references your tech stack and features
+
+# Continue discussion
+/agentful-product "What about authentication?"
+
+# Let system update spec if helpful
+/agentful-product
+
+# Verify updates and readiness
+```
+
+### Workflow 4: Iterative Refinement
+
+```bash
+# Initial analysis
+/agentful-product
+
+# Resolve some issues
+/agentful-product
+
+# Manually update PRODUCT.md with more details
+# Then re-analyze
+/agentful-product
+
+# System detects improvements
+# Shows updated readiness score
+
+# Continue until 90+ score
+/agentful-start
+```
+
+## Quality Checklist
+
+Before marking analysis as "ready for development", verifies:
+
+**Tech Stack:**
+- [ ] All placeholders replaced with actual choices
+- [ ] Framework/runtime specified
+- [ ] Database and ORM specified
+- [ ] Authentication method chosen
+- [ ] Testing tools identified
+
+**Features:**
+- [ ] All critical features have descriptions
+- [ ] All critical features have acceptance criteria
+- [ ] Acceptance criteria are specific and testable
+- [ ] At least one feature has user stories (for context)
+
+**Architecture:**
+- [ ] Folder structure defined (or will use framework defaults)
+- [ ] API design approach specified (REST/GraphQL/tRPC)
+- [ ] Error handling strategy mentioned
+- [ ] Deployment target identified
+
+**Constraints:**
+- [ ] Performance requirements documented (if applicable)
+- [ ] Accessibility requirements noted (if applicable)
+- [ ] Browser/platform support specified
+
+## Tips and Best Practices
+
+### Planning Tips
+
+1. **Use INIT mode for new projects** - Guided Q&A ensures nothing is missed
+2. **Run analysis early** - Catch ambiguities before development starts
+3. **Resolve blocking issues first** - Warnings can wait, blockers cannot
+4. **Ask questions in context** - Use discussion mode to explore options
+5. **Re-analyze after manual updates** - Verify your changes improved readiness
+
+### Productivity Tips
+
+1. **Use CUSTOM option for specific needs** - Don't force-fit suggested options
+2. **Prefer in-stack solutions** - Less dependencies, easier maintenance
+3. **Document constraints upfront** - Performance, accessibility, browser support
+4. **Define acceptance criteria clearly** - Prevents ambiguity during development
+5. **Start with 90+ readiness score** - Better specs = faster development
+
+### Common Mistakes
+
+**❌ Skipping product planning:**
+- Starting `/agentful-start` with vague requirements
+- Leads to blocking decisions during development
+
+**❌ Ignoring warnings:**
+- Warnings become problems during implementation
+- Better to address early
+
+**❌ Using generic acceptance criteria:**
+- "User can login" - Too vague
+- Better: "User submits email/password, receives JWT token, redirected to dashboard"
+
+**❌ Not re-analyzing after updates:**
+- Manually updating PRODUCT.md without running analysis
+- Miss opportunities to catch new issues
+
+## Integration with Development
+
+### Handoff to /agentful-start
+
+When readiness score is 90+ and no blocking issues:
+
+```
+✅ Ready to start development:
+
+  Run: /agentful-start
+
+This will analyze your tech stack, generate specialized
+agents, and begin implementing your product.
+```
+
+### Continuous Refinement
+
+Even after starting development, use `/agentful-product` to:
+- Add new features to product spec
+- Discuss implementation approaches
+- Re-analyze updated requirements
+- Answer "how should I..." questions
+
+## See Also
+
+- [/agentful-start](./agentful-start) - Begin autonomous development
+- [/agentful-status](./agentful-status) - Track implementation progress
+- [Product Specification Guide](/getting-started/product-spec) - Writing great product specs
+- [Agent System](/agents) - How agents use product specifications

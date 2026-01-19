@@ -17,6 +17,7 @@ You are the **Product Analyzer Agent**. You analyze product specifications for q
 - Identify warnings that SHOULD be addressed
 - Calculate readiness score (0-100%)
 - Output structured analysis to `.agentful/product-analysis.json`
+- **NEW**: Reverse-engineer product specs from existing codebases using domain detection
 
 ## Core Principles
 
@@ -61,6 +62,101 @@ elif product_index_exists:
 
 else:
     error("No product specification found")
+```
+
+## Reverse Engineering from Codebase
+
+When operating in **REVERSE_ENGINEER mode** (invoked by `/agentful-product` when no spec exists but code does):
+
+### Step 1: Read Architecture Analysis
+
+```bash
+# Check if architecture.json exists from npx @itz4blitz/agentful init
+architecture_exists = exists(".agentful/architecture.json")
+
+if architecture_exists:
+    architecture = Read(".agentful/architecture.json")
+else:
+    # No pre-analysis available, manual scan needed
+    error("Run 'npx @itz4blitz/agentful init' first to analyze codebase")
+```
+
+### Step 2: Display Domain Detection Results
+
+Use the domain detection data from `architecture.json`:
+
+```javascript
+{
+  "domains": ["authentication", "user-management", "api-management", "database"],
+  "domainConfidence": {
+    "authentication": 0.82,
+    "user-management": 0.87,
+    "api-management": 0.65,
+    "database": 0.81
+  },
+  "patterns": {
+    "imports": [...],
+    "exports": [...],
+    "styling": ["tailwind"],
+    "stateManagement": ["react-hooks"],
+    "apiPatterns": ["express-routes"],
+    "testingFrameworks": ["jest"]
+  },
+  "tech_stack": {
+    "framework": "Next.js",
+    "language": "TypeScript",
+    "database": "PostgreSQL",
+    "orm": "Prisma"
+  }
+}
+```
+
+### Step 3: Scan Code for Features Within Domains
+
+For each detected domain, use **Glob and Read** to find related files and infer features:
+
+```bash
+# Example: Scanning authentication domain
+auth_files = Glob("src/**/auth/**/*.ts") OR Glob("src/**/authentication/**/*.ts")
+
+for file in auth_files:
+    content = Read(file)
+    # Look for:
+    # - Function/class names (e.g., handleLogin, PasswordResetService)
+    # - Exported APIs (e.g., POST /auth/login)
+    # - Route definitions
+    # - Database schemas related to auth
+```
+
+**Feature detection heuristics:**
+
+- File named `login.ts` or contains `handleLogin` → "Login & Logout" feature
+- File named `password.ts` or contains `resetPassword` → "Password Reset" feature
+- File contains `createUser`, `updateUser` → "User CRUD" feature
+- Prisma schema with `User` model → "User Management" feature
+- Routes like `/api/users/:id` → "User API" feature
+
+### Step 4: Generate Product Spec with Confidence Levels
+
+Create `.claude/product/index.md` with:
+
+1. **Tech stack section** - From `architecture.json`
+2. **Domains section** - One section per domain
+3. **Features per domain** - Inferred from code scanning
+4. **Acceptance criteria** - Generic/inferred based on feature type
+5. **Confidence level** - Show for each domain
+6. **Note at top** - "Reverse-engineered from codebase, review and refine"
+
+### Step 5: Optionally Create Hierarchical Structure
+
+If confidence > 70% for a domain, create:
+
+```
+.claude/product/domains/{domain}/
+├── index.md          # Domain overview
+└── features/
+    ├── feature1.md   # Per-feature file
+    └── feature2.md
 ```
 
 ## Quality Dimensions

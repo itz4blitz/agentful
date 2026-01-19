@@ -21,7 +21,24 @@ This command creates the necessary directory structure and configuration files i
 
 ### 1. Define Product Specification
 
-After initialization, edit your product specification file with features and requirements.
+After initialization, define your product requirements:
+
+#### Option A: Interactive Planning (Recommended)
+
+```bash
+claude  # Start Claude Code
+```
+
+Use `/agentful-product` for guided product planning:
+- **New projects**: Interactive Q&A creates your product spec
+- **Existing specs**: Analyzes for gaps, ambiguities, blocking issues
+- **Readiness scoring**: Get a score (0-100) before development
+- **Issue resolution**: Walk through blocking issues with smart suggestions
+- **Q&A mode**: Ask planning questions in context
+
+#### Option B: Manual Creation
+
+Create your specification manually:
 
 **Flat structure** (single file at project root):
 - `PRODUCT.md` - All features in one file
@@ -132,6 +149,7 @@ Runtime state is stored in `.agentful/`:
 
 | Command | Description |
 |---------|-------------|
+| `/agentful-product` | Smart product planning: create, analyze, and refine requirements |
 | `/agentful-start` | Start or resume autonomous development |
 | `/agentful-status` | Display progress and current state |
 | `/agentful-validate` | Run all quality checks |
