@@ -98,5 +98,5 @@ At the end, suggest next actions:
 Next Actions:
   • /agentful-start    - Continue development
   • /agentful-decide  - Answer pending decisions
-  • /agentful-validate- Run quality checks
+  • /agentful-validate - Run quality checks
 ```

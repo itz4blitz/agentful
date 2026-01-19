@@ -165,15 +165,16 @@ Orchestrator:
 
 ## Quality Gates
 
-Every change automatically passes through:
+Every change automatically passes through **6 core automated quality gates**:
 
-- **Type checking** - No type errors
-- **Linting** - Consistent code style
-- **Tests** - All tests passing
-- **Coverage** - Minimum 80% code coverage
-- **Security** - No vulnerabilities, hardcoded secrets
-- **Dead code** - No unused exports, imports, files
-- **Performance** - Benchmarks (if configured)
+1. **Type checking** - No type errors
+2. **Linting** - Consistent code style
+3. **Tests** - All tests passing
+4. **Coverage** - Minimum 80% code coverage
+5. **Security** - No vulnerabilities, hardcoded secrets
+6. **Dead code** - No unused exports, imports, files
+
+> **Note**: The reviewer agent may run additional context-specific checks beyond these 6 core gates based on project needs (e.g., performance benchmarks, accessibility audits).
 
 **If gates fail** → @fixer automatically resolves issues → re-validates
 
@@ -207,7 +208,7 @@ Progress lives in `.agentful/`:
     "no_type_errors": true,
     "coverage_80": false
   },
-  "overall": 65
+  "overall_progress": 65
 }
 ```
 
@@ -246,13 +247,15 @@ When agentful needs input:
 
 ## Continuous Development
 
-For 24/7 autonomous development:
+For 24/7 autonomous development, use the **Ralph Wiggum plugin** (requires separate installation):
 
 ```bash
 /ralph-loop "/agentful-start" \
   --max-iterations 50 \
   --completion-promise "AGENTFUL_COMPLETE"
 ```
+
+> **Note**: `/ralph-loop` is an external plugin command from the Ralph Wiggum plugin. Install separately from the Claude Code plugin registry.
 
 Stops when:
 - All features complete (100%)
@@ -326,4 +329,4 @@ It learns **your project's patterns** and generates agents that match your conve
 - **Documentation**: https://agentful.app
 - **GitHub**: https://github.com/itz4blitz/agentful
 - **Issues**: https://github.com/itz4blitz/agentful/issues
-- **Version**: 0.1.1 (check updates: `npm outdated @itz4blitz/agentful`)
+- **Version**: 0.1.7 (check updates: `npm outdated @itz4blitz/agentful`)
