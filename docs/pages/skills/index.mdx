@@ -1,0 +1,161 @@
+---
+title: Skills
+description: Reusable capabilities that power agentful's autonomous development system
+---
+
+# Skills
+
+Skills are reusable capabilities that agents and commands can invoke to perform specialized tasks. Unlike agents (which are autonomous workers) and commands (which are user-facing), skills are building blocks that provide specific functionality.
+
+## Built-in Skills
+
+agentful includes 3 core skills:
+
+| Skill | Purpose | Used By |
+|-------|---------|----------|
+| **[conversation](/skills/conversation)** | Natural language understanding, intent classification, context management | `/agentful` command |
+| **[product-tracking](/skills/product-tracking)** | Progress tracking, completion calculation, quality gate monitoring | `/agentful-status`, orchestrator |
+| **[validation](/skills/validation)** | Production readiness checks, quality gate validation | `/agentful-validate`, reviewer agent |
+
+## How Skills Work
+
+### Skill vs Agent vs Command
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        USER REQUEST                         │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │   COMMAND       │  ← User-facing (/agentful-start)
+              │  (Entry Point)  │
+              └────────┬─────────┘
+                       │
+                       ▼
+              ┌─────────────────┐
+              │   ORCHESTRATOR  │  ← Agent (coordinates work)
+              │    (Agent)      │
+              └────────┬─────────┘
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+        ▼              ▼              ▼
+┌───────────┐  ┌───────────┐  ┌───────────┐
+│  AGENT    │  │  SKILL    │  │  AGENT    │
+│(backend)  │  │(product-  │  │(frontend) │
+│           │  │ tracking) │  │           │
+└───────────┘  └───────────┘  └───────────┘
+```
+
+### Skill Structure
+
+Each skill is a Markdown file in `.claude/skills/<skill-name>/SKILL.md`:
+
+```markdown
+---
+name: skill-name
+description: What this skill does
+model: sonnet
+tools: Read, Write, Edit, Bash
+---
+
+# Skill Name
+
+## What It Does
+...
+
+## How It Works
+...
+
+## Usage
+...
+```
+
+## When Skills Are Used
+
+### Conversation Skill
+The conversation skill activates whenever you use the `/agentful` command. It:
+- Classifies your intent (feature request, bug fix, status check, etc.)
+- Extracts relevant information (feature names, bug descriptions)
+- Maintains conversation context across multiple messages
+- Handles ambiguity and asks clarifying questions
+
+**Example:**
+```
+You: /agentful Add user authentication
+
+conversation skill activates:
+→ Intent: FEATURE_REQUEST
+→ Feature: "user authentication"
+→ Orchestrator delegated to handle implementation
+```
+
+### Product-Tracking Skill
+The product-tracking skill is used by:
+- **Orchestrator agent** - To track feature completion
+- **`/agentful-status` command** - To show progress reports
+- **All agents** - To update completion status
+
+**Tracks:**
+- Feature completion percentage
+- Quality gate status (tests, type checking, linting, coverage, security)
+- Overall project progress
+- Hierarchical vs flat product structures
+
+### Validation Skill
+The validation skill is used by:
+- **Reviewer agent** - To run quality checks
+- **`/agentful-validate` command** - To validate production readiness
+- **Fixer agent** - To identify issues to fix
+
+**Validates:**
+- TypeScript/Flow type checking (adapts to your stack)
+- Linting (ESLint, Biome, etc.)
+- Tests (unit, integration, E2E)
+- Code coverage (minimum 80%)
+- Dead code detection
+- Security vulnerabilities
+
+## Skill Customization
+
+You can create custom skills by adding them to `.claude/skills/`:
+
+```bash
+.claude/skills/
+├── my-custom-skill/
+│   └── SKILL.md
+└── another-skill/
+    └── SKILL.md
+```
+
+**Example custom skill:**
+
+```markdown
+---
+name: deployment
+description: Handles deployment to various platforms
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
+
+# Deployment Skill
+
+Automates deployment to your hosting platform.
+
+## Supported Platforms
+- Vercel
+- Netlify
+- AWS Amplify
+- Docker containers
+
+## Usage
+Invoked automatically when all quality gates pass.
+```
+
+## Next Steps
+
+- **[Conversation Skill](/skills/conversation)** - Learn about natural language understanding
+- **[Product-Tracking Skill](/skills/product-tracking)** - Learn about progress tracking
+- **[Validation Skill](/skills/validation)** - Learn about quality checks
+- **[Custom Agents](/agents/custom-agents)** - Create your own agents
