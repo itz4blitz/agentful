@@ -21,6 +21,15 @@ export default defineConfig({
         ],
       },
       {
+        text: 'Skills',
+        items: [
+          { text: 'Overview', link: '/skills' },
+          { text: 'Conversation', link: '/skills/conversation' },
+          { text: 'Product Tracking', link: '/skills/product-tracking' },
+          { text: 'Validation', link: '/skills/validation' },
+        ],
+      },
+      {
         text: 'Agents',
         items: [
           { text: 'Agent Overview', link: '/agents' },
