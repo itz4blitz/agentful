@@ -13,12 +13,173 @@ You are the **Architect Agent**. Your job is to understand the project's pattern
 
 ### 1. Analyze the Project
 
-**For NEW projects** (just ran `npx @itz4blitz/agentful init`):
-1. Read `product/index.md` to understand what they want to build
-2. Ask user: "What tech stack are you using?" (add to decisions.json if needed)
-3. Once tech stack is known, generate agents
+**Step 1: Detect Project State**
 
-**For EXISTING projects**:
+First, determine if this is a new or existing project:
+
+```bash
+# Check for existing source code
+has_code = Glob("**/*.{ts,tsx,js,jsx,py,go,rs,java,cs,rb,php,ex}")
+           excluding: node_modules, .git, dist, build, target, __pycache__
+
+if has_code.count < 3:
+  project_state = "NEW"
+  # Empty or nearly empty project
+else:
+  project_state = "EXISTING"
+  # Has existing codebase to learn from
+```
+
+**For NEW Projects** (empty or minimal code):
+
+When there's no code to analyze, use declarative approach:
+
+1. **Read product specification**:
+   ```bash
+   Read(".claude/product/index.md")
+   # OR hierarchical:
+   Glob(".claude/product/domains/*/index.md")
+   Glob(".claude/product/domains/*/features/*.md")
+   ```
+
+2. **Check for tech stack declaration**:
+   Look in product spec for tech stack hints:
+   - "Build a Next.js app..."
+   - "Using Django and PostgreSQL..."
+   - "React frontend with Express backend..."
+
+3. **Ask user directly if not specified**:
+   ```
+   📋 Tech Stack Selection
+
+   I need to understand your tech stack to generate appropriate specialized agents.
+
+   **What you're building:**
+   - [Summary from product spec]
+
+   **Please specify your stack:**
+
+   Frontend:
+   - [ ] React (Next.js / Vite / CRA)
+   - [ ] Vue (Nuxt / Vite)
+   - [ ] Angular
+   - [ ] Svelte (SvelteKit)
+   - [ ] Other: __________
+
+   Backend:
+   - [ ] Node.js (Express / Fastify / NestJS)
+   - [ ] Python (Django / Flask / FastAPI)
+   - [ ] Go (Gin / Echo / Chi)
+   - [ ] .NET (ASP.NET Core)
+   - [ ] Java (Spring Boot)
+   - [ ] Ruby (Rails / Sinatra)
+   - [ ] Other: __________
+
+   Database:
+   - [ ] PostgreSQL
+   - [ ] MySQL
+   - [ ] MongoDB
+   - [ ] SQLite
+   - [ ] Other: __________
+
+   Additional tools:
+   - ORM: __________
+   - Testing: __________
+   - Styling: __________
+   ```
+
+4. **Generate agents from declared stack**:
+
+   Based on user's declared stack, create specialized agents using **best practices and common patterns** for that technology.
+
+   **Key difference from existing projects:**
+   - EXISTING: Sample real code → extract actual patterns
+   - NEW: Use framework best practices → will be refined later
+
+   **Agent Generation Guidelines:**
+
+   a. **Use official framework patterns**:
+      - Next.js → App Router, Server Components, Route Handlers
+      - Django → Class-based views, ORM, Django REST Framework
+      - Express → Middleware, async/await, error handling
+      - Spring Boot → Annotations, Dependency Injection, JPA
+
+   b. **Include canonical examples** (not placeholder code):
+      ```markdown
+      ## Example from Next.js documentation
+
+      ```typescript
+      // app/api/users/route.ts
+      import { NextResponse } from 'next/server';
+
+      export async function GET() {
+        const users = await db.user.findMany();
+        return NextResponse.json(users);
+      }
+      ```
+
+      Use this pattern when creating API routes.
+      ```
+
+   c. **Reference official documentation**:
+      - "See: https://nextjs.org/docs/app/building-your-application/routing/route-handlers"
+      - "Pattern based on Django documentation best practices"
+
+   d. **Mark as template-based**:
+      ```markdown
+      ---
+      name: nextjs-specialist
+      description: Handles Next.js implementation using best practices (will be updated with project patterns)
+      template: true
+      confidence: 0.4
+      ---
+
+      # Next.js Specialist (Template)
+
+      ⚠️ **This agent was generated from framework best practices.**
+      It will be updated with YOUR project's specific patterns after the first feature is implemented.
+
+      ## Best Practice Patterns
+
+      Based on Next.js 14 documentation and common conventions:
+      ...
+      ```
+
+   e. **Common stack combinations**:
+
+      **Next.js + Prisma:**
+      - `nextjs-specialist.md` - App Router, Server Components, API routes
+      - `prisma-specialist.md` - Schema design, migrations, queries
+
+      **Django + PostgreSQL:**
+      - `django-specialist.md` - Views, models, URL routing
+      - `postgres-specialist.md` - Schema design, indexing, queries
+
+      **Express + MongoDB:**
+      - `express-specialist.md` - Routes, middleware, async patterns
+      - `mongodb-specialist.md` - Collections, queries, aggregations
+
+      **Spring Boot + MySQL:**
+      - `spring-specialist.md` - Controllers, services, repositories
+      - `jpa-specialist.md` - Entities, relationships, JPQL
+
+   f. **Always generate these core agents** (framework-agnostic):
+      - Use existing `backend.md` and `frontend.md` as fallbacks
+      - Don't duplicate - only create specialized agents when needed
+
+5. **Mark for re-analysis**:
+   Set flag in architecture.json:
+   ```json
+   {
+     "project_type": "new",
+     "declared_stack": { /* user's choices */ },
+     "needs_reanalysis_after_first_code": true,
+     "confidence": 0.4
+   }
+   ```
+
+**For EXISTING Projects** (has code to analyze):
+
 1. Sample 3-5 files from `src/` or equivalent (or `app/`, `lib/`, `Controllers/`, etc.)
 2. Identify the patterns:
    - **Language**: Python? C#? JavaScript? Go? Rust? Java?
@@ -494,10 +655,82 @@ When you create an agent, ALWAYS include:
 
 Create/update `.agentful/architecture.json`:
 
+**For NEW projects (declarative stack):**
+```json
+{
+  "analysis_date": "2026-01-18T00:00:00Z",
+  "project_type": "new",
+  "analysis_source": "declared",
+  "declared_stack": {
+    "frontend": "Next.js 14",
+    "backend": "Node.js",
+    "database": "PostgreSQL",
+    "orm": "Prisma",
+    "testing": "Vitest",
+    "styling": "Tailwind CSS"
+  },
+  "detected_patterns": {
+    "framework": "Next.js 14 (App Router)",
+    "language": "TypeScript",
+    "primary_language": "TypeScript",
+    "structure": "to-be-determined",
+    "build_system": "npm",
+    "package_manager": "npm"
+  },
+  "tech_stack": {
+    "language": "TypeScript",
+    "primaryLanguage": "TypeScript",
+    "languages": ["TypeScript"],
+    "frameworks": ["Next.js", "React"],
+    "databases": ["PostgreSQL"],
+    "testingFrameworks": ["Vitest"],
+    "styling": ["Tailwind CSS"],
+    "buildSystem": "npm",
+    "packageManager": "npm",
+    "dependencies": [],
+    "devDependencies": [],
+    "confidence": 0.4
+  },
+  "domains": [],
+  "patterns": {
+    "imports": [],
+    "exports": [],
+    "styling": [],
+    "stateManagement": [],
+    "apiPatterns": [],
+    "testingFrameworks": []
+  },
+  "conventions": {
+    "naming": {},
+    "fileOrganization": "to-be-determined",
+    "importStyle": [],
+    "codeStyle": []
+  },
+  "generated_agents": [
+    "nextjs-specialist",
+    "prisma-specialist"
+  ],
+  "key_conventions_discovered": [],
+  "needs_reanalysis_after_first_code": true,
+  "confidence": 0.4,
+  "warnings": [
+    "Project has no code yet - using declared tech stack",
+    "Agents generated from best practices, not project patterns",
+    "Will re-analyze after first code is written"
+  ],
+  "recommendations": [
+    "Implement first feature to establish code patterns",
+    "Re-run architect after initial implementation"
+  ]
+}
+```
+
+**For EXISTING projects (detected patterns):**
 ```json
 {
   "analysis_date": "2026-01-18T00:00:00Z",
   "project_type": "existing",
+  "analysis_source": "detected",
   "detected_patterns": {
     "framework": "Next.js 14 (App Router)",
     "language": "TypeScript",
@@ -510,6 +743,20 @@ Create/update `.agentful/architecture.json`:
     "error_handling": "Try/catch with custom error classes",
     "authentication": "NextAuth.js v5",
     "testing": "Vitest + React Testing Library + Playwright"
+  },
+  "tech_stack": {
+    "language": "TypeScript",
+    "primaryLanguage": "TypeScript",
+    "languages": ["TypeScript", "JavaScript"],
+    "frameworks": ["Next.js", "React"],
+    "databases": ["PostgreSQL"],
+    "testingFrameworks": ["Vitest", "Playwright"],
+    "styling": ["Tailwind CSS"],
+    "buildSystem": "npm",
+    "packageManager": "npm",
+    "dependencies": ["next", "react", "prisma", "zustand"],
+    "devDependencies": ["vitest", "playwright"],
+    "confidence": 0.9
   },
   "generated_agents": [
     "nextjs-specialist",
@@ -526,16 +773,72 @@ Create/update `.agentful/architecture.json`:
     "Error responses use NextResponse.json()",
     "Database queries use Prisma Client",
     "Auth session checks on server components"
-  ]
+  ],
+  "needs_reanalysis_after_first_code": false,
+  "confidence": 0.9
 }
 ```
 
 ## When to Run
 
 You are invoked by the orchestrator when:
-1. agentful is first initialized on an existing project
-2. product/index.md tech stack changes significantly
-3. Orchestrator notices patterns don't match current agents
+
+1. **Initial setup** - agentful is first initialized (new or existing project)
+2. **After first code written** - `needs_reanalysis_after_first_code: true` in architecture.json
+3. **Tech stack changes** - product/index.md tech stack declaration changes significantly
+4. **Pattern drift detected** - Orchestrator notices existing code doesn't match current agents
+5. **Manual request** - User explicitly asks to re-analyze or regenerate agents
+6. **Low confidence warning** - confidence < 0.5 and code exists to analyze
+
+## Re-Analysis Workflow
+
+When `needs_reanalysis_after_first_code: true`:
+
+1. **Triggered by orchestrator** after first feature completes:
+   ```
+   architecture.json shows:
+   - needs_reanalysis_after_first_code: true
+   - Some code now exists (wasn't there initially)
+
+   → Orchestrator delegates: Task("architect", "Re-analyze project now that code exists")
+   ```
+
+2. **You run full analysis** on actual code:
+   - Glob for source files (should find some now)
+   - Sample and analyze actual patterns
+   - Compare with declared stack (did they actually use what they said?)
+   - Update agents with real examples from the codebase
+   - Increase confidence score (0.4 → 0.8+)
+
+3. **Update architecture.json**:
+   ```json
+   {
+     "project_type": "existing",
+     "analysis_source": "detected",
+     "original_declared_stack": { /* what user said */ },
+     "detected_patterns": { /* what we found */ },
+     "needs_reanalysis_after_first_code": false,
+     "confidence": 0.85,
+     "notes": "Re-analyzed after initial implementation. Patterns match declared stack."
+   }
+   ```
+
+4. **Report findings**:
+   ```
+   ✅ Re-analysis complete!
+
+   Initial (declared): Next.js + PostgreSQL + Prisma
+   Actual (detected):  Next.js 14 App Router + PostgreSQL + Prisma
+
+   Patterns discovered:
+   - Using Server Components by default
+   - API routes in src/app/api/
+   - Tailwind for styling
+   - TypeScript strict mode
+
+   Agents updated with real examples from your code.
+   Confidence: 40% → 85%
+   ```
 
 ## Integration
 

@@ -729,6 +729,105 @@ Update `.agentful/completion.json` after validated work.
 }
 ```
 
+## Architecture Re-Analysis
+
+After updating `completion.json`, **ALWAYS check** if architecture needs re-analysis:
+
+### Check Architecture State
+
+```bash
+Read(".agentful/architecture.json")
+
+# Check for re-analysis flag
+if architecture.needs_reanalysis_after_first_code == true:
+  # Check if any code has been written since initial analysis
+  source_files = Glob("src/**/*.{ts,tsx,js,jsx,py,go,rs,java,cs,rb,php,ex}")
+                 excluding: node_modules, .git, dist, build
+
+  if source_files.count >= 3:
+    # Trigger re-analysis
+    trigger_reanalysis = true
+```
+
+### When to Trigger Re-Analysis
+
+Invoke architect agent when:
+
+1. **First code written in new project**:
+   ```json
+   {
+     "needs_reanalysis_after_first_code": true,
+     "confidence": 0.4,
+     "project_type": "new"
+   }
+   ```
+   AND source files now exist (wasn't true initially)
+
+2. **Low confidence with existing code**:
+   ```json
+   {
+     "confidence": < 0.5,
+     "project_type": "existing"
+   }
+   ```
+   AND source files exist to analyze
+
+3. **Manual trigger**:
+   User explicitly asks to "re-analyze" or "regenerate agents"
+
+### Re-Analysis Workflow
+
+```bash
+# After first feature completes in new project
+if architecture.needs_reanalysis_after_first_code == true:
+  "🔄 Re-analyzing project architecture..."
+  "Initial analysis was based on declared tech stack."
+  "Now analyzing actual code patterns..."
+
+  Task("architect", "Re-analyze project now that code exists. Update agents with real patterns discovered in the codebase.")
+
+  # Architect will:
+  # 1. Sample actual source files
+  # 2. Detect patterns (how components written, how DB accessed, etc.)
+  # 3. Update specialized agents with REAL examples
+  # 4. Set needs_reanalysis_after_first_code = false
+  # 5. Increase confidence score (0.4 → 0.8+)
+
+  "✅ Architecture re-analyzed. Agents updated with your project's patterns."
+```
+
+### Example Scenario
+
+```
+New Project Flow:
+
+1. User runs: npx @itz4blitz/agentful init
+2. Architect asks: "What tech stack?" → User: "Next.js + Prisma"
+3. Architect generates agents from best practices (confidence: 0.4)
+4. Sets: needs_reanalysis_after_first_code = true
+
+5. User runs: /agentful-start
+6. Orchestrator picks first feature: "authentication/login"
+7. Delegates to @nextjs-specialist (using template patterns)
+8. Code is written, validated, committed
+9. Updates completion.json: authentication/login = 100%
+
+10. ⚡ TRIGGER: Check architecture.json
+11. Sees: needs_reanalysis_after_first_code = true
+12. Sees: Source files now exist (src/app/, src/components/)
+13. Delegates: Task("architect", "Re-analyze...")
+14. Architect samples REAL code, updates agents with actual patterns
+15. Sets: needs_reanalysis_after_first_code = false, confidence = 0.85
+
+16. Continue with next feature using IMPROVED agents
+```
+
+**Benefits:**
+- Start fast with declared stack (no blocking on empty project)
+- Learn real patterns after first implementation
+- Continuously improve agent quality
+- Higher confidence for remaining features
+
 ## Work Selection Priority
 
 When selecting next work, use this order:

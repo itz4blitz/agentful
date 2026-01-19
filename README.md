@@ -38,6 +38,51 @@ claude  # Start Claude Code
 
 Then use the `/agentful-start` command to begin autonomous development.
 
+#### New Projects (No Existing Code)
+
+For brand new projects with no code yet:
+
+1. **Tech Stack Selection**: On first run, the architect agent will ask about your tech stack:
+   - Frontend framework (React, Vue, Next.js, etc.)
+   - Backend framework (Express, Django, Spring Boot, etc.)
+   - Database (PostgreSQL, MongoDB, MySQL, etc.)
+   - Additional tools (ORM, testing framework, styling)
+
+2. **Initial Agent Generation**: Specialized agents are generated using **best practices** for your chosen stack:
+   - Based on official framework documentation
+   - Using common patterns and conventions
+   - Marked with `confidence: 0.4` (template-based)
+
+3. **First Feature Implementation**: The system builds your first feature using these template agents
+
+4. **Automatic Re-Analysis**: After the first feature is complete:
+   - Architect re-analyzes your **actual code**
+   - Updates agents with **your project's specific patterns**
+   - Confidence increases (`0.4 → 0.8+`)
+   - Remaining features use refined, project-specific agents
+
+**Benefits**:
+- ✅ Start immediately without existing code
+- ✅ No blocking on pattern detection
+- ✅ Learns and adapts after first implementation
+- ✅ Continuously improving agent quality
+
+#### Existing Projects (With Code)
+
+For projects with existing code:
+
+1. **Pattern Detection**: Architect samples your codebase to detect:
+   - Language and framework
+   - File organization patterns
+   - Coding conventions
+   - Import/export styles
+   - Error handling patterns
+
+2. **Agent Generation**: Creates specialized agents matching **your exact conventions**
+   - Real code examples from your project
+   - Your specific patterns and styles
+   - High confidence (`0.8-1.0`)
+
 ### 3. Monitor Progress
 
 - `/agentful-status` - View completion percentage and current work
@@ -53,7 +98,7 @@ agentful uses seven specialized agents:
 | Agent | Responsibility |
 |-------|---------------|
 | orchestrator | Coordinates work, routes tasks, tracks state |
-| architect | Analyzes project structure and generates specialized agents |
+| architect | Analyzes project structure and generates specialized agents<br/>• New projects: Prompts for tech stack, generates template agents<br/>• Existing projects: Detects patterns from code<br/>• Re-analyzes after first implementation in new projects |
 | backend | Implements server-side logic, APIs, database schemas |
 | frontend | Implements UI components, pages, state management |
 | tester | Writes unit, integration, and end-to-end tests |
@@ -78,7 +123,10 @@ Runtime state is stored in `.agentful/`:
 - `state.json` - Current task and phase
 - `completion.json` - Feature completion status
 - `decisions.json` - Pending and resolved decisions
-- `architecture.json` - Detected technology stack
+- `architecture.json` - Technology stack (declared or detected)
+  - New projects: Starts with declared stack (`confidence: 0.4`)
+  - Existing projects: Detected from code (`confidence: 0.8-1.0`)
+  - Re-analyzed after first implementation in new projects
 
 ## Commands
 
