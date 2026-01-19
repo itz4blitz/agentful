@@ -1,0 +1,385 @@
+---
+title: Validation Skill
+description: Production readiness validation with quality gates for your codebase
+sidebar_position: 3
+---
+
+# Validation Skill
+
+The **validation skill** runs comprehensive production readiness checks, ensuring all code meets quality standards before deployment.
+
+## What It Validates
+
+The skill checks 6 quality gates:
+
+| Gate | Purpose | Adaptation |
+|------|---------|------------|
+| **Tests** | All tests must pass | Works with any test framework |
+| **Type Checking** | No type errors | TypeScript, Flow, or skipped |
+| **Linting** | Zero lint errors | ESLint, Biome, or skipped |
+| **Dead Code** | No unused code | Removes unused exports/imports |
+| **Coverage** | Minimum coverage | ≥80% required |
+| **Security** | No vulnerabilities | Runs security audit |
+
+## How It Works
+
+### 1. Test Validation
+
+**Detects your test framework:**
+- Vitest
+- Jest
+- Playwright
+- Cypress
+
+**Runs:**
+```bash
+npm test                # Unit/integration tests
+npm run test:e2e        # E2E tests (if configured)
+```
+
+**Pass Criteria:** All tests pass (0 failures)
+
+### 2. Type Checking
+
+**Detects your setup:**
+- TypeScript → Runs `tsc --noEmit`
+- Flow → Runs `flow check`
+- JavaScript → Skips type checking
+
+**Pass Criteria:** 0 type errors
+
+### 3. Linting
+
+**Detects your linter:**
+- ESLint → Runs `eslint .`
+- Biome → Runs `biome check .`
+- None → Skips linting
+
+**Pass Criteria:** 0 lint errors
+
+### 4. Dead Code Detection
+
+**Finds and removes:**
+- Unused exports
+- Unused imports
+- Empty files
+- Unreferenced variables
+
+**Method:** Static code analysis + dependency graph
+
+**Pass Criteria:** 0 unused exports/imports
+
+### 5. Coverage Validation
+
+**Detects your coverage tool:**
+- Vitest → Built-in coverage
+- Jest + Istanbul
+- c8
+- None → Warns but doesn't fail
+
+**Pass Criteria:** ≥80% code coverage
+
+### 6. Security Audit
+
+**Runs:**
+```bash
+npm audit              # Check for vulnerabilities
+# Or
+yarn audit
+```
+
+**Pass Criteria:** 0 high/critical vulnerabilities
+
+## Usage
+
+### By /agentful-validate Command
+
+```
+/agentful-validate
+```
+
+**Output:**
+```
+🔍 Running production readiness validation...
+
+✅ Tests Passing (47/47)
+❌ Type Checking (3 errors found)
+   src/components/LoginForm.tsx:23 - Type 'string' not assignable to type 'number'
+✅ Linting (0 errors)
+⚠️  Coverage (76% - target: 80%)
+   Missing coverage in:
+   • src/components/TaskItem.tsx
+   • lib/utils.ts
+✅ Dead Code (0 issues)
+✅ Security (0 vulnerabilities)
+
+Status: ❌ FAILED
+Fix required: Type errors must be resolved
+```
+
+### By Reviewer Agent
+
+The reviewer agent automatically runs validation:
+1. After each feature implementation
+2. Before marking features as complete
+3. When `/agentful-validate` is invoked
+
+### By Fixer Agent
+
+The fixer agent uses validation to:
+1. Identify issues that need fixing
+2. Verify fixes are successful
+3. Re-run checks until all pass
+
+## Quality Gate Details
+
+### Test Validation
+
+**What it checks:**
+- Unit tests pass
+- Integration tests pass
+- E2E tests pass (if configured)
+- Test files aren't skipped
+
+**How it adapts:**
+- No test framework → Skips (warns user)
+- Monorepo → Tests each package
+- Workspaces → Runs tests in dependency order
+
+**Example failures:**
+```
+❌ Test failed: User authentication › should log in with valid credentials
+   Expected: true
+   Received: false
+   at src/__tests__/auth.test.ts:45
+```
+
+### Type Checking
+
+**What it checks:**
+- TypeScript: `tsc --noEmit` passes
+- Flow: `flow check` passes
+- JSDoc: Validates type annotations
+
+**How it adapts:**
+- No tsconfig.json → Skips type checking
+- JavaScript files → Doesn't fail on .js files
+- @ts-check → Respects TypeScript comments
+
+**Example failures:**
+```
+❌ Type error in LoginForm.tsx:23
+   Type 'string' is not assignable to type 'number'
+```
+
+### Linting
+
+**What it checks:**
+- ESLint configuration found → Runs `eslint .`
+- Biome configuration found → Runs `biome check .`
+- No linter → Skips
+
+**How it adapts:**
+- .eslintrc.js, .eslintrc.json, .eslintrc.yml
+- biome.json
+- package.json "eslintConfig"
+
+**Example failures:**
+```
+❌ Lint error in utils.ts:42
+   'foo' is assigned a value but never used
+```
+
+### Dead Code Detection
+
+**What it finds:**
+- Exported functions never imported
+- Exported components never used
+- Files with no exports/imports (except entry points)
+- Unused dependencies
+
+**Method:**
+```bash
+# Build dependency graph
+# Find unreferenced exports
+# Find unused imports
+# Report and optionally remove
+```
+
+**Example findings:**
+```
+⚠️  Dead code found:
+   • src/lib/unusedHelper.ts (exported but never imported)
+   • src/components/OldButton.tsx (replaced by NewButton.tsx)
+   • Import 'lodash' in utils.ts (unused)
+```
+
+### Coverage Validation
+
+**What it measures:**
+- Statement coverage
+- Branch coverage
+- Function coverage
+- Line coverage
+
+**Pass threshold:** 80% average
+
+**How it adapts:**
+- No coverage tool configured → Warns but doesn't fail
+- Custom threshold in package.json → Uses that instead
+
+**Example output:**
+```
+Coverage: 76.3% (target: 80%)
+┌─────────────────────────────────┐
+│ File            │ % Stmts │ % Branch │
+├─────────────────────────────────┤
+│ LoginForm.tsx  │   92.3  │   88.9   │
+│ utils.ts       │   65.2  │   50.0   │
+│ TaskItem.tsx    │   71.4  │   66.7   │
+└─────────────────────────────────┘
+```
+
+### Security Audit
+
+**What it checks:**
+- npm packages for known vulnerabilities
+- yarn audit (if using yarn)
+- pnpm audit (if using pnpm)
+
+**Severity levels:**
+- ✅ Pass: 0 vulnerabilities
+- ⚠️  Warning: Low/medium severity
+- ❌ Fail: High/critical severity
+
+**Example findings:**
+```
+⚠️  1 moderate severity vulnerability
+Package: lodash
+Vulnerability: Prototype Pollution
+Patch: 4.17.21
+```
+
+## Auto-Fixing
+
+The validation skill (via fixer agent) can automatically fix:
+
+✅ **Auto-fixable:**
+- Unused imports (removes them)
+- Simple type errors (adds type annotations)
+- Lint errors (applies --fix)
+- Dead code (removes unused exports)
+
+❌ **Requires manual fix:**
+- Test failures (logic errors)
+- Complex type errors (design issues)
+- Coverage gaps (need tests)
+- Security vulnerabilities (need updates)
+
+## Configuration
+
+### Override Coverage Threshold
+
+**package.json:**
+```json
+{
+  "agentful": {
+    "validation": {
+      "coverageThreshold": 90
+    }
+  }
+}
+```
+
+### Skip Type Checking
+
+**For JavaScript projects:**
+```json
+{
+  "agentful": {
+    "validation": {
+      "typeCheck": false
+    }
+  }
+}
+```
+
+### Custom Test Commands
+
+```json
+{
+  "agentful": {
+    "validation": {
+      "testCommand": "vitest run --coverage",
+      "e2eCommand": "playwright test"
+    }
+  }
+}
+```
+
+## Technical Details
+
+**Model:** Sonnet
+
+**Tools:**
+- Read - Read config files
+- Write - Write coverage reports
+- Edit - Fix auto-fixable issues
+- Glob - Find test files
+- Grep - Search for patterns
+- Bash - Run validation commands
+
+**Config Files Read:**
+- package.json (scripts, dependencies)
+- tsconfig.json (TypeScript config)
+- .eslintrc.* (ESLint config)
+- biome.json (Biome config)
+- vitest.config.ts (Vitest config)
+- jest.config.js (Jest config)
+
+## Best Practices
+
+### 1. Run Validation Frequently
+```
+/agentful-validate
+```
+Run after each feature to catch issues early.
+
+### 2. Fix Issues Promptly
+Don't let validation errors accumulate. Fix them as they appear.
+
+### 3. Monitor Coverage
+Keep coverage at 80%+ to prevent technical debt.
+
+### 4. Review Dead Code Findings
+Sometimes code appears unused but is loaded dynamically. Review before removing.
+
+## Troubleshooting
+
+### Issue: "TypeScript errors but I'm using JavaScript"
+**Solution:** Type checking should auto-skip. If not, add `"typeCheck": false` to agentful config.
+
+### Issue: "Tests pass locally but fail in validation"
+**Cause:** Environment difference (NODE_ENV, test database, etc.)
+**Solution:** Ensure tests pass in all environments
+
+### Issue: "Coverage inaccurate"
+**Cause:** Files excluded from coverage measurement
+**Solution:** Check vitest.config.ts or jest.config.js for exclude patterns
+
+### Issue: "Dead code false positives"
+**Cause:** Dynamic imports, conditional requires
+**Solution:** Add /* @__NO_SIDE_EFFECTS__ */ or review findings before removal
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | All gates passed ✅ |
+| 1 | One or more gates failed ❌ |
+
+## See Also
+
+- **[/agentful-validate](/commands/agentful-validate)** - Run validation manually
+- **[Reviewer Agent](/agents/reviewer)** - How reviewer uses validation
+- **[Fixer Agent](/agents/fixer)** - Auto-fixing validation failures

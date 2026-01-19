@@ -1,0 +1,298 @@
+---
+title: Product Tracking Skill
+description: Tracks product completion progress across features and quality gates
+sidebar_position: 2
+---
+
+# Product-Tracking Skill
+
+The **product-tracking skill** monitors and calculates completion progress for your entire product, tracking features, subtasks, and quality gates.
+
+## What It Does
+
+- **Tracks feature completion** - Calculates percentage complete for each feature
+- **Monitors quality gates** - Tracks test status, type checking, linting, coverage, security
+- **Supports both structures** - Works with flat PRODUCT.md and hierarchical .claude/product/
+- **Calculates overall progress** - Provides total project completion percentage
+- **Reports by priority** - Shows CRITICAL, HIGH, MEDIUM, LOW feature status
+
+## How It Works
+
+### Data Structure
+
+The skill tracks progress in `.agentful/completion.json`:
+
+```json
+{
+  "features": {
+    "User Authentication": {
+      "status": "complete",
+      "progress": 100,
+      "subtasks": {
+        "registration": "complete",
+        "login": "complete",
+        "password_reset": "complete"
+      }
+    },
+    "User Profiles": {
+      "status": "in_progress",
+      "progress": 45,
+      "subtasks": {
+        "profile_page": "complete",
+        "avatar_upload": "in_progress",
+        "settings": "pending"
+      }
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": false,
+    "no_dead_code": true,
+    "coverage_80": false,
+    "security_clean": true
+  },
+  "overall": 67
+}
+```
+
+### Progress Calculation
+
+**Feature Progress:**
+```
+progress = (complete_subtasks / total_subtasks) × 100
+```
+
+**Overall Progress:**
+```
+overall = average(all_feature_progress) × quality_gate_factor
+```
+
+### Quality Gate Tracking
+
+The skill monitors these gates:
+
+| Gate | Check | Threshold |
+|------|-------|----------|
+| **Tests** | All tests passing | 100% must pass |
+| **Type Checking** | No type errors | Adapts to stack |
+| **Linting** | No lint errors | 0 errors |
+| **Dead Code** | No unused code | 0 unused exports/imports |
+| **Coverage** | Code coverage | ≥80% |
+| **Security** | No vulnerabilities | 0 known issues |
+
+## Product Structure Support
+
+### Flat Structure (PRODUCT.md)
+
+```markdown
+## Features
+
+### User Authentication - CRITICAL
+- [x] Registration
+- [x] Login
+- [x] Password Reset
+```
+
+**Progress:** All subtasks complete → 100%
+
+### Hierarchical Structure (.claude/product/)
+
+```
+.claude/product/
+├── index.md
+└── domains/
+    ├── authentication/
+    │   └── index.md
+    └── user-management/
+        └── index.md
+```
+
+**Progress:** Calculated per domain, then averaged
+
+## Usage
+
+### By Orchestrator Agent
+
+The orchestrator uses product-tracking to:
+- Select next task to work on
+- Update completion status after each task
+- Determine if product is complete
+- Generate progress reports
+
+### By /agentful-status Command
+
+```
+/agentful-status
+```
+
+**Output:**
+```
+🔧 Working on: User Profiles feature
+   Phase: implementation
+   Iterations: 12
+
+Progress:
+   ████████░░░░░░░░░░░ 67%
+
+Quality Gates:
+   ✅ Tests Passing
+   ❌ Type Errors (3 errors)
+   ⚠️  Coverage (76% - target: 80%)
+   ✅ Linting (0 errors)
+   ✅ Dead Code (0 issues)
+   ✅ Security (0 vulnerabilities)
+
+Features:
+✅ User Authentication  100%
+🔄 User Profiles         45%
+⏸ API Integration        0%
+⏸ Dashboard              0%
+```
+
+### By Commands
+
+- **`/agentful-start`** - Updates progress as features are implemented
+- **`/agentful-status`** - Reads current progress for display
+- **`/agentful-validate`** - Checks quality gate status
+
+## Priority Weighting
+
+Features are prioritized by:
+
+| Priority | Weight | Description |
+|----------|--------|-------------|
+| **CRITICAL** | 4x | Must have for launch |
+| **HIGH** | 3x | Important for MVP |
+| **MEDIUM** | 2x | Nice to have |
+| **LOW** | 1x | Future consideration |
+
+**Example:**
+```
+Overall Progress = weighted_average(feature_progress)
+
+= (CRITICAL × 100 + HIGH × 80 + MEDIUM × 20 + LOW × 0) / (4 + 3 + 2 + 1)
+= (400 + 240 + 40 + 0) / 10
+= 68%
+```
+
+## State File Locations
+
+| File | Location | Purpose |
+|------|----------|---------|
+| **completion.json** | `.agentful/completion.json` | Progress tracking |
+| **state.json** | `.agentful/state.json` | Current work state |
+| **decisions.json** | `.agentful/decisions.json` | Pending/resolved decisions |
+
+## Technical Details
+
+**Model:** Sonnet
+
+**Tools:**
+- Read - Read completion state and product spec
+- Write - Update completion percentages
+- Edit - Modify feature status
+- Glob - Find domain files
+- Grep - Search for features in specs
+
+**Files Read:**
+- `.agentful/completion.json` - Current progress
+- `PRODUCT.md` or `.claude/product/index.md` - Product specification
+- `.agentful/state.json` - Current work state
+
+## Examples
+
+### Example 1: Initial State
+
+```json
+{
+  "features": {},
+  "gates": {
+    "tests_passing": false,
+    "no_type_errors": false,
+    "no_dead_code": false,
+    "coverage_80": false,
+    "security_clean": false
+  },
+  "overall": 0
+}
+```
+
+### Example 2: After First Feature
+
+```json
+{
+  "features": {
+    "User Authentication": {
+      "status": "complete",
+      "progress": 100
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "no_dead_code": true,
+    "coverage_80": true,
+    "security_clean": true
+  },
+  "overall": 100
+}
+```
+
+### Example 3: Multiple Features
+
+```json
+{
+  "features": {
+    "Authentication": {"status": "complete", "progress": 100},
+    "User Profiles": {"status": "in_progress", "progress": 60},
+    "Dashboard": {"status": "pending", "progress": 0}
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": false,
+    "coverage_80": true,
+    "no_dead_code": true,
+    "security_clean": true
+  },
+  "overall": 53
+}
+```
+
+## Best Practices
+
+### 1. Define Clear Subtasks
+```markdown
+### User Authentication - CRITICAL
+- [ ] Registration form - CRITICAL
+- [ ] Login page - CRITICAL
+- [ ] Password reset - HIGH
+- [ ] Remember me - MEDIUM
+```
+
+**Result:** Progress calculated accurately
+
+### 2. Use Priorities Consistently
+Mark each feature with a priority to help orchestrator select next task.
+
+### 3. Update Status Regularly
+The skill automatically updates when agents complete tasks.
+
+## Troubleshooting
+
+### Issue: "Progress stuck at 0%"
+**Cause:** Features not properly defined in PRODUCT.md
+**Solution:** Ensure features have subtasks with checkboxes
+
+### Issue: "Overall progress doesn't match"
+**Cause:** Quality gates failing
+**Solution:** Run `/agentful-validate` to fix quality issues
+
+### Issue: "Feature not showing in status"
+**Cause:** Feature name mismatch between spec and completion tracking
+**Solution:** Use exact feature names from PRODUCT.md
+
+## See Also
+
+- **[/agentful-status](/commands/agentful-status)** - View progress reports
+- **[Orchestrator Agent](/agents/orchestrator)** - How progress tracking drives development
+- **[Validation Skill](/skills/validation)** - Quality gate checks
