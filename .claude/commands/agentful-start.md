@@ -1,11 +1,11 @@
 ---
 name: agentful-start
-description: Start or resume autonomous product development loop. Delegates to orchestrator agent.
+description: Start or resume structured product development loop. Delegates to orchestrator agent.
 ---
 
 # agentful Start
 
-This command initiates the autonomous product development loop.
+This command initiates the structured product development loop with human checkpoints.
 
 ## Startup Sequence
 
@@ -17,7 +17,7 @@ Check if the user provided a specific request with this command:
 - `/agentful-start "Fix the memory leak in checkout flow"` → BUGFIX workflow
 - `/agentful-start "Add subscription proration logic"` → FEATURE_DEVELOPMENT workflow
 - `/agentful-start "Migrate from REST to GraphQL"` → REFACTOR workflow
-- `/agentful-start` (no args) → Continue autonomous development loop
+- `/agentful-start` (no args) → Continue structured development loop
 
 **User Request Detection:**
 ```
@@ -28,7 +28,7 @@ If user provided a specific request:
 
 If no request provided:
   - Assume FEATURE_DEVELOPMENT
-  - Read product specs and continue autonomous loop
+  - Read product specs and continue structured development loop
 ```
 
 ### 2. Load State

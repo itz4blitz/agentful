@@ -1,6 +1,9 @@
 # agentful runtime state (gitignored in user projects)
 .agentful/
 
+# Ephemeral agents (one-off temporary agents)
+.claude/agents/ephemeral/
+
 # Dependencies
 node_modules/
 npm-debug.log*

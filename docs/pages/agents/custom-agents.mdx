@@ -923,9 +923,349 @@ Define complex multi-agent workflows:
 5. [Docs Agent] Document API
 ```
 
+## Creating Ephemeral Agents
+
+Ephemeral agents are temporary, task-specific agents that are created for one-off operations and destroyed after completion. Unlike permanent custom agents, ephemeral agents have a finite lifecycle.
+
+### When to Create Ephemeral Agents
+
+Use ephemeral agents for:
+
+**Database Operations**
+- One-time data migration from legacy system
+- Complex schema refactoring requiring multiple steps
+- Data cleanup and normalization
+- Database performance tuning for specific queries
+
+**Data Import/Export**
+- Importing data from external CSV/JSON files
+- Transforming data between formats
+- Bulk operations on existing data
+- Partner integration data exports
+
+**One-Time Cleanup**
+- Removing deprecated code across multiple files
+- Cleaning up unused dependencies
+- Reorganizing project structure
+- Fixing accumulated technical debt
+
+**Audit and Scanning**
+- Security audit of specific module
+- Performance profiling and optimization
+- Accessibility scan and fixes
+- Code quality improvement project
+
+### Ephemeral Agent Structure
+
+Ephemeral agents follow a simpler structure than permanent agents:
+
+```markdown
+---
+name: task-name
+description: One-line description of the one-off task
+model: sonnet
+tools: Read, Write, Edit, Bash, Grep, Glob
+---
+
+# Task Name Agent
+
+You are a temporary agent created for: [specific task description]
+
+## Task
+
+[Detailed description of what needs to be done]
+
+## Requirements
+
+1. [Requirement 1]
+2. [Requirement 2]
+3. [Requirement 3]
+
+## Validation
+
+[How to verify the task was completed successfully]
+
+## Completion
+
+Report:
+- [What to report when done]
+- [Metrics to include]
+- [Any warnings or notes]
+```
+
+### Example: Data Migration Agent
+
+Here's a complete ephemeral agent for migrating user data:
+
+```markdown
+---
+name: migrate-user-data
+description: One-time migration of user data from MongoDB to PostgreSQL
+model: sonnet
+tools: Read, Bash, Write, Edit
+---
+
+# User Data Migration Agent
+
+You are a temporary agent created to migrate user data from MongoDB to PostgreSQL.
+
+## Task
+
+Migrate all user records from the legacy MongoDB database to the new PostgreSQL database.
+
+**Source:** MongoDB collection `users` at `mongodb://localhost:27017/legacy`
+**Target:** PostgreSQL table `users` (schema defined in `prisma/schema.prisma`)
+
+## Requirements
+
+1. **Read all users** from MongoDB collection
+2. **Transform data format:**
+   - Convert `_id` (ObjectId) → `id` (UUID)
+   - Convert `createdDate` → `created_at` (ISO timestamp)
+   - Validate and keep `email` as-is
+   - Keep `name`, `phone`, `address` fields
+3. **Insert into PostgreSQL** using Prisma Client
+4. **Verify count matches** between source and target
+5. **Generate migration report** with statistics
+
+## Validation
+
+After migration, verify:
+- Total user count matches (MongoDB === PostgreSQL)
+- No duplicate emails in target database
+- All timestamps are valid ISO format
+- Sample 10 random users and compare data integrity
+- No data loss or corruption
+
+## Completion
+
+Generate a report including:
+- Total users migrated
+- Migration duration
+- Any errors encountered
+- Data transformation statistics
+- Validation results (pass/fail)
+
+Save report to: `migrations/user-migration-report-{timestamp}.json`
+```
+
+### Example: Cleanup Agent
+
+Here's an ephemeral agent for removing deprecated code:
+
+```markdown
+---
+name: cleanup-deprecated-auth
+description: Remove deprecated authentication code and update references
+model: sonnet
+tools: Read, Edit, Grep, Bash
+---
+
+# Deprecated Auth Cleanup Agent
+
+You are a temporary agent created to remove deprecated authentication code.
+
+## Task
+
+Remove the old authentication system (JWT-based) and update all references to use the new Clerk-based authentication.
+
+## Requirements
+
+1. **Find all deprecated files:**
+   - `src/auth/jwt.ts`
+   - `src/auth/tokens.ts`
+   - `src/middleware/auth.ts`
+
+2. **Update references:**
+   - Search for imports of deprecated modules
+   - Replace with Clerk equivalents
+   - Update API routes using old auth
+
+3. **Remove dead code:**
+   - Delete deprecated files
+   - Remove unused dependencies (jsonwebtoken, bcrypt)
+   - Update tests to use new auth
+
+4. **Update documentation:**
+   - Update README.md authentication section
+   - Mark migration as complete in CHANGELOG.md
+
+## Validation
+
+- All tests pass after cleanup
+- No references to old auth files remain
+- Application starts without errors
+- Authentication still works correctly
+
+## Completion
+
+Report:
+- Files deleted (list)
+- Files updated (list)
+- Dependencies removed (list)
+- Tests updated (count)
+```
+
+### Example: Security Audit Agent
+
+```markdown
+---
+name: audit-api-security
+description: Security audit of all API endpoints for common vulnerabilities
+model: sonnet
+tools: Read, Grep, Bash, Write
+---
+
+# API Security Audit Agent
+
+You are a temporary agent performing a security audit of the API.
+
+## Task
+
+Scan all API endpoints for common security vulnerabilities and generate a detailed report.
+
+## Requirements
+
+1. **SQL Injection:**
+   - Check for raw SQL queries without parameterization
+   - Verify ORM usage is correct
+
+2. **XSS Vulnerabilities:**
+   - Check for unescaped user input in responses
+   - Verify Content-Security-Policy headers
+
+3. **Authentication Issues:**
+   - Verify all protected routes have auth checks
+   - Check for weak password requirements
+   - Verify JWT token validation
+
+4. **Authorization Issues:**
+   - Check for missing permission checks
+   - Verify users can't access others' data
+
+5. **Rate Limiting:**
+   - Verify rate limits on public endpoints
+   - Check for brute force protection
+
+6. **Input Validation:**
+   - Check for missing input validation
+   - Verify all user inputs are sanitized
+
+## Validation
+
+For each vulnerability found:
+- File path and line number
+- Severity (Critical, High, Medium, Low)
+- Description of issue
+- Suggested fix
+
+## Completion
+
+Generate report: `.agentful/security-audit-{timestamp}.json`
+
+Include:
+- Total endpoints scanned
+- Vulnerabilities found (by severity)
+- Detailed findings
+- Recommendations
+```
+
+### How Orchestrator Creates Ephemeral Agents
+
+The Orchestrator automatically creates ephemeral agents when it detects a one-off task:
+
+```
+User: "Migrate all users from MongoDB to PostgreSQL"
+  ↓
+Orchestrator recognizes: EPHEMERAL_TASK
+  ↓
+Generates: .claude/agents/ephemeral/20260120-153045-migrate-users.md
+  ↓
+Spawns agent: Task("ephemeral/20260120-153045-migrate-users", "Execute migration")
+  ↓
+Agent completes task and reports results
+  ↓
+Orchestrator archives or deletes agent file
+```
+
+### File Naming Convention
+
+Ephemeral agents use timestamp-based naming:
+
+```
+.claude/agents/ephemeral/
+├── 20260120-153045-migrate-users.md       # Active
+├── 20260120-160230-cleanup-auth.md        # Active
+└── completed/
+    ├── 20260120-120000-import-products.md  # Completed
+    └── 20260119-143000-audit-security.md   # Completed
+```
+
+### Cleanup Policy
+
+After completion, ephemeral agents are handled based on complexity:
+
+**Simple tasks (deleted immediately):**
+- Basic cleanup operations
+- Simple data transformations
+- Quick audits
+
+**Complex tasks (moved to completed/):**
+- Database migrations
+- Large-scale refactoring
+- Security audits
+- Keep for reference and rollback capability
+
+**Auto-deletion:**
+- Files in `completed/` older than 30 days are automatically removed
+- Critical migrations can be marked to keep indefinitely
+
+### Manual Creation
+
+You can also manually create ephemeral agents:
+
+```bash
+# 1. Create agent file
+touch .claude/agents/ephemeral/$(date +%Y%m%d-%H%M%S)-my-task.md
+
+# 2. Write agent definition
+# (follow the structure above)
+
+# 3. Use it
+# In Claude: "Use ephemeral/20260120-153045-my-task agent to do X"
+```
+
+### Best Practices
+
+1. **Clear Task Definition:**
+   - Specific inputs and outputs
+   - Well-defined success criteria
+   - Concrete validation steps
+
+2. **Detailed Requirements:**
+   - List all steps explicitly
+   - Include edge cases
+   - Specify error handling
+
+3. **Validation Built-In:**
+   - How to verify success
+   - What metrics to track
+   - When to report failure
+
+4. **Comprehensive Reporting:**
+   - Always generate completion report
+   - Include metrics and statistics
+   - Document any issues encountered
+
+5. **Rollback Plan:**
+   - For risky operations (migrations, deletions)
+   - Include instructions to undo changes
+   - Keep backups when appropriate
+
 ## Resources
 
 - Existing agents: `.claude/agents/`
 - Agent patterns: Review Orchestrator, Backend, Frontend
 - Testing: Use `/ralph-loop` to test autonomous behavior
 - Documentation: Update this guide when adding new agents
+- Ephemeral agents: See `.claude/agents/ephemeral/README.md`

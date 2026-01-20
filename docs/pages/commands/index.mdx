@@ -1,10 +1,10 @@
 # agentful Commands Reference
 
-Complete reference guide for all agentful slash commands used in autonomous product development.
+Complete reference guide for all agentful slash commands used in structured product development.
 
 ## Overview
 
-agentful provides a set of slash commands that automate the product development lifecycle. These commands work together to create an autonomous development loop that can build features, validate quality, and resolve decisions with minimal human intervention.
+agentful provides a set of slash commands that automate the product development lifecycle. These commands work together to create a structured development loop that can build features, validate quality, and resolve decisions with human checkpoints for key choices.
 
 ## Command Categories
 
@@ -14,7 +14,7 @@ agentful provides a set of slash commands that automate the product development 
 
 ### Core Development Commands
 
-- **[/agentful-start](./agentful-start)** - Start or resume autonomous product development
+- **[/agentful-start](./agentful-start)** - Start or resume structured product development
 - **[/agentful-status](./agentful-status)** - View current progress and state
 - **[/agentful-decide](./agentful-decide)** - Resolve pending decisions blocking progress
 - **[/agentful-validate](./agentful-validate)** - Run quality checks and validation gates
@@ -27,7 +27,7 @@ The typical development workflow follows this sequence:
 
 ```
 0. /agentful-product   → Define and refine requirements (optional)
-1. /agentful-start     → Begin autonomous development
+1. /agentful-start     → Begin structured development
 2. /agentful-status    → Check progress
 3. /agentful-decide    → Answer blocking decisions (if needed)
 4. /agentful-validate  → Verify quality (optional)
@@ -54,13 +54,13 @@ echo '{"pending":[],"resolved":[]}' > .agentful/decisions.json
 
 ### /agentful-start
 
-**Purpose:** Initiates the autonomous development loop
+**Purpose:** Initiates the structured development loop
 
 **When to use:**
 - Starting a new product development session
 - Resuming development after a break
 - Continuing after resolving decisions
-- Running autonomous development cycles
+- Running iterative development cycles with human checkpoints
 
 **Key features:**
 - Reads product state and picks next task
@@ -169,15 +169,16 @@ echo '{"pending":[],"resolved":[]}' > .agentful/decisions.json
 /agentful-validate
 ```
 
-### Workflow 3: Autonomous Loop (Advanced)
+### Workflow 3: Extended Development Sessions (Advanced)
 
-For continuous autonomous development:
+For longer development sessions with fewer interruptions:
 
 ```bash
 /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
 ```
 
-This runs the development loop continuously until:
+This runs the development loop with pauses for:
+- Human decisions that are needed
 - All features complete (100%)
 - All quality gates passing
 - Maximum iterations reached
@@ -247,9 +248,9 @@ Overall Progress: ████░░░░░░░░░░ 48%
 
 ### Productivity Tips
 
-1. **Use autonomous mode for long sessions** - Let the loop run while you focus on other tasks
+1. **Use extended sessions for long work periods** - Let the loop run with fewer interruptions while you focus on other tasks
 2. **Check status between iterations** - Stay informed without interrupting flow
-3. **Keep your product spec updated** - Use `.claude/product/index.md` (preferred) or `PRODUCT.md` (also supported) - Better requirements = better autonomous development
+3. **Keep your product spec updated** - Use `.claude/product/index.md` (preferred) or `PRODUCT.md` (also supported) - Better requirements = better AI-assisted development
 4. **Review decisions log** - Learn from previous architectural choices
 
 ### Troubleshooting

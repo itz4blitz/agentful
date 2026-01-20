@@ -1,0 +1,775 @@
+# /agentful-skills
+
+Intelligent skill discovery, validation, and generation system that adapts agents to your tech stack.
+
+## Overview
+
+The `/agentful-skills` command automatically detects your project's technology stack and generates specialized skill files that enhance your agents with framework-specific knowledge, best practices, and patterns. It leverages MCP (Model Context Protocol) servers to fetch the latest documentation and creates comprehensive SKILL.md files in `.claude/skills/`.
+
+Skills provide agents with:
+- Framework-specific patterns and APIs
+- Database query optimization techniques
+- Platform deployment best practices
+- Testing strategies and tools
+- Common pitfalls to avoid
+- Performance optimization approaches
+
+## Usage
+
+```bash
+# Auto-detect tech stack and recommend missing skills
+/agentful-skills
+
+# Validate existing skills against current tech stack
+/agentful-skills validate
+
+# Generate a specific skill
+/agentful-skills generate nextjs-15
+
+# Regenerate existing skill with latest knowledge
+/agentful-skills regenerate nextjs-15
+```
+
+## Auto-Detection
+
+The command automatically determines the mode based on arguments:
+
+| Command | Mode | Action |
+|---------|------|--------|
+| `/agentful-skills` | Discovery | Analyze tech stack, recommend missing skills |
+| `/agentful-skills validate` | Validation | Check existing skills for completeness and relevance |
+| `/agentful-skills generate [name]` | Generation | Create specific skill using MCP knowledge sources |
+| `/agentful-skills regenerate [name]` | Regeneration | Update existing skill with latest documentation |
+
+## Modes
+
+### Mode 1: Discovery (Default)
+
+Analyzes your project and recommends missing skills based on detected technologies.
+
+**Process:**
+
+1. Detects tech stack from project files
+2. Checks available MCP knowledge sources
+3. Identifies missing or outdated skills
+4. Recommends skills with priority levels
+5. Offers to generate all or specific skills
+
+**Example output:**
+
+```
+🔍 Discovering Skills for Your Project
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 Tech Stack Detected
+
+Language:     TypeScript
+Runtime:      Node.js
+Framework:    Next.js 15
+Database:     PostgreSQL 16
+ORM:          Prisma
+Platform:     Vercel
+Testing:      Jest, Playwright
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔌 Knowledge Sources Available
+
+✓ context7 (framework-docs, api-reference, best-practices)
+✓ brave-search (latest-versions, breaking-changes, migration-guides)
+✗ mdn (not configured)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Skill Recommendations
+
+Missing Skills (3):
+
+  1. nextjs-15 (HIGH PRIORITY) - Framework
+     Your project uses Next.js 15. This skill provides framework-specific
+     patterns, best practices, and API knowledge.
+
+     Knowledge sources: context7, brave-search
+
+  2. postgresql-16-db (HIGH PRIORITY) - Database
+     Your project uses PostgreSQL 16. This skill provides database-specific
+     query patterns, optimization techniques, and migration strategies.
+
+     Knowledge sources: context7
+
+  3. prisma-orm (MEDIUM PRIORITY) - Database
+     Your project uses Prisma. This skill provides ORM-specific patterns,
+     relation handling, and query optimization.
+
+     Knowledge sources: context7, brave-search
+
+Existing Skills (2):
+
+  ✓ validation - Up to date
+  ✓ product-tracking - Up to date
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Would you like to:
+  [1] Generate all missing skills (recommended)
+  [2] Generate specific skills only
+  [3] Skip for now
+
+Your choice: > _
+```
+
+### Mode 2: Validation
+
+Validates existing skills for structure, completeness, and tech stack alignment.
+
+```bash
+/agentful-skills validate
+```
+
+**Validation checks:**
+
+- **Structure**: Valid frontmatter, SKILL.md exists, proper content sections
+- **Completeness**: Clear descriptions, code examples, tool usage documented
+- **Tech Stack Alignment**: Skill matches detected technologies, version compatibility
+- **Content Quality**: Best practices, common pitfalls, patterns included
+
+**Example output:**
+
+```
+🔍 Validating Existing Skills
+
+Found 3 skills:
+  - validation
+  - product-tracking
+  - nextjs-15
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[1/3] Validating: validation
+
+  Structure:
+    ✓ SKILL.md exists
+    ✓ Valid frontmatter (name, description, model, tools)
+    ✓ Content sections present
+
+  Completeness:
+    ✓ Description clear
+    ✓ Examples provided
+    ✓ Tool usage documented
+
+  Tech Stack Alignment:
+    ✓ Applicable to TypeScript projects
+    ✓ Uses Jest (detected in package.json)
+
+  Status: ✓ VALID
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[3/3] Validating: nextjs-15
+
+  Structure:
+    ✓ SKILL.md exists
+    ✓ Valid frontmatter
+    ✓ Content sections present
+
+  Completeness:
+    ⚠ Missing: Error handling patterns
+    ✓ App Router patterns documented
+    ✓ Server Actions included
+
+  Tech Stack Alignment:
+    ✓ Matches detected framework (Next.js 15)
+    ! Version note: Skill is for Next.js 15.0, project uses 15.1
+      Consider regenerating with latest docs
+
+  Status: ⚠ NEEDS UPDATE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Summary:
+
+  ✓ Valid: 2 skills
+  ⚠ Needs update: 1 skill (nextjs-15)
+  ✗ Invalid: 0 skills
+
+Would you like to:
+  [1] Regenerate nextjs-15 with latest documentation
+  [2] View detailed validation report
+  [3] Exit
+
+Your choice: > _
+```
+
+### Mode 3: Generate
+
+Generates a specific skill using MCP knowledge sources and parallel sub-agents.
+
+```bash
+/agentful-skills generate nextjs-15
+```
+
+**Generation process:**
+
+1. Determines relevant MCP knowledge sources
+2. Delegates to skill-generator sub-agent via Task tool
+3. Fetches latest documentation from MCP servers
+4. Extracts patterns, best practices, and common pitfalls
+5. Generates comprehensive SKILL.md with examples
+6. Validates generated skill structure
+7. Retries with more context if validation fails
+
+**Example output:**
+
+```
+🚀 Generating Skill: nextjs-15
+
+Using knowledge sources:
+  → context7 (framework documentation)
+  → brave-search (latest best practices)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[Generator] nextjs-15
+  ✓ Fetching Next.js 15 documentation from context7...
+  ✓ Searching for Next.js 15 best practices (brave-search)...
+  ✓ Analyzing App Router patterns...
+  ✓ Extracting Server Actions guidelines...
+  ✓ Generating SKILL.md...
+  ✓ Validating skill structure...
+  ✓ Created: .claude/skills/nextjs-15/SKILL.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Successfully generated: nextjs-15
+
+Validation result:
+  ✓ Valid structure
+  ✓ Comprehensive patterns included
+  ✓ 15+ code examples
+  ✓ Best practices documented
+  ✓ Common pitfalls identified
+
+Skills ready to use. Run /agentful-start to begin development
+with enhanced Next.js 15 knowledge.
+```
+
+### Mode 4: Regenerate
+
+Regenerates an existing skill with the latest knowledge sources while preserving custom additions.
+
+```bash
+/agentful-skills regenerate nextjs-15
+```
+
+**Process:**
+
+1. Backs up existing skill to `.claude/skills/nextjs-15/SKILL.md.backup`
+2. Regenerates skill using latest MCP documentation
+3. Validates new skill structure
+4. Preserves backup for reference
+
+**Example output:**
+
+```
+🔄 Regenerating Skill: nextjs-15
+
+Backed up existing skill to:
+  .claude/skills/nextjs-15/SKILL.md.backup
+
+Fetching latest Next.js 15 documentation...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Regenerated: .claude/skills/nextjs-15/SKILL.md
+
+Original preserved at:
+  .claude/skills/nextjs-15/SKILL.md.backup
+
+Validation result:
+  ✓ Updated with Next.js 15.1 patterns
+  ✓ New error handling section added
+  ✓ Migration guide updated
+```
+
+## Tech Stack Detection
+
+The command detects technologies from multiple sources in priority order:
+
+**Detection sources:**
+
+1. `.agentful/architecture.json` (if exists)
+2. `package.json` (Node.js projects)
+3. `requirements.txt` or `pyproject.toml` (Python projects)
+4. `go.mod` (Go projects)
+5. `Cargo.toml` (Rust projects)
+6. Framework-specific config files (`next.config.js`, `vite.config.ts`, etc.)
+
+**Detected information:**
+
+- **Language**: TypeScript, JavaScript, Python, Go, Rust, Java
+- **Runtime**: Node.js, Deno, Bun
+- **Framework**: Next.js, React, Vue, Django, Rails (with versions)
+- **Database**: PostgreSQL, MySQL, MongoDB, Redis (with versions)
+- **ORM**: Prisma, TypeORM, SQLAlchemy, Drizzle
+- **Platform**: Vercel, AWS, Cloudflare, Railway
+- **Testing**: Jest, Vitest, Pytest, Playwright
+
+## MCP Integration
+
+Skills leverage Model Context Protocol servers to fetch up-to-date knowledge:
+
+### Available MCP Sources
+
+| MCP Server | Provides | Used For |
+|------------|----------|----------|
+| **context7** | Official documentation, API references, best practices | Framework and library patterns |
+| **brave-search** | Latest blog posts, migration guides, breaking changes | Current best practices, version updates |
+| **mdn** | Web standards, browser APIs, compatibility | Frontend web development |
+
+### Knowledge Source Priority
+
+When generating skills, the system uses knowledge sources in this order:
+
+1. **MCP Sources** (if available) - Latest official documentation
+2. **Built-in Knowledge** (fallback) - Claude's training data and common patterns
+3. **Web Search** (if MCP unavailable) - General web results
+
+### Configuring MCP
+
+To enable MCP knowledge sources, configure `.claude/mcp.json`:
+
+```json
+{
+  "servers": {
+    "context7": {
+      "enabled": true
+    },
+    "brave-search": {
+      "enabled": true,
+      "api_key": "your-api-key"
+    },
+    "mdn": {
+      "enabled": true
+    }
+  }
+}
+```
+
+## Skill Categories
+
+Skills are organized into four categories:
+
+### Framework Skills
+
+Framework-specific patterns, APIs, and best practices.
+
+**Examples:**
+- `nextjs-15` - Next.js 15 App Router, Server Actions, caching
+- `react-19` - React 19 hooks, Server Components, Suspense
+- `vue-3` - Vue 3 Composition API, reactivity, component patterns
+- `django-5` - Django 5 views, ORM, middleware, forms
+
+### Database Skills
+
+Database query patterns, optimization, and migration strategies.
+
+**Examples:**
+- `postgresql-16-db` - PostgreSQL 16 queries, indexing, performance
+- `mysql-8-db` - MySQL 8 queries, transactions, optimization
+- `mongodb-7-db` - MongoDB 7 queries, aggregation, schema design
+- `redis-db` - Redis caching, pub/sub, data structures
+
+### Platform Skills
+
+Deployment patterns, platform-specific optimizations, and configuration.
+
+**Examples:**
+- `vercel-platform` - Vercel deployment, edge functions, caching
+- `aws-platform` - AWS services, Lambda, S3, CloudFront
+- `cloudflare-platform` - Cloudflare Workers, Pages, KV
+- `railway-platform` - Railway deployment, databases, services
+
+### Core Skills
+
+Universal skills applicable to all projects.
+
+**Examples:**
+- `validation` - Production readiness validation (tests, types, security)
+- `product-tracking` - Feature completion progress tracking
+
+## Parallel Generation
+
+When generating multiple skills, the system uses parallel sub-agents for efficiency:
+
+```
+🚀 Generating Missing Skills
+
+Using parallel sub-agents for faster generation...
+
+Running 3 skill generators in parallel:
+  → nextjs-15 (using context7 + brave-search)
+  → postgresql-16-db (using context7)
+  → prisma-orm (using context7 + brave-search)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[Generator 1] nextjs-15
+  ✓ Fetching Next.js 15 documentation from context7...
+  ✓ Searching for Next.js 15 best practices...
+  ✓ Created: .claude/skills/nextjs-15/SKILL.md
+
+[Generator 2] postgresql-16-db
+  ✓ Fetching PostgreSQL 16 documentation...
+  ✓ Created: .claude/skills/postgresql-16-db/SKILL.md
+
+[Generator 3] prisma-orm
+  ✓ Fetching Prisma documentation...
+  ✓ Created: .claude/skills/prisma-orm/SKILL.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Successfully generated 3 skills
+
+Running validation checks on generated skills...
+
+  ✓ nextjs-15: Valid structure, comprehensive patterns
+  ✓ postgresql-16-db: Valid structure, optimization guide included
+  ✓ prisma-orm: Valid structure, relation patterns included
+```
+
+## Skill File Structure
+
+All generated skills follow this template structure:
+
+```markdown
+---
+name: [skill-name]
+description: [Brief description of what this skill provides]
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+version: [version if applicable]
+---
+
+# [Skill Name] Skill
+
+[Overview paragraph]
+
+## Core Concepts
+
+[Fundamental concepts for this technology]
+
+## Common Patterns
+
+### Pattern 1: [Name]
+
+[Description]
+
+```[language]
+[Code example]
+```
+
+**Best Practices:**
+- [Guideline 1]
+- [Guideline 2]
+
+**Common Pitfalls:**
+- [Mistake to avoid 1]
+- [Mistake to avoid 2]
+
+### Pattern 2: [Name]
+
+[... repeat ...]
+
+## Advanced Techniques
+
+[... advanced patterns ...]
+
+## Performance Optimization
+
+[... optimization strategies ...]
+
+## Testing Strategies
+
+[... testing approaches ...]
+
+## Migration Guide
+
+[... migration from previous version if applicable ...]
+
+## Integration with Other Tools
+
+[... how this integrates with other parts of the stack ...]
+
+## Troubleshooting
+
+Common issues and solutions:
+
+### Issue 1: [Problem]
+**Symptoms:** [What user sees]
+**Cause:** [Why it happens]
+**Solution:** [How to fix]
+
+## References
+
+- [Official documentation link]
+- [Best practices guide]
+- [Community resources]
+```
+
+## File Locations
+
+```
+.claude/skills/
+├── nextjs-15/
+│   ├── SKILL.md               # Main skill file
+│   └── SKILL.md.backup        # Backup (if regenerated)
+├── postgresql-16-db/
+│   └── SKILL.md
+├── prisma-orm/
+│   └── SKILL.md
+├── validation/
+│   └── SKILL.md
+└── product-tracking/
+    └── SKILL.md
+```
+
+## Workflows
+
+### Workflow 1: New Project Setup
+
+```bash
+# Discover and generate all recommended skills
+/agentful-skills
+
+# Select option [1] - Generate all missing skills
+# System generates skills in parallel using MCP sources
+
+# Start development with enhanced knowledge
+/agentful-start
+```
+
+### Workflow 2: Framework Version Update
+
+```bash
+# After upgrading Next.js from 14 to 15
+npm install next@15
+
+# Validate existing skills
+/agentful-skills validate
+
+# System detects version mismatch
+# Regenerate outdated skill
+/agentful-skills regenerate nextjs-15
+
+# Continue development with updated patterns
+/agentful-start
+```
+
+### Workflow 3: Adding New Technology
+
+```bash
+# After adding Prisma to your project
+npm install prisma @prisma/client
+
+# Discover new skills needed
+/agentful-skills
+
+# System detects new Prisma dependency
+# Generate Prisma skill
+/agentful-skills generate prisma-orm
+
+# Use new skill in development
+/agentful-start
+```
+
+### Workflow 4: Regular Skill Maintenance
+
+```bash
+# Periodically validate skills (monthly recommended)
+/agentful-skills validate
+
+# Regenerate any outdated skills
+/agentful-skills regenerate [skill-name]
+
+# Verify all skills current
+/agentful-skills validate
+```
+
+## When to Use
+
+### Ideal Times to Run /agentful-skills
+
+| Situation | Command | Why |
+|-----------|---------|-----|
+| New project setup | `/agentful-skills` | Generate all necessary skills upfront |
+| After dependency updates | `/agentful-skills validate` | Check if skills need updating |
+| Framework version upgrade | `/agentful-skills regenerate [name]` | Update patterns for new version |
+| Adding new technology | `/agentful-skills` | Discover and generate new skills |
+| Monthly maintenance | `/agentful-skills validate` | Ensure skills stay current |
+
+### Integration with Other Commands
+
+The skills generated by `/agentful-skills` enhance all other commands:
+
+- **`/agentful-start`**: Agents use skills for framework-specific implementation
+- **`/agentful-validate`**: Validation skill provides quality gate checks
+- **`/agentful-product`**: Product-tracking skill enables completion tracking
+- **All specialist agents**: Use framework, database, and platform skills
+
+## Error Handling
+
+### MCP Source Unavailable
+
+```
+⚠️  MCP source 'context7' not available
+
+Falling back to:
+  - Built-in knowledge (may be outdated)
+  - Web search (if available)
+
+For best results, configure MCP sources in .claude/mcp.json
+
+Learn more: https://docs.agentful.dev/mcp-setup
+```
+
+### Skill Generation Failed
+
+```
+✗ Failed to generate skill: nextjs-15
+
+Error: Insufficient knowledge sources
+
+Suggestions:
+  1. Configure MCP sources for latest documentation
+  2. Provide custom skill template
+  3. Manually create skill at .claude/skills/nextjs-15/SKILL.md
+
+Would you like to:
+  [1] Configure MCP sources
+  [2] Use fallback generation (may be incomplete)
+  [3] Skip this skill
+
+Your choice: > _
+```
+
+### Version Detection Failed
+
+```
+⚠️  Could not detect Next.js version from package.json
+
+Using latest known version (Next.js 15) for skill generation.
+
+To specify version manually:
+  1. Update .agentful/architecture.json with framework version
+  2. Run /agentful-skills regenerate nextjs-15
+```
+
+## Tips and Best Practices
+
+### Discovery Tips
+
+1. **Run discovery after dependency changes** - New dependencies may require new skills
+2. **Validate regularly** - Monthly validation catches outdated skills
+3. **Use MCP sources** - Latest documentation ensures accurate patterns
+4. **Review generated skills** - Verify they match your coding style
+5. **Keep skills updated** - Regenerate when framework versions change
+
+### Performance Tips
+
+1. **Generate all skills upfront** - Faster than generating one at a time
+2. **Use parallel generation** - Multiple skills generated simultaneously
+3. **Configure MCP sources** - Faster than web search fallback
+4. **Cache MCP responses** - Reduce API calls for repeated generations
+
+### Maintenance Tips
+
+1. **Backup before regenerating** - System does this automatically
+2. **Review version mismatches** - Validation shows outdated skills
+3. **Document custom additions** - Note if you've customized a skill
+4. **Test after regeneration** - Verify patterns still work with your code
+
+## Troubleshooting
+
+### Issue: "Tech stack not detected"
+
+**Cause:** Missing or incomplete dependency files
+
+**Solution:**
+```bash
+# Ensure package.json exists (Node.js)
+npm init -y
+
+# Or create architecture.json manually
+mkdir -p .agentful
+cat > .agentful/architecture.json << 'EOF'
+{
+  "language": "TypeScript",
+  "framework": "Next.js 15",
+  "database": "PostgreSQL 16"
+}
+EOF
+
+/agentful-skills
+```
+
+### Issue: "No skills recommended"
+
+**Cause:** All skills already exist and are up to date
+
+**Solution:**
+```bash
+# Check existing skills
+ls .claude/skills/
+
+# Validate current skills
+/agentful-skills validate
+
+# Force regeneration if needed
+/agentful-skills regenerate [skill-name]
+```
+
+### Issue: "MCP server not responding"
+
+**Cause:** MCP configuration issues or server downtime
+
+**Solution:**
+```bash
+# Check MCP configuration
+cat .claude/mcp.json
+
+# Test MCP server directly
+# (depends on your MCP setup)
+
+# Use fallback generation
+/agentful-skills generate [name]
+# System will fall back to built-in knowledge
+```
+
+### Issue: "Generated skill is incomplete"
+
+**Cause:** Limited knowledge sources or unclear framework detection
+
+**Solution:**
+```bash
+# Configure MCP sources for better results
+# Edit .claude/mcp.json to enable context7
+
+# Regenerate with MCP sources
+/agentful-skills regenerate [skill-name]
+
+# Or manually enhance the skill
+# Edit .claude/skills/[skill-name]/SKILL.md
+```
+
+## See Also
+
+**Related Commands:**
+- [/agentful-start](./agentful-start) - Begin development using generated skills
+- [/agentful-validate](./agentful-validate) - Uses validation skill for quality checks
+- [/agentful-product](./agentful-product) - Uses product-tracking skill
+
+**Related Concepts:**
+- [Skills System](/concepts/skills) - Deep dive into skill architecture
+- [MCP Integration](/concepts/mcp) - Model Context Protocol setup and usage
+- [Agent Knowledge](/concepts/agent-knowledge) - How agents use skills

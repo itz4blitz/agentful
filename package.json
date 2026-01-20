@@ -1,7 +1,7 @@
 {
   "name": "@itz4blitz/agentful",
   "version": "0.1.11",
-  "description": "Autonomous product development kit for Claude Code with smart product analysis and natural conversation",
+  "description": "Human-in-the-loop development kit for Claude Code with smart product analysis and natural conversation",
   "type": "module",
   "bin": {
     "agentful": "bin/cli.js"
@@ -24,7 +24,7 @@
   ],
   "keywords": [
     "claude-code",
-    "autonomous",
+    "human-in-the-loop",
     "ai-development",
     "agent",
     "productivity"

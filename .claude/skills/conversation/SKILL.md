@@ -9,6 +9,26 @@ tools: Read, Write, Edit, Glob, Grep
 
 This skill provides natural language processing capabilities for understanding user intent, managing conversation context, resolving references, and maintaining conversation history.
 
+## When to Use
+
+This skill is invoked when:
+- User runs `/agentful <text>` with natural language input
+- Any command receives ambiguous or unclear input
+- Need to resolve pronouns or references from conversation history
+- Need to classify user intent before routing to handlers
+
+**Entry Point**: The `/agentful` command delegates to this skill for all natural language processing.
+
+## Responsibilities
+
+1. **Intent Classification** - Determine what the user wants (feature, bug fix, status, etc.)
+2. **Reference Resolution** - Resolve "it", "that", "this" to actual feature names
+3. **Entity Extraction** - Extract features, domains, subtasks mentioned
+4. **Ambiguity Detection** - Identify unclear requests and ask clarifying questions
+5. **Context Management** - Track conversation state, detect context loss
+6. **Routing** - Route to appropriate handler (orchestrator, status, validate, etc.)
+7. **History Tracking** - Maintain conversation history for context
+
 ## Core Functions
 
 ### 1. Intent Classification
@@ -796,6 +816,221 @@ function get_recent_context(
 }
 ```
 
+## Routing Logic
+
+### Route to Handler
+
+```typescript
+/**
+ * Determine which handler should process the classified intent
+ * @param intent - Classified intent from user message
+ * @param entities - Extracted entities (features, domains, etc.)
+ * @param state - Current conversation state
+ * @returns Routing decision with handler and context
+ */
+function route_to_handler(
+  intent: IntentClassification,
+  entities: FeatureMention,
+  state: ConversationState
+): RoutingDecision {
+  const intentName = intent.intent;
+
+  // Feature development or bug fixes → orchestrator
+  if (intentName === 'feature_request' || intentName === 'bug_report') {
+    return {
+      handler: 'orchestrator',
+      skill: null,
+      context: {
+        intent: intentName,
+        message: entities.feature_name
+          ? `User wants to ${intentName === 'feature_request' ? 'build' : 'fix'} ${entities.feature_name}`
+          : 'User has a request that needs classification',
+        feature_id: entities.feature_id,
+        domain_id: entities.domain_id,
+        work_type: intentName === 'feature_request' ? 'FEATURE_DEVELOPMENT' : 'BUGFIX'
+      }
+    };
+  }
+
+  // Status inquiries → product-tracking skill
+  if (intentName === 'status_update') {
+    return {
+      handler: 'product-tracking',
+      skill: 'product-tracking',
+      context: {
+        intent: intentName,
+        feature_filter: entities.feature_id || null,
+        domain_filter: entities.domain_id || null
+      }
+    };
+  }
+
+  // Validation requests → validation skill
+  if (/test|validate|check/i.test(intentName)) {
+    return {
+      handler: 'validation',
+      skill: 'validation',
+      context: {
+        intent: intentName,
+        scope: entities.feature_id ? 'feature' : 'all'
+      }
+    };
+  }
+
+  // Decision handling → decision-handler
+  if (intentName === 'decision' || /decide|choice|option/i.test(intentName)) {
+    return {
+      handler: 'decision-handler',
+      skill: null,
+      context: {
+        intent: intentName
+      }
+    };
+  }
+
+  // Product planning → product-planning skill
+  if (/plan|requirements|spec|analyze/i.test(intentName)) {
+    return {
+      handler: 'product-planning',
+      skill: 'product-planning',
+      context: {
+        intent: intentName
+      }
+    };
+  }
+
+  // Approval/continue → orchestrator (resume current work)
+  if (intentName === 'approval' || intentName === 'continue') {
+    return {
+      handler: 'orchestrator',
+      skill: null,
+      context: {
+        intent: 'continue',
+        message: 'User approved or wants to continue current work',
+        resume_feature: state.current_feature
+      }
+    };
+  }
+
+  // Rejection/stop → update state, don't delegate
+  if (intentName === 'rejection' || intentName === 'pause') {
+    return {
+      handler: 'inline',
+      skill: null,
+      context: {
+        intent: intentName,
+        action: 'pause_work'
+      }
+    };
+  }
+
+  // Questions/clarifications → handle inline
+  if (intentName === 'question' || intentName === 'clarification') {
+    return {
+      handler: 'inline',
+      skill: null,
+      context: {
+        intent: intentName,
+        answer_from: ['conversation_history', 'product_spec', 'completion_status']
+      }
+    };
+  }
+
+  // Default: handle inline or ask for clarification
+  return {
+    handler: 'inline',
+    skill: null,
+    context: {
+      intent: intentName,
+      needs_clarification: true
+    }
+  };
+}
+
+interface RoutingDecision {
+  handler: 'orchestrator' | 'product-tracking' | 'validation' | 'decision-handler' | 'product-planning' | 'inline';
+  skill: string | null; // Skill name for Task delegation
+  context: {
+    intent: string;
+    message?: string;
+    feature_id?: string;
+    domain_id?: string;
+    work_type?: string;
+    [key: string]: any;
+  };
+}
+```
+
+### Execute Routing
+
+```typescript
+/**
+ * Execute the routing decision
+ * @param routing - Routing decision from route_to_handler
+ * @param userMessage - Original user message
+ * @param resolved - Resolved message with references expanded
+ */
+function execute_routing(
+  routing: RoutingDecision,
+  userMessage: string,
+  resolved: ResolvedMessage
+): void {
+  switch (routing.handler) {
+    case 'orchestrator':
+      // Delegate to orchestrator agent
+      Task('orchestrator',
+        `${routing.context.message || userMessage}
+
+        Work Type: ${routing.context.work_type || 'FEATURE_DEVELOPMENT'}
+        ${routing.context.feature_id ? `Feature: ${routing.context.feature_id}` : ''}
+        ${routing.context.domain_id ? `Domain: ${routing.context.domain_id}` : ''}
+
+        Classify and execute appropriate workflow.`
+      );
+      break;
+
+    case 'product-tracking':
+      // Delegate to product-tracking skill
+      Task('product-tracking',
+        `Show status and progress.
+        ${routing.context.feature_filter ? `Filter: feature ${routing.context.feature_filter}` : ''}
+        ${routing.context.domain_filter ? `Filter: domain ${routing.context.domain_filter}` : ''}`
+      );
+      break;
+
+    case 'validation':
+      // Delegate to validation skill
+      Task('validation',
+        `Run quality gates.
+        Scope: ${routing.context.scope || 'all'}`
+      );
+      break;
+
+    case 'decision-handler':
+      // For now, show how to use /agentful-decide
+      return `You have pending decisions. Run \`/agentful-decide\` to review and resolve them.`;
+      break;
+
+    case 'product-planning':
+      // Delegate to product-planning skill
+      Task('product-planning', userMessage);
+      break;
+
+    case 'inline':
+      // Handle inline (no delegation needed)
+      if (routing.context.needs_clarification) {
+        return generate_clarification_response(userMessage, routing.context);
+      } else if (routing.context.action === 'pause_work') {
+        pause_current_work();
+        return 'Work paused. Run `/agentful` with your next request when ready to continue.';
+      } else if (routing.context.intent === 'question') {
+        return answer_question(userMessage, routing.context);
+      }
+      break;
+  }
+}
+```
+
 ## Integration with Orchestrator
 
 ### Delegation Interface
@@ -1037,9 +1272,9 @@ interface StaleContextResponse {
 // Complete conversation processing flow
 async function process_conversation(userMessage: string): Promise<ConversationResponse> {
   // 1. Load conversation state and history
-  const state = load_conversation_state();
-  const history = read_conversation_history();
-  const productSpec = load_product_spec();
+  const state = load_conversation_state('.agentful/conversation-state.json');
+  const history = read_conversation_history('.agentful/conversation-history.json');
+  const productSpec = load_product_spec('.claude/product/');
 
   // 2. Check for context loss
   const contextRecovery = detect_context_loss(history.messages, state);
@@ -1079,8 +1314,8 @@ async function process_conversation(userMessage: string): Promise<ConversationRe
     };
   }
 
-  // 8. Determine delegation
-  const delegation = determine_delegation(intent, entities);
+  // 8. Route to appropriate handler
+  const routing = route_to_handler(intent, entities, state);
 
   // 9. Add user message to history
   add_message_to_history({
@@ -1089,22 +1324,64 @@ async function process_conversation(userMessage: string): Promise<ConversationRe
     intent: intent.intent,
     entities: entities,
     references_resolved: resolved.references
-  });
+  }, '.agentful/conversation-history.json');
 
-  // 10. Return delegation decision or response
-  if (delegation.should_delegate) {
-    return {
-      type: 'delegate',
-      target_skill: delegation.target_skill,
-      context: delegation.context
+  // 10. Execute routing
+  execute_routing(routing, userMessage, resolved);
+
+  // 11. Update conversation state
+  state.last_message_time = new Date().toISOString();
+  state.message_count++;
+  if (entities.feature_id) {
+    state.current_feature = {
+      feature_id: entities.feature_id,
+      feature_name: entities.feature_name,
+      domain_id: entities.domain_id
     };
   }
+  save_conversation_state(state);
 
   return {
-    type: 'response',
-    message: generate_response(intent, entities, state)
+    type: 'routed',
+    handler: routing.handler,
+    context: routing.context
   };
 }
+```
+
+### Complete Flow Diagram
+
+```
+User Input
+    ↓
+Load State & History
+    ↓
+Context Loss Check ──→ [STALE] ──→ Confirm & Resume
+    ↓ [FRESH]
+Mind Change Detection ──→ [DETECTED] ──→ Reset Context
+    ↓ [CONTINUE]
+Reference Resolution
+    ↓
+Intent Classification
+    ↓
+Entity Extraction
+    ↓
+Ambiguity Detection ──→ [AMBIGUOUS] ──→ Ask Clarifying Question
+    ↓ [CLEAR]
+Route to Handler
+    ↓
+    ├─→ [orchestrator] ──→ Task('orchestrator', context)
+    ├─→ [product-tracking] ──→ Task('product-tracking', context)
+    ├─→ [validation] ──→ Task('validation', context)
+    ├─→ [decision-handler] ──→ Show /agentful-decide
+    ├─→ [product-planning] ──→ Task('product-planning', context)
+    └─→ [inline] ──→ Generate Response Directly
+    ↓
+Add to History
+    ↓
+Update State
+    ↓
+Done
 ```
 
 ## File Locations

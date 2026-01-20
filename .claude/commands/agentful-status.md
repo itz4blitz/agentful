@@ -9,7 +9,7 @@ This command shows the current state of autonomous product development.
 
 ## Display Format
 
-### Product Readiness (if `.agentful/product-analysis.json` exists)
+### Product Readiness (if `.claude/product/product-analysis.json` exists)
 
 Display this section FIRST, before the header:
 
@@ -118,7 +118,7 @@ Iterations: 24
 
 Read and display:
 
-1. `.agentful/product-analysis.json` (optional) - Product readiness score and breakdown
+1. `.claude/product/product-analysis.json` (optional) - Product readiness score and breakdown
    - Only display product readiness section if this file exists
    - Calculate emoji based on score thresholds (90-100: ✅, 70-89: ⚠️, <70: ❌)
    - Show blocking issues count if > 0

@@ -2,7 +2,7 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
   title: 'agentful',
-  description: 'Autonomous product development kit for Claude Code. Transform any project into a 24/7 self-building system with specialized agents.',
+  description: 'Human-in-the-loop development kit for Claude Code. Structured development with specialized agents where Claude implements and you decide.',
 
   editLink: {
     pattern: 'https://github.com/itz4blitz/agentful/edit/main/docs/:path',
@@ -53,6 +53,8 @@ export default defineConfig({
           { text: '/agentful-status', link: '/commands/agentful-status' },
           { text: '/agentful-decide', link: '/commands/agentful-decide' },
           { text: '/agentful-validate', link: '/commands/agentful-validate' },
+          { text: '/agentful-agents', link: '/commands/agentful-agents' },
+          { text: '/agentful-skills', link: '/commands/agentful-skills' },
         ],
       },
     ],

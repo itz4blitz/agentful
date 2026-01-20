@@ -2,7 +2,7 @@
 
 /**
  * agentful CLI
- * An opinionated autonomous product development kit for Claude Code
+ * An opinionated human-in-the-loop product development kit for Claude Code
  */
 
 import fs from 'fs';
@@ -74,9 +74,9 @@ function showHelp() {
   console.log(`     ${colors.dim}(Detection based on: # of domains, frameworks, monorepo status)${colors.reset}`);
   console.log(`  2. ${colors.bright}Edit your product specification${colors.reset}`);
   console.log(`  3. Run ${colors.bright}claude${colors.reset} to start Claude Code`);
-  console.log(`  4. Type ${colors.bright}/agentful${colors.reset} for natural conversation or ${colors.bright}/agentful-start${colors.reset} for autonomous development`);
+  console.log(`  4. Type ${colors.bright}/agentful${colors.reset} for natural conversation or ${colors.bright}/agentful-start${colors.reset} for structured development`);
   console.log('');
-  console.log('FOR 24/7 DEVELOPMENT:');
+  console.log('FOR EXTENDED DEVELOPMENT SESSIONS:');
   console.log(`  ${colors.cyan}/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"${colors.reset}`);
   console.log('');
 }
@@ -442,7 +442,7 @@ ${analysis && analysis.domains.length > 0 ? analysis.domains.map((d, i) => `${i 
   }
 
   console.log(`  2. ${colors.cyan}Run: claude${colors.reset}`);
-  console.log(`  3. ${colors.cyan}Type: /agentful${colors.reset} (natural) or ${colors.cyan}/agentful-start${colors.reset} (autonomous)`);
+  console.log(`  3. ${colors.cyan}Type: /agentful${colors.reset} (natural) or ${colors.cyan}/agentful-start${colors.reset} (structured)`);
   console.log('');
 
   if (usingHierarchical) {
@@ -453,7 +453,7 @@ ${analysis && analysis.domains.length > 0 ? analysis.domains.map((d, i) => `${i 
     console.log('');
   }
 
-  log(colors.dim, 'For autonomous 24/7 development:');
+  log(colors.dim, 'For extended development sessions with fewer interruptions:');
   log(colors.cyan, `  /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"`);
   console.log('');
 }

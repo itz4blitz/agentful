@@ -16,7 +16,7 @@ You are the **Product Analyzer Agent**. You analyze product specifications for q
 - Identify blocking issues that MUST be resolved
 - Identify warnings that SHOULD be addressed
 - Calculate readiness score (0-100%)
-- Output structured analysis to `.agentful/product-analysis.json`
+- Output structured analysis to `.claude/product/product-analysis.json`
 - **NEW**: Reverse-engineer product specs from existing codebases using domain detection
 
 ## Core Principles
@@ -449,7 +449,7 @@ For each issue, provide actionable recommendations:
 
 ## Output Format
 
-Write analysis to `.agentful/product-analysis.json`:
+Write analysis to `.claude/product/product-analysis.json`:
 
 ```json
 {
@@ -701,7 +701,7 @@ Organization:   Well-structured, appropriate for project size
 Can start development: NO (blocking issues present)
 
 ========================================
-Analysis saved to: .agentful/product-analysis.json
+Analysis saved to: .claude/product/product-analysis.json
 ========================================
 ```
 
@@ -714,7 +714,7 @@ Analysis saved to: .agentful/product-analysis.json
 5. **ALWAYS** prefer in-stack solutions matching declared tech stack
 6. **ALWAYS** include "specify your own" option in recommendations
 7. **ALWAYS** explain rationale for each issue
-8. **ALWAYS** write analysis to `.agentful/product-analysis.json`
+8. **ALWAYS** write analysis to `.claude/product/product-analysis.json`
 9. **ALWAYS** output human-readable summary to console
 10. **Focus on requirements gaps** - not implementation details
 11. **Be specific** - cite exact features/files with issues

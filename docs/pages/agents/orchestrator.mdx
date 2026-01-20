@@ -164,7 +164,7 @@ Before starting development work, the Orchestrator checks if your product specif
 
 ### Product Analysis Check
 
-If `.agentful/product-analysis.json` exists (created by `/agentful-product`), the Orchestrator will:
+If `.claude/product/product-analysis.json` exists (created by `/agentful-product`), the Orchestrator will:
 
 **1. Check for Blocking Issues**
 
@@ -486,7 +486,7 @@ On every loop iteration:
 
 5. Read .agentful/architecture.json (tech stack, if exists)
 
-6. Check .agentful/product-analysis.json (readiness gates)
+6. Check .claude/product/product-analysis.json (readiness gates)
 ```
 
 ### Work Selection Priority
@@ -942,7 +942,7 @@ Agents can suggest improvements to OTHER agents:
 ```
 [Orchestrator] → Starts development work
   ↓
-[Check] → .agentful/product-analysis.json exists
+[Check] → .claude/product/product-analysis.json exists
   ↓
 [Check] → Blocking issues found
   ↓
@@ -1042,7 +1042,7 @@ cat .agentful/decisions.json
 /agentful-status
 
 # Product readiness
-cat .agentful/product-analysis.json
+cat .claude/product/product-analysis.json
 ```
 
 ## Summary
