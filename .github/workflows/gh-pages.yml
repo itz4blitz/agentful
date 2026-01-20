@@ -84,3 +84,21 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Notify Discord
+        if: success()
+        run: |
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "Docs Deployed",
+                "description": "[agentful.app](https://agentful.app) has been updated",
+                "color": 1095681,
+                "fields": [
+                  {"name": "Commit", "value": "`${{ github.sha }}`", "inline": true},
+                  {"name": "Branch", "value": "`${{ github.ref_name }}`", "inline": true}
+                ],
+                "footer": {"text": "agentful docs"}
+              }]
+            }'
