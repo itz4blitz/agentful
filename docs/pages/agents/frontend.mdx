@@ -24,6 +24,8 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 
 **Why Sonnet?** Frontend implementation requires understanding patterns and user experience but not the highest reasoning level.
 
+**Framework-Specific Agents:** For framework-specific patterns (Next.js, React Router, Vue, etc.), the [Architect Agent](/agents/architect) generates specialized agents. Use those for framework-specific implementation details.
+
 ## Scope
 
 ### ✅ What the Frontend Agent Does
@@ -561,9 +563,10 @@ src/
 
 1. Hardcode values that should be props
 2. Modify backend API routes
-3. Skip accessibility considerations
-4. Create overly complex components (break them down)
-5. Mix concerns (data fetching in presentation components)
+3. **NEVER modify code outside your domain** - stay in frontend scope
+4. Skip accessibility considerations
+5. Create overly complex components (break them down)
+6. Mix concerns (data fetching in presentation components)
 
 ## Best Practices
 
@@ -732,3 +735,12 @@ Report to orchestrator:
   ↓
 [Frontend] → Fixes any issues
 ```
+
+## See Also
+
+- [Back to Agents Overview](/agents) - All available agents
+- [Backend Agent](/agents/backend) - Server-side implementation (do not modify)
+- [Architect Agent](/agents/architect) - Generates framework-specific agents
+- [Tester Agent](/agents/tester) - Writes tests for your frontend components
+- [Reviewer Agent](/agents/reviewer) - Validates your frontend implementation
+- [Orchestrator Agent](/agents/orchestrator) - Coordinates frontend development

@@ -55,7 +55,7 @@ npx @itz4blitz/agentful init
 
 ### Method 3: Bare Initialization
 
-If you already have `PRODUCT.md` and `CLAUDE.md`:
+If you already have your product spec (`.claude/product/index.md` or `PRODUCT.md`) and `CLAUDE.md`:
 
 ```bash
 npx @itz4blitz/agentful init --bare
@@ -98,15 +98,16 @@ For autonomous 24/7 development:
 
 agentful automatically detects the best product structure for your project:
 
-**Simple Projects** → Creates `PRODUCT.md` (flat, single-file at root)
+**Simple Projects** → Creates PRODUCT.md at root (flat structure, also supported for simple workflows)
 - Best for: Learning projects, MVPs, single-purpose apps
 - Everything in one place
 - Easier to get started
 
-**Large/Complex Projects** → Creates `.claude/product/` with domain directories
+**Large/Complex Projects** → Creates `.claude/product/index.md` with domains (hierarchical)
 - Best for: Multi-domain apps, large teams, long-term projects
 - Organized by domains/features
 - Scales better for big projects
+- **Preferred structure** for most use cases
 
 **Detection Criteria:**
 - Number of detected domains (≥3 triggers hierarchical)
@@ -162,7 +163,8 @@ ls -la .claude/product/        # Complex project
 You should see:
 - `.claude/` directory with agents, commands, skills
 - `.agentful/` directory with state files
-- Either `PRODUCT.md` (simple) OR `.claude/product/` (complex)
+- Either `.claude/product/index.md` (preferred, hierarchical) OR `PRODUCT.md` (also supported, flat)
+- agentful auto-detects which structure you're using
 - Initial state set to `idle`
 
 ---
@@ -384,7 +386,9 @@ For faster init (no project analysis):
 npx @itz4blitz/agentful init --no-smart
 ```
 
-This skips the intelligent detection and always creates the simple `PRODUCT.md` structure.
+This skips the intelligent detection. You can manually choose:
+- `.claude/product/index.md` (preferred, hierarchical)
+- `PRODUCT.md` (also supported, flat)
 
 ### Force Hierarchical Structure
 

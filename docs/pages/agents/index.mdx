@@ -9,6 +9,7 @@ agentful follows a hierarchical agent architecture with clear separation of conc
 ```
 Orchestrator (Coordinator)
     ├── Architect (Tech Stack Analyzer)
+    ├── Product Analyzer (Requirements Analyzer)
     ├── Backend (Server-Side Implementation)
     ├── Frontend (Client-Side Implementation)
     ├── Tester (Quality Assurance)
@@ -57,6 +58,29 @@ Analyzes the tech stack and generates framework-specific agents dynamically.
 **Key files:**
 - `.agentful/architecture.json` - Detected tech stack
 - `.claude/agents/generated/` - Dynamic agents
+
+**See also:** [Architect Agent Documentation](/agents/architect)
+
+### Product Analyzer Agent
+
+Analyzes product requirements for quality, completeness, and readiness.
+
+**Responsibilities:**
+- Analyzes product specifications for gaps and ambiguities
+- Identifies blocking issues before development starts
+- Calculates readiness score (0-100%)
+- Reverse-engineers product specs from existing code
+
+**When to use:**
+- Run `/agentful-product` to analyze requirements
+- Before starting development to ensure specs are ready
+- To detect gaps in product documentation
+
+**Key files:**
+- `.agentful/product-analysis.json` - Analysis results
+- `PRODUCT.md` or `.claude/product/` - Product specifications
+
+**See also:** [Product Analyzer Command](/commands/agentful-product)
 
 ### Backend Agent
 
@@ -118,7 +142,7 @@ Writes comprehensive tests to ensure code quality.
 
 ### Reviewer Agent
 
-Validates code quality and production readiness.
+Validates code quality and production readiness through 9 comprehensive checks.
 
 **Responsibilities:**
 - TypeScript type checking
@@ -127,7 +151,9 @@ Validates code quality and production readiness.
 - Test validation
 - Coverage verification
 - Security scanning
+- Documentation check
 - Manual code review
+- **DETECTS issues** (does not fix them)
 
 **When to use:**
 - Automatically invoked after any implementation
@@ -136,6 +162,8 @@ Validates code quality and production readiness.
 
 **Key files:**
 - `.agentful/last-review.json` - Last review results
+
+**See also:** [Reviewer Agent Documentation](/agents/reviewer)
 
 ### Fixer Agent
 
@@ -148,12 +176,15 @@ Automatically fixes issues found by the Reviewer.
 - Fixes hardcoded secrets
 - Resolves type errors
 - Fixes lint errors
+- **FIXES issues** (that Reviewer detected)
 
 **When to use:**
 - Automatically invoked when Reviewer finds issues
 - Manual invocation: `@fixer Fix all issues`
 
 **Input:** `.agentful/last-review.json`
+
+**See also:** [Fixer Agent Documentation](/agents/fixer)
 
 ## Agent Workflow
 
@@ -213,13 +244,21 @@ Agents communicate through:
 3. **Adjust thresholds** - Modify coverage requirements, rules, etc.
 4. **Extend architecture** - Add new validation checks or patterns
 
-## Next Steps
+## See Also
 
-- Learn about the [Orchestrator Agent](/agents/orchestrator)
-- Learn about the [Architect Agent](/agents/architect)
-- Learn about the [Backend Agent](/agents/backend)
-- Learn about the [Frontend Agent](/agents/frontend)
-- Learn about the [Tester Agent](/agents/tester)
-- Learn about the [Reviewer Agent](/agents/reviewer)
-- Learn about the [Fixer Agent](/agents/fixer)
-- Create [Custom Agents](/agents/custom-agents)
+### Agent Documentation
+- [Orchestrator Agent](/agents/orchestrator) - Central coordinator
+- [Architect Agent](/agents/architect) - Tech stack analysis and agent generation
+- [Product Analyzer Agent](/commands/agentful-product) - Requirements analysis
+- [Backend Agent](/agents/backend) - Server-side implementation
+- [Frontend Agent](/agents/frontend) - Client-side implementation
+- [Tester Agent](/agents/tester) - Quality assurance
+- [Reviewer Agent](/agents/reviewer) - Code validation
+- [Fixer Agent](/agents/fixer) - Issue resolution
+- [Custom Agents](/agents/custom-agents) - Create your own agents
+
+### Related Commands
+- [/agentful-start](/commands/agentful-start) - Start autonomous development
+- [/ralph-loop](/commands/ralph-loop) - Continuous development loop
+- [/agentful-product](/commands/agentful-product) - Analyze product requirements
+- [/agentful-status](/commands/agentful-status) - Check project status

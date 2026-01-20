@@ -25,6 +25,8 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 
 **Why Sonnet?** Backend implementation requires understanding patterns but not the highest reasoning level - Opus is better used for orchestration and architecture.
 
+**Framework-Specific Agents:** For framework-specific patterns (Next.js, NestJS, Express, etc.), the [Architect Agent](/agents/architect) generates specialized agents. Use those for framework-specific implementation details.
+
 ## Scope
 
 ### ✅ What the Backend Agent Does
@@ -440,10 +442,11 @@ src/
 
 1. Leave TODO comments - implement fully or document blocker
 2. Modify frontend code (components, pages, styles)
-3. Skip error handling
-4. Hardcode secrets or configuration
-5. Mix concerns (e.g., database queries in controllers)
-6. Return different response formats inconsistently
+3. **NEVER modify code outside your domain** - stay in backend scope
+4. Skip error handling
+5. Hardcode secrets or configuration
+6. Mix concerns (e.g., database queries in controllers)
+7. Return different response formats inconsistently
 
 ## Best Practices
 
@@ -600,3 +603,12 @@ Report to orchestrator:
   ↓
 [Backend] → Fixes any issues found
 ```
+
+## See Also
+
+- [Back to Agents Overview](/agents) - All available agents
+- [Frontend Agent](/agents/frontend) - Client-side implementation (do not modify)
+- [Architect Agent](/agents/architect) - Generates framework-specific agents
+- [Tester Agent](/agents/tester) - Writes tests for your backend code
+- [Reviewer Agent](/agents/reviewer) - Validates your backend implementation
+- [Orchestrator Agent](/agents/orchestrator) - Coordinates backend development

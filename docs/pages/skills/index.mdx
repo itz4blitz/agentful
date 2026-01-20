@@ -13,9 +13,9 @@ agentful includes 3 core skills:
 
 | Skill | Purpose | Used By |
 |-------|---------|----------|
-| **[conversation](/skills/conversation)** | Natural language understanding, intent classification, context management | `/agentful` command |
-| **[product-tracking](/skills/product-tracking)** | Progress tracking, completion calculation, quality gate monitoring | `/agentful-status`, orchestrator |
-| **[validation](/skills/validation)** | Production readiness checks, quality gate validation | `/agentful-validate`, reviewer agent |
+| **[conversation](/skills/conversation)** | Natural language understanding, intent classification, context management | [`/agentful`](/commands/agentful) command |
+| **[product-tracking](/skills/product-tracking)** | Progress tracking, completion calculation, quality gate monitoring | [`/agentful-status`](/commands/agentful-status), [orchestrator](/agents/orchestrator) |
+| **[validation](/skills/validation)** | Production readiness checks, quality gate validation | [`/agentful-validate`](/commands/agentful-validate), [reviewer](/agents/reviewer) agent |
 
 ## How Skills Work
 
@@ -86,7 +86,7 @@ The conversation skill activates whenever you use the `/agentful` command. It:
 You: /agentful Add user authentication
 
 conversation skill activates:
-→ Intent: FEATURE_REQUEST
+→ Intent: feature_request
 → Feature: "user authentication"
 → Orchestrator delegated to handle implementation
 ```

@@ -123,7 +123,9 @@ Next steps:
 
 ## Step 2: Define Your Product
 
-For this tutorial, we'll use the **flat `PRODUCT.md`** structure that agentful created.
+For this tutorial, we'll use the **flat `PRODUCT.md`** structure that agentful created (also supported for simple projects).
+
+> **Note:** While `PRODUCT.md` works great for simple projects, `.claude/product/index.md` (hierarchical) is preferred for better organization. Both are auto-detected!
 
 Create a file called `PRODUCT.md` in your project root:
 
@@ -423,7 +425,8 @@ User interactions with tasks (completion, filtering).
 - Features organized by domain (logical grouping)
 - Multiple files, easier for team collaboration
 - Better for large projects with many features
-- agentful auto-detects and works with either structure
+- **Preferred structure** for most use cases
+- agentful auto-detects and works seamlessly with either structure
 
 ---
 
@@ -932,7 +935,7 @@ After agentful completes, you can:
 
 ### Add New Features
 
-**If using PRODUCT.md** (flat structure):
+**If using PRODUCT.md** (flat structure - also supported):
 
 Edit `PRODUCT.md`:
 ```markdown
@@ -941,9 +944,9 @@ Edit `PRODUCT.md`:
 ...
 ```
 
-**If using hierarchical structure** (.claude/product/):
+**If using hierarchical structure** (.claude/product/ - preferred):
 
-Edit `.claude/product/index.md` or add a new domain file like `.claude/product/domains/tasks.md`:
+Edit `.claude/product/index.md` or add a new domain file like `.claude/product/domains/tasks/index.md`:
 ```markdown
 ### 6. Task Due Dates - MEDIUM
 **Description**: Add due dates to tasks
@@ -1044,8 +1047,8 @@ You just built a complete task management application with:
 - Detects your tech stack and generates specialized agents
 
 ### 2. Product Structures
-- **Flat (`PRODUCT.md`)** - Simple projects, everything in one file
-- **Hierarchical (`.claude/product/`)** - Complex projects, organized by domains
+- **Hierarchical (`.claude/product/index.md`)** - **Preferred** for organization and scalability
+- **Flat (`PRODUCT.md`)** - Also supported for simple projects
 - **Auto-detection** - agentful detects and works with either structure
 - **Switch anytime** - Change structures as your project grows
 

@@ -55,6 +55,14 @@ The skill tracks progress in `.agentful/completion.json`:
 }
 ```
 
+**Field Definitions:**
+- `features` - Each feature with status and subtask breakdown
+  - `status` - One of: `pending`, `in_progress`, `complete`, `blocked`
+  - `progress` - Percentage complete (0-100)
+  - `subtasks` - Individual subtask statuses
+- `gates` - Quality gate pass/fail status (boolean)
+- `overall` - Total project completion percentage (0-100)
+
 ### Progress Calculation
 
 **Feature Progress:**
@@ -113,13 +121,15 @@ The skill monitors these gates:
 
 ### By Orchestrator Agent
 
-The orchestrator uses product-tracking to:
-- Select next task to work on
+The [orchestrator agent](/agents/orchestrator) uses product-tracking to:
+- Select next task to work on (prioritizes by CRITICAL > HIGH > MEDIUM > LOW)
 - Update completion status after each task
 - Determine if product is complete
 - Generate progress reports
 
 ### By /agentful-status Command
+
+Use the [`/agentful-status`](/commands/agentful-status) command to view progress:
 
 ```
 /agentful-status
@@ -151,9 +161,9 @@ Features:
 
 ### By Commands
 
-- **`/agentful-start`** - Updates progress as features are implemented
-- **`/agentful-status`** - Reads current progress for display
-- **`/agentful-validate`** - Checks quality gate status
+- **[`/agentful-start`](/commands/agentful-start)** - Updates progress as features are implemented
+- **[`/agentful-status`](/commands/agentful-status)** - Reads current progress for display
+- **[`/agentful-validate`](/commands/agentful-validate)** - Checks quality gate status
 
 ## Priority Weighting
 

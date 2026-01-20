@@ -119,7 +119,7 @@ Last Updated: 2026-01-18 14:32:15 UTC
 ```
 
 **What it tells you:**
-- **Product**: Name from PRODUCT.md
+- **Product**: Name from product spec (auto-detects `.claude/product/index.md` or `PRODUCT.md`)
 - **Progress**: Visual bar + percentage of all features
 - **Phase**: Current development phase (e.g., planning, implementing, validating)
 - **Iterations**: Number of development cycles completed
@@ -545,7 +545,7 @@ The `/agentful-status` command reads from:
 | `.agentful/state.json` | Current task, phase, iterations | JSON |
 | `.agentful/completion.json` | Feature completion %, gate status | JSON |
 | `.agentful/decisions.json` | Pending decisions | JSON |
-| `PRODUCT.md` | Product name, feature list | Markdown |
+| `.claude/product/index.md` or `PRODUCT.md` | Product name, feature list (auto-detected) | Markdown |
 
 ## See Also
 

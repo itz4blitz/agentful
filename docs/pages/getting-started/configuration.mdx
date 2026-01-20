@@ -17,7 +17,7 @@ agentful is highly customizable. You can modify:
 - **Commands** - Create custom slash commands
 - **Skills** - Add domain-specific capabilities
 - **Settings** - Configure hooks and permissions
-- **Templates** - Customize PRODUCT.md and CLAUDE.md
+- **Templates** - Customize product spec (`.claude/product/index.md` or `PRODUCT.md`) and `CLAUDE.md`
 
 **Configuration files location:**
 ```
@@ -86,9 +86,11 @@ your-project/
 - Recent activity
 ```
 
-### Hierarchical Structure
+### Hierarchical Structure (Preferred)
 
 **Best for:** Large projects with 20+ features, team collaboration, complex dependencies
+
+**This is the preferred structure** for better organization and scalability.
 
 ```bash
 your-project/
@@ -180,11 +182,14 @@ PRODUCT.md (all features in one file)
 
 | Format | Use When | Benefits |
 |--------|----------|----------|
-| Flat (PRODUCT.md) | MVP, prototype, small project | Simplest, fastest setup |
+| Flat (PRODUCT.md) | MVP, prototype, very small project | Simplest, fastest setup (also supported) |
 | Flat (.claude/product/index.md) | Want organization, but small project | Keeps root clean, still simple |
-| Hierarchical | 20+ features, team collaboration | Domain-driven, parallel work, organized |
+| Hierarchical (.claude/product/domains/) | **Most projects**, 20+ features, teams | **Preferred:** Domain-driven, scalable, organized |
 
-**Recommendation:** Start with `PRODUCT.md` for speed. Migrate to `.claude/product/domains/` when you have 20+ features or multiple developers.
+**Recommendation:**
+- **Preferred:** `.claude/product/index.md` with domains/ (hierarchical) for better organization
+- **Also supported:** `PRODUCT.md` (flat) for very simple projects
+- Both are auto-detected - use whichever fits your project!
 
 ---
 

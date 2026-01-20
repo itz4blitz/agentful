@@ -21,13 +21,26 @@ Transform any project into an autonomous product builder with specialized agents
 
 agentful is an **opinionated starter template** for Claude Code that transforms it into a powerful autonomous development system. It's a pre-configured `.claude/` directory that supercharges Claude Code with:
 
-- **7 Specialized Agents** - Orchestrator, Architect, Backend, Frontend, Tester, Reviewer, Fixer
-- **5 Powerful Commands** - Product, Start, Status, Decide, Validate
-- **Dynamic Tech Stack Detection** - Automatically generates agents for your specific stack
+- **8 Specialized Agents** - Orchestrator, Architect, Product Analyzer, Backend, Frontend, Tester, Reviewer, Fixer
+- **6 Powerful Commands** - agentful, Product, Start, Status, Decide, Validate
+- **Smart Project Detection** - Automatically detects your tech stack and project complexity
+- **Reverse-Engineering** - Generate product specs from existing production codebases
 - **Quality Gates** - Type checking, Linting, Tests, Coverage, Security, Dead code detection (adapts to YOUR stack)
 - **24/7 Development** - Works while you sleep with Ralph Wiggum loops
 - **Progress Tracking** - See exactly what's done and what's next
 - **Decision Handling** - agentful asks, you answer, it continues
+
+---
+
+## Killer Feature: Reverse-Engineering
+
+**Got existing code without docs?** Run `/agentful-product` and watch agentful:
+- Scan your codebase and detect all domains automatically
+- Identify features and capabilities from your actual code
+- Generate a comprehensive product specification
+- Create acceptance criteria based on existing implementation
+
+Perfect for legacy codebases, open source projects, or taking over team projects. [Learn more →](#working-with-existing-codebases)
 
 ---
 
@@ -37,10 +50,13 @@ agentful is an **opinionated starter template** for Claude Code that transforms 
 flowchart TB
     subgraph Setup["🚀 GET STARTED"]
         Init([1️⃣ Initialize<br/>npx @itz4blitz/agentful init])
-        Define([2️⃣ Define Product<br/>Edit PRODUCT.md])
+        Product([0️⃣ OPTIONAL: Product Planning<br/>/agentful-product])
+        Define([2️⃣ Define Product<br/>Edit PRODUCT.md or use auto-generated])
         Start([3️⃣ Start Building<br/>/agentful-start])
 
-        Init --> Define
+        Init --> Product
+        Product -.->|Skip if using<br/>existing code| Define
+        Init -.->|Or edit manually| Define
         Define --> Start
     end
 
@@ -65,6 +81,7 @@ flowchart TB
     Check -->|✅| Done([🎉 Product Complete!])
 
     classDef initStyle fill:#10b981,stroke:#059669,color:#fff
+    classDef productStyle fill:#f59e0b,stroke:#d97706,color:#fff
     classDef defineStyle fill:#3b82f6,stroke:#2563eb,color:#fff
     classDef startStyle fill:#8b5cf6,stroke:#7c3aed,color:#fff
     classDef loopStyle fill:#ec4899,stroke:#db2777,color:#fff
@@ -72,12 +89,64 @@ flowchart TB
     classDef doneStyle fill:#10b981,stroke:#059669,color:#fff
 
     class Init initStyle
+    class Product productStyle
     class Define defineStyle
     class Start startStyle
     class Loop loopStyle
     class Review reviewStyle
     class Done doneStyle
 ```
+
+---
+
+## Working with Existing Codebases
+
+Got an existing production codebase without documentation? agentful can reverse-engineer your product specification from the code itself.
+
+### Reverse-Engineering Product Specs
+
+```bash
+claude
+/agentful-product
+```
+
+agentful will:
+1. Scan your codebase structure and detect domains
+2. Analyze features and capabilities from your code
+3. Identify your tech stack automatically
+4. Generate a comprehensive product specification
+5. Create acceptance criteria based on existing implementation
+
+**Example Output:**
+```
+🔍 Detected Domains & Features
+
+Based on your codebase:
+
+  • authentication       ████████░░ 82%
+    Features found:
+    - JWT token generation (src/auth/jwt.ts)
+    - Login/logout endpoints (src/auth/routes.ts)
+    - Password reset flow (src/auth/password.ts)
+
+  • user-management      █████████░ 87%
+    Features found:
+    - User CRUD operations (src/users/service.ts)
+    - Profile management (src/users/profile.ts)
+    - Role-based permissions (src/users/roles.ts)
+
+Tech Stack detected:
+  Language:    TypeScript
+  Framework:   Next.js 14
+  Database:    PostgreSQL with Prisma
+  Auth:        JWT tokens
+```
+
+This is perfect for:
+- Legacy codebases that need documentation
+- Open source projects you want to understand
+- Taking over projects from other teams
+- Creating specs for existing production apps
 
 ---
 
@@ -89,10 +158,24 @@ flowchart TB
 npx @itz4blitz/agentful init
 ```
 
-### 2. Edit your product spec
+### 2. Define your product (choose one)
 
-Open `PRODUCT.md` and describe what you want to build:
+**Option A: Interactive Planning (Recommended for new projects)**
+```bash
+claude
+/agentful-product
+```
+Answer a few questions and agentful creates your product spec automatically.
 
+**Option B: Reverse-Engineer from Code (For existing projects)**
+```bash
+claude
+/agentful-product
+```
+agentful scans your codebase and generates product docs from your code.
+
+**Option C: Manual Editing**
+Open `PRODUCT.md` and write your spec:
 ```markdown
 ## Overview
 A task management app for remote teams.
@@ -112,24 +195,29 @@ A task management app for remote teams.
 ### 3. Start autonomous development
 
 ```bash
-claude
-```
-
-Then type:
-
-```
 /agentful-start
 ```
 
 That's it! agentful will:
-1. Analyze your `PRODUCT.md`
-2. Detect your tech stack
-3. Generate specialized agents
-4. Start building autonomously
+1. Analyze your product spec and tech stack
+2. Auto-detect project complexity
+3. Generate specialized agents for your stack
+4. Start building autonomously 24/7
 
 ---
 
 ## Key Features
+
+### ⚡ Smart Project Detection
+
+agentful automatically detects your project complexity and adapts:
+
+- **Tech Stack Detection** - Identifies your framework, language, database, testing tools
+- **Domain Detection** - Scans code structure to find logical domains (auth, users, payments, etc.)
+- **Feature Detection** - Analyzes existing implementation to understand capabilities
+- **Complexity Analysis** - Determines project size and generates appropriate agent structure
+
+No configuration needed. Just run `/agentful-product` or `/agentful-start` and it figures out your setup.
 
 ### 🤖 Specialized Agents
 
@@ -139,21 +227,95 @@ agentful includes specialized agents that work together:
 |-------|---------|
 | `@orchestrator` | The brain - coordinates work, never codes directly |
 | `@architect` | Analyzes tech stack, generates specialized agents dynamically |
+| `@product-analyzer` | Analyzes product requirements for gaps, ambiguities, and readiness |
 | `@backend` | Services, repositories, controllers, APIs |
 | `@frontend` | Components, pages, hooks, styling |
 | `@tester` | Unit, integration, E2E tests |
 | `@reviewer` | Code review, dead code detection, quality validation |
 | `@fixer` | Auto-fixes validation failures |
 
-### 🎯 Simple Commands
+### 🎯 Command Overview
 
-| Command | Description |
-|---------|-------------|
-| `/agentful` | **Natural conversation** - just talk to Agentful |
-| `/agentful-start` | Begin or resume autonomous development |
-| `/agentful-status` | Check current progress and what's being worked on |
-| `/agentful-decide` | Answer pending decisions that block development |
-| `/agentful-validate` | Run all quality checks |
+agentful provides different commands for different workflows. Here's when to use each:
+
+| Command | When to Use | What It Does |
+|---------|-------------|--------------|
+| `/agentful` | **Questions & conversation** | Natural dialogue - ask anything, get guided help |
+| `/agentful-product` | **Planning & reverse-engineering** | Create specs from scratch, analyze existing code, refine requirements |
+| `/agentful-start` | **Autonomous building** | Start/resume 24/7 development - the main build loop |
+| `/agentful-status` | **Progress checks** | See what's done, what's next, quality gate status |
+| `/agentful-decide` | **Answer blockers** | Resolve pending decisions that block development |
+| `/agentful-validate` | **Quality checks** | Run all quality gates manually |
+
+### Choosing the Right Command
+
+**Starting a new project?**
+```bash
+npx @itz4blitz/agentful init
+claude
+/agentful-product          # Interactive product spec creation
+/agentful-start            # Begin autonomous development
+```
+
+**Have existing code without docs?**
+```bash
+npx @itz4blitz/agentful init
+claude
+/agentful-product          # Reverse-engineer product spec from code
+/agentful-start            # Continue development with AI
+```
+
+**Just want to explore or ask questions?**
+```bash
+claude
+/agentful "How should I structure my database schema?"
+```
+
+**Building actively?**
+```bash
+claude
+/agentful-start            # Autonomous development loop
+/agentful-status           # Check progress anytime
+/agentful-decide           # Answer blocking questions when asked
+```
+
+### Understanding the Modes
+
+agentful adapts to your workflow with three main interaction modes:
+
+**1. Conversation Mode (`/agentful`)**
+- Natural language questions and exploration
+- Get architectural advice and recommendations
+- Discuss implementation approaches
+- Perfect for: "How should I...?" or "What's the best way to...?"
+
+**2. Product Planning Mode (`/agentful-product`)**
+- Interactive product spec creation
+- Reverse-engineering from existing code
+- Requirement analysis and validation
+- Guided refinement with smart suggestions
+- Perfect for: Planning phase, documenting existing code
+
+**3. Autonomous Building Mode (`/agentful-start`)**
+- 24/7 autonomous development loop
+- Implements features from your product spec
+- Runs quality gates automatically
+- Manages specialized agents (backend, frontend, tester, etc.)
+- Perfect for: Active development and implementation
+
+### Decision Matrix: Which Mode?
+
+Use this quick guide to choose your workflow:
+
+| Your Situation | Recommended Flow |
+|----------------|------------------|
+| Brand new project, no code yet | `/agentful-product` → `/agentful-start` |
+| Existing codebase, no docs | `/agentful-product` (reverse-engineer) → `/agentful-start` |
+| Have product spec ready | `/agentful-start` |
+| Want to discuss architecture | `/agentful "your question"` |
+| Need to check progress | `/agentful-status` |
+| Stuck on a decision | `/agentful-decide` |
+| Want to validate quality | `/agentful-validate` |
 
 ### 🌙 24/7 Development
 
@@ -214,45 +376,82 @@ Quality Gates:
 
 ---
 
-## Example Flow
+## Example Flows
+
+### New Project Flow
 
 ```bash
-# You
+# Initialize
 npx @itz4blitz/agentful init
 
-# Edit PRODUCT.md with your requirements
-
-# You
+# Start Claude Code
 claude
 
-# You
+# Interactive product planning
+/agentful-product
+
+# agentful asks questions:
+# - What are you building?
+# - Tech stack?
+# - Core features?
+
+# Creates PRODUCT.md and analyzes it
+# Walks through any unclear requirements
+
+# Start building
+/agentful-start
+
+# agentful works autonomously...
+```
+
+### Existing Codebase Flow
+
+```bash
+# You have production code but no docs
+npx @itz4blitz/agentful init
+
+claude
+
+# Reverse-engineer product spec
+/agentful-product
+
+# agentful
+🔍 Analyzing Existing Codebase
+
+Detected domains:
+  • authentication       ████████░░ 82%
+  • user-management      █████████░ 87%
+  • api-management       ██████░░░░ 65%
+
+Tech Stack: Next.js 14, TypeScript, Prisma, PostgreSQL
+
+Generate product spec from code? (y/n)
+
+# You say yes, agentful creates comprehensive spec
+
+# Then continue development
 /agentful-start
 
 # agentful
 Detected Next.js + TypeScript + Prisma + Tailwind
 → Generated nextjs-agent, prisma-agent, tailwind-agent
 
-# agentful
-Starting work on authentication (priority: CRITICAL)
-→ @backend implementing JWT service
-→ @backend implementing login API route
-→ @frontend creating login page
-→ @tester writing auth tests
-
-# agentful
-Running validation...
-→ TypeScript: ✅
-→ Lint: ✅
-→ Tests: ✅
-→ Coverage: 82% ✅
-→ Dead code: ✅
-→ Security: ✅
-
-# agentful
-Authentication complete (100%)
-Next: User profile feature...
+Starting work on next priority feature...
+→ @backend implementing API endpoints
+→ @frontend creating UI components
+→ @tester writing tests
 
 [Continues 24/7 until complete]
+```
+
+### Quick Question Flow
+
+```bash
+claude
+
+/agentful "Should I use REST or GraphQL for my Next.js app?"
+
+# agentful analyzes your project context and gives recommendations
 ```
 
 ---
@@ -263,22 +462,29 @@ After initialization, your project will have:
 
 ```
 your-project/
-├── PRODUCT.md              # ← Edit this: your product spec
+├── PRODUCT.md              # Your product spec (edit manually or use /agentful-product)
 ├── CLAUDE.md               # Project instructions for Claude
 ├── .claude/                # agentful configuration (version control)
 │   ├── agents/             # Specialized agents
 │   │   ├── orchestrator.md
 │   │   ├── architect.md
+│   │   ├── product-analyzer.md
 │   │   ├── backend.md
 │   │   ├── frontend.md
 │   │   ├── tester.md
 │   │   ├── reviewer.md
 │   │   └── fixer.md
 │   ├── commands/           # Slash commands
+│   │   ├── agentful.md            # Natural conversation
+│   │   ├── agentful-product.md    # Product planning & reverse-engineering
 │   │   ├── agentful-start.md
 │   │   ├── agentful-status.md
 │   │   ├── agentful-decide.md
 │   │   └── agentful-validate.md
+│   ├── product/            # Product planning (created by /agentful-product)
+│   │   ├── index.md        # Main product spec
+│   │   ├── product-analysis.json  # Readiness analysis
+│   │   └── domains/        # Optional hierarchical structure
 │   ├── skills/             # Domain skills
 │   │   ├── product-tracking/
 │   │   └── validation/
@@ -296,7 +502,7 @@ your-project/
 ## Requirements
 
 - **Claude Code** - [Install here](https://code.anthropic.com)
-- **Node.js 18+** - For CLI tool
+- **Node.js 22+** - For CLI tool
 
 ### Optional: 24/7 Autonomous Development
 
@@ -345,12 +551,20 @@ claude
 - Accelerate feature development with AI-powered agents
 - Maintain code quality with automated reviews
 - Focus on architecture while agents handle implementation
+- Onboard to new codebases faster with `/agentful-product` reverse-engineering
 
 ### For Prototypes
 
 - Go from idea to working prototype in hours, not days
 - Validate concepts quickly with autonomous development
 - Iterate fast with 24/7 development cycles
+
+### For Legacy Codebases
+
+- Generate comprehensive product docs from existing code
+- Understand complex codebases without reading every file
+- Create specs for undocumented production systems
+- Perfect foundation for continued AI-assisted development
 
 ---
 

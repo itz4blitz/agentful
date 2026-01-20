@@ -4,14 +4,17 @@ The Reviewer Agent ensures code quality and production readiness through compreh
 
 ## Overview
 
-The Reviewer Agent runs automated checks and manual reviews to validate:
+The Reviewer Agent **DETECTS** issues (it does not fix them - that's the Fixer's job). It runs 9 comprehensive checks to validate:
 
 - TypeScript type safety
 - Code quality (linting)
 - Dead code elimination
 - Test coverage
 - Security vulnerabilities
+- Documentation completeness
 - Production readiness
+
+**Key Distinction:** Reviewer DETECTS, Fixer FIXES. When issues are found, the Reviewer saves them to `.agentful/last-review.json` and the Orchestrator delegates to the Fixer to resolve them.
 
 ## Configuration
 
@@ -26,7 +29,7 @@ tools: Read, Glob, Grep, Bash, Write, Edit
 
 ## Validation Checks
 
-The Reviewer runs **8 comprehensive checks**. All must pass for code to be production-ready.
+The Reviewer runs **9 comprehensive checks**. All must pass for code to be production-ready.
 
 ### 1. TypeScript Type Check
 
@@ -254,7 +257,52 @@ grep -rn "console\.log\|console\.debug" src/ --include="*.ts" --include="*.tsx" 
 - XSS vulnerabilities
 - npm vulnerabilities
 
-### 8. Manual Code Review
+### 8. Documentation Check
+
+Ensure critical code has proper documentation.
+
+```bash
+# Check for missing JSDoc on exported functions
+grep -r "^export function" src/ --include="*.ts" --include="*.tsx" | \
+  while read line; do
+    file=$(echo "$line" | cut -d: -f1)
+    func=$(echo "$line" | grep -oP "export function \K\w+")
+    # Check if function has JSDoc comment above it
+    grep -B1 "export function $func" "$file" | grep -q "/\*\*" || \
+      echo "Missing documentation: $func in $file"
+  done
+
+# Check for README.md in project root
+test -f README.md || echo "Missing README.md"
+
+# Check for API documentation
+test -d docs/ || echo "Consider adding docs/ directory"
+```
+
+**FAIL if:** Missing critical documentation
+
+**Example output:**
+
+```json
+{
+  "check": "documentation",
+  "passed": false,
+  "issues": [
+    "Missing JSDoc: authenticateUser in src/services/auth.service.ts",
+    "README.md exists but lacks setup instructions",
+    "No API documentation found"
+  ],
+  "summary": "Found 3 documentation issues"
+}
+```
+
+**Documentation requirements:**
+- Public API functions should have JSDoc comments
+- README.md should exist with setup instructions
+- Complex algorithms should be documented
+- Configuration options should be documented
+
+### 9. Manual Code Review
 
 Check code quality issues that automation can't catch.
 
@@ -344,6 +392,10 @@ const apiKey = process.env.API_KEY;
         "Possible hardcoded secret in src/config/api.ts:12"
       ]
     },
+    "documentation": {
+      "passed": true,
+      "summary": "All critical functions documented"
+    },
     "manualReview": {
       "passed": true,
       "summary": "No manual issues found"
@@ -373,6 +425,7 @@ const apiKey = process.env.API_KEY;
     "tests": { "passed": true },
     "coverage": { "passed": true },
     "security": { "passed": true },
+    "documentation": { "passed": true },
     "manualReview": { "passed": true }
   },
   "summary": "All validation checks passed. Code is production-ready."
@@ -381,13 +434,14 @@ const apiKey = process.env.API_KEY;
 
 ## Review Workflow
 
-1. **Run all checks sequentially**
+1. **Run all 9 checks sequentially**
    - TypeScript check
    - Lint check
    - Dead code detection
    - Test check
    - Coverage check
    - Security check
+   - Documentation check
    - Manual code review
 
 2. **Collect all failures**
@@ -554,14 +608,15 @@ Check for:
 
 ## Rules
 
-1. **ALWAYS** run all 8 checks
+1. **ALWAYS** run all 9 checks
 2. **NEVER** skip checks for "small changes"
 3. **ALWAYS** report issues in structured JSON format
 4. **ALWAYS** save report to `.agentful/last-review.json`
-5. **NEVER** fix issues yourself (delegate to @fixer)
+5. **NEVER** fix issues yourself (delegate to @fixer) - **REVIEWER DETECTS, FIXER FIXES**
 6. **ALWAYS** be specific about file locations and line numbers
 7. **ALWAYS** categorize issues as mustFix or canIgnore
 8. **ALWAYS** check both frontend and backend code
+9. **NEVER** modify code - you only validate and report
 
 ## Integration
 
@@ -635,3 +690,11 @@ Report to orchestrator:
   ]
 }
 ```
+
+## See Also
+
+- [Back to Agents Overview](/agents) - All available agents
+- [Fixer Agent](/agents/fixer) - Fixes issues detected by Reviewer
+- [Tester Agent](/agents/tester) - Writes tests that Reviewer validates
+- [Orchestrator Agent](/agents/orchestrator) - Coordinates the review workflow
+- [/agentful-status](/commands/agentful-status) - Check project validation status

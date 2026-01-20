@@ -59,7 +59,7 @@ npm run test:e2e        # E2E tests (if configured)
 
 ### 4. Dead Code Detection
 
-**Finds and removes:**
+**Finds:**
 - Unused exports
 - Unused imports
 - Empty files
@@ -68,6 +68,8 @@ npm run test:e2e        # E2E tests (if configured)
 **Method:** Static code analysis + dependency graph
 
 **Pass Criteria:** 0 unused exports/imports
+
+**Note:** The validation skill detects dead code issues. The [fixer agent](/agents/fixer) removes them.
 
 ### 5. Coverage Validation
 
@@ -119,17 +121,19 @@ Fix required: Type errors must be resolved
 
 ### By Reviewer Agent
 
-The reviewer agent automatically runs validation:
+The [reviewer agent](/agents/reviewer) automatically runs validation:
 1. After each feature implementation
 2. Before marking features as complete
 3. When `/agentful-validate` is invoked
 
+**Important:** The validation skill detects issues. It does NOT fix them. The [fixer agent](/agents/fixer) handles fixes.
+
 ### By Fixer Agent
 
-The fixer agent uses validation to:
+The [fixer agent](/agents/fixer) uses validation results to:
 1. Identify issues that need fixing
-2. Verify fixes are successful
-3. Re-run checks until all pass
+2. Apply fixes automatically where possible
+3. Re-validation is triggered by orchestrator to verify fixes
 
 ## Quality Gate Details
 
@@ -262,9 +266,9 @@ Patch: 4.17.21
 
 ## Auto-Fixing
 
-The validation skill (via fixer agent) can automatically fix:
+**Important:** The validation skill only detects issues. The [fixer agent](/agents/fixer) handles all fixes.
 
-✅ **Auto-fixable:**
+✅ **Auto-fixable by fixer agent:**
 - Unused imports (removes them)
 - Simple type errors (adds type annotations)
 - Lint errors (applies --fix)

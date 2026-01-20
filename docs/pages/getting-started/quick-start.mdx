@@ -90,10 +90,10 @@ agentful automatically chooses the best structure based on:
 - `.agentful/` - Runtime state tracking (gitignored)
 - `CLAUDE.md` - Project instructions for Claude
 
-**For simple projects:**
+**For simple projects (also supported):**
 - `PRODUCT.md` - Single-file product spec at root
 
-**For complex projects:**
+**For complex projects (preferred):**
 - `.claude/product/index.md` - Main product specification
 - `.claude/product/domains/*/index.md` - Domain-specific specs
 
@@ -105,9 +105,9 @@ Edit the product spec that agentful created for you. The file location depends o
 
 ---
 
-### For Simple Projects (Flat PRODUCT.md)
+### For Simple Projects (Flat Structure)
 
-If agentful created `PRODUCT.md` in your project root, edit it:
+If agentful created `PRODUCT.md` in your project root (also supported for simple workflows), edit it:
 
 ```markdown
 # Product Specification
@@ -150,9 +150,9 @@ A simple todo list application.
 
 ---
 
-### For Complex Projects (Hierarchical .claude/product/)
+### For Complex Projects (Hierarchical Structure - Preferred)
 
-If agentful created `.claude/product/`, edit `.claude/product/index.md`:
+If agentful created `.claude/product/` (preferred for most projects), edit `.claude/product/index.md`:
 
 ```markdown
 # Product Specification
@@ -275,7 +275,7 @@ Architecture analysis complete!
 ```
 📋 Orchestrator planning work...
 
-Reading product spec from: PRODUCT.md (or .claude/product/index.md)
+Reading product spec from: `.claude/product/index.md` (preferred) or `PRODUCT.md` (also supported)
 
 Detected structure: Flat (or Hierarchical with 3 domains)
 
@@ -503,7 +503,7 @@ Your first time? Build something simple:
 
 The more specific your requirements, the better agentful understands:
 
-**For simple projects (PRODUCT.md):**
+**For simple projects (PRODUCT.md - also supported):
 
 **Vague:**
 ```markdown
@@ -524,7 +524,7 @@ The more specific your requirements, the better agentful understands:
 - [ ] Error: show inline error message
 ```
 
-**For complex projects (.claude/product/):**
+**For complex projects (.claude/product/ - preferred):**
 
 **Vague:**
 ```markdown
@@ -645,8 +645,8 @@ agentful is smart - it adapts to your project automatically:
 
 **During development:**
 - Auto-detects which structure you're using
-- Reads from `PRODUCT.md` OR `.claude/product/index.md`
-- No configuration needed
+- Reads from `.claude/product/index.md` (preferred) OR `PRODUCT.md` (also supported)
+- No configuration needed - just pick what fits your project
 
 ### Tech Stack Detection
 
@@ -724,7 +724,7 @@ If iterations > 20 without progress:
 
 ### Issue: Not making progress on features
 
-**Solution:** Review PRODUCT.md
+**Solution:** Review your product spec (`.claude/product/index.md` or `PRODUCT.md`)
 - Are acceptance criteria clear?
 - Is tech stack specified?
 - Try breaking features into smaller chunks
@@ -772,8 +772,8 @@ Customize agentful for your needs
 - `/agentful-validate` - Run all quality checks
 
 **Key Files:**
-- `PRODUCT.md` - Your product spec (simple structure, auto-detected)
-- `.claude/product/index.md` - Main product spec (hierarchical structure, auto-detected)
+- `.claude/product/index.md` - **Preferred:** Main product spec (hierarchical structure, auto-detected)
+- `PRODUCT.md` - **Also supported:** Product spec (flat structure, auto-detected)
 - `.claude/product/domains/*` - Domain-specific specs (hierarchical only)
 - `CLAUDE.md` - Project instructions
 - `.agentful/state.json` - Current state
@@ -781,8 +781,8 @@ Customize agentful for your needs
 - `.agentful/architecture.json` - Detected tech stack
 
 **Intelligent Structure Detection:**
-- **Simple projects** (< 3 domains) → `PRODUCT.md` created automatically
-- **Complex projects** (≥ 3 domains) → `.claude/product/` created automatically
+- **Simple projects** (< 3 domains) → `PRODUCT.md` created (also supported)
+- **Complex projects** (≥ 3 domains) → `.claude/product/` created (preferred)
 - **Switch anytime** → agentful auto-detects changes
 
 **Two Ways to Use agentful:**

@@ -10,7 +10,7 @@ The **conversation skill** provides natural language understanding, intent class
 
 ## What It Does
 
-When you use `/agentful`, this skill:
+When you use the [`/agentful`](/commands/agentful) command, this skill:
 - **Classifies your intent** - Determines if you want to add features, fix bugs, check status, etc.
 - **Extracts information** - Pulls out feature names, bug descriptions, requirements
 - **Manages context** - Remembers previous messages in the conversation
@@ -40,13 +40,13 @@ The conversation skill recognizes these intents:
 
 | Intent | Trigger | Action |
 |--------|---------|--------|
-| **FEATURE_REQUEST** | "Add authentication", "Create login" | Delegate to orchestrator |
-| **BUGFIX_REQUEST** | "Fix the login bug", "Not working" | Start bugfix workflow |
-| **STATUS_QUERY** | "How's it going?", "What's left?" | Show status |
-| **VALIDATION_REQUEST** | "Run tests", "Check quality" | Run validation |
-| **DECISION_QUERY** | "What needs decisions?" | Show pending decisions |
-| **CONTINUE_REQUEST** | "Continue", "Next" | Resume development |
-| **PRODUCT_QUERY** | "What are we building?" | Explain product |
+| **feature_request** | "Add authentication", "Create login" | Delegate to orchestrator |
+| **bugfix_request** | "Fix the login bug", "Not working" | Start bugfix workflow |
+| **status_query** | "How's it going?", "What's left?" | Show status |
+| **validation_request** | "Run tests", "Check quality" | Run validation |
+| **decision_query** | "What needs decisions?" | Show pending decisions |
+| **continue_request** | "Continue", "Next" | Resume development |
+| **product_query** | "What are we building?" | Explain product |
 
 ## Conversation History
 
@@ -59,12 +59,12 @@ The skill maintains conversation history in `.agentful/conversation-history.json
   "messages": [
     {
       "user_input": "Add user authentication",
-      "classified_intent": "FEATURE_REQUEST",
+      "classified_intent": "feature_request",
       "timestamp": "2026-01-19T02:00:00Z"
     }
   ],
   "context": {
-    "last_intent": "FEATURE_REQUEST",
+    "last_intent": "feature_request",
     "conversation_state": "active"
   }
 }
@@ -149,7 +149,7 @@ Authentication is complete! ✅ (100%)
 You: /agentful Add user profiles with avatar upload
 
 conversation skill:
-→ Intent: FEATURE_REQUEST
+→ Intent: feature_request
 → Feature: "user profiles"
 → Requirements: ["avatar upload"]
 → Context: {"feature": "user profiles", "requirements": ["avatar upload"]}
@@ -162,7 +162,7 @@ Orchestrator: Starting user profiles with avatar upload...
 You: /agentful The login button doesn't work
 
 conversation skill:
-→ Intent: BUGFIX_REQUEST
+→ Intent: bugfix_request
 → Bug: "login button doesn't work"
 → Context: {"bug": "login button", "severity": "high"}
 
@@ -174,7 +174,7 @@ Orchestrator: Investigating login button issue...
 You: /agentful How's the authentication feature going?
 
 conversation skill:
-→ Intent: STATUS_QUERY
+→ Intent: status_query
 → Target: "authentication feature"
 → Context: {"query": "authentication status"}
 

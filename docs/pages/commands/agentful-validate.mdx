@@ -1,10 +1,10 @@
 # /agentful-validate
 
-Run all quality checks and validation gates by delegating to the reviewer agent.
+Detect quality issues by running comprehensive validation checks. Delegates to the **reviewer agent** to identify problems.
 
 ## Purpose
 
-The `/agentful-validate` command ensures your codebase meets quality standards by running comprehensive checks:
+The `/agentful-validate` command **detects** quality issues in your codebase by running comprehensive checks:
 
 1. **TypeScript Check** - Type safety validation
 2. **Lint Check** - Code style and standards
@@ -13,7 +13,7 @@ The `/agentful-validate` command ensures your codebase meets quality standards b
 5. **Coverage Check** - Ensure ≥80% code coverage
 6. **Security Check** - Scan for vulnerabilities and secrets
 
-This command is essential for maintaining code quality throughout autonomous development. The orchestrator runs it automatically after each feature completion, but you can also run it manually.
+This command is essential for maintaining code quality throughout autonomous development. The **reviewer agent** detects issues, and the **fixer agent** resolves them when you run `/agentful-start`.
 
 ## Usage
 
@@ -494,11 +494,13 @@ vim src/fix-file.ts
 ### Fix Validation Failures
 
 ```bash
-# Let orchestrator auto-fix
+# Detect issues
 /agentful-validate
-# Shows failures
+# Shows failures detected by reviewer agent
+
+# Fix issues automatically
 /agentful-start
-# Orchestrator delegates to @fixer
+# Orchestrator delegates to fixer agent to resolve issues
 ```
 
 ### Track Quality Over Time
@@ -788,6 +790,8 @@ Edit `.agentful/validation-config.json`:
 
 ## See Also
 
-- [/agentful-start](./agentful-start) - Auto-fix validation failures
+- [/agentful-start](./agentful-start) - Auto-fix validation failures (delegates to fixer agent)
 - [/agentful-status](./agentful-status) - Check gate status overview
-- [Reviewer Agent](/agents/reviewer) - How validation runs
+- [Reviewer Agent](/agents/reviewer) - Detects quality issues
+- [Fixer Agent](/agents/fixer) - Fixes issues found by reviewer
+- [Orchestrator Agent](/agents/orchestrator) - Coordinates validation and fixing
