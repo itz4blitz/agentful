@@ -1,25 +1,23 @@
 #!/usr/bin/env node
 
 /**
- * agentful CLI
- * An opinionated human-in-the-loop product development kit for Claude Code
+ * agentful CLI - Thin wrapper for template initialization and status
+ *
+ * Smart analysis and generation happens in Claude Code using:
+ * - /agentful-agents command
+ * - /agentful-skills command
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { analyzeProject, exportToArchitectureJson } from '../lib/project-analyzer.js';
-import AgentGenerator from '../lib/agent-generator.js';
-import DomainStructureGenerator from '../lib/domain-structure-generator.js';
-import { detectTechStack } from '../lib/tech-stack-detector.js';
+import { initProject, isInitialized } from '../lib/init.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Read version from centralized config
 const VERSION = JSON.parse(fs.readFileSync(path.join(__dirname, '../version.json'), 'utf-8')).version;
-const AGENTFUL_DIR = path.resolve(__dirname, '..');
-const TEMPLATE_DIR = path.join(AGENTFUL_DIR, 'template');
 
 // ANSI colors
 const colors = {
@@ -57,49 +55,25 @@ function showHelp() {
   console.log(`  ${colors.bright}agentful${colors.reset} ${colors.green}<command>${colors.reset}`);
   console.log('');
   console.log('COMMANDS:');
-  console.log(`  ${colors.green}init${colors.reset}         Initialize agentful in current directory`);
-  console.log(`  ${colors.green}init --bare${colors.reset}  Skip creating templates (just .claude/)`);
-  console.log(`  ${colors.green}init --no-smart${colors.reset} Skip smart analysis (basic init only)`);
-  console.log(`  ${colors.green}init --deep${colors.reset}  Run deep analysis (slower, more thorough)`);
-  console.log(`  ${colors.green}init --generate-agents${colors.reset}  Auto-generate agents`);
-  console.log(`  ${colors.green}init --generate-domains${colors.reset} Auto-generate domain structure`);
-  console.log(`  ${colors.green}generate${colors.reset}     Generate specialized agents from tech stack`);
-  console.log(`  ${colors.green}status${colors.reset}       Show current development progress`);
-  console.log(`  ${colors.green}--help${colors.reset}       Show this help message`);
+  console.log(`  ${colors.green}init${colors.reset}         Initialize agentful (copy templates)`);
+  console.log(`  ${colors.green}status${colors.reset}       Show agentful status and generated files`);
+  console.log(`  ${colors.green}help${colors.reset}         Show this help message`);
   console.log(`  ${colors.green}--version${colors.reset}    Show version`);
   console.log('');
   console.log('AFTER INIT:');
-  console.log(`  1. ${colors.bright}agentful automatically detects the best structure:${colors.reset}`);
-  console.log(`     ${colors.green}• Small projects:${colors.reset} Creates PRODUCT.md (simple, flat structure)`);
-  console.log(`     ${colors.cyan}• Large/complex projects:${colors.reset} Creates .claude/product/ with domains`);
-  console.log(`     ${colors.dim}(Detection based on: # of domains, frameworks, monorepo status)${colors.reset}`);
-  console.log(`  2. ${colors.bright}Edit your product specification${colors.reset}`);
-  console.log(`  3. Run ${colors.bright}claude${colors.reset} to start Claude Code`);
-  console.log(`  4. Type ${colors.bright}/agentful${colors.reset} for natural conversation or ${colors.bright}/agentful-start${colors.reset} for structured development`);
+  console.log(`  1. ${colors.bright}Run claude${colors.reset} to start Claude Code`);
+  console.log(`  2. ${colors.bright}Type /agentful-generate${colors.reset} to analyze codebase & generate agents`);
   console.log('');
-  console.log('FOR EXTENDED DEVELOPMENT SESSIONS:');
-  console.log(`  ${colors.cyan}/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"${colors.reset}`);
+  console.log('CLAUDE CODE COMMANDS:');
+  console.log(`  ${colors.cyan}/agentful-generate${colors.reset}     - Analyze codebase, generate agents & skills`);
+  console.log(`  ${colors.cyan}/agentful-start${colors.reset}    - Begin structured development workflow`);
+  console.log(`  ${colors.cyan}/agentful-status${colors.reset}   - Show progress and completion`);
+  console.log(`  ${colors.cyan}/agentful${colors.reset}          - Natural conversation about your product`);
   console.log('');
 }
 
 function showVersion() {
   console.log(`agentful v${VERSION}`);
-}
-
-function copyDir(src, dest) {
-  fs.mkdirSync(dest, { recursive: true });
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
-
-    if (entry.isDirectory()) {
-      copyDir(srcPath, destPath);
-    } else {
-      fs.copyFileSync(srcPath, destPath);
-    }
-  }
 }
 
 function checkGitignore() {
@@ -118,26 +92,15 @@ function checkGitignore() {
   }
 }
 
-async function initagentful(options = {}) {
+async function init() {
   showBanner();
 
   const targetDir = process.cwd();
   const claudeDir = path.join(targetDir, '.claude');
-  const agentfulDir = path.join(targetDir, '.agentful');
-
-  // Parse options
-  const bare = options.bare || false;
-  const smart = options.smart !== false; // Default: true
-  const deep = options.deep || false;
-  const autoGenerateAgents = options.generateAgents || false;
-  const autoGenerateDomains = options.generateDomains || false;
-
-  // Initialize analysis variable (will be populated later)
-  let analysis = null;
 
   // Check if already initialized
-  if (fs.existsSync(claudeDir)) {
-    log(colors.yellow, '⚠️  .claude/ directory already exists!');
+  if (await isInitialized(targetDir)) {
+    log(colors.yellow, 'agentful is already initialized in this directory!');
     const readline = await import('readline');
     const rl = readline.createInterface({
       input: process.stdin,
@@ -154,557 +117,129 @@ async function initagentful(options = {}) {
       process.exit(0);
     }
 
-    log(colors.dim, 'Removing existing .claude/...');
-    fs.rmSync(claudeDir, { recursive: true, force: true });
+    // Remove existing files
+    log(colors.dim, 'Removing existing agentful files...');
+    if (fs.existsSync(claudeDir)) {
+      fs.rmSync(claudeDir, { recursive: true, force: true });
+    }
+    const agentfulDir = path.join(targetDir, '.agentful');
+    if (fs.existsSync(agentfulDir)) {
+      fs.rmSync(agentfulDir, { recursive: true, force: true });
+    }
   }
 
-  // Create .claude/ directory structure
-  log(colors.dim, 'Creating .claude/ directory structure...');
+  // Initialize using lib/init.js
+  log(colors.dim, 'Copying templates...');
+  try {
+    const result = await initProject(targetDir, { includeProduct: true });
 
-  const sourceClaudeDir = path.join(AGENTFUL_DIR, '.claude');
-  copyDir(sourceClaudeDir, claudeDir);
-
-  // Create .agentful/ directory
-  if (!fs.existsSync(agentfulDir)) {
-    fs.mkdirSync(agentfulDir, { recursive: true });
-  }
-
-  // Initialize state files
-  log(colors.dim, 'Initializing state files...');
-
-  const now = new Date().toISOString();
-
-  fs.writeFileSync(
-    path.join(agentfulDir, 'state.json'),
-    JSON.stringify(
-      {
-        version: '0.1.1',
-        current_task: null,
-        current_phase: 'idle',
-        iterations: 0,
-        last_updated: now,
-        blocked_on: []
-      },
-      null,
-      2
-    )
-  );
-
-  fs.writeFileSync(
-    path.join(agentfulDir, 'decisions.json'),
-    JSON.stringify({ pending: [], resolved: [] }, null, 2)
-  );
-
-  fs.writeFileSync(
-    path.join(agentfulDir, 'completion.json'),
-    JSON.stringify(
-      {
-        features: {},
-        gates: {
-          tests_passing: false,
-          no_type_errors: false,
-          no_dead_code: false,
-          coverage_80: false,
-          security_clean: false
-        },
-        overall: 0,
-        last_updated: now
-      },
-      null,
-      2
-    )
-  );
-
-  fs.writeFileSync(
-    path.join(agentfulDir, 'architecture.json'),
-    JSON.stringify(
-      {
-        detected_stack: {},
-        generated_agents: [],
-        decisions: [],
-        timestamp: now
-      },
-      null,
-      2
-    )
-  );
-
-  // Copy templates if not bare mode
-  if (!bare) {
-    log(colors.dim, 'Creating template files...');
-
-    const claudeMdPath = path.join(targetDir, 'CLAUDE.md');
-    const productMdPath = path.join(targetDir, 'PRODUCT.md');
-    const claudeProductDir = path.join(targetDir, '.claude/product');
-
-    if (!fs.existsSync(claudeMdPath)) {
-      fs.copyFileSync(
-        path.join(TEMPLATE_DIR, 'CLAUDE.md'),
-        claudeMdPath
-      );
-      log(colors.green, '  ✓ Created CLAUDE.md');
-    } else {
-      log(colors.dim, '  ⊙ CLAUDE.md already exists, skipping');
-    }
-
-    // Determine if project should use hierarchical structure
-    const shouldUseHierarchical = analysis && (
-      analysis.domains.length >= 3 ||  // Multiple detected domains
-      (analysis.frameworks && analysis.frameworks.length >= 2) ||  // Multiple frameworks
-      (analysis.packageManager === 'workspace' || analysis.packageManager === 'monorepo')  // Monorepo
-    );
-
-    // Create appropriate product structure
-    const productExists = fs.existsSync(productMdPath) || fs.existsSync(claudeProductDir);
-
-    if (!productExists) {
-      if (shouldUseHierarchical) {
-        // Create hierarchical .claude/product/ structure
-        log(colors.dim, '  📁 Using hierarchical product structure (detected complex project)');
-        fs.mkdirSync(claudeProductDir, { recursive: true });
-        fs.mkdirSync(path.join(claudeProductDir, 'domains'), { recursive: true });
-
-        // Create main index.md
-        const indexContent = `# Product Specification
-
-## Overview
-[Describe your product here]
-
-## Tech Stack
-${analysis && analysis.language ? `- Language: ${analysis.language}` : ''}
-${analysis && analysis.frameworks && analysis.frameworks.length > 0 ? `- Frameworks: ${analysis.frameworks.join(', ')}` : ''}
-${analysis && analysis.packageManager && analysis.packageManager !== 'unknown' ? `- Package Manager: ${analysis.packageManager}` : ''}
-
-## Domains
-${analysis && analysis.domains.length > 0 ? analysis.domains.map((d, i) => `${i + 1}. [${d}] - Define details in \`domains/${d.toLowerCase().replace(/\s+/g, '-')}/index.md\``).join('\n') : '- [Domain 1] - Define in domains/domain-name/index.md\n- [Domain 2] - Define in domains/domain-name/index.md'}
-
-## Priority Legend
-- **CRITICAL**: Must have for launch
-- **HIGH**: Important for MVP
-- **MEDIUM**: Nice to have
-- **LOW**: Future consideration
-`;
-
-        fs.writeFileSync(path.join(claudeProductDir, 'index.md'), indexContent);
-
-        // Create domain directories with index files for detected domains
-        if (analysis && analysis.domains.length > 0) {
-          analysis.domains.slice(0, 8).forEach(domain => {
-            const domainDir = path.join(claudeProductDir, 'domains', domain.toLowerCase().replace(/\s+/g, '-'));
-            fs.mkdirSync(domainDir, { recursive: true });
-
-            const domainIndexContent = `# ${domain} Domain
-
-## Overview
-[Describe the ${domain} domain's purpose and scope]
-
-## Features
-1. [Feature 1] (CRITICAL)
-   - [Acceptance criteria]
-   - [Dependencies]
-
-2. [Feature 2] (HIGH)
-   - [Acceptance criteria]
-
-## Technical Notes
-- [Any technical considerations specific to this domain]
-`;
-            fs.writeFileSync(path.join(domainDir, 'index.md'), domainIndexContent);
-          });
-        } else {
-          // Create example domain structure
-          const exampleDomainDir = path.join(claudeProductDir, 'domains', 'example-domain');
-          fs.mkdirSync(exampleDomainDir, { recursive: true });
-          fs.writeFileSync(
-            path.join(exampleDomainDir, 'index.md'),
-            '# Example Domain\n\n## Overview\n[Describe this domain]\n\n## Features\n1. Example Feature (HIGH)\n'
-          );
-        }
-
-        log(colors.green, '  ✓ Created .claude/product/ with domain structure');
-        log(colors.dim, `     → Organized by ${analysis.domains.length > 0 ? analysis.domains.length : 'example'} domain(s)`);
-      } else {
-        // Create flat PRODUCT.md structure
-        log(colors.dim, '  📄 Using flat product structure (simple project)');
-        fs.copyFileSync(
-          path.join(TEMPLATE_DIR, 'PRODUCT.md'),
-          productMdPath
-        );
-        log(colors.green, '  ✓ Created PRODUCT.md');
-      }
-    } else {
-      log(colors.dim, '  ⊙ Product spec already exists, skipping');
-    }
+    console.log('');
+    log(colors.green, 'Initialized agentful successfully!');
+    console.log('');
+    log(colors.dim, 'Created files:');
+    result.files.forEach(file => {
+      log(colors.green, `  ${file}`);
+    });
+    console.log('');
+  } catch (error) {
+    log(colors.red, `Failed to initialize: ${error.message}`);
+    process.exit(1);
   }
 
   // Update .gitignore
   checkGitignore();
 
-  // Perform essential project detection (unless explicitly disabled)
-  if (smart) {
-    console.log('');
-    log(colors.bright, '🔍 Detecting project essentials...');
-    console.log('');
-
-    try {
-      analysis = await analyzeProject(targetDir);
-      await exportToArchitectureJson(targetDir, analysis);
-
-      // Show only essential info
-      if (analysis.language && analysis.language !== 'unknown') {
-        log(colors.cyan, `  Language:    ${analysis.language}`);
-      }
-
-      if (analysis.frameworks.length > 0) {
-        log(colors.cyan, `  Framework:   ${analysis.frameworks[0]}`);
-      }
-
-      if (analysis.packageManager && analysis.packageManager !== 'unknown') {
-        log(colors.cyan, `  Package Mgr: ${analysis.packageManager}`);
-      }
-
-      console.log('');
-      log(colors.dim, `  ✓ Detection complete`);
-
-      // Show critical warnings only
-      if (analysis.warnings && analysis.warnings.length > 0) {
-        const criticalWarnings = analysis.warnings.filter(w =>
-          w.includes('empty') || w.includes('not detect')
-        );
-        if (criticalWarnings.length > 0) {
-          console.log('');
-          log(colors.yellow, '⚠️  Warnings:');
-          criticalWarnings.forEach(warning => {
-            log(colors.dim, `  • ${warning}`);
-          });
-        }
-      }
-
-    } catch (error) {
-      log(colors.dim, '  ⊙ Detection skipped (project may be empty)');
-      analysis = null;
-    }
-  }
-
-  // Interactive prompts for generation (if not auto-generated)
-  if (analysis && analysis.domains.length > 0 && !autoGenerateDomains && !autoGenerateAgents) {
-    console.log('');
-    const readline = await import('readline');
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
-
-    // Ask about domain structure
-    const generateStructure = await new Promise(resolve => {
-      rl.question(`✨ Generate domain structure and specialized agents? [Y/n] `, answer => {
-        resolve(answer.toLowerCase() !== 'n');
-      });
-    });
-
-    rl.close();
-
-    if (generateStructure) {
-      await generateAgentsAndDomains(targetDir, analysis);
-    }
-  } else if (autoGenerateDomains || autoGenerateAgents) {
-    console.log('');
-    log(colors.dim, '🤖 Generating agents and domain structure...');
-    await generateAgentsAndDomains(targetDir, analysis, {
-      agents: autoGenerateAgents,
-      domains: autoGenerateDomains
-    });
-  }
-
-  // Done!
+  // Show next steps
   console.log('');
-  log(colors.green, '✅ agentful initialized successfully!');
+  log(colors.bright, 'Next Steps:');
   console.log('');
-
-  // Determine which structure was created
-  const productMdPath = path.join(targetDir, 'PRODUCT.md');
-  const claudeProductDir = path.join(targetDir, '.claude/product');
-  const usingHierarchical = fs.existsSync(claudeProductDir);
-  const usingFlat = fs.existsSync(productMdPath);
-
-  log(colors.bright, 'Next steps:');
+  log(colors.cyan, '  1. Run: claude');
+  log(colors.cyan, '  2. Type: /agentful-generate');
   console.log('');
-  console.log(`  1. ${colors.cyan}Edit your product specification${colors.reset}`);
-
-  if (usingHierarchical) {
-    console.log(`     ${colors.green}✓ Created .claude/product/index.md${colors.reset} (hierarchical structure)`);
-    console.log(`     ${colors.dim}→ Organized by domains (best for larger projects)${colors.reset}`);
-    if (analysis && analysis.domains.length > 0) {
-      console.log(`     ${colors.dim}→ Detected ${analysis.domains.length} domain(s) with pre-configured directories${colors.reset}`);
-    }
-  } else if (usingFlat) {
-    console.log(`     ${colors.green}✓ Created PRODUCT.md${colors.reset} (flat structure)`);
-    console.log(`     ${colors.dim}→ Simple, single-file format (best for small projects)${colors.reset}`);
-  }
-
-  console.log(`  2. ${colors.cyan}Run: claude${colors.reset}`);
-  console.log(`  3. ${colors.cyan}Type: /agentful${colors.reset} (natural) or ${colors.cyan}/agentful-start${colors.reset} (structured)`);
+  log(colors.dim, 'This will analyze your codebase and generate:');
+  log(colors.dim, '  - Specialized agents for your tech stack');
+  log(colors.dim, '  - Domain-specific agents (auth, billing, etc.)');
+  log(colors.dim, '  - Skills for frameworks you use');
   console.log('');
-
-  if (usingHierarchical) {
-    log(colors.dim, '💡 Hierarchical structure benefits:');
-    log(colors.dim, '   • Organized by domain (e.g., Auth, Users, Billing)');
-    log(colors.dim, '   • Easier to manage large feature sets');
-    log(colors.dim, '   • Teams can work on different domains in parallel');
-    console.log('');
-  }
-
-  log(colors.dim, 'For extended development sessions with fewer interruptions:');
-  log(colors.cyan, `  /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"`);
+  log(colors.dim, 'Optional: Edit CLAUDE.md and PRODUCT.md first to customize.');
   console.log('');
-}
-
-/**
- * Generate agents and domain structure
- */
-async function generateAgentsAndDomains(projectPath, analysis, options = {}) {
-  const { agents = true, domains = true } = options;
-
-  try {
-    // Generate domain structure
-    if (domains) {
-      log(colors.dim, '📁 Creating domain structure...');
-      const domainGenerator = new DomainStructureGenerator(projectPath, analysis);
-      const domainResult = await domainGenerator.generateDomainStructure();
-      log(colors.green, `  ✓ Generated ${domainResult.domains} domains with ${domainResult.features} features`);
-    }
-
-    // Generate specialized agents
-    if (agents) {
-      log(colors.dim, '🤖 Generating specialized agents...');
-      const agentGenerator = new AgentGenerator(projectPath, analysis);
-      const agentResult = await agentGenerator.generateAgents();
-
-      const totalAgents = agentResult.core.length + agentResult.domains.length + agentResult.tech.length;
-      log(colors.green, `  ✓ Generated ${totalAgents} agents:`);
-      log(colors.dim, `     - ${agentResult.core.length} core agents`);
-      if (agentResult.domains.length > 0) {
-        log(colors.dim, `     - ${agentResult.domains.length} domain agents`);
-      }
-      if (agentResult.tech.length > 0) {
-        log(colors.dim, `     - ${agentResult.tech.length} tech-specific agents`);
-      }
-    }
-
-    console.log('');
-    log(colors.green, '✨ Generation complete!');
-    log(colors.dim, '  Your agents are now contextually aware of your codebase.');
-  } catch (error) {
-    log(colors.red, `❌ Generation failed: ${error.message}`);
-    log(colors.dim, '  You can continue without it, or run: agentful generate');
-  }
 }
 
 function showStatus() {
-  const agentfulDir = path.join(process.cwd(), '.agentful');
+  const targetDir = process.cwd();
+  const agentfulDir = path.join(targetDir, '.agentful');
 
   if (!fs.existsSync(agentfulDir)) {
-    log(colors.red, '❌ agentful not initialized in this directory!');
+    log(colors.red, 'agentful not initialized in this directory!');
     log(colors.dim, 'Run: npx @itz4blitz/agentful init');
     process.exit(1);
   }
 
-  const statePath = path.join(agentfulDir, 'state.json');
-  const completionPath = path.join(agentfulDir, 'completion.json');
-  const decisionsPath = path.join(agentfulDir, 'decisions.json');
-
-  if (!fs.existsSync(statePath)) {
-    log(colors.red, '❌ State file missing!');
-    process.exit(1);
-  }
-
-  const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
-  const completion = fs.existsSync(completionPath)
-    ? JSON.parse(fs.readFileSync(completionPath, 'utf-8'))
-    : null;
-  const decisions = fs.existsSync(decisionsPath)
-    ? JSON.parse(fs.readFileSync(decisionsPath, 'utf-8'))
-    : null;
-
   showBanner();
-
-  log(colors.bright, 'Current Status:');
+  log(colors.bright, 'Agentful Status:');
   console.log('');
 
-  // Show current work
-  if (state.current_task) {
-    log(colors.blue, `🔧 Working on: ${colors.reset}${state.current_task}`);
-    log(colors.dim, `   Phase: ${state.current_phase}`);
-    log(colors.dim, `   Iterations: ${state.iterations}`);
-  } else {
-    log(colors.dim, '💤 Idle - no active task');
+  // Helper to read JSON safely
+  const readJSON = (filepath) => {
+    try {
+      return fs.existsSync(filepath) ? JSON.parse(fs.readFileSync(filepath, 'utf-8')) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Read state files
+  const state = readJSON(path.join(agentfulDir, 'state.json'));
+  const completion = readJSON(path.join(agentfulDir, 'completion.json'));
+  const decisions = readJSON(path.join(agentfulDir, 'decisions.json'));
+
+  // Display state
+  if (state) {
+    log(colors.green, 'State:');
+    log(colors.dim, `  Initialized: ${state.initialized || 'N/A'}`);
+    const agentCount = state.agents?.length || 0;
+    const skillCount = state.skills?.length || 0;
+    log(colors.dim, `  Agents: ${agentCount} ${agentCount === 0 ? '(run /agentful-agents)' : ''}`);
+    log(colors.dim, `  Skills: ${skillCount} ${skillCount === 0 ? '(run /agentful-skills)' : ''}`);
+    console.log('');
   }
 
-  console.log('');
-
-  // Show completion if available
+  // Display completion
   if (completion) {
-    const percentage = completion.overall || 0;
-    const filled = Math.round(percentage / 5);
-    const bar = '█'.repeat(filled) + '░'.repeat(20 - filled);
-
-    log(colors.bright, 'Progress:');
-    log(colors.cyan, `   ${bar} ${percentage}%`);
-    console.log('');
-
-    // Show quality gates
-    if (completion.gates) {
-      log(colors.bright, 'Quality Gates:');
-      Object.entries(completion.gates).forEach(([gate, passed]) => {
-        const icon = passed ? '✅' : '❌';
-        const label = gate.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        log(passed ? colors.green : colors.red, `   ${icon} ${label}`);
-      });
-      console.log('');
-    }
-
-    // Show pending decisions
-    if (decisions && decisions.pending && decisions.pending.length > 0) {
-      log(colors.yellow, `⚠️  ${decisions.pending.length} pending decisions:`);
-      decisions.pending.forEach((d, i) => {
-        log(colors.dim, `   ${i + 1}. ${d.question}`);
-      });
-      console.log('');
-      log(colors.cyan, `   Run: /agentful-decide`);
+    const agentComp = Object.keys(completion.agents || {}).length;
+    const skillComp = Object.keys(completion.skills || {}).length;
+    if (agentComp > 0 || skillComp > 0) {
+      log(colors.green, `Completions: ${agentComp} agents, ${skillComp} skills`);
       console.log('');
     }
   }
 
-  // Show next action
-  log(colors.bright, 'Next Actions:');
-  log(colors.cyan, '   • /agentful-start    - Continue development');
-  log(colors.cyan, '   • /agentful-decide  - Answer pending decisions');
-  log(colors.cyan, '   • /agentful-validate- Run quality checks');
-  console.log('');
-}
-
-function generateAgentPrompt(stack) {
-  let prompt = `# Tech Stack Analysis\n\n`;
-  prompt += `**Language**: ${stack.language || 'Unknown'}\n`;
-  const primaryFramework = stack.frameworks && stack.frameworks.length > 0 ? stack.frameworks[0] : null;
-  prompt += `**Framework**: ${primaryFramework || 'None'}\n\n`;
-
-  if (stack.dependencies && stack.dependencies.length > 0) {
-    prompt += `**Key Dependencies**:\n`;
-    stack.dependencies.slice(0, 10).forEach(dep => {
-      prompt += `- ${dep}\n`;
-    });
-    prompt += `\n`;
-  }
-
-  prompt += `## Instructions\n\n`;
-  prompt += `You are the Architect agent. Your task is to:\n\n`;
-  prompt += `1. **Sample 3-5 files** from the codebase to understand patterns\n`;
-  prompt += `2. **Detect conventions**: file structure, naming, imports, styling\n`;
-  prompt += `3. **Generate specialized agents** with real examples from the code\n\n`;
-  prompt += `## Output\n\n`;
-  prompt += `Create/update \`.agentful/architecture.json\` with:\n`;
-  prompt += `- Detected patterns\n`;
-  prompt += `- Generated agent list\n`;
-  prompt += `- Key conventions\n\n`;
-  prompt += `Then create project-specific agent files in \`.claude/agents/\` \n`;
-  prompt += `using the naming convention: \`[tech]-specialist.md\`\n\n`;
-
-  prompt += `## Example Agent Template\n\n`;
-  prompt += `\`\`\`markdown\n`;
-  prompt += `# [Tech] Specialist Agent\n\n`;
-  prompt += `---\n`;
-  prompt += `name: [tech]-specialist\n`;
-  prompt += `description: Expert in [Tech] development patterns\n`;
-  prompt += `model: sonnet\n\n`;
-  prompt += `## Context\n\n`;
-  prompt += `[Analyze actual code samples and list real patterns]\n\n`;
-  prompt += `## Conventions\n\n`;
-  prompt += `1. [Pattern from actual code]\n`;
-  prompt += `2. [Pattern from actual code]\n`;
-  prompt += `3. [Pattern from actual code]\n\n`;
-  prompt += `## Examples from Codebase\n\n`;
-  prompt += `\`\`\`[language]\n`;
-  prompt += `[Real example from sampled files]\n`;
-  prompt += `\`\`\`\n`;
-  prompt += `\`\`\`\n\n`;
-
-  prompt += `---\n\n`;
-  prompt += `**IMPORTANT**: \n`;
-  prompt += `- Sample REAL files, don't make up patterns\n`;
-  prompt += `- Include ACTUAL code examples from this project\n`;
-  prompt += `- Respect existing conventions, don't introduce new ones\n`;
-  prompt += `- Generate agents ONLY for technologies actually in use\n`;
-
-  return prompt;
-}
-
-async function generateAgents() {
-  showBanner();
-
-  const agentfulDir = path.join(process.cwd(), '.agentful');
-
-  // Check if agentful is initialized
-  if (!fs.existsSync(agentfulDir)) {
-    log(colors.red, '❌ agentful not initialized in this directory!');
-    log(colors.dim, 'Run: npx @itz4blitz/agentful init');
-    process.exit(1);
-  }
-
-  // Detect tech stack using library function
-  log(colors.dim, 'Analyzing tech stack...');
-  const stack = await detectTechStack(process.cwd());
-
-  if (!stack.language || stack.language === 'unknown') {
-    log(colors.yellow, '⚠️  Could not detect language/framework');
-    log(colors.dim, 'Supported: Node.js, Python, Go, Rust, C#, Java');
+  // Display decisions
+  if (decisions?.decisions?.length > 0) {
+    log(colors.yellow, `Decisions: ${decisions.decisions.length} pending`);
     console.log('');
-    log(colors.cyan, 'Manually trigger architect analysis by running:');
-    log(colors.cyan, '  claude');
-    log(colors.cyan, '  Then invoke the architect agent');
+  }
+
+  // Check generated files
+  const claudeDir = path.join(targetDir, '.claude');
+  const agentFiles = fs.existsSync(path.join(claudeDir, 'agents'))
+    ? fs.readdirSync(path.join(claudeDir, 'agents')).filter(f => f.endsWith('.md'))
+    : [];
+  const skillFiles = fs.existsSync(path.join(claudeDir, 'skills'))
+    ? fs.readdirSync(path.join(claudeDir, 'skills')).filter(f => f.endsWith('.md'))
+    : [];
+
+  if (agentFiles.length > 0) {
+    log(colors.green, `Generated: ${agentFiles.length} agent(s), ${skillFiles.length} skill(s)`);
     console.log('');
-    return;
   }
 
-  const primaryFramework = stack.frameworks.length > 0 ? stack.frameworks[0] : null;
-  log(colors.green, `✓ Detected: ${stack.language} ${primaryFramework ? `(${primaryFramework})` : ''}`);
-  log(colors.dim, `   Dependencies: ${stack.dependencies.length} packages`);
-
-  // Update architecture.json
-  log(colors.dim, 'Updating architecture analysis...');
-  const archPath = path.join(agentfulDir, 'architecture.json');
-  let architecture = { detected_stack: {}, generated_agents: [], decisions: [], timestamp: new Date().toISOString() };
-
-  if (fs.existsSync(archPath)) {
-    architecture = JSON.parse(fs.readFileSync(archPath, 'utf-8'));
-  }
-
-  architecture.detected_stack = stack;
-  architecture.timestamp = new Date().toISOString();
-
-  fs.writeFileSync(archPath, JSON.stringify(architecture, null, 2));
-
-  console.log('');
-  log(colors.bright, 'Tech Stack Analysis Complete!');
-  console.log('');
-
-  log(colors.bright, 'Detected Stack:');
-  if (stack.language) log(colors.cyan, `  Language:    ${stack.language}`);
-  if (primaryFramework) log(colors.cyan, `  Framework:   ${primaryFramework}`);
-  if (stack.dependencies.length > 0) {
-    log(colors.cyan, `  Dependencies: ${stack.dependencies.length} packages`);
-  }
-  console.log('');
-
-  log(colors.bright, 'Next Steps:');
-  console.log('');
-  log(colors.cyan, '  1. Review .agentful/architecture.json');
-  log(colors.cyan, '  2. Run: claude');
-  log(colors.cyan, '  3. Type: /agentful-start');
-  log(colors.cyan, '     (Architect agent will generate specialized agents automatically)');
-  console.log('');
-
-  log(colors.dim, '💡 Tip: Architect generates project-specific agents on first /agentful-start run');
+  // Next actions
+  log(colors.bright, 'Claude Code Commands:');
+  log(colors.cyan, '  /agentful-agents  - Generate agents');
+  log(colors.cyan, '  /agentful-skills  - Generate skills');
+  log(colors.cyan, '  /agentful-start   - Start workflow');
+  log(colors.cyan, '  /agentful         - Product chat');
   console.log('');
 }
 
@@ -715,42 +250,32 @@ async function main() {
 
   switch (command) {
     case 'init':
-      // Parse init options
-      const initOptions = {
-        bare: args.includes('--bare'),
-        smart: !args.includes('--no-smart'),
-        deep: args.includes('--deep'),
-        generateAgents: args.includes('--generate-agents'),
-        generateDomains: args.includes('--generate-domains')
-      };
-      await initagentful(initOptions);
+      await init();
       break;
 
     case 'status':
       showStatus();
       break;
 
-    case 'generate':
-      await generateAgents();
-      break;
-
+    case 'help':
     case '--help':
     case '-h':
-    case 'help':
       showHelp();
       break;
 
+    case 'version':
     case '--version':
     case '-v':
       showVersion();
       break;
 
     default:
-      if (!command || command.startsWith('-')) {
+      if (!command) {
         showHelp();
       } else {
         log(colors.red, `Unknown command: ${command}`);
-        log(colors.dim, 'Run: agentful --help');
+        console.log('');
+        log(colors.dim, 'Run: agentful help');
         process.exit(1);
       }
   }

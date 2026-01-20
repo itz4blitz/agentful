@@ -7,60 +7,26 @@ tools: Read, Write, Edit, Glob, Grep
 
 # Conversation Skill
 
-This skill provides natural language processing capabilities for understanding user intent, managing conversation context, resolving references, and maintaining conversation history.
-
-## When to Use
-
-This skill is invoked when:
-- User runs `/agentful <text>` with natural language input
-- Any command receives ambiguous or unclear input
-- Need to resolve pronouns or references from conversation history
-- Need to classify user intent before routing to handlers
-
-**Entry Point**: The `/agentful` command delegates to this skill for all natural language processing.
+Provides natural language processing for understanding user intent, managing conversation context, resolving references, and maintaining conversation history.
 
 ## Responsibilities
 
-1. **Intent Classification** - Determine what the user wants (feature, bug fix, status, etc.)
+1. **Intent Classification** - Determine what the user wants
 2. **Reference Resolution** - Resolve "it", "that", "this" to actual feature names
 3. **Entity Extraction** - Extract features, domains, subtasks mentioned
 4. **Ambiguity Detection** - Identify unclear requests and ask clarifying questions
 5. **Context Management** - Track conversation state, detect context loss
-6. **Routing** - Route to appropriate handler (orchestrator, status, validate, etc.)
+6. **Routing** - Route to appropriate handler
 7. **History Tracking** - Maintain conversation history for context
 
-## Core Functions
-
-### 1. Intent Classification
+## Intent Classification
 
 ```typescript
-/**
- * Classify user intent with confidence score
- * @param message - User's current message
- * @param conversation_history - Recent conversation context
- * @param product_spec - Product features and requirements
- * @returns Intent classification with confidence
- */
 function classify_intent(
   message: string,
   conversation_history: ConversationMessage[],
   product_spec: ProductSpec
 ): IntentClassification {
-  const intents = [
-    'feature_request',
-    'bug_report',
-    'question',
-    'clarification',
-    'status_update',
-    'mind_change',
-    'context_switch',
-    'approval',
-    'rejection',
-    'pause',
-    'continue'
-  ];
-
-  // Analyze message patterns
   const patterns = {
     feature_request: /(?:add|create|implement|build|new|feature|support|enable)/i,
     bug_report: /(?:bug|broken|error|issue|problem|wrong|doesn't work|fix)/i,
@@ -75,31 +41,13 @@ function classify_intent(
     continue: /(?:continue|resume|let's continue|back)/i
   };
 
-  // Score each intent
   const scores = {};
   for (const [intent, pattern] of Object.entries(patterns)) {
     const matches = message.match(pattern);
-    const baseScore = matches ? matches.length * 0.3 : 0;
-
-    // Context-aware scoring
-    let contextBonus = 0;
-    if (conversation_history.length > 0) {
-      const lastMessage = conversation_history[conversation_history.length - 1];
-      if (lastMessage.role === 'assistant' && intent === 'clarification') {
-        contextBonus += 0.2; // User asking for clarification after assistant response
-      }
-      if (lastMessage.intent === 'question' && intent === 'clarification') {
-        contextBonus += 0.15; // Follow-up clarification
-      }
-    }
-
-    scores[intent] = Math.min(0.95, baseScore + contextBonus);
+    scores[intent] = matches ? matches.length * 0.3 : 0;
   }
 
-  // Find highest scoring intent
-  const topIntent = Object.entries(scores).reduce((a, b) =>
-    a[1] > b[1] ? a : b
-  );
+  const topIntent = Object.entries(scores).reduce((a, b) => a[1] > b[1] ? a : b);
 
   return {
     intent: topIntent[0],
@@ -111,23 +59,11 @@ function classify_intent(
       .map(([intent, score]) => ({ intent, confidence: score }))
   };
 }
-
-interface IntentClassification {
-  intent: string;
-  confidence: number;
-  alternative_intents: Array<{ intent: string; confidence: number }>;
-}
 ```
 
-### 2. Feature Extraction
+## Entity Extraction
 
 ```typescript
-/**
- * Extract which feature/user is talking about
- * @param message - User's current message
- * @param product_spec - Product features and requirements
- * @returns Extracted feature reference
- */
 function extract_feature_mention(
   message: string,
   product_spec: ProductSpec
@@ -149,10 +85,9 @@ function extract_feature_mention(
     }
   }
 
-  // Hierarchical structure
+  // Domain and nested feature matches
   if (product_spec.domains) {
     for (const [domainId, domain] of Object.entries(product_spec.domains)) {
-      // Check domain mention
       if (message.toLowerCase().includes(domain.name.toLowerCase())) {
         mentioned.push({
           type: 'domain',
@@ -162,7 +97,6 @@ function extract_feature_mention(
         });
       }
 
-      // Check feature mentions within domain
       if (domain.features) {
         for (const [featureId, feature] of Object.entries(domain.features)) {
           const featureName = feature.name || featureId;
@@ -180,9 +114,8 @@ function extract_feature_mention(
     }
   }
 
-  // Subtask mentions
-  const subtaskPattern = /(?:subtask|task|item)\s+(\d+)/i;
-  const subtaskMatch = message.match(subtaskPattern);
+  // Subtask references
+  const subtaskMatch = message.match(/(?:subtask|task|item)\s+(\d+)/i);
   if (subtaskMatch) {
     mentioned.push({
       type: 'subtask_reference',
@@ -191,137 +124,32 @@ function extract_feature_mention(
     });
   }
 
-  // Return highest confidence mention or null
-  if (mentioned.length === 0) {
-    return { type: 'none', confidence: 0 };
-  }
-
+  if (mentioned.length === 0) return { type: 'none', confidence: 0 };
   return mentioned.sort((a, b) => b.confidence - a.confidence)[0];
 }
-
-interface FeatureMention {
-  type: 'direct' | 'domain' | 'feature' | 'subtask_reference' | 'none';
-  domain_id?: string;
-  domain_name?: string;
-  feature_id?: string;
-  feature_name?: string;
-  reference?: string;
-  confidence: number;
-}
 ```
 
-### 3. Bug Description Extraction
+## Ambiguity Detection
 
 ```typescript
-/**
- * Extract bug details from conversation context
- * @param message - User's current message
- * @param conversation_history - Recent conversation context
- * @returns Bug description with context
- */
-function extract_bug_description(
-  message: string,
-  conversation_history: ConversationMessage[]
-): BugDescription {
-  const bugInfo = {
-    description: message,
-    steps_to_reproduce: [],
-    expected_behavior: null,
-    actual_behavior: null,
-    related_feature: null,
-    severity: 'unknown',
-    context_messages: []
-  };
-
-  // Look for "expected" vs "actual" patterns
-  const expectedPattern = /(?:expected|should|supposed to):\s*(.+?)(?:\.|$)/i;
-  const actualPattern = /(?:actually|but it|instead):\s*(.+?)(?:\.|$)/i;
-
-  const expectedMatch = message.match(expectedPattern);
-  const actualMatch = message.match(actualPattern);
-
-  if (expectedMatch) {
-    bugInfo.expected_behavior = expectedMatch[1].trim();
-  }
-  if (actualMatch) {
-    bugInfo.actual_behavior = actualMatch[1].trim();
-  }
-
-  // Look for numbered steps
-  const stepPattern = /^\d+\.\s*(.+)$/gm;
-  const steps = message.match(stepPattern);
-  if (steps) {
-    bugInfo.steps_to_reproduce = steps.map(step => step.replace(/^\d+\.\s*/, ''));
-  }
-
-  // Infer severity from keywords
-  const severeKeywords = ['crash', 'broken', 'fail', 'critical', 'blocking'];
-  const minorKeywords = ['typo', 'cosmetic', 'minor', 'polish'];
-
-  if (severeKeywords.some(kw => message.toLowerCase().includes(kw))) {
-    bugInfo.severity = 'high';
-  } else if (minorKeywords.some(kw => message.toLowerCase().includes(kw))) {
-    bugInfo.severity = 'low';
-  }
-
-  // Gather relevant context from conversation history
-  const relevantContext = conversation_history
-    .filter(msg => {
-      const msgTime = new Date(msg.timestamp);
-      const now = new Date();
-      const hoursDiff = (now.getTime() - msgTime.getTime()) / (1000 * 60 * 60);
-      return hoursDiff < 2; // Last 2 hours
-    })
-    .slice(-5); // Last 5 messages
-
-  bugInfo.context_messages = relevantContext;
-
-  return bugInfo;
-}
-
-interface BugDescription {
-  description: string;
-  steps_to_reproduce: string[];
-  expected_behavior: string | null;
-  actual_behavior: string | null;
-  related_feature: string | null;
-  severity: 'high' | 'medium' | 'low' | 'unknown';
-  context_messages: ConversationMessage[];
-}
-```
-
-### 4. Ambiguity Detection
-
-```typescript
-/**
- * Detect unclear or ambiguous requests
- * @param message - User's current message
- * @returns Ambiguity analysis
- */
 function detect_ambiguity(message: string): AmbiguityAnalysis {
   const ambiguities = [];
   let confidence = 0;
 
-  // Check for pronouns without context
-  const pronounPattern = /\b(it|that|this|they|them|those)\b/gi;
-  const pronouns = message.match(pronounPattern);
-  if (pronouns && pronouns.length > 0) {
-    // If message starts with pronoun, highly likely needs context
-    if (/^(it|that|this|they|them)/i.test(message.trim())) {
-      ambiguities.push({
-        type: 'pronoun_without_antecedent',
-        severity: 'high',
-        text: pronouns[0],
-        message: 'Pronoun at start of message without clear referent'
-      });
-      confidence = Math.max(confidence, 0.8);
-    }
+  // Pronouns without context
+  const pronouns = message.match(/\b(it|that|this|they|them|those)\b/gi);
+  if (pronouns && /^(it|that|this|they|them)/i.test(message.trim())) {
+    ambiguities.push({
+      type: 'pronoun_without_antecedent',
+      severity: 'high',
+      text: pronouns[0],
+      message: 'Pronoun at start of message without clear referent'
+    });
+    confidence = 0.8;
   }
 
-  // Check for vague verbs
-  const vagueVerbs = ['fix', 'update', 'change', 'improve', 'handle'];
-  const vagueVerbPattern = new RegExp(`\\b(${vagueVerbs.join('|')})\\b\\s+(?:it|that|this)`, 'i');
-  const vagueMatch = message.match(vagueVerbPattern);
+  // Vague actions
+  const vagueMatch = message.match(/\b(fix|update|change|improve|handle)\b\s+(?:it|that|this)/i);
   if (vagueMatch) {
     ambiguities.push({
       type: 'vague_action',
@@ -332,19 +160,7 @@ function detect_ambiguity(message: string): AmbiguityAnalysis {
     confidence = Math.max(confidence, 0.6);
   }
 
-  // Check for short messages (< 10 words)
-  const wordCount = message.split(/\s+/).length;
-  if (wordCount < 10 && wordCount > 1) {
-    ambiguities.push({
-      type: 'insufficient_detail',
-      severity: 'low',
-      text: message,
-      message: 'Message is very short, may lack detail'
-    });
-    confidence = Math.max(confidence, 0.4);
-  }
-
-  // Check for multiple possible intents
+  // Multiple actions
   const actionWords = message.split(/\s+/).filter(word =>
     /^(add|create|fix|update|delete|remove|test|check|verify|deploy|build|run)/i.test(word)
   );
@@ -362,180 +178,14 @@ function detect_ambiguity(message: string): AmbiguityAnalysis {
     is_ambiguous: ambiguities.length > 0,
     confidence,
     ambiguities,
-    suggestion: ambiguities.length > 0 ? generate_clarification_suggestion(ambiguities) : null
-  };
-}
-
-interface AmbiguityAnalysis {
-  is_ambiguous: boolean;
-  confidence: number;
-  ambiguities: Array<{
-    type: string;
-    severity: 'high' | 'medium' | 'low';
-    text: string;
-    message: string;
-  }>;
-  suggestion: string | null;
-}
-
-function generate_clarification_suggestion(ambiguities: any[]): string {
-  const highSeverity = ambiguities.find(a => a.severity === 'high');
-  if (highSeverity) {
-    return 'Could you please provide more specific details? What specifically are you referring to?';
-  }
-  return 'I want to make sure I understand correctly. Could you provide a bit more detail?';
-}
-```
-
-### 5. Clarification Suggestions
-
-```typescript
-/**
- * Generate helpful clarifying questions
- * @param ambiguous_message - The ambiguous user message
- * @param product_spec - Product features and requirements
- * @returns Suggested clarifying questions
- */
-function suggest_clarification(
-  ambiguous_message: string,
-  product_spec: ProductSpec
-): ClarificationSuggestion {
-  const questions = [];
-
-  // Feature-specific clarification
-  const featureMention = extract_feature_mention(ambiguous_message, product_spec);
-  if (featureMention.type === 'none') {
-    // No feature mentioned, ask which one
-    if (product_spec.features) {
-      const featureNames = Object.values(product_spec.features)
-        .map(f => f.name || f.id)
-        .slice(0, 5);
-      questions.push({
-        type: 'feature_selection',
-        question: `Which feature are you referring to? For example: ${featureNames.join(', ')}`,
-        options: featureNames
-      });
-    } else if (product_spec.domains) {
-      const domainNames = Object.values(product_spec.domains)
-        .map(d => d.name)
-        .slice(0, 5);
-      questions.push({
-        type: 'domain_selection',
-        question: `Which domain would you like to work on? For example: ${domainNames.join(', ')}`,
-        options: domainNames
-      });
-    }
-  }
-
-  // Action-specific clarification
-  const actions = ambiguous_message.match(/(?:add|create|fix|update|delete|remove|test|check)/gi);
-  if (actions && actions.length > 1) {
-    questions.push({
-      type: 'action_priority',
-      question: `I see multiple actions: ${actions.join(', ')}. Which would you like me to focus on first?`,
-      options: actions
-    });
-  }
-
-  // Bug report clarification
-  if (/bug|broken|error|issue/i.test(ambiguous_message)) {
-    questions.push({
-      type: 'bug_details',
-      question: 'Could you provide more details about the bug? What should happen vs. what actually happens?',
-      options: null
-    });
-  }
-
-  // Generic clarification if no specific ones
-  if (questions.length === 0) {
-    questions.push({
-      type: 'generic',
-      question: 'Could you please provide more details about what you\'d like me to do?',
-      options: null
-    });
-  }
-
-  return {
-    primary_question: questions[0].question,
-    follow_up_questions: questions.slice(1),
-    suggested_responses: questions[0].options || []
-  };
-}
-
-interface ClarificationSuggestion {
-  primary_question: string;
-  follow_up_questions: Array<{ type: string; question: string; options: string[] | null }>;
-  suggested_responses: string[];
-}
-```
-
-## Conversation State Management
-
-### State Structure
-
-```typescript
-/**
- * Conversation state schema
- * Stored in: .agentful/conversation-state.json
- */
-interface ConversationState {
-  // Current context
-  current_feature: {
-    domain_id?: string;
-    feature_id?: string;
-    feature_name?: string;
-    subtask_id?: string;
-  } | null;
-
-  current_phase: 'idle' | 'planning' | 'implementing' | 'testing' | 'reviewing' | 'deploying';
-
-  last_action: {
-    type: string;
-    description: string;
-    timestamp: string;
-    result?: any;
-  } | null;
-
-  // Related features context
-  related_features: Array<{
-    feature_id: string;
-    feature_name: string;
-    relationship: 'dependency' | 'similar' | 'related';
-  }>;
-
-  // User preferences
-  user_preferences: {
-    communication_style: 'concise' | 'detailed' | 'balanced';
-    update_frequency: 'immediate' | 'summary' | 'on_completion';
-    ask_before_deleting: boolean;
-    test_automatically: boolean;
-  };
-
-  // Session tracking
-  session_start: string;
-  last_message_time: string;
-  message_count: number;
-
-  // Context health
-  context_health: {
-    is_stale: boolean;
-    last_confirmed_intent: string;
-    ambiguity_count: number;
-    clarification_count: number;
+    suggestion: ambiguities.length > 0 ? 'Could you please provide more specific details?' : null
   };
 }
 ```
 
-### Reference Resolution
+## Reference Resolution
 
 ```typescript
-/**
- * Resolve pronouns and references to previous messages
- * @param message - Current message with potential references
- * @param conversation_history - Message history
- * @param state - Current conversation state
- * @returns Resolved message with references expanded
- */
 function resolve_references(
   message: string,
   conversation_history: ConversationMessage[],
@@ -544,7 +194,7 @@ function resolve_references(
   let resolved = message;
   const references = [];
 
-  // Replace "it", "that", "this" with actual referents
+  // Replace pronouns with actual referents
   const pronounMap = {
     'it': state.current_feature?.feature_name,
     'that': state.last_action?.description,
@@ -556,16 +206,12 @@ function resolve_references(
       const pattern = new RegExp(`\\b${pronoun}\\b`, 'gi');
       if (pattern.test(message)) {
         resolved = resolved.replace(pattern, referent);
-        references.push({
-          original: pronoun,
-          resolved: referent,
-          type: 'pronoun'
-        });
+        references.push({ original: pronoun, resolved: referent, type: 'pronoun' });
       }
     }
   }
 
-  // Resolve "the feature", "the bug", etc.
+  // Replace definite references
   const definiteReferences = {
     'the feature': state.current_feature?.feature_name,
     'the bug': state.last_action?.type === 'bug_fix' ? state.last_action.description : null,
@@ -575,11 +221,7 @@ function resolve_references(
   for (const [phrase, referent] of Object.entries(definiteReferences)) {
     if (referent) {
       resolved = resolved.replace(new RegExp(phrase, 'gi'), referent);
-      references.push({
-        original: phrase,
-        resolved: referent,
-        type: 'definite_reference'
-      });
+      references.push({ original: phrase, resolved: referent, type: 'definite_reference' });
     }
   }
 
@@ -590,28 +232,35 @@ function resolve_references(
     confidence: references.length > 0 ? 0.85 : 1.0
   };
 }
-
-interface ResolvedMessage {
-  original: string;
-  resolved: string;
-  references: Array<{
-    original: string;
-    resolved: string;
-    type: string;
-  }>;
-  confidence: number;
-}
 ```
 
-### Context Loss Recovery
+## Context Management
 
 ```typescript
-/**
- * Detect and handle context loss (>24h gaps)
- * @param conversation_history - Full conversation history
- * @param state - Current conversation state
- * @returns Context recovery recommendation
- */
+interface ConversationState {
+  current_feature: {
+    domain_id?: string;
+    feature_id?: string;
+    feature_name?: string;
+    subtask_id?: string;
+  } | null;
+  current_phase: 'idle' | 'planning' | 'implementing' | 'testing' | 'reviewing' | 'deploying';
+  last_action: {
+    type: string;
+    description: string;
+    timestamp: string;
+    result?: any;
+  } | null;
+  related_features: Array<{
+    feature_id: string;
+    feature_name: string;
+    relationship: 'dependency' | 'similar' | 'related';
+  }>;
+  session_start: string;
+  last_message_time: string;
+  message_count: number;
+}
+
 function detect_context_loss(
   conversation_history: ConversationMessage[],
   state: ConversationState
@@ -619,22 +268,15 @@ function detect_context_loss(
   const now = new Date();
   const lastMessage = conversation_history[conversation_history.length - 1];
   const lastMessageTime = new Date(lastMessage?.timestamp || state.session_start);
-
   const hoursDiff = (now.getTime() - lastMessageTime.getTime()) / (1000 * 60 * 60);
 
   if (hoursDiff > 24) {
-    // Context is stale
     return {
       is_stale: true,
       hours_since_last_message: Math.round(hoursDiff),
       recommendation: 'summarize_and_confirm',
-      message: `It's been ${Math.round(hoursDiff)} hours since our last conversation. Before I continue, let me confirm what we were working on.`,
-      context_summary: {
-        last_feature: state.current_feature?.feature_name,
-        last_phase: state.current_phase,
-        last_action: state.last_action?.description
-      },
-      suggested_confirmation: `We were working on ${state.current_feature?.feature_name || 'a feature'}. Would you like to continue with that, or would you prefer to start something new?`
+      message: `It's been ${Math.round(hoursDiff)} hours since our last conversation.`,
+      suggested_confirmation: `We were working on ${state.current_feature?.feature_name || 'a feature'}. Continue or start new?`
     };
   }
 
@@ -645,189 +287,11 @@ function detect_context_loss(
     message: null
   };
 }
-
-interface ContextRecovery {
-  is_stale: boolean;
-  hours_since_last_message: number;
-  recommendation: 'summarize_and_confirm' | 'continue' | 'reset';
-  message: string | null;
-  context_summary?: {
-    last_feature?: string;
-    last_phase?: string;
-    last_action?: string;
-  };
-  suggested_confirmation?: string;
-}
-```
-
-### User Preference Learning
-
-```typescript
-/**
- * Learn and adapt to user preferences
- * @param conversation_history - Recent conversation history
- * @param state - Current conversation state
- * @returns Updated user preferences
- */
-function learn_user_preferences(
-  conversation_history: ConversationMessage[],
-  state: ConversationState
-): UserPreferences {
-  const preferences = { ...state.user_preferences };
-
-  // Analyze user's communication style
-  const userMessages = conversation_history.filter(m => m.role === 'user').slice(-20);
-  const avgMessageLength = userMessages.reduce((sum, m) =>
-    sum + m.content.split(/\s+/).length, 0
-  ) / userMessages.length;
-
-  if (avgMessageLength < 10) {
-    preferences.communication_style = 'concise';
-  } else if (avgMessageLength > 30) {
-    preferences.communication_style = 'detailed';
-  } else {
-    preferences.communication_style = 'balanced';
-  }
-
-  // Detect preference for updates
-  const statusRequests = userMessages.filter(m =>
-    /status|progress|where are we|what's left/i.test(m.content)
-  ).length;
-
-  if (statusRequests > 3) {
-    preferences.update_frequency = 'summary';
-  } else if (statusRequests === 0 && userMessages.length > 10) {
-    preferences.update_frequency = 'on_completion';
-  }
-
-  // Detect safety preference
-  const confirmationRequests = userMessages.filter(m =>
-    /are you sure|double check|verify|confirm/i.test(m.content)
-  ).length;
-
-  preferences.ask_before_deleting = confirmationRequests > 2;
-
-  // Detect testing preference
-  const testMentions = userMessages.filter(m =>
-    /test|testing|tests|coverage/i.test(m.content)
-  ).length;
-
-  preferences.test_automatically = testMentions > 2;
-
-  return preferences;
-}
-
-interface UserPreferences {
-  communication_style: 'concise' | 'detailed' | 'balanced';
-  update_frequency: 'immediate' | 'summary' | 'on_completion';
-  ask_before_deleting: boolean;
-  test_automatically: boolean;
-}
-```
-
-## Conversation History Management
-
-### History File Structure
-
-```bash
-# Stored in: .agentful/conversation-history.json
-{
-  "version": "1.0",
-  "session_id": "uuid",
-  "started_at": "2026-01-18T00:00:00Z",
-  "messages": [
-    {
-      "id": "msg-uuid",
-      "role": "user|assistant|system",
-      "content": "Message text",
-      "timestamp": "2026-01-18T00:00:00Z",
-      "intent": "feature_request",
-      "entities": {
-        "feature_id": "login",
-        "domain_id": "authentication"
-      },
-      "references_resolved": ["it -> login feature"]
-    }
-  ],
-  "context_snapshot": {
-    "current_feature": "login",
-    "current_phase": "implementing",
-    "related_features": ["register", "logout"]
-  }
-}
-```
-
-### History Operations
-
-```typescript
-/**
- * Add message to conversation history
- */
-function add_message_to_history(
-  message: ConversationMessage,
-  history_path: string = '.agentful/conversation-history.json'
-): void {
-  let history = read_conversation_history(history_path);
-
-  history.messages.push({
-    ...message,
-    id: message.id || generate_uuid(),
-    timestamp: message.timestamp || new Date().toISOString()
-  });
-
-  // Keep only last 100 messages to prevent file bloat
-  if (history.messages.length > 100) {
-    history.messages = history.messages.slice(-100);
-  }
-
-  Write(history_path, JSON.stringify(history, null, 2));
-}
-
-/**
- * Read conversation history
- */
-function read_conversation_history(
-  history_path: string = '.agentful/conversation-history.json'
-): ConversationHistory {
-  try {
-    const content = Read(history_path);
-    return JSON.parse(content);
-  } catch (error) {
-    // Initialize new history
-    return {
-      version: "1.0",
-      session_id: generate_uuid(),
-      started_at: new Date().toISOString(),
-      messages: [],
-      context_snapshot: null
-    };
-  }
-}
-
-/**
- * Get recent conversation context
- */
-function get_recent_context(
-  history_path: string = '.agentful/conversation-history.json',
-  message_count: number = 10
-): ConversationMessage[] {
-  const history = read_conversation_history(history_path);
-  return history.messages.slice(-message_count);
-}
 ```
 
 ## Routing Logic
 
-### Route to Handler
-
 ```typescript
-/**
- * Determine which handler should process the classified intent
- * @param intent - Classified intent from user message
- * @param entities - Extracted entities (features, domains, etc.)
- * @param state - Current conversation state
- * @returns Routing decision with handler and context
- */
 function route_to_handler(
   intent: IntentClassification,
   entities: FeatureMention,
@@ -842,9 +306,6 @@ function route_to_handler(
       skill: null,
       context: {
         intent: intentName,
-        message: entities.feature_name
-          ? `User wants to ${intentName === 'feature_request' ? 'build' : 'fix'} ${entities.feature_name}`
-          : 'User has a request that needs classification',
         feature_id: entities.feature_id,
         domain_id: entities.domain_id,
         work_type: intentName === 'feature_request' ? 'FEATURE_DEVELOPMENT' : 'BUGFIX'
@@ -852,7 +313,7 @@ function route_to_handler(
     };
   }
 
-  // Status inquiries → product-tracking skill
+  // Status inquiries → product-tracking
   if (intentName === 'status_update') {
     return {
       handler: 'product-tracking',
@@ -865,7 +326,7 @@ function route_to_handler(
     };
   }
 
-  // Validation requests → validation skill
+  // Validation → validation skill
   if (/test|validate|check/i.test(intentName)) {
     return {
       handler: 'validation',
@@ -877,42 +338,28 @@ function route_to_handler(
     };
   }
 
-  // Decision handling → decision-handler
-  if (intentName === 'decision' || /decide|choice|option/i.test(intentName)) {
-    return {
-      handler: 'decision-handler',
-      skill: null,
-      context: {
-        intent: intentName
-      }
-    };
-  }
-
   // Product planning → product-planning skill
   if (/plan|requirements|spec|analyze/i.test(intentName)) {
     return {
       handler: 'product-planning',
       skill: 'product-planning',
-      context: {
-        intent: intentName
-      }
+      context: { intent: intentName }
     };
   }
 
-  // Approval/continue → orchestrator (resume current work)
+  // Approval/continue → orchestrator (resume)
   if (intentName === 'approval' || intentName === 'continue') {
     return {
       handler: 'orchestrator',
       skill: null,
       context: {
         intent: 'continue',
-        message: 'User approved or wants to continue current work',
         resume_feature: state.current_feature
       }
     };
   }
 
-  // Rejection/stop → update state, don't delegate
+  // Rejection/pause → inline
   if (intentName === 'rejection' || intentName === 'pause') {
     return {
       handler: 'inline',
@@ -924,7 +371,7 @@ function route_to_handler(
     };
   }
 
-  // Questions/clarifications → handle inline
+  // Questions → inline
   if (intentName === 'question' || intentName === 'clarification') {
     return {
       handler: 'inline',
@@ -936,7 +383,7 @@ function route_to_handler(
     };
   }
 
-  // Default: handle inline or ask for clarification
+  // Default: inline with clarification
   return {
     handler: 'inline',
     skill: null,
@@ -946,337 +393,68 @@ function route_to_handler(
     }
   };
 }
-
-interface RoutingDecision {
-  handler: 'orchestrator' | 'product-tracking' | 'validation' | 'decision-handler' | 'product-planning' | 'inline';
-  skill: string | null; // Skill name for Task delegation
-  context: {
-    intent: string;
-    message?: string;
-    feature_id?: string;
-    domain_id?: string;
-    work_type?: string;
-    [key: string]: any;
-  };
-}
 ```
 
-### Execute Routing
+## History Management
 
 ```typescript
-/**
- * Execute the routing decision
- * @param routing - Routing decision from route_to_handler
- * @param userMessage - Original user message
- * @param resolved - Resolved message with references expanded
- */
-function execute_routing(
-  routing: RoutingDecision,
-  userMessage: string,
-  resolved: ResolvedMessage
+// Stored in: .agentful/conversation-history.json
+interface ConversationHistory {
+  version: "1.0";
+  session_id: string;
+  started_at: string;
+  messages: ConversationMessage[];
+  context_snapshot: any;
+}
+
+function add_message_to_history(
+  message: ConversationMessage,
+  history_path: string = '.agentful/conversation-history.json'
 ): void {
-  switch (routing.handler) {
-    case 'orchestrator':
-      // Delegate to orchestrator agent
-      Task('orchestrator',
-        `${routing.context.message || userMessage}
+  let history = read_conversation_history(history_path);
 
-        Work Type: ${routing.context.work_type || 'FEATURE_DEVELOPMENT'}
-        ${routing.context.feature_id ? `Feature: ${routing.context.feature_id}` : ''}
-        ${routing.context.domain_id ? `Domain: ${routing.context.domain_id}` : ''}
+  history.messages.push({
+    ...message,
+    id: message.id || generate_uuid(),
+    timestamp: message.timestamp || new Date().toISOString()
+  });
 
-        Classify and execute appropriate workflow.`
-      );
-      break;
-
-    case 'product-tracking':
-      // Delegate to product-tracking skill
-      Task('product-tracking',
-        `Show status and progress.
-        ${routing.context.feature_filter ? `Filter: feature ${routing.context.feature_filter}` : ''}
-        ${routing.context.domain_filter ? `Filter: domain ${routing.context.domain_filter}` : ''}`
-      );
-      break;
-
-    case 'validation':
-      // Delegate to validation skill
-      Task('validation',
-        `Run quality gates.
-        Scope: ${routing.context.scope || 'all'}`
-      );
-      break;
-
-    case 'decision-handler':
-      // For now, show how to use /agentful-decide
-      return `You have pending decisions. Run \`/agentful-decide\` to review and resolve them.`;
-      break;
-
-    case 'product-planning':
-      // Delegate to product-planning skill
-      Task('product-planning', userMessage);
-      break;
-
-    case 'inline':
-      // Handle inline (no delegation needed)
-      if (routing.context.needs_clarification) {
-        return generate_clarification_response(userMessage, routing.context);
-      } else if (routing.context.action === 'pause_work') {
-        pause_current_work();
-        return 'Work paused. Run `/agentful` with your next request when ready to continue.';
-      } else if (routing.context.intent === 'question') {
-        return answer_question(userMessage, routing.context);
-      }
-      break;
+  // Keep last 100 messages
+  if (history.messages.length > 100) {
+    history.messages = history.messages.slice(-100);
   }
+
+  Write(history_path, JSON.stringify(history, null, 2));
 }
-```
 
-## Integration with Orchestrator
-
-### Delegation Interface
-
-```typescript
-/**
- * Determine if delegation to another skill is needed
- * @param intent - Classified intent from user message
- * @param entities - Extracted entities (features, domains, etc.)
- * @returns Delegation decision
- */
-function determine_delegation(
-  intent: IntentClassification,
-  entities: FeatureMention
-): DelegationDecision {
-  // Feature-related intents -> delegate to appropriate agent
-  if (['feature_request', 'bug_report', 'status_update'].includes(intent.intent)) {
-    if (entities.type === 'feature' || entities.type === 'direct') {
-      return {
-        should_delegate: true,
-        target_skill: determine_skill_for_feature(entities),
-        context: {
-          intent: intent.intent,
-          feature_id: entities.feature_id,
-          domain_id: entities.domain_id
-        }
-      };
-    }
-  }
-
-  // Validation request -> delegate to validation skill
-  if (/test|check|validate|verify/i.test(intent.intent)) {
+function read_conversation_history(
+  history_path: string = '.agentful/conversation-history.json'
+): ConversationHistory {
+  try {
+    const content = Read(history_path);
+    return JSON.parse(content);
+  } catch (error) {
     return {
-      should_delegate: true,
-      target_skill: 'validation',
-      context: {
-        intent: intent.intent
-      }
+      version: "1.0",
+      session_id: generate_uuid(),
+      started_at: new Date().toISOString(),
+      messages: [],
+      context_snapshot: null
     };
   }
-
-  // Product tracking -> delegate to product-tracking skill
-  if (['status_update', 'progress'].includes(intent.intent)) {
-    return {
-      should_delegate: true,
-      target_skill: 'product-tracking',
-      context: {
-        intent: intent.intent
-      }
-    };
-  }
-
-  return {
-    should_delegate: false,
-    target_skill: null,
-    context: null
-  };
-}
-
-interface DelegationDecision {
-  should_delegate: boolean;
-  target_skill: string | null;
-  context: any;
-}
-
-function determine_skill_for_feature(entities: FeatureMention): string {
-  // Map domains/features to appropriate skills
-  const domainSkillMap = {
-    'authentication': 'backend',
-    'user-management': 'backend',
-    'database': 'backend',
-    'frontend': 'frontend',
-    'ui': 'frontend',
-    'testing': 'tester'
-  };
-
-  if (entities.domain_name) {
-    const domainKey = Object.keys(domainSkillMap).find(key =>
-      entities.domain_name.toLowerCase().includes(key)
-    );
-    if (domainKey) {
-      return domainSkillMap[domainKey];
-    }
-  }
-
-  return 'backend'; // Default
 }
 ```
 
-### Completion Tracking Integration
+## Complete Processing Flow
 
 ```typescript
-/**
- * Update conversation state after action completion
- * @param state - Current conversation state
- * @param action_result - Result from delegated skill
- * @returns Updated conversation state
- */
-function update_conversation_state(
-  state: ConversationState,
-  action_result: ActionResult
-): ConversationState {
-  const updated = { ...state };
-
-  // Update last action
-  updated.last_action = {
-    type: action_result.type,
-    description: action_result.description,
-    timestamp: new Date().toISOString(),
-    result: action_result
-  };
-
-  // Update phase based on action result
-  if (action_result.status === 'complete') {
-    if (state.current_phase === 'implementing') {
-      updated.current_phase = 'testing';
-    } else if (state.current_phase === 'testing') {
-      updated.current_phase = 'reviewing';
-    }
-  }
-
-  // Update message count and time
-  updated.message_count++;
-  updated.last_message_time = new Date().toISOString();
-
-  // Clear ambiguity count on successful action
-  if (action_result.status === 'success') {
-    updated.context_health.ambiguity_count = 0;
-    updated.context_health.clarification_count = 0;
-  }
-
-  return updated;
-}
-```
-
-## Edge Case Handling
-
-### Mind Changes
-
-```typescript
-/**
- * Detect and handle user mind changes
- * @param message - Current message
- * @param state - Current conversation state
- * @returns Mind change detection result
- */
-function detect_mind_change(
-  message: string,
-  state: ConversationState
-): MindChangeDetection {
-  const mindChangePatterns = [
-    /actually/i,
-    /wait/i,
-    /never mind/i,
-    /forget that/i,
-    /change\s+my\s+mind/i,
-    /instead/i,
-    /stop\s+(?:that|it)/i
-  ];
-
-  const hasMindChange = mindChangePatterns.some(pattern => pattern.test(message));
-
-  if (hasMindChange) {
-    return {
-      detected: true,
-      confidence: 0.8,
-      previous_intent: state.last_action?.type,
-      suggestion: 'I understand you\'d like to change direction. What would you like to do instead?',
-      reset_context: /never mind|forget that|stop/i.test(message)
-    };
-  }
-
-  return {
-    detected: false,
-    confidence: 0,
-    previous_intent: null,
-    suggestion: null,
-    reset_context: false
-  };
-}
-
-interface MindChangeDetection {
-  detected: boolean;
-  confidence: number;
-  previous_intent: string | null;
-  suggestion: string | null;
-  reset_context: boolean;
-}
-```
-
-### Stale Context Handling
-
-```typescript
-/**
- * Handle stale context when references no longer make sense
- * @param message - Current message
- * @param state - Current conversation state
- * @returns Stale context handling response
- */
-function handle_stale_context(
-  message: string,
-  state: ConversationState
-): StaleContextResponse {
-  // Check if current feature is referenced but stale
-  const featureReference = extract_feature_mention(message, null);
-
-  if (featureReference.type === 'none' && state.current_feature) {
-    // User said "it" but current feature is old
-    const hoursSinceLastAction = state.last_action
-      ? (Date.now() - new Date(state.last_action.timestamp).getTime()) / (1000 * 60 * 60)
-      : Infinity;
-
-    if (hoursSinceLastAction > 4) {
-      return {
-        is_stale: true,
-        suggestion: `I'm not sure what you're referring to. We last worked on ${state.current_feature.feature_name} ${Math.round(hoursSinceLastAction)} hours ago. Are you still referring to that?`,
-        confirm_needed: true
-      };
-    }
-  }
-
-  return {
-    is_stale: false,
-    suggestion: null,
-    confirm_needed: false
-  };
-}
-
-interface StaleContextResponse {
-  is_stale: boolean;
-  suggestion: string | null;
-  confirm_needed: boolean;
-}
-```
-
-## Usage Example
-
-```typescript
-// Complete conversation processing flow
 async function process_conversation(userMessage: string): Promise<ConversationResponse> {
-  // 1. Load conversation state and history
+  // 1. Load state and history
   const state = load_conversation_state('.agentful/conversation-state.json');
   const history = read_conversation_history('.agentful/conversation-history.json');
   const productSpec = load_product_spec('.claude/product/');
 
-  // 2. Check for context loss
+  // 2. Check context loss
   const contextRecovery = detect_context_loss(history.messages, state);
   if (contextRecovery.is_stale) {
     return {
@@ -1306,18 +484,17 @@ async function process_conversation(userMessage: string): Promise<ConversationRe
   // 7. Detect ambiguity
   const ambiguity = detect_ambiguity(resolved.resolved);
   if (ambiguity.is_ambiguous && ambiguity.confidence > 0.6) {
-    const clarification = suggest_clarification(resolved.resolved, productSpec);
     return {
       type: 'clarification_needed',
-      message: clarification.primary_question,
-      suggestions: clarification.suggested_responses
+      message: ambiguity.suggestion,
+      suggestions: []
     };
   }
 
-  // 8. Route to appropriate handler
+  // 8. Route to handler
   const routing = route_to_handler(intent, entities, state);
 
-  // 9. Add user message to history
+  // 9. Add to history
   add_message_to_history({
     role: 'user',
     content: userMessage,
@@ -1329,7 +506,7 @@ async function process_conversation(userMessage: string): Promise<ConversationRe
   // 10. Execute routing
   execute_routing(routing, userMessage, resolved);
 
-  // 11. Update conversation state
+  // 11. Update state
   state.last_message_time = new Date().toISOString();
   state.message_count++;
   if (entities.feature_id) {
@@ -1347,41 +524,46 @@ async function process_conversation(userMessage: string): Promise<ConversationRe
     context: routing.context
   };
 }
-```
 
-### Complete Flow Diagram
+function execute_routing(
+  routing: RoutingDecision,
+  userMessage: string,
+  resolved: ResolvedMessage
+): void {
+  switch (routing.handler) {
+    case 'orchestrator':
+      Task('orchestrator', `${routing.context.message || userMessage}
+Work Type: ${routing.context.work_type || 'FEATURE_DEVELOPMENT'}
+${routing.context.feature_id ? `Feature: ${routing.context.feature_id}` : ''}
+${routing.context.domain_id ? `Domain: ${routing.context.domain_id}` : ''}`);
+      break;
 
-```
-User Input
-    ↓
-Load State & History
-    ↓
-Context Loss Check ──→ [STALE] ──→ Confirm & Resume
-    ↓ [FRESH]
-Mind Change Detection ──→ [DETECTED] ──→ Reset Context
-    ↓ [CONTINUE]
-Reference Resolution
-    ↓
-Intent Classification
-    ↓
-Entity Extraction
-    ↓
-Ambiguity Detection ──→ [AMBIGUOUS] ──→ Ask Clarifying Question
-    ↓ [CLEAR]
-Route to Handler
-    ↓
-    ├─→ [orchestrator] ──→ Task('orchestrator', context)
-    ├─→ [product-tracking] ──→ Task('product-tracking', context)
-    ├─→ [validation] ──→ Task('validation', context)
-    ├─→ [decision-handler] ──→ Show /agentful-decide
-    ├─→ [product-planning] ──→ Task('product-planning', context)
-    └─→ [inline] ──→ Generate Response Directly
-    ↓
-Add to History
-    ↓
-Update State
-    ↓
-Done
+    case 'product-tracking':
+      Task('product-tracking', `Show status and progress.
+${routing.context.feature_filter ? `Filter: feature ${routing.context.feature_filter}` : ''}
+${routing.context.domain_filter ? `Filter: domain ${routing.context.domain_filter}` : ''}`);
+      break;
+
+    case 'validation':
+      Task('validation', `Run quality gates. Scope: ${routing.context.scope || 'all'}`);
+      break;
+
+    case 'product-planning':
+      Task('product-planning', userMessage);
+      break;
+
+    case 'inline':
+      if (routing.context.needs_clarification) {
+        return 'Could you please provide more details about what you\'d like me to do?';
+      } else if (routing.context.action === 'pause_work') {
+        pause_current_work();
+        return 'Work paused. Run `/agentful` when ready to continue.';
+      } else if (routing.context.intent === 'question') {
+        return answer_question(userMessage, routing.context);
+      }
+      break;
+  }
+}
 ```
 
 ## File Locations
@@ -1390,18 +572,13 @@ Done
 .agentful/
 ├── conversation-state.json       # Current conversation state
 ├── conversation-history.json     # Full message history
-└── user-preferences.json         # Learned user preferences (optional)
+└── user-preferences.json         # Learned user preferences
 ```
 
-## Best Practices
+## Flow Diagram
 
-1. **Always resolve references** before processing intent
-2. **Check for context loss** after long gaps (>24h)
-3. **Detect ambiguity early** and ask clarifying questions
-4. **Learn user preferences** over time
-5. **Track related features** for better context
-6. **Handle mind changes gracefully** without losing all context
-7. **Delegate appropriately** based on intent and entities
-8. **Keep history manageable** (last 100 messages)
-9. **Update state after every action**
-10. **Provide summaries** after context recovery
+```
+User Input → Load State/History → Context Loss Check → Mind Change Detection →
+Reference Resolution → Intent Classification → Entity Extraction →
+Ambiguity Detection → Route to Handler → Add to History → Update State → Done
+```
