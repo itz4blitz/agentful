@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/itz4blitz/agentful/compare/v0.2.1...v0.3.0) (2026-01-20)
+
+
+### Features
+
+* **cli:** add /agentful-generate command for smart codebase analysis ([9f9c53e](https://github.com/itz4blitz/agentful/commit/9f9c53e75ab07cdef4594ba4acec63b8a302ddd1))
+
 ## [0.2.1](https://github.com/itz4blitz/agentful/compare/v0.2.0...v0.2.1) (2026-01-20)
 
 
