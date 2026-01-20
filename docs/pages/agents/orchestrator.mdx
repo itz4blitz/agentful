@@ -300,7 +300,7 @@ Work completed → Update completion.json → Continue
 
 **Check:**
 1. `.agentful/decisions.json` for blockers
-2. `.agentful/last-review.json` for validation failures
+2. `.agentful/last-validation.json` for validation failures
 3. If work type is one-off (bugfix), it won't loop
 
 **Fix:**
@@ -340,7 +340,7 @@ cat .agentful/completion.json
 cat .agentful/decisions.json
 
 # Last review results
-cat .agentful/last-review.json
+cat .agentful/last-validation.json
 
 # Full status
 # Run /agentful-status command
@@ -379,7 +379,7 @@ Orchestrator → Delegates to Fixer
 **Fixer:**
 ```
 Orchestrator → "Fix these issues"
-Fixer → Reads last-review.json, fixes problems
+Fixer → Reads last-validation.json, fixes problems
 Orchestrator → Re-runs Reviewer
 ```
 

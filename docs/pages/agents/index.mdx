@@ -102,7 +102,7 @@ Standard development cycle:
 ### Reviewer vs Fixer
 
 - **Reviewer** = DETECTS issues (runs 9 validation checks)
-- **Fixer** = FIXES issues (reads `.agentful/last-review.json`)
+- **Fixer** = FIXES issues (reads `.agentful/last-validation.json`)
 
 Reviewer finds problems, Fixer solves them.
 
@@ -127,7 +127,7 @@ Agents communicate through:
 1. **State files** - `.agentful/state.json`, `completion.json`, `decisions.json`
 2. **Task tool** - Spawn other agents: `Task("backend", "implement X")`
 3. **File system** - Shared codebase
-4. **Review reports** - `.agentful/last-review.json`
+4. **Review reports** - `.agentful/last-validation.json`
 
 ## Model Selection
 
@@ -163,7 +163,7 @@ cat .agentful/completion.json
 cat .agentful/decisions.json
 
 # View last review
-cat .agentful/last-review.json
+cat .agentful/last-validation.json
 ```
 
 ## Next Steps

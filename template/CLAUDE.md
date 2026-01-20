@@ -68,13 +68,14 @@ claude --dangerously-skip-permissions
 
 ## Quality Gates
 
-Every feature must pass validation before marked complete:
+Every feature must pass 6 core automated quality gates before marked complete:
 
-- **Tests** - All tests passing with ≥80% coverage
-- **TypeScript** - No type errors (if using TypeScript)
-- **Dead Code** - No unused exports, files, or dependencies
-- **Security** - No known vulnerabilities in dependencies
+- **Type checking** - No type errors (TypeScript, Flow, etc.)
 - **Linting** - Code follows project style guide
+- **Tests** - All tests passing
+- **Coverage** - Minimum 80% code coverage
+- **Security** - No known vulnerabilities in dependencies
+- **Dead code** - No unused exports, files, or dependencies
 
 The `reviewer` agent runs these checks automatically. The `fixer` agent resolves failures.
 

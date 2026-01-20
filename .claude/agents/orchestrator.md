@@ -100,7 +100,7 @@ Write(agent_path, """
 name: {task_slug}
 description: {one_line_description}
 model: sonnet
-tools: Read, Write, Edit, Bash, Grep, Glob
+tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # {Task Title} Agent

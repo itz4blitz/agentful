@@ -2,7 +2,7 @@
 name: reviewer
 description: Reviews code quality, finds dead code, validates production readiness. Runs all checks and reports issues.
 model: sonnet
-tools: Read, Glob, Grep, Bash, Write, Edit
+tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Reviewer Agent
@@ -312,7 +312,7 @@ After running all checks, output a summary:
 1. Run all checks sequentially
 2. Collect all failures
 3. Categorize as "mustFix" or "canIgnore"
-4. Output JSON report to `.agentful/last-review.json`
+4. Output JSON report to `.agentful/last-validation.json`
 5. If `passed: false`, the orchestrator will invoke @fixer
 
 ## Rules
@@ -320,7 +320,7 @@ After running all checks, output a summary:
 1. **ALWAYS** run all 8 checks
 2. **NEVER** skip checks for "small changes"
 3. **ALWAYS** report issues in structured JSON format
-4. **ALWAYS** save report to `.agentful/last-review.json`
+4. **ALWAYS** save report to `.agentful/last-validation.json`
 5. **NEVER** fix issues yourself (delegate to @fixer)
 6. **ALWAYS** be specific about file locations and line numbers
 

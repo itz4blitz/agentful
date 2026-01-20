@@ -13,202 +13,22 @@ When this command is invoked:
 
 1. **Check if user provided input**: If arguments are provided, this is a natural language request
 2. **If NO input**: Show the Quick Reference section below
-3. **If input provided**: Use the Task tool to delegate to the conversation skill
-
-```bash
-# User runs: /agentful build authentication
-# You should execute:
-Task("conversation", "User said: 'build authentication'. Process this using the conversation skill workflow.")
-```
-
-The conversation skill will:
-- Load conversation state and history
-- Classify intent and extract entities
-- Detect ambiguity and ask clarifying questions if needed
-- Route to appropriate handler (orchestrator, status, validate, etc.)
-- Update conversation state and history
-
-## Command Behavior
-
-### Without Arguments
-
-```bash
-/agentful
-```
-
-Shows quick reference and available commands.
+3. **If input provided**: Delegate to conversation skill
 
 ### With Natural Language Input
 
-```bash
-/agentful <your request>
-```
+The conversation skill handles:
+- Intent classification (feature request, bug report, status check, etc.)
+- Entity extraction (feature names, domain references)
+- Reference resolution (pronouns like "it", "that")
+- Ambiguity detection and clarification
+- Routing to appropriate handlers (orchestrator, status, validate, etc.)
 
-**Examples:**
-- `/agentful build the authentication system`
-- `/agentful fix the memory leak in checkout`
-- `/agentful what's the status?`
-- `/agentful validate the tests`
+See `.claude/skills/conversation/SKILL.md` for detailed processing logic.
 
-This invokes the **conversation skill** which:
-1. Classifies your intent
-2. Resolves references (pronouns like "it", "that")
-3. Detects ambiguity and asks clarifying questions
-4. Routes to appropriate handler (orchestrator, status, validate, etc.)
+### Without Input
 
-### Processing Flow
-
-When user provides natural language input:
-
-```typescript
-// 1. Load conversation state and history
-const state = load_conversation_state('.agentful/conversation-state.json');
-const history = read_conversation_history('.agentful/conversation-history.json');
-const productSpec = load_product_spec('.claude/product/');
-
-// 2. Check for context loss (>24h gaps)
-const contextRecovery = detect_context_loss(history.messages, state);
-if (contextRecovery.is_stale) {
-  return {
-    message: contextRecovery.message,
-    confirmation: contextRecovery.suggested_confirmation
-  };
-}
-
-// 3. Detect mind changes ("actually", "wait", "never mind")
-const mindChange = detect_mind_change(userMessage, state);
-if (mindChange.detected && mindChange.reset_context) {
-  reset_conversation_context(state);
-}
-
-// 4. Resolve references ("it", "that", "this" → actual feature names)
-const resolved = resolve_references(userMessage, history.messages, state);
-
-// 5. Classify intent
-const intent = classify_intent(resolved.resolved, history.messages, productSpec);
-// Possible intents: feature_request, bug_report, question, status_update,
-//                   clarification, approval, rejection, pause, continue
-
-// 6. Extract entities (features, domains, subtasks)
-const entities = extract_feature_mention(resolved.resolved, productSpec);
-
-// 7. Detect ambiguity
-const ambiguity = detect_ambiguity(resolved.resolved);
-if (ambiguity.is_ambiguous && ambiguity.confidence > 0.6) {
-  const clarification = suggest_clarification(resolved.resolved, productSpec);
-  return {
-    message: clarification.primary_question,
-    suggestions: clarification.suggested_responses
-  };
-}
-
-// 8. Route to appropriate handler
-const routing = route_to_handler(intent, entities);
-switch (routing.handler) {
-  case 'orchestrator':
-    Task('orchestrator', routing.context);
-    break;
-  case 'status':
-    Task('product-tracking', 'show_status');
-    break;
-  case 'validate':
-    Task('validation', 'run_quality_gates');
-    break;
-  case 'decide':
-    Task('decision-handler', 'list_pending_decisions');
-    break;
-  case 'product':
-    Task('product-planning', routing.context);
-    break;
-  default:
-    // Handle inline with conversation skill
-    return generate_response(intent, entities, state);
-}
-
-// 9. Add to conversation history
-add_message_to_history({
-  role: 'user',
-  content: userMessage,
-  intent: intent.intent,
-  entities: entities,
-  references_resolved: resolved.references
-});
-
-// 10. Update conversation state
-update_conversation_state(state, routing.result);
-```
-
-### Intent to Handler Mapping
-
-| Intent | Handler | Notes |
-|--------|---------|-------|
-| `feature_request` | orchestrator | Delegates to FEATURE_DEVELOPMENT workflow |
-| `bug_report` | orchestrator | Delegates to BUGFIX workflow |
-| `status_update` | product-tracking | Shows completion percentage and current work |
-| `validation` | validation skill | Runs quality gates |
-| `decision` | decision handler | Lists/resolves pending decisions |
-| `question` | inline | Answers using conversation history |
-| `clarification` | inline | Provides more detail on previous response |
-| `approval` | orchestrator | Continues current work |
-| `rejection` | orchestrator | Stops current work |
-| `pause` | state update | Marks work as paused |
-| `continue` | orchestrator | Resumes paused work |
-
-### Example Scenarios
-
-**Scenario 1: Clear Feature Request**
-```
-User: /agentful build the authentication system
-→ Intent: feature_request (confidence: 0.9)
-→ Entities: feature "authentication system"
-→ Route: orchestrator (FEATURE_DEVELOPMENT workflow)
-→ No ambiguity, proceed immediately
-```
-
-**Scenario 2: Ambiguous Reference**
-```
-User: /agentful fix it
-→ Intent: bug_report (confidence: 0.7)
-→ Entities: none (pronoun "it" without referent)
-→ Ambiguity: HIGH (pronoun_without_antecedent)
-→ Response: "I want to make sure I understand correctly. What specifically would you like me to fix?"
-```
-
-**Scenario 3: Reference Resolution**
-```
-User: /agentful update it to use OAuth
-Context: Currently working on "login feature"
-→ Resolve: "it" → "login feature"
-→ Intent: feature_request (confidence: 0.85)
-→ Entities: feature "login", action "update to use OAuth"
-→ Route: orchestrator (FEATURE_DEVELOPMENT workflow)
-```
-
-**Scenario 4: Status Check**
-```
-User: /agentful what's the status?
-→ Intent: status_update (confidence: 0.95)
-→ Route: product-tracking skill
-→ Shows completion percentage, current work, blocked items
-```
-
-**Scenario 5: Mind Change**
-```
-User: /agentful actually never mind, let's do the dashboard instead
-→ Mind change detected: HIGH confidence
-→ Reset context: clear current feature
-→ Intent: feature_request (confidence: 0.9)
-→ Entities: feature "dashboard"
-→ Route: orchestrator (FEATURE_DEVELOPMENT workflow)
-```
-
-**Scenario 6: Context Loss**
-```
-User: /agentful continue with that
-Last message: 48 hours ago
-→ Context loss detected: STALE
-→ Response: "It's been 48 hours since our last conversation. We were working on the login feature. Would you like to continue with that, or would you prefer to start something new?"
-```
+Show the Quick Reference guide below.
 
 ---
 

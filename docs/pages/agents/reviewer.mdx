@@ -87,7 +87,7 @@ All must pass:
 
 ## Output Format
 
-Saves to `.agentful/last-review.json`:
+Saves to `.agentful/last-validation.json`:
 
 ### Failed Review
 
@@ -157,7 +157,7 @@ Saves to `.agentful/last-review.json`:
 1. Run all 9 checks sequentially
 2. Collect all failures
 3. Categorize (mustFix vs canIgnore)
-4. Save to .agentful/last-review.json
+4. Save to .agentful/last-validation.json
 5. If failed → Orchestrator delegates to Fixer
 6. If passed → Update completion state
 ```
@@ -206,7 +206,7 @@ const API_KEY = process.env.API_KEY;
 **ALWAYS:**
 - Run all 9 checks
 - Be specific about file locations
-- Save report to .agentful/last-review.json
+- Save report to .agentful/last-validation.json
 - Never fix issues yourself
 
 **NEVER:**

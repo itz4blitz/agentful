@@ -135,13 +135,13 @@ agentful uses a structured development loop:
 
 ### Quality Gates
 
-Code must pass all gates before completion:
-- All tests passing
-- No type errors (if TypeScript detected)
-- No lint errors (if linter configured)
-- Test coverage ≥ 80%
-- No dead code
-- No security issues
+Code must pass 6 core automated quality gates before completion:
+- Type checking (TypeScript, Flow, etc.)
+- Linting (ESLint, Biome, etc.)
+- Tests (all tests must pass)
+- Coverage (minimum 80%)
+- Security (vulnerability scanning)
+- Dead code (no unused exports, files, dependencies)
 
 Gates automatically adapt to your stack. TypeScript project? Type checking enabled. JavaScript only? Type checking skipped.
 

@@ -338,12 +338,18 @@ function route_to_handler(
     };
   }
 
-  // Product planning → product-planning skill
+  // Product planning → reference product-planning skill guidance (inline)
+  // Note: product-planning is a skill, not a separate agent
+  // When user asks planning/requirements questions, use product-planning skill's guidance
   if (/plan|requirements|spec|analyze/i.test(intentName)) {
     return {
-      handler: 'product-planning',
+      handler: 'inline',
       skill: 'product-planning',
-      context: { intent: intentName }
+      context: {
+        intent: intentName,
+        use_skill_guidance: 'product-planning',
+        action: 'answer_with_planning_guidance'
+      }
     };
   }
 
@@ -548,16 +554,16 @@ ${routing.context.domain_filter ? `Filter: domain ${routing.context.domain_filte
       Task('validation', `Run quality gates. Scope: ${routing.context.scope || 'all'}`);
       break;
 
-    case 'product-planning':
-      Task('product-planning', userMessage);
-      break;
-
     case 'inline':
       if (routing.context.needs_clarification) {
         return 'Could you please provide more details about what you\'d like me to do?';
       } else if (routing.context.action === 'pause_work') {
         pause_current_work();
         return 'Work paused. Run `/agentful` when ready to continue.';
+      } else if (routing.context.action === 'answer_with_planning_guidance') {
+        // Use product-planning skill guidance to answer planning/requirements questions
+        // The skill provides structured approach to product planning, requirements analysis
+        return answer_planning_question(userMessage, routing.context);
       } else if (routing.context.intent === 'question') {
         return answer_question(userMessage, routing.context);
       }

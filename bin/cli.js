@@ -4,8 +4,8 @@
  * agentful CLI - Thin wrapper for template initialization and status
  *
  * Smart analysis and generation happens in Claude Code using:
- * - /agentful-agents command
- * - /agentful-skills command
+ * - /agentful-generate command (analyzes codebase & generates agents)
+ * - /agentful-start command (begins structured development)
  */
 
 import fs from 'fs';
@@ -65,10 +65,14 @@ function showHelp() {
   console.log(`  2. ${colors.bright}Type /agentful-generate${colors.reset} to analyze codebase & generate agents`);
   console.log('');
   console.log('CLAUDE CODE COMMANDS:');
-  console.log(`  ${colors.cyan}/agentful-generate${colors.reset}     - Analyze codebase, generate agents & skills`);
-  console.log(`  ${colors.cyan}/agentful-start${colors.reset}    - Begin structured development workflow`);
-  console.log(`  ${colors.cyan}/agentful-status${colors.reset}   - Show progress and completion`);
-  console.log(`  ${colors.cyan}/agentful${colors.reset}          - Natural conversation about your product`);
+  console.log(`  ${colors.cyan}/agentful-generate${colors.reset}  - Analyze codebase & generate specialized agents`);
+  console.log(`  ${colors.cyan}/agentful-start${colors.reset}     - Begin structured product development`);
+  console.log(`  ${colors.cyan}/agentful-status${colors.reset}    - Check progress and completion percentage`);
+  console.log(`  ${colors.cyan}/agentful-validate${colors.reset}  - Run quality gates (tests, lint, security)`);
+  console.log(`  ${colors.cyan}/agentful-decide${colors.reset}    - Answer pending decisions`);
+  console.log(`  ${colors.cyan}/agentful-product${colors.reset}   - Analyze product specification`);
+  console.log(`  ${colors.cyan}/agentful-analyze${colors.reset}   - Validate agentful configuration`);
+  console.log(`  ${colors.cyan}/agentful${colors.reset}           - Natural language conversation`);
   console.log('');
 }
 
@@ -199,8 +203,8 @@ function showStatus() {
     log(colors.dim, `  Initialized: ${state.initialized || 'N/A'}`);
     const agentCount = state.agents?.length || 0;
     const skillCount = state.skills?.length || 0;
-    log(colors.dim, `  Agents: ${agentCount} ${agentCount === 0 ? '(run /agentful-agents)' : ''}`);
-    log(colors.dim, `  Skills: ${skillCount} ${skillCount === 0 ? '(run /agentful-skills)' : ''}`);
+    log(colors.dim, `  Agents: ${agentCount} ${agentCount === 0 ? '(run /agentful-generate)' : ''}`);
+    log(colors.dim, `  Skills: ${skillCount} ${skillCount === 0 ? '(run /agentful-generate)' : ''}`);
     console.log('');
   }
 
@@ -236,10 +240,14 @@ function showStatus() {
 
   // Next actions
   log(colors.bright, 'Claude Code Commands:');
-  log(colors.cyan, '  /agentful-agents  - Generate agents');
-  log(colors.cyan, '  /agentful-skills  - Generate skills');
-  log(colors.cyan, '  /agentful-start   - Start workflow');
-  log(colors.cyan, '  /agentful         - Product chat');
+  log(colors.cyan, '  /agentful-generate  - Analyze codebase & generate specialized agents');
+  log(colors.cyan, '  /agentful-start     - Begin structured product development');
+  log(colors.cyan, '  /agentful-status    - Check progress and completion percentage');
+  log(colors.cyan, '  /agentful-validate  - Run quality gates (tests, lint, security)');
+  log(colors.cyan, '  /agentful-decide    - Answer pending decisions');
+  log(colors.cyan, '  /agentful-product   - Analyze product specification');
+  log(colors.cyan, '  /agentful-analyze   - Validate agentful configuration');
+  log(colors.cyan, '  /agentful           - Natural language conversation');
   console.log('');
 }
 
