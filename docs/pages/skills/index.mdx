@@ -1,161 +1,138 @@
 ---
 title: Skills
-description: Reusable capabilities that power agentful's autonomous development system
+description: Reusable knowledge that agents use to perform specialized tasks
 ---
 
 # Skills
 
-Skills are reusable capabilities that agents and commands can invoke to perform specialized tasks. Unlike agents (which are autonomous workers) and commands (which are user-facing), skills are building blocks that provide specific functionality.
+**Skills are knowledge, not actors.** They provide patterns, documentation, and procedures that agents use to perform tasks. Think of skills as technical manuals that agents consult.
+
+## Skills vs Agents
+
+- **Skills** = Knowledge (how to do something)
+- **Agents** = Actors (does the work)
+
+Example: The validation skill contains knowledge about running tests, type checking, and linting. The reviewer agent uses this skill to actually validate code.
 
 ## Built-in Skills
 
-agentful includes 3 core skills:
+| Skill | Knowledge Provided | Used By |
+|-------|-------------------|---------|
+| **[conversation](/skills/conversation)** | Intent classification, context management patterns | `/agentful` command |
+| **[product-tracking](/skills/product-tracking)** | Progress calculation methods, state tracking | `/agentful-status`, orchestrator |
+| **[validation](/skills/validation)** | Quality gate checks, tool detection | `/agentful-validate`, reviewer |
 
-| Skill | Purpose | Used By |
-|-------|---------|----------|
-| **[conversation](/skills/conversation)** | Natural language understanding, intent classification, context management | [`/agentful`](/commands/agentful) command |
-| **[product-tracking](/skills/product-tracking)** | Progress tracking, completion calculation, quality gate monitoring | [`/agentful-status`](/commands/agentful-status), [orchestrator](/agents/orchestrator) |
-| **[validation](/skills/validation)** | Production readiness checks, quality gate validation | [`/agentful-validate`](/commands/agentful-validate), [reviewer](/agents/reviewer) agent |
+## Technology Skills
 
-## How Skills Work
+Technology-specific skills (React, Express, Prisma, etc.) are generated from your codebase using:
 
-### Skill vs Agent vs Command
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        USER REQUEST                         │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │   COMMAND       │  ← User-facing (/agentful-start)
-              │  (Entry Point)  │
-              └────────┬─────────┘
-                       │
-                       ▼
-              ┌─────────────────┐
-              │   ORCHESTRATOR  │  ← Agent (coordinates work)
-              │    (Agent)      │
-              └────────┬─────────┘
-                       │
-        ┌──────────────┼──────────────┐
-        │              │              │
-        ▼              ▼              ▼
-┌───────────┐  ┌───────────┐  ┌───────────┐
-│  AGENT    │  │  SKILL    │  │  AGENT    │
-│(backend)  │  │(product-  │  │(frontend) │
-│           │  │ tracking) │  │           │
-└───────────┘  └───────────┘  └───────────┘
+```bash
+/agentful-generate
 ```
 
-### Skill Structure
+This analyzes your project and creates skills containing:
+- Framework patterns detected in your code
+- Tech stack conventions you're using
+- Project-specific architectural decisions
 
-Each skill is a Markdown file in `.claude/skills/<skill-name>/SKILL.md`:
+These generated skills ensure agents follow your existing patterns instead of imposing generic templates.
+
+## Skill Structure
+
+Each skill is a Markdown file at `.claude/skills/<skill-name>/SKILL.md`:
 
 ```markdown
 ---
 name: skill-name
-description: What this skill does
+description: What this skill provides
 model: sonnet
 tools: Read, Write, Edit, Bash
 ---
 
 # Skill Name
 
-## What It Does
-...
+## Knowledge Provided
+What information this skill contains
 
-## How It Works
-...
+## Usage Patterns
+How agents should use this knowledge
 
-## Usage
-...
+## Examples
+Concrete examples of applying this skill
 ```
 
-## When Skills Are Used
+## How Agents Use Skills
 
-### Conversation Skill
-The conversation skill activates whenever you use the `/agentful` command. It:
-- Classifies your intent (feature request, bug fix, status check, etc.)
-- Extracts relevant information (feature names, bug descriptions)
-- Maintains conversation context across multiple messages
-- Handles ambiguity and asks clarifying questions
+1. Agent receives a task
+2. Agent checks relevant skills for patterns/procedures
+3. Agent applies knowledge to execute the task
+4. Agent updates state using skill-defined structures
 
-**Example:**
+Example flow:
 ```
-You: /agentful Add user authentication
+User: /agentful add authentication
 
-conversation skill activates:
-→ Intent: feature_request
-→ Feature: "user authentication"
-→ Orchestrator delegated to handle implementation
+1. conversation skill → classifies intent as "feature_request"
+2. orchestrator agent → reads product-tracking skill for progress tracking
+3. backend agent → uses generated Express skill for implementation patterns
+4. reviewer agent → applies validation skill to check quality
 ```
 
-### Product-Tracking Skill
-The product-tracking skill is used by:
-- **Orchestrator agent** - To track feature completion
-- **`/agentful-status` command** - To show progress reports
-- **All agents** - To update completion status
+## Custom Skills
 
-**Tracks:**
-- Feature completion percentage
-- Quality gate status (tests, type checking, linting, coverage, security)
-- Overall project progress
-- Hierarchical vs flat product structures
-
-### Validation Skill
-The validation skill is used by:
-- **Reviewer agent** - To run quality checks
-- **`/agentful-validate` command** - To validate production readiness
-- **Fixer agent** - To identify issues to fix
-
-**Validates:**
-- TypeScript/Flow type checking (adapts to your stack)
-- Linting (ESLint, Biome, etc.)
-- Tests (unit, integration, E2E)
-- Code coverage (minimum 80%)
-- Dead code detection
-- Security vulnerabilities
-
-## Skill Customization
-
-You can create custom skills by adding them to `.claude/skills/`:
+Create custom skills in `.claude/skills/`:
 
 ```bash
 .claude/skills/
-├── my-custom-skill/
+├── my-deployment/
 │   └── SKILL.md
-└── another-skill/
+└── my-monitoring/
     └── SKILL.md
 ```
 
-**Example custom skill:**
+Example custom skill:
 
 ```markdown
 ---
 name: deployment
-description: Handles deployment to various platforms
+description: Deployment procedures for our infrastructure
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash
+tools: Read, Bash
 ---
 
 # Deployment Skill
 
-Automates deployment to your hosting platform.
+## Deployment Targets
+- Production: AWS ECS
+- Staging: Vercel
+- Preview: Netlify
 
-## Supported Platforms
-- Vercel
-- Netlify
-- AWS Amplify
-- Docker containers
+## Pre-deployment Checklist
+1. All tests passing
+2. Type checking clean
+3. Environment variables set
+4. Database migrations applied
 
-## Usage
-Invoked automatically when all quality gates pass.
+## Deployment Commands
+\`\`\`bash
+# Production
+npm run deploy:prod
+
+# Staging
+npm run deploy:staging
+\`\`\`
+
+## Rollback Procedure
+\`\`\`bash
+npm run rollback -- --version <previous-version>
+\`\`\`
 ```
+
+Agents will reference this skill when deploying your application.
 
 ## Next Steps
 
-- **[Conversation Skill](/skills/conversation)** - Learn about natural language understanding
-- **[Product-Tracking Skill](/skills/product-tracking)** - Learn about progress tracking
-- **[Validation Skill](/skills/validation)** - Learn about quality checks
-- **[Custom Agents](/agents/custom-agents)** - Create your own agents
+- **[Conversation Skill](/skills/conversation)** - Intent classification and context management
+- **[Product-Tracking Skill](/skills/product-tracking)** - Progress calculation and state tracking
+- **[Validation Skill](/skills/validation)** - Quality gate checks and tool detection
+- **[Custom Agents](/agents/custom-agents)** - Create agents that use skills

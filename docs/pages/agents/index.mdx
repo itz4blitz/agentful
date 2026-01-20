@@ -1,372 +1,175 @@
-# agentful Agents
+# Agents
 
-agentful uses a multi-agent system where each agent has specialized responsibilities. The agents work together autonomously to build, test, and validate production-ready applications.
+Agents are autonomous workers that execute specific tasks in agentful. Each agent has a specialized role, tools, and knowledge base.
 
-## Agent Architecture
+## Core Concept
 
-agentful follows a hierarchical agent architecture with clear separation of concerns:
+**Agents are ACTORS that do work. Skills are KNOWLEDGE they reference.**
 
-```
-Orchestrator (Coordinator)
-    ├── Architect (Tech Stack Analyzer)
-    ├── Product Analyzer (Requirements Analyzer)
-    ├── Backend (Server-Side Implementation)
-    ├── Frontend (Client-Side Implementation)
-    ├── Tester (Quality Assurance)
-    ├── Reviewer (Code Quality Validator)
-    └── Fixer (Issue Resolution)
-```
+- **Agents** = Workers with tools (Read, Write, Bash, Task, etc.)
+- **Skills** = Reusable knowledge bases (patterns, examples, best practices)
 
-## Agent Tiers
+## Agent Types
 
-agentful organizes agents into three distinct tiers, each serving different purposes:
+### 1. Core Agents
 
-### 1. Core Agents (Always Present)
+Built-in agents that ship with agentful.
 
-Core agents ship with agentful out-of-the-box and handle fundamental development workflows.
+| Agent | Purpose | Tools | Model |
+|-------|---------|-------|-------|
+| [Orchestrator](/agents/orchestrator) | Coordinates work, delegates to specialists | Read, Write, Edit, Glob, Grep, Task | Opus |
+| [Architect](/agents/architect) | Analyzes tech stack, generates framework-specific agents | Read, Write, Edit, Glob, Grep, Task | Opus |
+| [Backend](/agents/backend) | Implements server-side code | Read, Write, Edit, Glob, Grep, Bash | Sonnet |
+| [Frontend](/agents/frontend) | Implements client-side code | Read, Write, Edit, Glob, Grep, Bash | Sonnet |
+| [Tester](/agents/tester) | Writes tests, ensures 80% coverage | Read, Write, Edit, Glob, Grep, Bash | Sonnet |
+| [Reviewer](/agents/reviewer) | Validates code quality (9 checks) | Read, Glob, Grep, Bash, Write, Edit | Sonnet |
+| [Fixer](/agents/fixer) | Fixes issues found by Reviewer | Read, Write, Edit, Glob, Grep, Bash | Sonnet |
 
-**Characteristics:**
-- Built into the framework
-- Always available
-- Technology-agnostic coordination
-- Used by all projects
+Location: `.claude/agents/*.md`
 
-**Examples:**
-- **Orchestrator** - Coordinates all development workflows
-- **Architect** - Analyzes tech stack and generates specialized agents
-- **Product Analyzer** - Validates product requirements
-- **Backend** - Generic server-side implementation
-- **Frontend** - Generic client-side implementation
-- **Tester** - Writes comprehensive tests
-- **Reviewer** - Validates code quality (9 checks)
-- **Fixer** - Automatically fixes detected issues
+### 2. Generated Agents
 
-**Location:** `.claude/agents/*.md`
-
-### 2. Domain Agents (Generated Per-Project)
-
-Domain agents are dynamically created by the Architect based on your tech stack.
-
-**Characteristics:**
-- Generated during project initialization
-- Framework-specific implementations
-- Follow your project's patterns
-- Persistent throughout project lifecycle
+Framework-specific agents created by Architect based on your tech stack.
 
 **Examples:**
-- **Next.js Specialist** - App Router, Server Components, RSC
-- **Prisma Agent** - Schema management, migrations
-- **Django Agent** - Models, views, ORM patterns
-- **Flutter Agent** - Widget composition, state management
-- **NestJS Agent** - Modules, controllers, services
+- `nextjs-specialist.md` - Next.js App Router, Server Components
+- `prisma-agent.md` - Schema management, migrations
+- `django-agent.md` - Models, views, ORM patterns
+- `nestjs-agent.md` - Modules, controllers, services
 
-**Location:** `.claude/agents/generated/`
+Location: `.claude/agents/generated/*.md`
 
-**Generation:**
+**Generation:** Run `/agentful-generate` to create agents for your stack.
+
+### 3. Ephemeral Agents
+
+Temporary agents for one-off tasks. Created on-demand, destroyed after completion.
+
+**Use cases:**
+- Database migrations
+- Large-scale refactoring
+- Security audits
+- Data imports
+- One-time cleanup
+
+Location: `.claude/agents/ephemeral/`
+
+Lifecycle: Created → Execute → Report → Archive/Delete
+
+## Using Agents
+
+### Manual Invocation
+
+Tag agents with `@agent-name` in chat:
+
 ```
-User runs: npx @itz4blitz/agentful init
+@backend Implement user authentication with JWT
+@frontend Create login page with form validation
+@tester Write tests for auth service
+@reviewer Check all changes
+```
+
+### Automatic Delegation
+
+The Orchestrator automatically delegates work:
+
+```
+User: "Build authentication"
   ↓
-Architect analyzes: package.json, PRODUCT.md
-  ↓
-Detects: Next.js 14, Prisma, TailwindCSS
-  ↓
-Generates:
-  - nextjs-specialist.md
-  - prisma-agent.md
-  - tailwind-agent.md
+Orchestrator → @backend (API routes)
+Orchestrator → @frontend (login page)
+Orchestrator → @tester (tests)
+Orchestrator → @reviewer (validation)
+Orchestrator → @fixer (fix issues)
 ```
-
-### 3. Ephemeral Agents (One-Off Tasks)
-
-Ephemeral agents are temporary agents created for specific one-time tasks.
-
-**Characteristics:**
-- Created on-demand by Orchestrator
-- Task-specific scope
-- Destroyed after completion
-- Used for non-repeatable work
-
-**Examples:**
-- **Data Migration** - Migrate users from MongoDB to PostgreSQL
-- **Cleanup Task** - Remove deprecated code and dependencies
-- **Security Audit** - Audit authentication flow for vulnerabilities
-- **Performance Optimization** - Profile and optimize specific module
-- **Data Import** - Import 10,000 products from CSV
-
-**Location:** `.claude/agents/ephemeral/`
-
-**Lifecycle:**
-```
-1. Orchestrator recognizes one-off task
-2. Generates ephemeral agent definition
-3. Spawns agent via Task tool
-4. Agent completes task
-5. Orchestrator cleans up (delete or archive)
-```
-
-**When to use:**
-- ✅ One-time database migration
-- ✅ Complex data transformation
-- ✅ Large-scale cleanup project
-- ✅ Security/performance audit
-- ✅ Integration setup
-- ❌ Regular feature work (use core/domain agents)
-- ❌ Repeatable tasks (create domain agent)
-
-### Comparison Table
-
-| Feature | Core Agents | Domain Agents | Ephemeral Agents |
-|---------|-------------|---------------|------------------|
-| **Availability** | Always present | Per-project | On-demand |
-| **Lifecycle** | Permanent | Project lifetime | Single task |
-| **Creation** | Shipped with framework | Generated by Architect | Generated by Orchestrator |
-| **Scope** | General workflows | Framework-specific | Task-specific |
-| **Examples** | Orchestrator, Tester | Next.js Agent, Prisma | Migration, Cleanup |
-| **Location** | `.claude/agents/` | `.claude/agents/generated/` | `.claude/agents/ephemeral/` |
-| **Cleanup** | Never | Never | After completion |
-
-## Core Agents
-
-### Orchestrator Agent
-
-The central coordinator that manages the entire development lifecycle.
-
-**Responsibilities:**
-- Reads and tracks project state
-- Delegates work to specialist agents
-- Manages completion tracking
-- Handles user decisions and blockers
-- Never writes code directly
-
-**When to use:**
-- Automatically invoked by `/agentful-start` or `/ralph-loop`
-- Coordinates all other agents
-- Should not be manually invoked
-
-**Key files:**
-- `.agentful/state.json` - Current work state
-- `.agentful/completion.json` - Feature completion tracking
-- `.agentful/decisions.json` - Pending user decisions
-
-### Architect Agent
-
-Analyzes the tech stack and generates framework-specific agents dynamically.
-
-**Responsibilities:**
-- Reads `PRODUCT.md` to identify technologies
-- Generates specialized agents for frameworks (Next.js, Vue, NestJS, etc.)
-- Creates architecture documentation
-- Updates agents when tech stack changes
-
-**When to use:**
-- Automatically invoked on project initialization
-- When tech stack changes in `PRODUCT.md`
-- When new frameworks are added
-
-**Key files:**
-- `.agentful/architecture.json` - Detected tech stack
-- `.claude/agents/generated/` - Dynamic agents
-
-**See also:** [Architect Agent Documentation](/agents/architect)
-
-### Product Analyzer Agent
-
-Analyzes product requirements for quality, completeness, and readiness.
-
-**Responsibilities:**
-- Analyzes product specifications for gaps and ambiguities
-- Identifies blocking issues before development starts
-- Calculates readiness score (0-100%)
-- Reverse-engineers product specs from existing code
-
-**When to use:**
-- Run `/agentful-product` to analyze requirements
-- Before starting development to ensure specs are ready
-- To detect gaps in product documentation
-
-**Key files:**
-- `.claude/product/product-analysis.json` - Analysis results
-- `PRODUCT.md` or `.claude/product/` - Product specifications
-
-**See also:** [Product Analyzer Command](/commands/agentful-product)
-
-### Backend Agent
-
-Implements server-side code following clean architecture patterns.
-
-**Responsibilities:**
-- API routes and controllers
-- Service layer (business logic)
-- Repository layer (data access)
-- Database schemas and migrations
-- Authentication and authorization
-- Input validation
-
-**When to use:**
-- Delegated by Orchestrator for backend features
-- Manual invocation: `@backend Implement user authentication`
-
-**Scope:**
-- ✅ API routes, services, repositories, database
-- ❌ UI components, frontend pages, styles
-
-### Frontend Agent
-
-Implements client-side code and user interfaces.
-
-**Responsibilities:**
-- UI components and pages
-- Custom React hooks
-- State management
-- Form handling and validation
-- Styling and responsive design
-- User interactions
-
-**When to use:**
-- Delegated by Orchestrator for frontend features
-- Manual invocation: `@frontend Create login page`
-
-**Scope:**
-- ✅ Components, pages, hooks, styles
-- ❌ API routes, database operations
-
-### Tester Agent
-
-Writes comprehensive tests to ensure code quality.
-
-**Responsibilities:**
-- Unit tests (services, components)
-- Integration tests (API endpoints)
-- E2E tests (user flows)
-- Test fixtures and mocks
-- Coverage reporting
-
-**When to use:**
-- Delegated by Orchestrator after implementation
-- Manual invocation: `@tester Write tests for auth service`
-
-**Key metric:**
-- 80% code coverage threshold
-
-### Reviewer Agent
-
-Validates code quality and production readiness through 9 comprehensive checks.
-
-**Responsibilities:**
-- TypeScript type checking
-- Lint validation
-- Dead code detection
-- Test validation
-- Coverage verification
-- Security scanning
-- Documentation check
-- Manual code review
-- **DETECTS issues** (does not fix them)
-
-**When to use:**
-- Automatically invoked after any implementation
-- Before marking features complete
-- Manual invocation: `@reviewer Check all changes`
-
-**Key files:**
-- `.agentful/last-review.json` - Last review results
-
-**See also:** [Reviewer Agent Documentation](/agents/reviewer)
-
-### Fixer Agent
-
-Automatically fixes issues found by the Reviewer.
-
-**Responsibilities:**
-- Removes dead code (unused exports, imports, files)
-- Adds missing tests
-- Removes debug statements
-- Fixes hardcoded secrets
-- Resolves type errors
-- Fixes lint errors
-- **FIXES issues** (that Reviewer detected)
-
-**When to use:**
-- Automatically invoked when Reviewer finds issues
-- Manual invocation: `@fixer Fix all issues`
-
-**Input:** `.agentful/last-review.json`
-
-**See also:** [Fixer Agent Documentation](/agents/fixer)
 
 ## Agent Workflow
 
-The typical agent workflow follows this pattern:
+Standard development cycle:
 
 ```
-1. Orchestrator reads state
-   ↓
-2. Delegates to Backend/Frontend (implementation)
-   ↓
-3. Delegates to Tester (test coverage)
-   ↓
-4. Delegates to Reviewer (validation)
-   ↓
-5. If issues found → Fixer → Back to Reviewer
-   ↓
-6. Update completion state
-   ↓
-7. Loop until complete
+1. Orchestrator reads product spec
+2. Delegates to Backend/Frontend for implementation
+3. Delegates to Tester for test coverage
+4. Delegates to Reviewer for validation
+5. If issues found → Fixer → Reviewer again
+6. Updates completion tracking
+7. Continues to next feature
 ```
+
+## Key Distinctions
+
+### Reviewer vs Fixer
+
+- **Reviewer** = DETECTS issues (runs 9 validation checks)
+- **Fixer** = FIXES issues (reads `.agentful/last-review.json`)
+
+Reviewer finds problems, Fixer solves them.
+
+### Backend vs Frontend
+
+- **Backend** = API routes, services, repositories, database
+- **Frontend** = UI components, pages, hooks, state, styling
+
+Agents never cross domains. Backend doesn't modify UI; Frontend doesn't touch APIs.
+
+### Core vs Generated
+
+- **Core agents** = General-purpose (works with any stack)
+- **Generated agents** = Framework-specific (uses exact patterns for Next.js, Django, etc.)
+
+Use generated agents when available for better code quality.
 
 ## Agent Communication
 
 Agents communicate through:
 
-1. **State Files** - JSON files in `.agentful/`
-2. **Task Tool** - Agent spawning and delegation
-3. **File System** - Shared codebase
-4. **Review Reports** - Validation results
+1. **State files** - `.agentful/state.json`, `completion.json`, `decisions.json`
+2. **Task tool** - Spawn other agents: `Task("backend", "implement X")`
+3. **File system** - Shared codebase
+4. **Review reports** - `.agentful/last-review.json`
 
-## Agent Capabilities by Model
+## Model Selection
 
 ### Opus (Highest Reasoning)
-- **Orchestrator** - Complex coordination, decision making
-- **Architect** - Tech stack analysis, agent generation
+- Orchestrator - Complex coordination
+- Architect - Tech stack analysis
 
 ### Sonnet (Balanced)
-- **Backend** - Implementation with patterns
-- **Frontend** - UI development
-- **Tester** - Test writing
-- **Reviewer** - Code validation
-- **Fixer** - Issue resolution
+- Backend, Frontend, Tester, Reviewer, Fixer - Implementation work
 
-## Best Practices
+Opus = expensive but smarter. Sonnet = fast and capable for most tasks.
 
-### For Users
+## Creating Custom Agents
 
-1. **Let agents work autonomously** - Use `/ralph-loop` for hands-off development
-2. **Check state files** - Monitor progress in `.agentful/completion.json`
-3. **Respond to decisions** - Run `/agentful-decide` when blocked
-4. **Trust the process** - Agents will iterate until completion
+See [Custom Agents](/agents/custom-agents) for:
+- Creating specialized agents
+- Supporting new technologies
+- Building ephemeral agents
+- Agent templates and patterns
 
-### For Customization
+## Monitoring Agents
 
-1. **Edit agent files** - Modify `.claude/agents/*.md` to customize behavior
-2. **Add custom agents** - Create new agents in `.claude/agents/`
-3. **Adjust thresholds** - Modify coverage requirements, rules, etc.
-4. **Extend architecture** - Add new validation checks or patterns
+Check agent activity:
 
-## See Also
+```bash
+# View state
+cat .agentful/state.json
 
-### Agent Documentation
-- [Orchestrator Agent](/agents/orchestrator) - Central coordinator
-- [Architect Agent](/agents/architect) - Tech stack analysis and agent generation
-- [Product Analyzer Agent](/commands/agentful-product) - Requirements analysis
-- [Backend Agent](/agents/backend) - Server-side implementation
-- [Frontend Agent](/agents/frontend) - Client-side implementation
-- [Tester Agent](/agents/tester) - Quality assurance
-- [Reviewer Agent](/agents/reviewer) - Code validation
-- [Fixer Agent](/agents/fixer) - Issue resolution
-- [Custom Agents](/agents/custom-agents) - Create your own agents
+# View completion
+cat .agentful/completion.json
 
-### Related Commands
-- [/agentful-start](/commands/agentful-start) - Start autonomous development
-- [/agentful](/commands/agentful) - Quick reference
-- [/agentful-product](/commands/agentful-product) - Analyze product requirements
-- [/agentful-status](/commands/agentful-status) - Check project status
+# View pending decisions
+cat .agentful/decisions.json
+
+# View last review
+cat .agentful/last-review.json
+```
+
+## Next Steps
+
+- [Orchestrator](/agents/orchestrator) - Understand the coordinator
+- [Backend](/agents/backend) - Server-side implementation patterns
+- [Frontend](/agents/frontend) - Client-side implementation patterns
+- [Reviewer](/agents/reviewer) - Quality validation process
+- [Custom Agents](/agents/custom-agents) - Build your own agents

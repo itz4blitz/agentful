@@ -1,57 +1,16 @@
 # Frontend Agent
 
-The Frontend Agent implements user interfaces, client-side logic, and ensures excellent user experience.
+Implements client-side code: UI components, pages, hooks, state management, styling.
 
-## Overview
+**Model:** Sonnet
 
-The Frontend Agent is responsible for all client-side development:
+**Tools:** Read, Write, Edit, Glob, Grep, Bash
 
-- UI components and pages
-- Custom React hooks
-- State management
-- Form handling and validation
-- Styling and responsive design
-- User interactions and animations
-
-## Configuration
-
-```yaml
-name: frontend
-description: Implements frontend UI components, pages, hooks, state management, styling. Never modifies backend code.
-model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash
-```
-
-**Why Sonnet?** Frontend implementation requires understanding patterns and user experience but not the highest reasoning level.
-
-**Framework-Specific Agents:** For framework-specific patterns (Next.js, React Router, Vue, etc.), the [Architect Agent](/agents/architect) generates specialized agents. Use those for framework-specific implementation details.
-
-## Scope
-
-### ✅ What the Frontend Agent Does
-
-- **UI Components** - Reusable component library
-- **Pages** - Route pages and views
-- **Hooks** - Custom React hooks
-- **State Management** - Context, Zustand, Redux, etc.
-- **Forms** - Form handling and validation
-- **Styling** - Tailwind, CSS Modules, styled-components, etc.
-- **Client-side Logic** - User interactions, animations
-
-### ❌ What the Frontend Agent Delegates
-
-- Backend API routes → `@backend`
-- Database operations → `@backend`
-- Tests → `@tester`
-- Code review → `@reviewer`
+**Scope:** Frontend only. Delegates backend to @backend, tests to @tester.
 
 ## Implementation Pattern
 
-The Frontend Agent follows a component-first approach:
-
 ### 1. Component First
-
-Build reusable components with proper TypeScript types:
 
 ```tsx
 // src/components/ui/Button.tsx
@@ -59,29 +18,16 @@ import { ButtonHTMLAttributes, forwardRef } from 'react';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ children, variant = 'primary', size = 'md', isLoading, disabled, ...props }, ref) => {
-    const baseStyles = 'rounded-lg font-medium transition-colors';
-    const variants = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700',
-      secondary: 'bg-gray-200 text-gray-900 hover:bg-gray-300',
-      danger: 'bg-red-600 text-white hover:bg-red-700',
-    };
-    const sizes = {
-      sm: 'px-3 py-1.5 text-sm',
-      md: 'px-4 py-2 text-base',
-      lg: 'px-6 py-3 text-lg',
-    };
-
+  ({ children, variant = 'primary', isLoading, disabled, ...props }, ref) => {
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={`${baseStyles} ${variants[variant]} ${sizes[size]}`}
+        className={`btn btn-${variant}`}
         {...props}
       >
         {isLoading ? 'Loading...' : children}
@@ -89,79 +35,34 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     );
   }
 );
-
-Button.displayName = 'Button';
 ```
 
-**Key Principles:**
-- Proper TypeScript types for props
-- Accessible by default
-- Reusable and composable
-- Handle loading and disabled states
-
 ### 2. Custom Hooks
-
-Extract logic into reusable hooks:
 
 ```tsx
 // src/hooks/useAuth.ts
 import { useState, useEffect } from 'react';
 
-interface User {
-  id: string;
-  email: string;
-  name: string;
-}
-
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    // Check auth status
-    fetch('/api/auth/me')
-      .then(res => res.json())
-      .then(data => {
-        if (data.user) {
-          setUser(data.user);
-          setIsAuthenticated(true);
-        }
-      })
-      .finally(() => setIsLoading(false));
-  }, []);
 
   const login = async (email: string, password: string) => {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password })
     });
     const data = await res.json();
     setUser(data.user);
-    setIsAuthenticated(true);
     return data;
   };
 
-  const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    setUser(null);
-    setIsAuthenticated(false);
-  };
-
-  return { user, isLoading, isAuthenticated, login, logout };
+  return { user, isLoading, login };
 }
 ```
 
-**Key Principles:**
-- Single responsibility
-- Reusable across components
-- Proper TypeScript types
-- Handle loading and error states
-
-### 3. Page/View
-
-Build pages by composing components:
+### 3. Pages
 
 ```tsx
 // src/app/login/page.tsx
@@ -172,137 +73,31 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
-  const { login, isLoading } = useAuth();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await login(email, password);
-      // Redirect handled by auth state change
-    } catch (error) {
-      // Show error toast
-      console.error('Login failed:', error);
-    }
+    await login(email, password);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form onSubmit={handleSubmit} className="max-w-md w-full bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-2xl font-bold mb-6 text-center">Sign In</h1>
-
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-2">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <Button type="submit" isLoading={isLoading} className="w-full">
-            Sign In
-          </Button>
-        </div>
-      </form>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+      <Button type="submit">Sign In</Button>
+    </form>
   );
 }
 ```
 
-**Key Principles:**
-- Compose components together
-- Handle loading states
-- Proper form validation
-- Accessible form controls
-- Responsive design
+## Styling
 
-## Technology-Specific Patterns
-
-### Next.js 14+ (App Router)
+### Tailwind CSS
 
 ```tsx
-// Server Component (default)
-import { Suspense } from 'react';
-
-async function getData() {
-  const res = await fetch('https://api.example.com/data', {
-    cache: 'no-store',
-  });
-  return res.json();
-}
-
-export default async function DashboardPage() {
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      <Suspense fallback={<p>Loading...</p>}>
-        <DashboardData />
-      </Suspense>
-    </div>
-  );
-}
-
-async function DashboardData() {
-  const data = await getData();
-  return <pre>{JSON.stringify(data, null, 2)}</pre>;
-}
-```
-
-### React Router
-
-```tsx
-// src/pages/Profile.tsx
-import { useNavigate, useParams } from 'react-router-dom';
-import { useProfile } from '../hooks/useProfile';
-
-export function ProfilePage() {
-  const { id } = useParams();
-  const { profile, isLoading } = useProfile(id);
-  const navigate = useNavigate();
-
-  if (isLoading) return <div>Loading...</div>;
-
-  return (
-    <div>
-      <h1>{profile.name}</h1>
-      <button onClick={() => navigate(-1)}>Back</button>
-    </div>
-  );
-}
-```
-
-## Styling Guidelines
-
-### Tailwind CSS (Preferred)
-
-Utility-first approach for rapid development:
-
-```tsx
-<div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+<div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-md">
   <img src={avatar} alt={name} className="w-12 h-12 rounded-full" />
   <div>
     <h3 className="font-semibold text-gray-900">{name}</h3>
@@ -311,29 +106,16 @@ Utility-first approach for rapid development:
 </div>
 ```
 
-**Best Practices:**
-- Use utility classes for layout
-- Use semantic colors (slate, gray, not blue-500)
-- Apply responsive prefixes (md:, lg:)
-- Group related styles
-
 ### CSS Modules
 
-Scoped styles for complex components:
-
 ```tsx
-// src/components/Card.module.css
+// components/Card.module.css
 .card {
   @apply rounded-lg shadow-md p-4;
   transition: all 0.2s ease;
 }
 
-.card:hover {
-  @apply shadow-lg;
-  transform: translateY(-2px);
-}
-
-// src/components/Card.tsx
+// components/Card.tsx
 import styles from './Card.module.css';
 
 export function Card({ children }) {
@@ -341,30 +123,9 @@ export function Card({ children }) {
 }
 ```
 
-### Styled Components
-
-CSS-in-JS for dynamic styling:
-
-```tsx
-import styled from 'styled-components';
-
-const Button = styled.button<{ variant: 'primary' | 'secondary' }>`
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  background: ${props => props.variant === 'primary' ? '#2563eb' : '#e5e7eb'};
-  color: ${props => props.variant === 'primary' ? '#fff' : '#111827'};
-  &:hover {
-    opacity: 0.9;
-  }
-`;
-```
-
 ## State Management
 
-### Context API (Simple State)
-
-Good for auth, theme, global state:
+### Context API
 
 ```tsx
 // src/contexts/AuthContext.tsx
@@ -372,108 +133,49 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-
   return (
     <AuthContext.Provider value={{ user, setUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
-
-export function useAuthContext() {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuthContext must be used within AuthProvider');
-  return context;
-}
 ```
 
-### Zustand (Medium Complexity)
-
-Simple, performant state management:
+### Zustand
 
 ```ts
 // src/store/useStore.ts
 import { create } from 'zustand';
 
-interface StoreState {
-  user: User | null;
-  setUser: (user: User | null) => void;
-}
-
 export const useStore = create<StoreState>((set) => ({
   user: null,
-  setUser: (user) => set({ user }),
+  setUser: (user) => set({ user })
 }));
 ```
 
-### TanStack Query (Server State)
-
-Data fetching, caching, synchronization:
+### TanStack Query
 
 ```tsx
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 
 function UserProfile() {
-  const queryClient = useQueryClient();
-
   const { data: user, isLoading } = useQuery({
     queryKey: ['user'],
-    queryFn: () => fetch('/api/user').then(r => r.json()),
+    queryFn: () => fetch('/api/user').then(r => r.json())
   });
 
   const updateMutation = useMutation({
     mutationFn: (data) => fetch('/api/user', {
       method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['user']);
-    },
+      body: JSON.stringify(data)
+    })
   });
 }
 ```
 
 ## Form Handling
 
-### Controlled Components
-
-```tsx
-function ContactForm() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await fetch('/api/contact', {
-      method: 'POST',
-      body: JSON.stringify(formData),
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input name="name" value={formData.name} onChange={handleChange} />
-      <input name="email" value={formData.email} onChange={handleChange} />
-      <textarea name="message" value={formData.message} onChange={handleChange} />
-      <button type="submit">Send</button>
-    </form>
-  );
-}
-```
-
 ### React Hook Form
-
-For complex forms with validation:
 
 ```tsx
 import { useForm } from 'react-hook-form';
@@ -482,26 +184,20 @@ import { z } from 'zod';
 
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(8),
+  password: z.string().min(8)
 });
 
 function LoginForm() {
   const { register, handleSubmit, formState: { errors } } = useForm({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema)
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
-  };
+  const onSubmit = (data) => console.log(data);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <input {...register('email')} />
       {errors.email && <span>{errors.email.message}</span>}
-
-      <input type="password" {...register('password')} />
-      {errors.password && <span>{errors.password.message}</span>}
-
       <button type="submit">Login</button>
     </form>
   );
@@ -515,232 +211,78 @@ src/
 ├── components/
 │   ├── ui/              # Reusable UI primitives
 │   │   ├── Button.tsx
-│   │   ├── Input.tsx
-│   │   ├── Modal.tsx
-│   │   └── index.ts
-│   └── features/        # Feature-specific components
-│       ├── auth/
-│       │   ├── LoginForm.tsx
-│       │   └── RegisterForm.tsx
-│       └── dashboard/
-│           └── DashboardLayout.tsx
-├── hooks/               # Custom React hooks
-│   ├── useAuth.ts
-│   ├── useDebounce.ts
-│   └── index.ts
-├── pages/               # Page components (or app/ for Next.js)
-│   ├── index.tsx
-│   ├── login.tsx
-│   └── dashboard/
-│       └── index.tsx
+│   │   └── Input.tsx
+│   └── features/        # Feature-specific
+│       └── auth/
+│           └── LoginForm.tsx
+├── hooks/               # Custom hooks
+│   └── useAuth.ts
+├── pages/               # Pages (or app/ for Next.js)
+│   └── login.tsx
 ├── contexts/            # React contexts
-│   ├── AuthContext.tsx
-│   └── ThemeContext.tsx
+│   └── AuthContext.tsx
 ├── store/               # State management
 │   └── useStore.ts
-├── styles/              # Global styles
-│   └── globals.css
-├── lib/                 # Utilities
-│   ├── cn.ts            # clsx/tailwind merge
-│   └── utils.ts
-└── types/               # TypeScript types
-    └── index.ts
+└── styles/              # Global styles
+    └── globals.css
 ```
 
 ## Rules
 
-### ALWAYS
+**ALWAYS:**
+- Use TypeScript
+- Handle loading and error states
+- Make components reusable
+- Use semantic HTML
+- Ensure accessibility
 
-1. Use TypeScript for components
-2. Define Props interfaces explicitly
-3. Handle loading and error states
-4. Make components reusable
-5. Use semantic HTML elements
-6. Ensure accessibility (aria labels, semantic markup)
-7. Make components responsive
-
-### NEVER
-
-1. Hardcode values that should be props
-2. Modify backend API routes
-3. **NEVER modify code outside your domain** - stay in frontend scope
-4. Skip accessibility considerations
-5. Create overly complex components (break them down)
-6. Mix concerns (data fetching in presentation components)
-
-## Best Practices
-
-### Component Design
-
-```tsx
-// Good: Single responsibility, reusable
-export function Button({ variant, size, children, ...props }) {
-  return <button className={`${variant} ${size}`}>{children}</button>;
-}
-
-// Bad: Too many responsibilities
-export function ButtonAndFormAndLayout() {
-  // ❌ Doing too much
-}
-```
-
-### Performance
-
-```tsx
-// Good: Memoize expensive computations
-const expensiveValue = useMemo(() => {
-  return computeExpensiveValue(data);
-}, [data]);
-
-// Good: Memoize callbacks
-const handleClick = useCallback(() => {
-  doSomething(id);
-}, [id]);
-
-// Good: Lazy loading
-const HeavyComponent = lazy(() => import('./HeavyComponent'));
-```
-
-### Accessibility
-
-```tsx
-// Good: Proper labels and ARIA
-<label htmlFor="email">Email</label>
-<input id="email" type="email" aria-required="true" />
-
-// Good: Semantic HTML
-<nav aria-label="Main navigation">
-  <ul>
-    <li><a href="/">Home</a></li>
-  </ul>
-</nav>
-
-// Good: Keyboard navigation
-<button onKeyDown={(e) => e.key === 'Enter' && handleClick()}>
-  Submit
-</button>
-```
+**NEVER:**
+- Modify backend API routes
+- Skip accessibility
+- Hardcode values that should be props
+- Create overly complex components
 
 ## Common Tasks
 
-### Creating a New Page
-
-1. Create page component in `app/` or `pages/`
+**Create page:**
+1. Create page component
 2. Compose UI components
 3. Add data fetching hooks
-4. Handle loading and error states
-5. Add navigation
+4. Handle loading/error states
 
-### Building a Form
-
-1. Set up form state or use React Hook Form
+**Build form:**
+1. Set up form state (React Hook Form)
 2. Add validation schema (Zod)
-3. Create form with proper labels
+3. Create form with labels
 4. Handle submission
-5. Show success/error feedback
+5. Show feedback
 
-### Adding State Management
-
-1. Choose appropriate solution (Context, Zustand, etc.)
+**Add state:**
+1. Choose solution (Context, Zustand, etc.)
 2. Create store/context
 3. Provide at app root
 4. Consume in components
 
 ## After Implementation
 
-Report to orchestrator:
-
 ```json
 {
   "files_created": [
     "src/components/ui/Button.tsx",
-    "src/components/auth/LoginForm.tsx",
     "src/app/login/page.tsx"
   ],
   "implementation": "Login page with form validation",
-  "dependencies_added": ["react-hook-form", "@hookform/resolvers", "zod"],
+  "dependencies_added": ["react-hook-form", "zod"],
   "next_steps": [
     "Write tests for Button component",
-    "Write tests for LoginForm",
     "Add integration tests for login flow"
   ]
 }
 ```
 
-## Troubleshooting
-
-### Component Not Re-rendering
-
-**Symptom:** State changes but UI doesn't update
-
-**Solutions:**
-1. Check if using immutable state updates
-2. Verify dependencies in useEffect/useMemo
-3. Check for stale closures
-
-### Styling Not Applying
-
-**Symptom:** Classes not working
-
-**Solutions:**
-1. Check Tailwind config for missing classes
-2. Verify CSS Modules are imported correctly
-3. Check for specificity conflicts
-
-### Type Errors
-
-**Symptom:** TypeScript errors with props
-
-**Solutions:**
-1. Define explicit prop interfaces
-2. Use proper generic types
-3. Check for missing imports
-
-## Integration
-
-### With Backend
-
-```
-[Backend] → Creates POST /api/auth/login
-  ↓
-[Frontend] → Creates login form
-  ↓
-[Frontend] → Calls API endpoint
-  ↓
-[Backend] → Returns JWT
-  ↓
-[Frontend] → Stores token, updates auth state
-```
-
-### With Orchestrator
-
-```
-[Orchestrator] → "Create login page"
-  ↓
-[Frontend] → Implements LoginForm component
-  ↓
-[Orchestrator] → "Review changes"
-  ↓
-[Reviewer] → Validates accessibility, types, etc.
-```
-
-### With Tester
-
-```
-[Frontend] → Creates Button component
-  ↓
-[Tester] → Writes component tests
-  ↓
-[Tester] → Tests accessibility
-  ↓
-[Frontend] → Fixes any issues
-```
-
 ## See Also
 
-- [Back to Agents Overview](/agents) - All available agents
-- [Backend Agent](/agents/backend) - Server-side implementation (do not modify)
-- [Architect Agent](/agents/architect) - Generates framework-specific agents
-- [Tester Agent](/agents/tester) - Writes tests for your frontend components
-- [Reviewer Agent](/agents/reviewer) - Validates your frontend implementation
-- [Orchestrator Agent](/agents/orchestrator) - Coordinates frontend development
+- [Backend Agent](/agents/backend) - Server-side code
+- [Tester Agent](/agents/tester) - Component tests
+- [Reviewer Agent](/agents/reviewer) - Validates code
+- [Orchestrator Agent](/agents/orchestrator) - Coordinates work

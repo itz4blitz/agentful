@@ -29,14 +29,14 @@ Unified analysis command that detects gaps, validates configuration, identifies 
 
 Fast health check that runs in under 5 seconds. Perfect for hook-triggered analysis.
 
-**Checks performed:**
+Checks performed:
 - Required files exist (state.json, completion.json, decisions.json)
 - Architecture detection status
 - Pending decisions count
 - Last validation age
 - Agent staleness (confidence < 0.6 or older than architecture)
 
-**Example output:**
+Example output:
 ```
 agentful Health Check
 
@@ -53,7 +53,7 @@ Run '/agentful-analyze full' for detailed recommendations.
 
 Comprehensive analysis that examines every aspect of your agentful setup.
 
-**Analysis categories:**
+Analysis categories:
 
 ### 1. Gap Detection
 - Missing product specification
@@ -79,7 +79,7 @@ Prioritized list of suggested fixes with:
 - Specific action to take
 - Command to run
 
-**Example output:**
+Example output:
 ```
 agentful Full Analysis
 
@@ -98,7 +98,7 @@ Configuration Validation
 
 Staleness Detection
   [WARNING] frontend agent has low confidence (0.4)
-    Run '/agentful-agents' to regenerate from actual code
+    Run '/agentful-generate' to regenerate from actual code
 
   [INFO] Last validation was 3 days ago
     Run '/agentful-validate' to refresh
@@ -114,20 +114,20 @@ Recommendations (by priority)
 
 Automatically applies fixes for detected issues where safe to do so.
 
-**Auto-fixable issues:**
+Auto-fixable issues:
 - Initialize missing state files
 - Update stale architecture detection
 - Regenerate low-confidence agents
 - Clear resolved decisions
 - Reset stuck state
 
-**Non-auto-fixable issues** (requires manual action):
+Non-auto-fixable issues (requires manual action):
 - Create product specification
 - Define features
 - Make architectural decisions
 - Configure hooks
 
-**Example:**
+Example:
 ```bash
 /agentful-analyze fix
 
@@ -147,9 +147,7 @@ Run '/agentful-analyze full' to verify.
 
 `/agentful-analyze` is designed to work with Claude Code hooks for automated triggering.
 
-### Recommended Hook Configuration
-
-Add to `.claude/settings.json`:
+Recommended hook configuration in `.claude/settings.json`:
 
 ```json
 {
@@ -169,7 +167,7 @@ Add to `.claude/settings.json`:
 }
 ```
 
-### How It Works
+How it works:
 
 1. **SessionStart**: Runs quick health check when you start Claude Code
 2. **PostToolUse**: Triggers when key files change:
@@ -194,8 +192,7 @@ The hooks suggest running `/agentful-analyze` rather than running it automatical
 `/agentful-analyze` complements other commands:
 
 - **Before `/agentful-start`**: Run `full` to ensure setup is ready
-- **After `/agentful-agents`**: Run `quick` to verify agents generated correctly
-- **After `/agentful-skills`**: Run `quick` to check skill alignment
+- **After `/agentful-generate`**: Run `quick` to verify agents generated correctly
 - **When stuck**: Run `full` then `fix` to diagnose and resolve
 
 ## Exit Codes
@@ -211,5 +208,4 @@ When run programmatically:
 ## See Also
 
 - [/agentful-validate](/commands/agentful-validate) - Run quality gates
-- [/agentful-agents](/commands/agentful-agents) - Generate domain agents
-- [/agentful-skills](/commands/agentful-skills) - Discover and generate skills
+- [/agentful-generate](/commands/agentful-generate) - Generate domain agents and skills

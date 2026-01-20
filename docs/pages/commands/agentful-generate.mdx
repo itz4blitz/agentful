@@ -1,0 +1,268 @@
+# /agentful-generate
+
+Analyze codebase, detect tech stack, discover business domains, generate domain agents and tech skills.
+
+## Overview
+
+`/agentful-generate` unifies domain discovery and skill generation into a single command. It:
+
+1. Detects your tech stack from config files
+2. Discovers business domains from code structure
+3. Generates domain agents for high-confidence domains
+4. Generates tech skills for detected technologies
+5. Creates architecture metadata
+
+## Key Concepts
+
+**Agents** = Actors that DO work. They have tools, write code, make decisions.
+- Core agents: backend, frontend, tester, reviewer, fixer (always included)
+- Domain agents: books, auth, billing, orders (generated from your code)
+
+**Skills** = Knowledge that agents REFERENCE. Documentation and patterns.
+- Tech skills: react, express, prisma, nextjs (generated from your stack)
+
+## Usage
+
+```bash
+# Analyze and generate everything
+/agentful-generate
+
+# Regenerate after code structure changes
+/agentful-generate
+```
+
+## Detection Process
+
+### Step 1: Tech Stack Detection
+
+Reads configuration files:
+- `package.json` - Node.js dependencies
+- `requirements.txt`, `pyproject.toml` - Python dependencies
+- `go.mod` - Go dependencies
+- `Cargo.toml` - Rust dependencies
+- `prisma/schema.prisma` - Database schema
+
+Detects:
+- **Language**: TypeScript, JavaScript, Python, Go, Rust
+- **Framework**: Next.js, React, Vue, Express, NestJS, Django, Flask, FastAPI
+- **ORM**: Prisma, Drizzle, TypeORM, Mongoose, SQLAlchemy
+- **Database**: PostgreSQL, MySQL, MongoDB, SQLite
+- **Testing**: Vitest, Jest, Playwright, pytest
+
+### Step 2: Domain Discovery
+
+Scans source code:
+- Directory structure (src/auth/, src/billing/)
+- API routes (api/auth/*, routes/books.ts)
+- Service/controller files (authService.ts, bookController.ts)
+- Database models (User, Book, Order)
+- Frontend pages/components (Books.tsx, AuthorCard.tsx)
+
+Evidence scoring:
+- Directory named after domain: +10
+- API routes for domain: +15
+- Service/controller files: +8
+- Database models: +5
+- Frontend pages/components: +5
+
+**Confidence** = score / 50 * 100 (max 100%)
+
+**Threshold**: Domain agent generated only if confidence >= 75%
+
+### Step 3: Generation Plan
+
+Shows plan and waits for confirmation:
+
+```
+Tech Stack Detected:
+  - TypeScript
+  - React 18 + Vite
+  - Express 4
+  - Prisma + SQLite
+
+Domains Discovered:
+  - books (95% confidence) ✓ Will generate agent
+  - authors (95% confidence) ✓ Will generate agent
+  - stats (85% confidence) ✓ Will generate agent
+  - payments (40% confidence) ✗ Below threshold
+
+Will Generate:
+
+  Domain Agents (3):
+    .claude/agents/books.md
+    .claude/agents/authors.md
+    .claude/agents/stats.md
+
+  Tech Skills (4):
+    .claude/skills/react/SKILL.md
+    .claude/skills/express/SKILL.md
+    .claude/skills/prisma/SKILL.md
+    .claude/skills/typescript/SKILL.md
+
+Proceed? (y/n)
+```
+
+## Generated Files
+
+### Domain Agents
+
+Created at `.claude/agents/<domain>.md`:
+
+```markdown
+---
+name: <domain>
+description: <Domain> domain - handles <responsibility>
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
+
+# <Domain> Agent
+
+## Your Scope
+[Responsibilities based on discovered files]
+
+## Domain Structure
+[Actual files - services, controllers, routes, components]
+
+## Implementation Guidelines
+[Patterns from existing code]
+
+## Boundaries
+- Handles: [what this agent owns]
+- Delegates to @backend: [general backend patterns]
+- Delegates to @frontend: [general frontend patterns]
+- Delegates to @tester: [testing]
+
+## Rules
+1. Stay within domain boundaries
+2. Follow existing patterns in this domain
+3. Coordinate with related domains via clear interfaces
+```
+
+### Tech Skills
+
+Created at `.claude/skills/<tech>/SKILL.md`:
+
+```markdown
+---
+name: <tech>
+description: <Tech> patterns and best practices
+---
+
+# <Tech> Skill
+
+## Overview
+[What this tech does in your project]
+
+## Project Configuration
+[Version, settings from config files]
+
+## Common Patterns
+[3-5 patterns with code examples from your project]
+
+## Best Practices
+[Specific to your project's usage]
+
+## Common Pitfalls
+[What to avoid]
+
+## References
+[Official docs links]
+```
+
+### Architecture Metadata
+
+Created at `.agentful/architecture.json`:
+
+```json
+{
+  "techStack": {
+    "languages": ["TypeScript"],
+    "frontend": { "framework": "React", "version": "18.x" },
+    "backend": { "framework": "Express", "version": "4.x" },
+    "database": { "type": "SQLite", "orm": "Prisma" },
+    "testing": ["Vitest", "Jest"]
+  },
+  "domains": [
+    { "name": "books", "confidence": 95 },
+    { "name": "authors", "confidence": 95 }
+  ],
+  "generatedAgents": ["books", "authors"],
+  "generatedSkills": ["react", "express", "prisma", "typescript"],
+  "analyzedAt": "2026-01-20T00:00:00Z"
+}
+```
+
+## When to Run
+
+| Situation | Action |
+|-----------|--------|
+| After initial development | Run to discover domains |
+| Major feature added | Rerun to detect new domains |
+| Tech stack changed | Rerun to update skills |
+| New domain emerged | Rerun to generate agent |
+| Periodic check | Rerun to stay current |
+
+## Example Output
+
+```
+✅ Generation Complete
+
+Domain Agents (2):
+  ✓ .claude/agents/books.md (95%)
+  ✓ .claude/agents/authors.md (95%)
+
+Tech Skills (4):
+  ✓ .claude/skills/react/SKILL.md
+  ✓ .claude/skills/express/SKILL.md
+  ✓ .claude/skills/prisma/SKILL.md
+  ✓ .claude/skills/typescript/SKILL.md
+
+Architecture saved to .agentful/architecture.json
+
+Usage:
+  @books add new field to book model
+  @authors implement author search
+  @backend (uses express, prisma skills automatically)
+  @frontend (uses react skill automatically)
+
+Rerun /agentful-generate when codebase structure changes.
+```
+
+## Troubleshooting
+
+### No domains discovered
+
+**Cause**: Codebase too small or unclear structure
+
+**Solution**:
+- Implement features first with `/agentful-start`
+- Organize code into domain folders
+- Add more files per domain
+- Rerun `/agentful-generate`
+
+### Low confidence scores
+
+**Cause**: Domain boundaries unclear
+
+**Solution**:
+- Group related files into domain folders
+- Use consistent naming (authService, authController)
+- Add API routes for domain
+- Rerun after reorganizing
+
+### Wrong tech stack detected
+
+**Cause**: Config files ambiguous
+
+**Solution**:
+- Check package.json dependencies
+- Verify framework imports in code
+- Manually edit `.agentful/architecture.json`
+- Rerun to regenerate skills
+
+## See Also
+
+- [/agentful-start](/commands/agentful-start) - Begin development using generated agents
+- [/agentful-analyze](/commands/agentful-analyze) - Validate agent/skill alignment
+- [All Agents](/agents) - Core agent system

@@ -1,71 +1,31 @@
-# Creating Custom Agents
+# Custom Agents
 
-Extend agentful by creating custom agents for specialized tasks, technologies, or workflows.
-
-## Overview
-
-agentful is designed to be extensible. You can create custom agents to:
-
-- Support new programming languages (Python, Go, Rust, etc.)
-- Integrate with specific frameworks (Django, Rails, Spring, etc.)
-- Add specialized capabilities (DevOps, documentation, etc.)
-- Customize agent behavior for your project's needs
-
-## Agent File Structure
-
-All agents live in `.claude/agents/`:
-
-```
-.claude/
-├── agents/
-│   ├── orchestrator.md
-│   ├── architect.md
-│   ├── backend.md
-│   ├── frontend.md
-│   ├── tester.md
-│   ├── reviewer.md
-│   ├── fixer.md
-│   ├── generated/
-│   │   ├── nextjs-agent.md
-│   │   └── prisma-agent.md
-│   └── custom/              # Your custom agents
-│       ├── python-agent.md
-│       ├── devops-agent.md
-│       └── docs-agent.md
-```
+Create specialized agents for your unique needs.
 
 ## Agent File Format
 
-Every agent file follows this format:
+All agents are Markdown files in `.claude/agents/`:
 
 ```markdown
 ---
 name: agent-name
-description: Brief description of what this agent does
+description: What this agent does
 model: sonnet|opus
-tools: Read, Write, Edit, Glob, Grep, Bash, Task, etc.
+tools: Read, Write, Edit, Glob, Grep, Bash, Task
 ---
 
 # Agent Name
 
-You are the **Agent Name**. You do [specific task].
-
-## Your Role
-
-[Describe what this agent does]
+You are the **Agent Name**. You [specific responsibility].
 
 ## Your Scope
 
-- **What you do**
-- **What you delegate**
+- What you do
+- What you delegate
 
 ## Implementation Pattern
 
-[How this agent works]
-
-## Examples
-
-[Code examples and patterns]
+[How you work]
 
 ## Rules
 
@@ -73,60 +33,28 @@ You are the **Agent Name**. You do [specific task].
 2. NEVER [rule 2]
 ```
 
-## Creating a Custom Agent
+## File Structure
 
-### Step 1: Define Purpose
-
-What should your agent do?
-
-**Examples:**
-- "Write Python code following Django patterns"
-- "Manage Docker and Kubernetes configurations"
-- "Generate documentation from code"
-- "Optimize database queries"
-
-### Step 2: Choose Model
-
-- **Opus** - Complex reasoning, decision making
-- **Sonnet** - Implementation, pattern following
-
-**Guidance:**
-```yaml
-# Use Opus for:
-- Coordinating other agents
-- Making architectural decisions
-- Analyzing complex systems
-
-# Use Sonnet for:
-- Implementing code
-- Following patterns
-- Writing tests
+```
+.claude/agents/
+├── orchestrator.md      # Core agents
+├── backend.md
+├── frontend.md
+├── generated/           # Framework-specific
+│   ├── nextjs-agent.md
+│   └── prisma-agent.md
+└── custom/              # Your custom agents
+    ├── python-agent.md
+    ├── devops-agent.md
+    └── docs-agent.md
 ```
 
-### Step 3: Select Tools
-
-Available tools:
-
-| Tool | Purpose | Example Agents |
-|------|---------|---------------|
-| Read | Read files | All agents |
-| Write | Write new files | Architect, Backend, Frontend |
-| Edit | Edit existing files | Fixer, all agents |
-| Glob | Find files by pattern | All agents |
-| Grep | Search file contents | All agents |
-| Bash | Run commands | Tester, Reviewer |
-| Task | Spawn other agents | Orchestrator, Architect |
-
-### Step 4: Write Agent Definition
-
-## Example Agents
-
-### 1. Python Agent
+## Example: Python Agent
 
 ```markdown
 ---
 name: python
-description: Implements Python backend services using Django/FastAPI. Follows Python best practices and type hints.
+description: Implements Python backend with Django/FastAPI patterns
 model: sonnet
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
@@ -137,17 +65,15 @@ You are the **Python Agent**. You implement server-side Python code.
 
 ## Your Scope
 
-- **Django/Flask/FastAPI** - Web frameworks
-- **Services** - Business logic
-- **Models** - Database models (ORM)
-- **API Views** - Endpoints and serializers
-- **Async** - AsyncIO when needed
+- Django/FastAPI frameworks
+- Business logic services
+- ORM models
+- API views and serializers
 
 ## NOT Your Scope
 
-- Frontend code → `@frontend`
-- Tests → `@tester`
-- Review → `@reviewer`
+- Frontend → @frontend
+- Tests → @tester
 
 ## Implementation Pattern
 
@@ -156,12 +82,10 @@ You are the **Python Agent**. You implement server-side Python code.
 \`\`\`python
 # models.py
 from django.db import models
-from typing import Optional
 
 class User(models.Model):
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.email
@@ -171,20 +95,11 @@ class User(models.Model):
 
 \`\`\`python
 # services.py
-from typing import Optional
-from .models import User
-
 class UserService:
     def create_user(self, email: str, name: str) -> User:
         if User.objects.filter(email=email).exists():
-            raise ValueError("User already exists")
+            raise ValueError("User exists")
         return User.objects.create(email=email, name=name)
-
-    def get_user(self, user_id: int) -> Optional[User]:
-        try:
-            return User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            return None
 \`\`\`
 
 ### 3. Views Last
@@ -194,7 +109,6 @@ class UserService:
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .services import UserService
 
 @api_view(['POST'])
 def create_user(request):
@@ -211,36 +125,18 @@ def create_user(request):
 
 ## Rules
 
-1. **ALWAYS** use type hints
-2. **ALWAYS** use async/await for I/O operations
-3. **ALWAYS** validate inputs
-4. **NEVER** skip error handling
-5. **ALWAYS** follow PEP 8 style guide
-
-## File Structure
-
-\`\`\`
-src/
-├── models/
-│   ├── user.py
-│   └── base.py
-├── services/
-│   ├── user.py
-│   └── auth.py
-├── views/
-│   ├── user.py
-│   └── auth.py
-└── serializers/
-    └── user.py
-\`\`\`
+1. ALWAYS use type hints
+2. ALWAYS validate inputs
+3. NEVER skip error handling
+4. ALWAYS follow PEP 8
 ```
 
-### 2. DevOps Agent
+## Example: DevOps Agent
 
 ```markdown
 ---
 name: devops
-description: Manages infrastructure, Docker, Kubernetes, CI/CD pipelines. Ensures deployments are reliable.
+description: Manages Docker, Kubernetes, CI/CD pipelines
 model: sonnet
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
@@ -251,15 +147,12 @@ You are the **DevOps Agent**. You manage infrastructure and deployment.
 
 ## Your Scope
 
-- **Docker** - Containerization
-- **Kubernetes** - Orchestration
-- **CI/CD** - GitHub Actions, GitLab CI
-- **Terraform** - Infrastructure as Code
-- **Monitoring** - Logs, metrics, alerts
+- Docker containerization
+- Kubernetes orchestration
+- CI/CD pipelines
+- Infrastructure as Code
 
-## Implementation Pattern
-
-### Dockerfile
+## Dockerfile Pattern
 
 \`\`\`dockerfile
 FROM node:20-alpine
@@ -270,30 +163,7 @@ COPY . .
 CMD ["npm", "start"]
 \`\`\`
 
-### Docker Compose
-
-\`\`\`yaml
-version: '3.8'
-services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-    depends_on:
-      - db
-
-  db:
-    image: postgres:15
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
-volumes:
-  db_data:
-\`\`\`
-
-### Kubernetes Deployment
+## Kubernetes Deployment
 
 \`\`\`yaml
 apiVersion: apps/v1
@@ -306,9 +176,6 @@ spec:
     matchLabels:
       app: myapp
   template:
-    metadata:
-      labels:
-        app: myapp
     spec:
       containers:
       - name: app
@@ -316,89 +183,45 @@ spec:
         ports:
         - containerPort: 3000
         resources:
-          requests:
-            memory: "256Mi"
-            cpu: "500m"
           limits:
             memory: "512Mi"
             cpu: "1000m"
 \`\`\`
 
-### GitHub Actions CI
-
-\`\`\`yaml
-name: CI
-on: [push, pull_request]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-      - run: npm ci
-      - run: npm test
-      - run: npm run lint
-\`\`\`
-
 ## Rules
 
-1. **ALWAYS** use multi-stage builds for Docker
-2. **ALWAYS** set resource limits in Kubernetes
-3. **ALWAYS** use secrets for sensitive data
-4. **NEVER** commit .env files
-5. **ALWAYS** tag Docker images properly
-
-## File Structure
-
-\`\`\`
-infra/
-├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
-├── kubernetes/
-│   ├── deployment.yaml
-│   ├── service.yaml
-│   └── ingress.yaml
-├── terraform/
-│   ├── main.tf
-│   └── variables.tf
-└── ci/
-    └── github-actions.yml
-\`\`\`
+1. ALWAYS use multi-stage builds
+2. ALWAYS set resource limits
+3. NEVER commit .env files
 ```
 
-### 3. Documentation Agent
+## Example: Docs Agent
 
 ```markdown
 ---
 name: docs
-description: Generates and maintains documentation from code, README files, and API docs.
+description: Generates and maintains documentation
 model: sonnet
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
 
 # Documentation Agent
 
-You are the **Documentation Agent**. You ensure comprehensive documentation.
+You are the **Documentation Agent**. You ensure comprehensive docs.
 
 ## Your Scope
 
-- **README.md** - Project overview and setup
-- **API Docs** - Endpoint documentation
-- **Code Comments** - Inline documentation
-- **Architecture Docs** - System design
-- **Changelog** - Version history
+- README.md
+- API documentation
+- Code comments
+- Architecture docs
 
-## Implementation Pattern
-
-### README.md
+## README Template
 
 \`\`\`markdown
 # Project Name
 
-Brief description of what this project does.
+Brief description.
 
 ## Setup
 
@@ -409,8 +232,6 @@ npm run dev
 
 ## Environment Variables
 
-Create a \`.env\` file:
-
 \`\`\`
 DATABASE_URL=postgresql://...
 API_KEY=your_key_here
@@ -418,854 +239,191 @@ API_KEY=your_key_here
 
 ## Usage
 
-\`\`\`typescript
-import { Something } from 'my-package';
-
-const thing = new Something();
-thing.doSomething();
-\`\`\`
-
-## API Documentation
-
-See [API.md](./API.md) for detailed API docs.
-
-## Contributing
-
-Contributions are welcome!
-\`\`\`
-
-### API Documentation
-
-\`\`\`markdown
-# API Documentation
-
-## Authentication
-
-All endpoints require authentication via JWT token.
-
-\`\`\`
-http
-Authorization: Bearer <token>
-\`\`\`
-
-## Endpoints
-
-### POST /api/users
-
-Create a new user.
-
-**Request:**
-\`\`\`json
-{
-  "email": "user@example.com",
-  "name": "User Name"
-}
-\`\`\`
-
-**Response (201):**
-\`\`\`json
-{
-  "id": "123",
-  "email": "user@example.com",
-  "name": "User Name"
-}
-\`\`\`
-
-**Errors:**
-- 400: Validation error
-- 409: User already exists
+[Examples]
 \`\`\`
 
 ## Rules
 
-1. **ALWAYS** document public APIs
-2. **ALWAYS** include setup instructions
-3. **ALWAYS** add code examples
-4. **NEVER** let docs get out of date
-5. **ALWAYS** use clear, simple language
-
-## File Structure
-
-\`\`\`
-docs/
-├── README.md
-├── API.md
-├── ARCHITECTURE.md
-├── CONTRIBUTING.md
-└── CHANGELOG.md
-\`\`\`
+1. ALWAYS document public APIs
+2. ALWAYS include setup instructions
+3. NEVER let docs get stale
 ```
 
-### 4. Mobile Agent
+## Ephemeral Agents
+
+Temporary agents for one-off tasks.
+
+### When to Use
+
+- Database migrations
+- Large-scale refactoring
+- Security audits
+- Data imports
+- One-time cleanup
+
+### Example: Migration Agent
 
 ```markdown
 ---
-name: mobile
-description: Implements React Native and Flutter mobile applications. Follows mobile-first patterns.
+name: migrate-user-data
+description: One-time migration from MongoDB to PostgreSQL
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash
+tools: Read, Bash, Write
 ---
 
-# Mobile Agent
+# User Data Migration Agent
 
-You are the **Mobile Agent**. You implement cross-platform mobile apps.
+Migrate all users from MongoDB to PostgreSQL.
 
-## Your Scope
+## Task
 
-- **React Native** - iOS and Android apps
-- **Flutter** - Dart-based mobile apps
-- **Navigation** - Screen navigation
-- **State Management** - Redux, MobX, Provider
-- **Native Modules** - Native iOS/Android code
+**Source:** MongoDB `users` collection
+**Target:** PostgreSQL `users` table (via Prisma)
 
-## Implementation Pattern
+## Requirements
 
-### React Native Component
+1. Read all users from MongoDB
+2. Transform data:
+   - `_id` (ObjectId) → `id` (UUID)
+   - `createdDate` → `created_at` (ISO timestamp)
+3. Insert into PostgreSQL
+4. Verify count matches
 
-\`\`\`typescript
-// components/Button.tsx
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+## Validation
 
-interface ButtonProps {
-  title: string;
-  onPress: () => void;
-  variant?: 'primary' | 'secondary';
-}
+- Total users match between source/target
+- No duplicate emails
+- Sample 10 random users for integrity check
 
-export const Button: React.FC<ButtonProps> = ({ title, onPress, variant = 'primary' }) => {
-  return (
-    <TouchableOpacity
-      style={[styles.button, variant === 'primary' ? styles.primary : styles.secondary]}
-      onPress={onPress}
-    >
-      <Text style={styles.text}>{title}</Text>
-    </TouchableOpacity>
-  );
-};
+## Completion
 
-const styles = StyleSheet.create({
-  button: {
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  primary: {
-    backgroundColor: '#007AFF',
-  },
-  secondary: {
-    backgroundColor: '#8E8E93',
-  },
-  text: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});
-\`\`\`
+Generate report with:
+- Total users migrated
+- Duration
+- Any errors
+- Validation results
 
-## Rules
-
-1. **ALWAYS** test on both iOS and Android
-2. **ALWAYS** handle different screen sizes
-3. **ALWAYS** use TypeScript
-4. **NEVER** hardcode dimensions
-5. **ALWAYS** handle network errors gracefully
+Save to: `migrations/user-migration-report-{timestamp}.json`
 ```
+
+### Lifecycle
+
+```
+Created → Execute → Report → Archive/Delete
+```
+
+Location: `.claude/agents/ephemeral/`
 
 ## Integrating Custom Agents
 
-### 1. Register with Orchestrator
+### 1. Create Agent File
 
-Edit `.claude/agents/orchestrator.md`:
+```bash
+# Create file
+touch .claude/agents/custom/python-agent.md
+
+# Write agent definition
+# (follow format above)
+```
+
+### 2. Use in Chat
+
+```
+@python Implement Django user model
+```
+
+### 3. Register with Orchestrator
+
+Edit `.claude/agents/orchestrator.md` to add delegation pattern:
 
 ```markdown
 ## Delegation Pattern
 
-```bash
-# Backend work
-Task("backend agent", "Implement authentication")
+# Python work
+Task("python agent", "Implement Django models")
 
-# Frontend work
-Task("frontend agent", "Create login page")
-
-# Custom Python work
-Task("python agent", "Implement Django user model")
-
-# Custom DevOps work
+# DevOps work
 Task("devops agent", "Create Kubernetes deployment")
-
-# Tests
-Task("tester agent", "Write tests")
-```
 ```
 
-### 2. Update Architect
+## Model Selection
 
-Edit `.claude/agents/architect.md`:
+- **Opus** - Complex reasoning, coordination (Orchestrator, Architect)
+- **Sonnet** - Implementation, pattern following (Backend, Frontend, custom agents)
 
-```markdown
-## Tech Stack Detection
-
-| Language | Agent Name | Patterns |
-|----------|-----------|----------|
-| Python | python-agent | Django, FastAPI, Flask |
-| JavaScript/TypeScript | backend/frontend | React, Node, Express |
-| Go | go-agent | Goroutines, Channels |
-```
-
-### 3. Create Generated Agent
-
-If agent is framework-specific, generate it dynamically:
-
-```markdown
-## Dynamic Agent Generation
-
-```bash
-# 1. Check if agent exists
-if [ ! -f ".claude/agents/${tech}-agent.md" ]; then
-  # 2. Generate agent
-  Task("architect", "Generate ${tech}-agent.md")
-fi
-```
-```
-
-## Agent Communication
-
-Custom agents can:
-
-### Spawn Other Agents
-
-```markdown
-Task("backend agent", "Implement API endpoint")
-Task("tester agent", "Write tests for endpoint")
-```
-
-### Use Task Tool
-
-```markdown
-# In your custom agent
-Task("python-agent", "Create Django model for User")
-Task("docs-agent", "Document the new API")
-```
-
-### Read State Files
-
-```markdown
-# All agents can read state
-1. PRODUCT.md
-2. .agentful/state.json
-3. .agentful/completion.json
-```
+Use Sonnet for most custom agents unless they need to coordinate other agents.
 
 ## Best Practices
 
-### 1. Single Responsibility
-
-Each agent should do one thing well:
+### Single Responsibility
 
 ```markdown
-# Good: Focused agent
+# Good
 name: python
-description: Implements Python backend code
+description: Implements Python backend
 
-# Bad: Too broad
+# Bad
 name: fullstack
 description: Does everything
 ```
 
-### 2. Clear Scope
-
-Explicitly state what the agent does and delegates:
+### Clear Scope
 
 ```markdown
 ## Your Scope
 - ✅ What you do
-- ❌ What you delegate to others
+- ❌ What you delegate
 ```
 
-### 3. Provide Examples
-
-Include code examples and patterns:
+### Provide Examples
 
 ```markdown
-## Examples
+## Patterns
 
 ### Pattern 1
 \`\`\`python
-# Example code
+# Example
 \`\`\`
 
 ### Pattern 2
 \`\`\`python
-# More examples
+# Example
 \`\`\`
 ```
 
-### 4. Specify Rules
-
-Clear rules for the agent:
+### Specify Rules
 
 ```markdown
 ## Rules
 
 1. ALWAYS use type hints
-2. NEVER skip error handling
-3. ALWAYS follow PEP 8
-```
-
-### 5. Define File Structure
-
-Show expected file organization:
-
-```markdown
-## File Structure
-
-\`\`\`
-src/
-├── models/
-├── services/
-└── views/
-\`\`\`
+2. NEVER skip validation
+3. ALWAYS handle errors
 ```
 
 ## Testing Custom Agents
 
-### 1. Manual Testing
-
-Create a test scenario:
-
-```markdown
-# Test the python-agent
-
-Task("python-agent", "Create a Django User model with email and password fields")
-```
-
-### 2. Validate Output
-
-Check that the agent:
-- Follows defined patterns
-- Uses correct file structure
-- Adheres to rules
-- Produces working code
-
-### 3. Iterate
-
-Refine agent based on results:
-
-```markdown
-# Update agent based on issues found
-
-## Fixes
-- Added type hint requirements
-- Improved file structure
-- Added async/await patterns
-```
-
-## Example: End-to-End Custom Agent
-
-Let's create a **Database Migration Agent**:
-
-```markdown
----
-name: migration
-description: Creates and manages database migrations. Ensures schema changes are versioned and reversible.
-model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash
----
-
-# Database Migration Agent
-
-You are the **Database Migration Agent**. You manage schema changes.
-
-## Your Scope
-
-- **Create Migrations** - Generate migration files
-- **Update Schemas** - Modify database structure
-- **Seed Data** - Populate database
-- **Rollback** - Revert changes if needed
-
-## Implementation Pattern
-
-### Prisma Migration
-
-\`\`\`bash
-# Create migration
-npx prisma migrate dev --name add_user_table
-
-# Reset database
-npx prisma migrate reset
-
-# Deploy migration
-npx prisma migrate deploy
-\`\`\`
-
-### Migration File
-
-\`\`\`prisma
-// migrations/20260118000000_add_user/migration.sql
-CREATE TABLE "User" (
-    "id" SERIAL PRIMARY KEY,
-    "email" TEXT NOT NULL UNIQUE,
-    "name" TEXT NOT NULL,
-    "createdAt" TIMESTAMP DEFAULT NOW()
-);
-
-CREATE INDEX "User_email_idx" ON "User"("email");
-\`\`\`
-
-## Rules
-
-1. **ALWAYS** create descriptive migration names
-2. **ALWAYS** make migrations reversible
-3. **NEVER** modify existing migrations
-4. **ALWAYS** test migrations on copy of production data
-5. **ALWAYS** backup before running migrations
-
-## Workflow
-
-1. Read schema changes
-2. Generate migration
-3. Test migration locally
-4. Document breaking changes
-5. Create rollback plan
-```
-
-Now use it:
-
-```markdown
-[Orchestrator] → "Add user profile table"
-  ↓
-[Migration Agent] → Creates migration
-  ↓
-[Migration Agent] → Tests migration
-  ↓
-[Backend Agent] → Updates code to use new table
-  ↓
-[Tester Agent] → Tests new functionality
-```
-
-## Troubleshooting
-
-### Agent Not Found
-
-**Symptom:** Orchestrator can't find your agent
-
-**Solutions:**
-1. Check file is in `.claude/agents/`
-2. Verify filename matches agent name
-3. Check YAML frontmatter is valid
-
-### Agent Not Working
-
-**Symptom:** Agent produces poor results
-
-**Solutions:**
-1. Add more examples and patterns
-2. Clarify rules and scope
-3. Specify file structure
-4. Add technology-specific guidance
-
-### Agent Integration Issues
-
-**Symptom:** Agent doesn't work with other agents
-
-**Solutions:**
-1. Define clear delegation points
-2. Specify when to use Task tool
-3. Document communication patterns
-4. Test agent interactions
-
-## Advanced Customization
-
-### 1. Agent Variants
-
-Create variants for different scenarios:
-
-```markdown
-# python-agent.md (Django)
-# python-fastapi-agent.md (FastAPI)
-# python-flask-agent.md (Flask)
-```
-
-### 2. Agent Templates
-
-Create reusable templates:
-
-```markdown
-.agentful/templates/
-├── backend-template.md
-├── frontend-template.md
-└── database-template.md
-```
-
-### 3. Agent Composition
-
-Combine multiple agent capabilities:
-
-```markdown
-# fullstack-python.md
-name: fullstack-python
-description: Combines backend (Python) + frontend (React) patterns
-```
-
-### 4. Custom Workflows
-
-Define complex multi-agent workflows:
-
-```markdown
-## Workflow
-
-1. [Migration Agent] Create schema
-2. [Backend Agent] Implement service
-3. [Frontend Agent] Create UI
-4. [Tester Agent] Write tests
-5. [Docs Agent] Document API
-```
-
-## Creating Ephemeral Agents
-
-Ephemeral agents are temporary, task-specific agents that are created for one-off operations and destroyed after completion. Unlike permanent custom agents, ephemeral agents have a finite lifecycle.
-
-### When to Create Ephemeral Agents
-
-Use ephemeral agents for:
-
-**Database Operations**
-- One-time data migration from legacy system
-- Complex schema refactoring requiring multiple steps
-- Data cleanup and normalization
-- Database performance tuning for specific queries
-
-**Data Import/Export**
-- Importing data from external CSV/JSON files
-- Transforming data between formats
-- Bulk operations on existing data
-- Partner integration data exports
-
-**One-Time Cleanup**
-- Removing deprecated code across multiple files
-- Cleaning up unused dependencies
-- Reorganizing project structure
-- Fixing accumulated technical debt
-
-**Audit and Scanning**
-- Security audit of specific module
-- Performance profiling and optimization
-- Accessibility scan and fixes
-- Code quality improvement project
-
-### Ephemeral Agent Structure
-
-Ephemeral agents follow a simpler structure than permanent agents:
-
-```markdown
----
-name: task-name
-description: One-line description of the one-off task
-model: sonnet
-tools: Read, Write, Edit, Bash, Grep, Glob
----
-
-# Task Name Agent
-
-You are a temporary agent created for: [specific task description]
-
-## Task
-
-[Detailed description of what needs to be done]
-
-## Requirements
-
-1. [Requirement 1]
-2. [Requirement 2]
-3. [Requirement 3]
-
-## Validation
-
-[How to verify the task was completed successfully]
-
-## Completion
-
-Report:
-- [What to report when done]
-- [Metrics to include]
-- [Any warnings or notes]
-```
-
-### Example: Data Migration Agent
-
-Here's a complete ephemeral agent for migrating user data:
-
-```markdown
----
-name: migrate-user-data
-description: One-time migration of user data from MongoDB to PostgreSQL
-model: sonnet
-tools: Read, Bash, Write, Edit
----
-
-# User Data Migration Agent
-
-You are a temporary agent created to migrate user data from MongoDB to PostgreSQL.
-
-## Task
-
-Migrate all user records from the legacy MongoDB database to the new PostgreSQL database.
-
-**Source:** MongoDB collection `users` at `mongodb://localhost:27017/legacy`
-**Target:** PostgreSQL table `users` (schema defined in `prisma/schema.prisma`)
-
-## Requirements
-
-1. **Read all users** from MongoDB collection
-2. **Transform data format:**
-   - Convert `_id` (ObjectId) → `id` (UUID)
-   - Convert `createdDate` → `created_at` (ISO timestamp)
-   - Validate and keep `email` as-is
-   - Keep `name`, `phone`, `address` fields
-3. **Insert into PostgreSQL** using Prisma Client
-4. **Verify count matches** between source and target
-5. **Generate migration report** with statistics
-
-## Validation
-
-After migration, verify:
-- Total user count matches (MongoDB === PostgreSQL)
-- No duplicate emails in target database
-- All timestamps are valid ISO format
-- Sample 10 random users and compare data integrity
-- No data loss or corruption
-
-## Completion
-
-Generate a report including:
-- Total users migrated
-- Migration duration
-- Any errors encountered
-- Data transformation statistics
-- Validation results (pass/fail)
-
-Save report to: `migrations/user-migration-report-{timestamp}.json`
-```
-
-### Example: Cleanup Agent
-
-Here's an ephemeral agent for removing deprecated code:
-
-```markdown
----
-name: cleanup-deprecated-auth
-description: Remove deprecated authentication code and update references
-model: sonnet
-tools: Read, Edit, Grep, Bash
----
-
-# Deprecated Auth Cleanup Agent
-
-You are a temporary agent created to remove deprecated authentication code.
-
-## Task
-
-Remove the old authentication system (JWT-based) and update all references to use the new Clerk-based authentication.
-
-## Requirements
-
-1. **Find all deprecated files:**
-   - `src/auth/jwt.ts`
-   - `src/auth/tokens.ts`
-   - `src/middleware/auth.ts`
-
-2. **Update references:**
-   - Search for imports of deprecated modules
-   - Replace with Clerk equivalents
-   - Update API routes using old auth
-
-3. **Remove dead code:**
-   - Delete deprecated files
-   - Remove unused dependencies (jsonwebtoken, bcrypt)
-   - Update tests to use new auth
-
-4. **Update documentation:**
-   - Update README.md authentication section
-   - Mark migration as complete in CHANGELOG.md
-
-## Validation
-
-- All tests pass after cleanup
-- No references to old auth files remain
-- Application starts without errors
-- Authentication still works correctly
-
-## Completion
-
-Report:
-- Files deleted (list)
-- Files updated (list)
-- Dependencies removed (list)
-- Tests updated (count)
-```
-
-### Example: Security Audit Agent
-
-```markdown
----
-name: audit-api-security
-description: Security audit of all API endpoints for common vulnerabilities
-model: sonnet
-tools: Read, Grep, Bash, Write
----
-
-# API Security Audit Agent
-
-You are a temporary agent performing a security audit of the API.
-
-## Task
-
-Scan all API endpoints for common security vulnerabilities and generate a detailed report.
-
-## Requirements
-
-1. **SQL Injection:**
-   - Check for raw SQL queries without parameterization
-   - Verify ORM usage is correct
-
-2. **XSS Vulnerabilities:**
-   - Check for unescaped user input in responses
-   - Verify Content-Security-Policy headers
-
-3. **Authentication Issues:**
-   - Verify all protected routes have auth checks
-   - Check for weak password requirements
-   - Verify JWT token validation
-
-4. **Authorization Issues:**
-   - Check for missing permission checks
-   - Verify users can't access others' data
-
-5. **Rate Limiting:**
-   - Verify rate limits on public endpoints
-   - Check for brute force protection
-
-6. **Input Validation:**
-   - Check for missing input validation
-   - Verify all user inputs are sanitized
-
-## Validation
-
-For each vulnerability found:
-- File path and line number
-- Severity (Critical, High, Medium, Low)
-- Description of issue
-- Suggested fix
-
-## Completion
-
-Generate report: `.agentful/security-audit-{timestamp}.json`
-
-Include:
-- Total endpoints scanned
-- Vulnerabilities found (by severity)
-- Detailed findings
-- Recommendations
-```
-
-### How Orchestrator Creates Ephemeral Agents
-
-The Orchestrator automatically creates ephemeral agents when it detects a one-off task:
+### Manual Test
 
 ```
-User: "Migrate all users from MongoDB to PostgreSQL"
-  ↓
-Orchestrator recognizes: EPHEMERAL_TASK
-  ↓
-Generates: .claude/agents/ephemeral/20260120-153045-migrate-users.md
-  ↓
-Spawns agent: Task("ephemeral/20260120-153045-migrate-users", "Execute migration")
-  ↓
-Agent completes task and reports results
-  ↓
-Orchestrator archives or deletes agent file
+@python-agent Create a User model with email and password
 ```
 
-### File Naming Convention
+### Validate Output
 
-Ephemeral agents use timestamp-based naming:
+- Follows patterns?
+- Uses correct file structure?
+- Adheres to rules?
+- Produces working code?
 
-```
-.claude/agents/ephemeral/
-├── 20260120-153045-migrate-users.md       # Active
-├── 20260120-160230-cleanup-auth.md        # Active
-└── completed/
-    ├── 20260120-120000-import-products.md  # Completed
-    └── 20260119-143000-audit-security.md   # Completed
-```
+### Iterate
 
-### Cleanup Policy
+Refine agent based on results.
 
-After completion, ephemeral agents are handled based on complexity:
+## See Also
 
-**Simple tasks (deleted immediately):**
-- Basic cleanup operations
-- Simple data transformations
-- Quick audits
-
-**Complex tasks (moved to completed/):**
-- Database migrations
-- Large-scale refactoring
-- Security audits
-- Keep for reference and rollback capability
-
-**Auto-deletion:**
-- Files in `completed/` older than 30 days are automatically removed
-- Critical migrations can be marked to keep indefinitely
-
-### Manual Creation
-
-You can also manually create ephemeral agents:
-
-```bash
-# 1. Create agent file
-touch .claude/agents/ephemeral/$(date +%Y%m%d-%H%M%S)-my-task.md
-
-# 2. Write agent definition
-# (follow the structure above)
-
-# 3. Use it
-# In Claude: "Use ephemeral/20260120-153045-my-task agent to do X"
-```
-
-### Best Practices
-
-1. **Clear Task Definition:**
-   - Specific inputs and outputs
-   - Well-defined success criteria
-   - Concrete validation steps
-
-2. **Detailed Requirements:**
-   - List all steps explicitly
-   - Include edge cases
-   - Specify error handling
-
-3. **Validation Built-In:**
-   - How to verify success
-   - What metrics to track
-   - When to report failure
-
-4. **Comprehensive Reporting:**
-   - Always generate completion report
-   - Include metrics and statistics
-   - Document any issues encountered
-
-5. **Rollback Plan:**
-   - For risky operations (migrations, deletions)
-   - Include instructions to undo changes
-   - Keep backups when appropriate
-
-## Resources
-
-- Existing agents: `.claude/agents/`
-- Agent patterns: Review Orchestrator, Backend, Frontend
-- Testing: Use `/ralph-loop` to test autonomous behavior
-- Documentation: Update this guide when adding new agents
-- Ephemeral agents: See `.claude/agents/ephemeral/README.md`
+- [Agents Overview](/agents) - All agent types
+- [Architect](/agents/architect) - Generates framework agents
+- [Orchestrator](/agents/orchestrator) - Coordinates agents
+- [Backend](/agents/backend) - Backend patterns
+- [Frontend](/agents/frontend) - Frontend patterns

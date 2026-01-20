@@ -1,72 +1,52 @@
 ---
 title: Configuration - agentful
-description: Learn how to configure agentful for your project. Customize agents, commands, settings, and behavior.
+description: Configure agentful for your project.
 ---
 
 # Configuration
 
-Customize agentful to match your workflow, tech stack, and preferences.
-
----
+Customize agentful to match your workflow.
 
 ## Overview
 
-agentful is highly customizable. You can modify:
-
+You can modify:
 - **Agents** - Add, remove, or specialize agents
 - **Commands** - Create custom slash commands
 - **Skills** - Add domain-specific capabilities
 - **Settings** - Configure hooks and permissions
-- **Templates** - Customize product spec (`.claude/product/index.md` or `PRODUCT.md`) and `CLAUDE.md`
+- **Product Structure** - Choose flat or hierarchical
 
-**Configuration files location:**
+**Configuration files**:
 ```
 .claude/
-├── product/            # Product structure (choose one)
-│   ├── index.md        # Option 1: Flat - all features
-│   ├── domains/        # Option 2: Hierarchical - by domain
-│   │   └── auth/
-│   │       ├── index.md
-│   │       └── features/
-│   │           ├── login.md
-│   │           └── register.md
-│   ├── EXAMPLES.md     # Feature writing examples
-│   └── README.md       # Structure guide
+├── product/
+│   ├── index.md        # Product spec (hierarchical)
+│   └── domains/        # Domain-specific specs
 ├── agents/             # Agent definitions
 ├── commands/           # Slash commands
 ├── skills/             # Domain skills
 └── settings.json       # Hooks and permissions
 ```
 
----
-
 ## Product Structure
 
-agentful supports **both** flat and hierarchical product structures with **automatic detection**. Choose the format that best fits your project size and complexity.
+agentful supports flat and hierarchical structures with automatic detection.
 
 ### Flat Structure
 
-**Best for:** Quick prototypes, MVPs, small projects with 5-10 features
+Best for quick prototypes, MVPs, small projects.
 
-**Option A: Root file (legacy)**
-```bash
-your-project/
-├── PRODUCT.md          # All features in one file
-├── src/
-└── package.json
+**Option A: Root file**
+```
+PRODUCT.md          # All features in one file
 ```
 
 **Option B: .claude directory**
-```bash
-your-project/
-├── .claude/
-│   └── product/
-│       └── index.md    # All features in one file
-├── src/
-└── package.json
+```
+.claude/product/index.md    # All features in one file
 ```
 
-**Example `PRODUCT.md` or `.claude/product/index.md`:**
+Example:
 ```markdown
 # My App
 
@@ -75,133 +55,86 @@ your-project/
 ### 1. User Authentication - CRITICAL
 - Login with email/password
 - JWT token handling
-- Password reset
 
 ### 2. User Profile - HIGH
-- Edit profile information
+- Edit profile
 - Upload avatar
-
-### 3. Dashboard - MEDIUM
-- Display user stats
-- Recent activity
 ```
 
 ### Hierarchical Structure (Preferred)
 
-**Best for:** Large projects with 20+ features, team collaboration, complex dependencies
+Best for large projects, team collaboration.
 
-**This is the preferred structure** for better organization and scalability.
-
-```bash
-your-project/
-├── .claude/
-│   └── product/
-│       ├── index.md              # Product overview
-│       └── domains/
-│           ├── authentication/
-│           │   ├── index.md      # Domain overview
-│           │   └── features/
-│           │       ├── login.md
-│           │       └── register.md
-│           └── user-management/
-│               ├── index.md
-│               └── features/
-│                   └── profile.md
+```
+.claude/product/
+├── index.md              # Product overview
+└── domains/
+    ├── authentication/
+    │   ├── index.md      # Domain overview
+    │   └── features/
+    │       ├── login.md
+    │       └── register.md
+    └── user-management/
+        └── index.md
 ```
 
-**Example structure:**
-
-**`.claude/product/index.md`** - Product overview:
+**`.claude/product/index.md`**:
 ```markdown
 # My App
-
-A full-stack application for user management.
 
 ## Domains
 - Authentication (CRITICAL)
 - User Management (HIGH)
-- Dashboard (MEDIUM)
 ```
 
-**`.claude/product/domains/authentication/index.md`** - Domain overview:
+**`.claude/product/domains/authentication/index.md`**:
 ```markdown
 # Authentication Domain
 
-Handles user identity and access control.
-
 ## Features
-- Login
-- Register
-- Password Reset
-```
 
-**`.claude/product/domains/authentication/features/login.md`** - Feature details:
-```markdown
-# Feature: Login
+### 1. Login - CRITICAL
+**Description**: User login
 
-Priority: CRITICAL
-
-## Subtasks
-1. Create login UI
-2. Implement login API
-3. Add JWT handling
-4. Write tests
+**Acceptance Criteria**:
+- [ ] Email/password input
+- [ ] JWT generation
 ```
 
 ### Auto-Detection
 
-The system automatically detects which format you're using:
+agentful auto-detects which format you're using:
+1. Hierarchical: If `.claude/product/domains/*/index.md` exists
+2. Flat (.claude): If `.claude/product/index.md` exists (no domains)
+3. Flat (legacy): If `PRODUCT.md` exists at root
 
-1. **Hierarchical**: If `.claude/product/domains/*/index.md` exists
-   → Tracks at subtask → feature → domain levels
+No configuration needed.
 
-2. **Flat (legacy)**: If `PRODUCT.md` exists at root
-   → Tracks at feature level
-
-3. **Flat (new)**: If `.claude/product/index.md` exists (without domains)
-   → Tracks at feature level
-
-**No configuration needed** - just create your files and agentful adapts automatically.
-
-### Migration Path
-
-Start flat, migrate to hierarchical as your project grows:
+### Migration
 
 ```bash
-# Phase 1: Quick Start
-PRODUCT.md (all features in one file)
+# Flat → Hierarchical
+mkdir -p .claude/product/domains
+mv PRODUCT.md .claude/product/index.md
+# Split content into domain files
 
-# Phase 2: Organize (optional)
-.claude/product/index.md (move to .claude directory)
-
-# Phase 3: Scale Up (when needed)
-.claude/product/domains/ (split by domain)
+# Hierarchical → Flat
+cat .claude/product/index.md > PRODUCT.md
+cat .claude/product/domains/*/*.md >> PRODUCT.md
+rm -rf .claude/product/
 ```
 
-### When to Use Each Format
+### When to Use Each
 
 | Format | Use When | Benefits |
 |--------|----------|----------|
-| Flat (PRODUCT.md) | MVP, prototype, very small project | Simplest, fastest setup (also supported) |
-| Flat (.claude/product/index.md) | Want organization, but small project | Keeps root clean, still simple |
-| Hierarchical (.claude/product/domains/) | **Most projects**, 20+ features, teams | **Preferred:** Domain-driven, scalable, organized |
+| Flat (PRODUCT.md) | Very small project | Simplest setup |
+| Flat (.claude/product/index.md) | Want organization, small project | Keeps root clean |
+| Hierarchical (.claude/product/domains/) | Most projects, 20+ features | Domain-driven, scalable (preferred) |
 
-**Recommendation:**
-- **Preferred:** `.claude/product/index.md` with domains/ (hierarchical) for better organization
-- **Also supported:** `PRODUCT.md` (flat) for very simple projects
-- Both are auto-detected - use whichever fits your project!
+## Settings Configuration
 
----
-
-## Basic Configuration
-
-### 1. Settings (settings.json)
-
-The main configuration file for agentful.
-
-**Location:** `.claude/settings.json`
-
-**Current defaults:**
+**Location**: `.claude/settings.json`
 
 ```json
 {
@@ -234,14 +167,10 @@ The main configuration file for agentful.
       "Bash(npx:*)",
       "Bash(node:*)",
       "Bash(git:*)",
-      "Bash(cat:*)",
-      "Bash(echo:*)",
       "Bash(jq:*)"
     ],
     "deny": [
       "Bash(rm -rf /)",
-      "Bash(rm -rf ~/.*)",
-      "Bash(rm -rf /.*)",
       "Bash(dd:*)",
       "Bash(mkfs:*)"
     ]
@@ -249,11 +178,9 @@ The main configuration file for agentful.
 }
 ```
 
-#### Understanding Hooks
+### Hooks
 
-**PostToolUse Hook**
-Runs after every file edit/write. Currently checks for TypeScript errors:
-
+**PostToolUse Hook** - Runs after file edits:
 ```json
 {
   "matcher": "Edit|Write",
@@ -266,148 +193,93 @@ Runs after every file edit/write. Currently checks for TypeScript errors:
 }
 ```
 
-**Customize for other languages:**
-
+Customize for your language:
 ```json
-// For Python
-{
-  "command": "python -m mypy . 2>&1 | head -5 || true"
-}
+// Python
+{"command": "python -m mypy . 2>&1 | head -5 || true"}
 
-// For Go
-{
-  "command": "go build ./... 2>&1 | head -5 || true"
-}
+// Go
+{"command": "go build ./... 2>&1 | head -5 || true"}
 
-// Disable TypeScript checking
-{
-  "command": "echo 'TypeScript checking disabled'"
-}
+// Disable
+{"command": "echo 'Type checking disabled'"}
 ```
 
-**UserPromptSubmit Hook**
-Runs before showing Claude's response. Currently shows current development phase.
+### Permissions
 
-#### Understanding Permissions
-
-**Allow List** - Commands agents can run:
-```json
-"allow": [
-  "Bash(npm:*)",      // Run npm commands
-  "Bash(npx:*)",      // Run npx commands
-  "Bash(git:*)",      // Run git commands
-  "Bash(cat:*)",      // Read files
-  "Bash(jq:*)",       // Process JSON
-  "Bash(pnpm:*)"      // Add pnpm support
-]
-```
-
-**Deny List** - Dangerous commands to block:
-```json
-"deny": [
-  "Bash(rm -rf /)",   // Prevent deleting root
-  "Bash(rm -rf ~/.*)", // Prevent deleting home dir
-  "Bash(dd:*)",       // Prevent disk destruction
-  "Bash(mkfs:*)"      // Prevent filesystem formatting
-]
-```
-
-**Add custom permissions:**
+**Allow List**:
 ```json
 "allow": [
   "Bash(npm:*)",
-  "Bash(yarn:*)",           // Add Yarn support
-  "Bash(python:*)",         // Add Python support
-  "Bash(ruby:*)",           // Add Ruby support
-  "Bash(docker:*)",         // Add Docker support
-  "Bash(make:*)"            // Add make support
+  "Bash(pnpm:*)",     // Add pnpm
+  "Bash(yarn:*)",     // Add yarn
+  "Bash(python:*)",   // Add Python
+  "Bash(docker:*)"    // Add Docker
 ]
 ```
 
----
+**Deny List**:
+```json
+"deny": [
+  "Bash(rm -rf /)",   // Prevent root deletion
+  "Bash(dd:*)",       // Prevent disk ops
+  "Bash(mkfs:*)"      // Prevent formatting
+]
+```
 
 ## Agent Configuration
 
-### 2. Customizing Existing Agents
+### Customize Existing Agents
 
-All agents are Markdown files in `.claude/agents/`:
+**Location**: `.claude/agents/`
 
-```
-.claude/agents/
-├── orchestrator.md    # Main coordinator
-├── architect.md       # Tech stack analyzer
-├── backend.md         # Backend specialist
-├── frontend.md        # Frontend specialist
-├── tester.md          # Test writer
-├── reviewer.md        # Quality validator
-└── fixer.md           # Issue fixer
-```
+Agents available:
+- `orchestrator.md` - Main coordinator
+- `architect.md` - Tech stack analyzer
+- `backend.md` - Backend specialist
+- `frontend.md` - Frontend specialist
+- `tester.md` - Test writer
+- `reviewer.md` - Quality validator
+- `fixer.md` - Issue fixer
 
 #### Example: Customize Frontend Agent
 
-**Location:** `.claude/agents/frontend.md`
+**File**: `.claude/agents/frontend.md`
 
-**Current scope:**
-- UI Components
-- Pages
-- Hooks
-- State Management
-- Forms
-- Styling
-- Client-side Logic
-
-**Add to scope:**
+Add to scope:
 ```markdown
 ## Your Scope
 
-- **UI Components** - Reusable component library
-- **Pages** - Route pages and views
-- **Hooks** - Custom React hooks
-- **State Management** - Context, Zustand, Redux, etc.
-- **Forms** - Form handling and validation
-- **Styling** - Tailwind, CSS Modules, styled-components, etc.
-- **Client-side Logic** - User interactions, animations
-- **Animation** - Framer Motion, GSAP, CSS animations  ← NEW
+- **UI Components** - Reusable components
+- **Pages** - Route pages
+- **Animation** - Framer Motion, GSAP  ← NEW
 ```
 
-**Remove from scope:**
+Remove from scope:
 ```markdown
-## NOT Your Scope (delegate or skip)
+## NOT Your Scope
 
-- Backend API routes → @backend
-- Database operations → @backend
-- Tests → @tester
-- Code review → @reviewer
-- State Management → @state-manager  ← DELEGATE INSTEAD
+- State Management → @state-manager  ← DELEGATE
 ```
 
 #### Example: Customize Quality Gates
 
-**Location:** `.claude/agents/reviewer.md`
+**File**: `.claude/agents/reviewer.md`
 
-**Add custom gate:**
+Add custom gate:
 ```markdown
 ## Quality Gates
 
-Code must pass ALL gates before completion:
-
-- ✅ All tests passing
-- ✅ No type errors (adapts to stack)
-- ✅ No lint errors
-- ✅ No dead code (unused exports, files, dependencies)
-- ✅ Test coverage ≥ 80%
-- ✅ No security issues
-- ✅ Bundle size < 200KB (gzip)  ← NEW
-- ✅ Lighthouse score ≥ 90      ← NEW
+- All tests passing
+- No type errors
+- Test coverage ≥ 80%
+- Bundle size < 200KB (gzip)  ← NEW
+- Lighthouse score ≥ 90       ← NEW
 ```
 
-### 3. Creating New Agents
+### Create New Agents
 
-Create a new agent for specialized work:
-
-**Example: Database Agent**
-
-**Location:** `.claude/agents/database.md`
+**File**: `.claude/agents/database.md`
 
 ```markdown
 ---
@@ -417,103 +289,53 @@ version: 1.0.0
 
 # Database Agent
 
-You are the **Database Agent**. You handle all database-related operations.
+You are the **Database Agent**. You handle database operations.
 
 ## Your Scope
 
-- **Schema Design** - Database models and relationships
-- **Migrations** - Database migrations and rollbacks
-- **Queries** - Complex queries and optimization
-- **Seeding** - Database seeding and test data
-- **Backups** - Database backup strategies
+- Schema Design - Models and relationships
+- Migrations - Database migrations
+- Queries - Complex queries
+- Seeding - Test data
 
-## NOT Your Scope (delegate or skip)
+## NOT Your Scope
 
 - API routes → @backend
-- Business logic → @backend
 - Tests → @tester
-
-## Implementation Pattern
-
-### Schema Design (Prisma)
-
-```prisma
-// prisma/schema.prisma
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  posts     Post[]
-}
-```
-
-### Migration
-
-```bash
-npx prisma migrate dev --name add_users_table
-```
-
-### Query Optimization
-
-```typescript
-// Efficient query with select
-const users = await prisma.user.findMany({
-  select: {
-    id: true,
-    name: true,
-    _count: {
-      select: { posts: true }
-    }
-  }
-});
-```
 
 ## Rules
 
-1. **ALWAYS** use TypeScript for schema definitions
-2. **ALWAYS** create migrations for schema changes
-3. **ALWAYS** use transactions for multi-step operations
-4. **NEVER** expose raw database queries to API
-5. **NEVER** delete columns without migration
-6. **ALWAYS** add indexes for frequently queried fields
+1. ALWAYS use TypeScript
+2. ALWAYS create migrations for schema changes
+3. ALWAYS use transactions for multi-step operations
+4. NEVER expose raw queries to API
 
 ## After Implementation
 
-When done, report:
+Report:
 - Schemas created/modified
 - Migrations run
-- Query optimizations made
-- What needs testing (delegate to @tester)
+- What needs testing
 ```
 
-**Use the new agent:**
-
-In commands, reference with `@database`:
-```markdown
-The database schema is missing. @database, please create the User model.
+Use with:
 ```
-
----
+@database, please create the User model
+```
 
 ## Command Configuration
 
-### 4. Customizing Commands
+**Location**: `.claude/commands/`
 
-Commands are Markdown files in `.claude/commands/`:
+Commands:
+- `agentful-generate.md` - Generate specialized agents
+- `agentful-status.md` - Check progress
+- `agentful-decide.md` - Answer decisions
+- `agentful-validate.md` - Run quality checks
 
-```
-.claude/commands/
-├── agentful-start.md      # Begin development
-├── agentful-status.md     # Check progress
-├── agentful-decide.md     # Answer decisions
-└── agentful-validate.md   # Run quality checks
-```
+### Create Custom Command
 
-#### Example: Add Deploy Command
-
-**Location:** `.claude/commands/agentful-deploy.md`
+**File**: `.claude/commands/agentful-deploy.md`
 
 ```markdown
 ---
@@ -523,7 +345,7 @@ description: Deploy project to production
 
 # Deploy Command
 
-Deploys the project to production after validation.
+Deploys after validation.
 
 ## Usage
 
@@ -533,88 +355,48 @@ Deploys the project to production after validation.
 
 ## What It Does
 
-1. Runs full validation (`/agentful-validate`)
-2. Checks if all gates pass
-3. Runs build command
-4. Deploys to configured platform
+1. Runs validation (`/agentful-validate`)
+2. Checks quality gates
+3. Runs build
+4. Deploys to platform
 5. Runs smoke tests
-6. Reports deployment URL
 
 ## Requirements
 
-- All quality gates must pass
-- Build must succeed
+- All quality gates pass
+- Build succeeds
 - No uncommitted changes
 
 ## Platforms
 
-Detects platform from configuration:
-
-- **Vercel**: Runs `vercel deploy --prod`
-- **Netlify**: Runs `netlify deploy --prod`
-- **Railway**: Runs `railway up`
-- **Custom**: Runs `npm run deploy`
-
-## Example Output
-
-```
-🚀 Deploying to production...
-
-Step 1: Validation
-✅ All tests passing
-✅ No type errors (adapts to stack)
-✅ Coverage 87%
-
-Step 2: Build
-✅ Build successful (124ms)
-
-Step 3: Deploy
-✅ Deployed to Vercel
-
-Step 4: Smoke tests
-✅ Homepage loads
-✅ API responding
-
-Deployment complete!
-🔗 https://your-app.vercel.app
-```
+- Vercel: `vercel deploy --prod`
+- Netlify: `netlify deploy --prod`
+- Railway: `railway up`
+- Custom: `npm run deploy`
 
 ## Configuration
 
-Add to `PRODUCT.md`:
-
+Add to PRODUCT.md:
 ```markdown
 ## Deployment
-- **Platform**: Vercel
-- **Build Command**: npm run build
-- **Output Directory**: .next
+- Platform: Vercel
+- Build Command: npm run build
+- Output Directory: .next
 ```
 ```
 
-**Use the command:**
-```bash
+Use with:
+```
 /agentful-deploy
 ```
 
----
-
 ## Skills Configuration
 
-### 5. Adding Skills
+**Location**: `.claude/skills/`
 
-Skills are reusable capabilities in `.claude/skills/`:
+### Create Testing Skill
 
-```
-.claude/skills/
-├── product-tracking/
-│   └── SKILL.md
-└── validation/
-    └── SKILL.md
-```
-
-#### Example: Add Testing Skill
-
-**Location:** `.claude/skills/testing/SKILL.md`
+**File**: `.claude/skills/testing/SKILL.md`
 
 ```markdown
 ---
@@ -624,20 +406,16 @@ version: 1.0.0
 
 # Testing Skill
 
-Provides testing capabilities for agentful agents.
+Provides testing capabilities.
 
 ## What This Skill Does
 
 - Writes unit tests
 - Writes integration tests
 - Writes E2E tests
-- Generates test data
-- Creates test fixtures
 - Measures coverage
 
 ## Usage
-
-Agents can invoke this skill:
 
 ```
 @tester use testing skill to write tests for UserService
@@ -664,167 +442,27 @@ describe('UserService', () => {
 });
 ```
 
-### Integration Test
-
-```typescript
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { prisma } from '@/lib/prisma';
-
-describe('User API', () => {
-  beforeAll(async () => {
-    // Setup test database
-  });
-
-  afterAll(async () => {
-    // Cleanup
-    await prisma.user.deleteMany();
-  });
-
-  it('should create user via API', async () => {
-    const response = await fetch('/api/users', {
-      method: 'POST',
-      body: JSON.stringify({
-        email: 'test@example.com',
-        name: 'Test User'
-      })
-    });
-
-    expect(response.status).toBe(201);
-  });
-});
-```
-
 ## Coverage Targets
 
 - Unit tests: 90%+ coverage
-- Integration tests: Critical paths covered
-- E2E tests: User journeys covered
+- Integration tests: Critical paths
+- E2E tests: User journeys
 
 ## Best Practices
 
 1. Test behavior, not implementation
-2. Use descriptive test names
+2. Use descriptive names
 3. Follow AAA pattern (Arrange, Act, Assert)
 4. Mock external dependencies
-5. Keep tests fast and isolated
+5. Keep tests fast
 ```
-
----
-
-## Template Configuration
-
-### 6. PRODUCT.md Template
-
-Customize the default product template.
-
-**Location:** `template/PRODUCT.md`
-
-**Add custom sections:**
-
-```markdown
-## Custom Section
-
-### Performance Requirements
-
-- Page load < 2s
-- Time to Interactive < 3s
-- Lighthouse score > 90
-
-### Accessibility Requirements
-
-- WCAG 2.1 AA compliant
-- Keyboard navigation
-- Screen reader support
-- Color contrast > 4.5:1
-
-### Internationalization
-
-- Support multiple languages
-- Date/time localization
-- Currency formatting
-- RTL support for Arabic/Hebrew
-```
-
-### 7. CLAUDE.md Template
-
-Customize project instructions.
-
-**Location:** `template/CLAUDE.md`
-
-**Add custom guidelines:**
-
-```markdown
-## Coding Standards
-
-### Naming Conventions
-
-- Components: PascalCase (UserProfile.tsx)
-- Utilities: camelCase (formatDate.ts)
-- Constants: UPPER_SNAKE_CASE (API_BASE_URL)
-- Hooks: use prefix (useAuth.ts)
-
-### File Organization
-
-src/
-├── components/
-│   ├── ui/              # Reusable components
-│   └── features/        # Feature components
-├── lib/                 # Utilities
-├── hooks/               # Custom hooks
-└── types/               # TypeScript types
-
-### Git Conventions
-
-- Commit messages: conventional commits
-- Branch naming: feature/, fix/, chore/
-- PR templates required
-```
-
----
-
-## Environment Configuration
-
-### 8. Environment Variables
-
-Create `.env.example` for your project:
-
-```bash
-# Database
-DATABASE_URL="postgresql://..."
-
-# API Keys
-NEXT_PUBLIC_API_URL="https://api.example.com"
-API_SECRET_KEY="..."
-
-# Auth
-NEXTAUTH_SECRET="..."
-NEXTAUTH_URL="http://localhost:3000"
-
-# Features
-NEXT_PUBLIC_FEATURE_FLAGS="new-ui,dark-mode"
-```
-
-**Reference in PRODUCT.md:**
-
-```markdown
-## Environment Variables
-
-Required environment variables:
-
-- `DATABASE_URL` - PostgreSQL connection string
-- `NEXTAUTH_SECRET` - Auth secret (generate with openssl)
-- `API_SECRET_KEY` - API key for external services
-```
-
----
 
 ## Platform-Specific Configuration
 
-### 9. Next.js Configuration
+### Next.js
 
-**next.config.js:**
+**next.config.js**:
 ```javascript
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
@@ -839,46 +477,34 @@ const nextConfig = {
 module.exports = nextConfig
 ```
 
-### 10. TypeScript Configuration
+### TypeScript
 
-**tsconfig.json:**
+**tsconfig.json**:
 ```json
 {
   "compilerOptions": {
     "target": "ES2020",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules"]
 }
 ```
 
----
-
 ## Quality Gate Configuration
 
-### 11. Coverage Thresholds
+### Coverage Thresholds
 
-**Update in `.claude/agents/reviewer.md`:**
+**Update**: `.claude/agents/reviewer.md`
 
 ```markdown
 ## Coverage Thresholds
@@ -889,15 +515,13 @@ module.exports = nextConfig
 - Utilities: ≥ 95%
 ```
 
-**Vitest configuration:**
-
+**Vitest config**:
 ```typescript
 // vitest.config.ts
 export default defineConfig({
   test: {
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
       thresholds: {
         lines: 80,
         functions: 80,
@@ -909,175 +533,77 @@ export default defineConfig({
 })
 ```
 
----
+## Troubleshooting
 
-## Workflow Configuration
+### Configuration Not Loading
 
-### 12. Custom Workflow Steps
-
-**Example: Create custom workflow in `.claude/commands/my-workflow.md`:**
-
-> **Note:** This is an example template. You would create this file yourself in your project.
-
-```markdown
----
-name: my-workflow
-description: Custom workflow for my specific needs
----
-
-# Custom Workflow
-
-## Usage
-
-```
-/my-workflow
+1. Restart Claude Code:
+```bash
+exit
+claude
 ```
 
-## Workflow Steps
+2. Check file format:
+- Valid Markdown (.md)
+- Valid frontmatter
+- No JSON syntax errors
 
-1. **Analysis Phase**
-   - Review current state
-   - Identify blockers
-   - Prioritize tasks
-
-2. **Implementation Phase**
-   - Build features
-   - Write tests
-   - Document code
-
-3. **Validation Phase**
-   - Run quality gates
-   - Security scan
-   - Performance check
-
-4. **Deployment Phase**
-   - Build artifacts
-   - Deploy to staging
-   - Run smoke tests
-
-## Custom Logic
-
-Add your project-specific workflow here.
+3. Verify paths:
+```bash
+ls -la .claude/agents/
+ls -la .claude/commands/
+ls -la .claude/settings.json
 ```
 
----
+### Agent Not Responding
 
-## Troubleshooting Configuration
-
-### Issue: Configuration Not Loading
-
-**Symptoms:** Changes to `.claude/` not taking effect
-
-**Solutions:**
-
-1. **Restart Claude Code:**
-   ```bash
-   # Exit and restart
-   exit
-   claude
-   ```
-
-2. **Check File Format:**
-   - Must be valid Markdown (`.md`)
-   - Must have valid frontmatter (for commands)
-   - No syntax errors in JSON
-
-3. **Verify File Paths:**
-   ```bash
-   # Should exist
-   ls -la .claude/agents/
-   ls -la .claude/commands/
-   ls -la .claude/settings.json
-   ```
-
-### Issue: Agent Not Responding
-
-**Symptoms:** `@agent-name` not working
-
-**Solutions:**
-
-1. **Check Agent File:**
-   - File must exist in `.claude/agents/`
-   - File must be valid Markdown
-   - Agent name must match filename
-
-2. **Verify Agent Name:**
-   ```bash
-   # List agents
-   ls .claude/agents/
-
-   # Reference without .md extension
-   @database  # NOT @database.md
-   ```
-
-3. **Check Agent Definition:**
-   - Must have proper sections
-   - Must have clear scope definition
-
----
+1. Check file exists in `.claude/agents/`
+2. Verify agent name:
+```bash
+ls .claude/agents/
+# Reference: @database (not @database.md)
+```
 
 ## Best Practices
 
-### 1. Version Control Your Config
+### Version Control
 
-**Commit `.claude/` to git:**
+Commit `.claude/` to git:
 ```bash
 git add .claude/
-git commit -m "Configure agentful agents and commands"
+git commit -m "Configure agentful"
 ```
 
-**Ignore `.agentful/` (runtime state):**
+Ignore `.agentful/` (runtime state):
 ```bash
 # Already in .gitignore
 .agentful/
 ```
 
-### 2. Document Custom Changes
+### Document Changes
 
-**Create CONFIG.md:**
+Create `CONFIG.md`:
 ```markdown
 # agentful Configuration
 
 ## Custom Agents
-
-- `@database` - Handles database operations
-- `@analytics` - Analytics and tracking
+- @database - Database operations
+- @analytics - Analytics tracking
 
 ## Custom Commands
-
-- `/agentful-deploy` - Custom deployment workflow
+- /agentful-deploy - Deployment workflow
 
 ## Modified Agents
-
-- `@frontend` - Added animation support
-- `@reviewer` - Added bundle size checks
-
-## Quality Gates
-
-- Coverage: 80% (was 75%)
-- Bundle size: < 200KB
-- Lighthouse: ≥ 90
+- @frontend - Added animation support
+- @reviewer - Added bundle size checks
 ```
 
-### 3. Test Configuration Gradually
+### Test Gradually
 
-**Start with defaults:**
-```bash
-# Use default config first
-npx @itz4blitz/agentful init
-```
-
-**Make small changes:**
-- Modify one agent at a time
-- Test after each change
-- Revert if issues arise
-
-**Document what works:**
-- Keep notes on successful changes
-- Share with team
-- Contribute back to agentful
-
----
+1. Use defaults first
+2. Make small changes
+3. Test after each change
+4. Document what works
 
 ## Next Steps
 
@@ -1086,8 +612,8 @@ npx @itz4blitz/agentful init
 <div>
 
 ### Agent Reference
-Learn about each agent in detail
-→ [Agents Guide](/agents/)
+Learn about each agent
+[Agents Guide](/agents/)
 
 </div>
 
@@ -1095,15 +621,7 @@ Learn about each agent in detail
 
 ### Command Reference
 Learn about all commands
-→ [Commands Guide](/commands/)
-
-</div>
-
-<div>
-
-### Advanced Configuration
-Deep customization techniques
-→ See individual agent docs in [/agents](/agents)
+[Commands Guide](/commands/)
 
 </div>
 

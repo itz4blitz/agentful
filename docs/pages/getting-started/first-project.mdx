@@ -1,265 +1,134 @@
 ---
 title: Your First Project - agentful
-description: Learn how to create your first structured project with agentful. A complete walkthrough from initialization to completion.
+description: Build a complete task management app with agentful.
 ---
 
 # Your First Project
 
-Build your first complete structured project with agentful. We'll create a **Task Management App** together, demonstrating both simple and complex project structures.
-
----
+Build a task management app from scratch.
 
 ## Project Overview
 
-**What we're building:**
-A task management application where users can:
+**What we're building**:
 - Add tasks
-- Mark tasks as complete
+- Mark tasks complete
 - Delete tasks
 - Filter by status
 
-**Tech Stack:**
+**Tech Stack**:
 - Next.js 14 + TypeScript
 - Tailwind CSS
 - Local state (no database)
 - Vitest for testing
 
-**Time:** 30-45 minutes
-**Difficulty:** Beginner
-
-**What you'll learn:**
-- How agentful intelligently detects your project structure
-- How to use both flat and hierarchical product structures
-- How to use `/agentful` for natural conversation
-- How to monitor progress with `/agentful-status`
-- How agentful builds complete features through structured development
-
----
+**Time**: 30-45 minutes
 
 ## Step 1: Initialize Project
-
-### Create Project Directory
 
 ```bash
 mkdir task-manager
 cd task-manager
-```
-
-### Initialize Next.js App
-
-```bash
 npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
-```
-
-Follow prompts (press Enter for defaults).
-
-### Initialize agentful
-
-```bash
 npx @itz4blitz/agentful init
 ```
 
-**Expected output:**
-```
-   █████╗  ██████╗ ███████╗███╗   ██╗████████╗███████╗██╗   ██╗██╗
-  ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██╔════╝██║   ██║██║
-  ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   █████╗  ██║   ██║██║
-  ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ██╔══╝  ██║   ██║██║
-  ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ██║     ╚██████╔╝███████╗
-  ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝      ╚═════╝ ╚══════╝
+agentful analyzes your Next.js project and:
+1. Detects tech stack (Next.js, TypeScript, Tailwind)
+2. Finds 2 domains (Task Management, UI Components)
+3. Creates `PRODUCT.md` (< 3 domains = flat structure)
 
-                   v0.1.1-alpha
-
-🔍 Analyzing your project...
-
-  Language:    TypeScript
-  Frameworks:  Next.js, React
-  Package Mgr: npm
-  Build:       Next.js
-
-📊 Detected domains:
-
-  • Task Management     ██████████ 90%
-  • UI Components      ████████░░ 75%
-
-  Analysis completed in 1.8s (82% confidence)
-
-📄 Using flat product structure (detected simple project)
-  ✓ Created PRODUCT.md
-  ✓ Created CLAUDE.md
-
-Added .agentful/ to .gitignore
-
-✅ agentful initialized successfully!
-
-Next steps:
-  1. Edit your product specification (PRODUCT.md)
-  2. Run: claude
-  3. Type: /agentful (natural) or /agentful-start (structured)
-```
-
-**What just happened:**
-1. agentful analyzed your Next.js project
-2. Detected the tech stack (Next.js, TypeScript, Tailwind)
-3. Found 2 domains (Task Management, UI Components)
-3. Since < 3 domains, it chose the **flat structure** and created `PRODUCT.md`
-4. If you had ≥3 domains, it would have created `.claude/product/` with domain directories
-
-> **Understanding Structure Detection**
->
-> **Simple Projects** (flat `PRODUCT.md`):
-> - Detected when project has < 3 domains, 0-1 frameworks, not a monorepo
-> - Everything in one file at project root
-> - Perfect for: learning, MVPs, single-purpose apps
->
-> **Complex Projects** (hierarchical `.claude/product/`):
-> - Detected when project has ≥3 domains, multiple frameworks, or is a monorepo
-> - Organized by domain directories
-> - Perfect for: multi-domain apps, large teams, long-term projects
->
-> **You can switch anytime** - agentful auto-detects on each run!
-
----
+If you had ≥3 domains, it would create `.claude/product/` with domain directories.
 
 ## Step 2: Define Your Product
 
-For this tutorial, we'll use the **flat `PRODUCT.md`** structure that agentful created (also supported for simple projects).
-
-> **Note:** While `PRODUCT.md` works great for simple projects, `.claude/product/index.md` (hierarchical) is preferred for better organization. Both are auto-detected!
-
-Create a file called `PRODUCT.md` in your project root:
+Edit `PRODUCT.md`:
 
 ```markdown
 # Product Specification
 
 ## Overview
-A simple task management application for personal productivity. Users can add, complete, and delete tasks with a clean, intuitive interface.
+A simple task management application for personal productivity.
 
 ## Goals
-- [ ] Users can add tasks with descriptions
-- [ ] Users can mark tasks as complete
+- [ ] Users can add tasks
+- [ ] Users can mark tasks complete
 - [ ] Users can delete tasks
 - [ ] Users can filter tasks by status
 - [ ] 80%+ test coverage
-- [ ] No type errors (adapts to stack)
 
 ## Tech Stack
 
 ### Frontend
-- **Framework**: Next.js 14
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **State Management**: React useState/useReducer
-
-### Backend
-- **Runtime**: Node.js
-- **Framework**: Next.js API Routes (not needed for this project)
-
-### Database
-- **Database**: None (local state only)
+- Framework: Next.js 14
+- Language: TypeScript
+- Styling: Tailwind CSS
+- State Management: React useState
 
 ### Testing
-- **Unit**: Vitest
-- **E2E**: None (skip for this project)
-
-### Deployment
-- **Hosting**: Vercel (future)
+- Unit: Vitest
 
 ## Features (Priority Order)
 
 ### 1. Add Task - CRITICAL
-**Description**: Users can add new tasks to their list
+**Description**: Users can add new tasks
 
 **Acceptance Criteria**:
 - [ ] Input field for task description
 - [ ] Add button
-- [ ] Task appears in list after adding
+- [ ] Task appears in list
 - [ ] Input clears after adding
 - [ ] Validation: empty tasks not allowed
 - [ ] Validation: max 200 characters
-
-**User Stories**:
-- As a user, I want to add tasks so that I can remember what I need to do
-- As a user, I want the input to clear after adding so I can quickly add multiple tasks
 
 **Technical Notes**:
 - Use input with text type
 - Show error message for invalid input
 - Focus input after adding
 
----
-
 ### 2. Toggle Task Completion - CRITICAL
-**Description**: Users can mark tasks as complete/incomplete
+**Description**: Users can mark tasks complete/incomplete
 
 **Acceptance Criteria**:
-- [ ] Checkbox or click to toggle
+- [ ] Checkbox to toggle
 - [ ] Visual indicator for completed tasks (strikethrough)
-- [ ] Completion status persists in local state
-
-**User Stories**:
-- As a user, I want to mark tasks complete so I can see my progress
+- [ ] Completion status persists
 
 **Technical Notes**:
-- Use checkbox or clickable element
-- Add line-through style for completed tasks
+- Use checkbox element
+- Add line-through style for completed
 - Gray out completed task text
 
----
-
 ### 3. Delete Task - HIGH
-**Description**: Users can delete tasks they no longer need
+**Description**: Users can delete tasks
 
 **Acceptance Criteria**:
 - [ ] Delete button on each task
-- [ ] Confirmation before deleting (optional, skip for MVP)
-- [ ] Task removes from list after deletion
-
-**User Stories**:
-- As a user, I want to delete tasks so I can keep my list clean
+- [ ] Task removes from list
 
 **Technical Notes**:
-- Use trash icon or "Delete" text button
+- Use trash icon or "Delete" button
 - Red color for delete action
-- Smooth removal animation (optional)
-
----
 
 ### 4. Filter Tasks - MEDIUM
-**Description**: Users can filter tasks by completion status
+**Description**: Users can filter tasks by status
 
 **Acceptance Criteria**:
 - [ ] Filter buttons: All, Active, Completed
-- [ ] Only show tasks matching selected filter
+- [ ] Only show tasks matching filter
 - [ ] Active filter highlighted
 - [ ] Task count updates per filter
 
-**User Stories**:
-- As a user, I want to see only active tasks so I can focus on what's left
-
 **Technical Notes**:
 - Use button group for filters
-- Update task count when filter changes
-- Persist filter selection in state
-
----
+- Update count when filter changes
 
 ### 5. Task Counter - LOW
-**Description**: Display count of remaining active tasks
+**Description**: Display count of remaining tasks
 
 **Acceptance Criteria**:
 - [ ] Show "X tasks left" text
 - [ ] Updates in real-time
 - [ ] Only counts active (incomplete) tasks
-
-**User Stories**:
-- As a user, I want to see how many tasks are left so I know my progress
-
-**Technical Notes**:
-- Display near filter buttons
-- Update whenever tasks change
-
----
 
 ## Architecture Notes
 
@@ -273,7 +142,7 @@ src/
 │   └── globals.css       # Global styles
 ├── components/
 │   ├── TaskList.tsx      # Task list component
-│   ├── TaskItem.tsx      # Individual task component
+│   ├── TaskItem.tsx      # Individual task
 │   ├── TaskInput.tsx     # Add task input
 │   └── TaskFilters.tsx   # Filter buttons
 └── lib/
@@ -282,296 +151,61 @@ src/
 
 ### Design Patterns
 
-- Use TypeScript for all components
+- TypeScript for all components
 - Functional components with hooks
-- Props interfaces explicitly defined
-- Separation of concerns (UI, state, logic)
+- Explicit props interfaces
+- Separation of concerns
 
 ### Constraints
 
 - Mobile-first responsive design
 - Accessible (keyboard navigation, ARIA labels)
-- Client-side only (no API routes needed)
-- Use Tailwind utility classes
-
-## Out of Scope (for MVP)
-
-- User authentication
-- Task editing
-- Task priorities
-- Due dates
-- Persistent storage (localStorage is fine)
-- Cloud sync
+- Client-side only
+- Tailwind utility classes
 
 ## Success Criteria
 
-The product is complete when:
-
-1. All critical and high features implemented and tested
+1. All critical and high features implemented
 2. All tests passing with 80%+ coverage
-3. No type errors (adapts to stack)
+3. No type errors
 4. No lint errors
 5. Responsive on mobile (375px+)
 6. Accessible with keyboard
-
-## Notes
-
-- Keep it simple - this is a learning project
-- Focus on clean code and tests
-- Use TypeScript strictly (no any types)
-- Follow Tailwind best practices
-- Write tests as you go (via agentful)
 ```
 
----
-
-### Alternative: Hierarchical Structure Example
-
-If agentful had detected a complex project (≥3 domains), it would have created `.claude/product/` instead. Here's how the same product would look with hierarchical structure:
-
-**`.claude/product/index.md`:**
-```markdown
-# Product Specification
-
-## Overview
-A task management application for personal productivity.
-
-## Tech Stack
-- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes (not needed)
-- **Database**: None (local state)
-- **Testing**: Vitest
-
-## Domains
-1. **Task Management** - See domains/task-management/ for details
-2. **UI Components** - See domains/ui-components/ for details
-3. **User Interaction** - See domains/user-interaction/ for details
-```
-
-**`.claude/product/domains/task-management/index.md`:**
-```markdown
-# Task Management Domain
-
-## Overview
-Handle core task CRUD operations and state management.
-
-## Features
-
-### 1. Add Task - CRITICAL
-**Description**: Users can add new tasks to their list
-
-**Acceptance Criteria**:
-- [ ] Input field for task description
-- [ ] Add button
-- [ ] Task appears in list after adding
-- [ ] Input clears after adding
-- [ ] Validation: empty tasks not allowed
-- [ ] Validation: max 200 characters
-
-### 2. Delete Task - HIGH
-**Description**: Users can delete tasks they no longer need
-
-**Acceptance Criteria**:
-- [ ] Delete button on each task
-- [ ] Confirmation before deleting (optional)
-- [ ] Task removes from list after deletion
-```
-
-**`.claude/product/domains/ui-components/index.md`:**
-```markdown
-# UI Components Domain
-
-## Overview
-Task display and interaction components.
-
-## Features
-
-### 1. Task List Display - CRITICAL
-**Description**: Show tasks in a clean, organized list
-
-**Acceptance Criteria**:
-- [ ] Scrollable list container
-- [ ] Empty state message
-- [ ] Loading state (if needed)
-```
-
-**`.claude/product/domains/user-interaction/index.md`:**
-```markdown
-# User Interaction Domain
-
-## Overview
-User interactions with tasks (completion, filtering).
-
-## Features
-
-### 1. Toggle Task Completion - CRITICAL
-**Description**: Users can mark tasks as complete/incomplete
-
-**Acceptance Criteria**:
-- [ ] Checkbox or click to toggle
-- [ ] Visual indicator for completed tasks
-- [ ] Completion status persists
-
-### 2. Filter Tasks - MEDIUM
-**Description**: Users can filter tasks by completion status
-
-**Acceptance Criteria**:
-- [ ] Filter buttons: All, Active, Completed
-- [ ] Only show tasks matching selected filter
-- [ ] Active filter highlighted
-```
-
-**Key differences:**
-- Features organized by domain (logical grouping)
-- Multiple files, easier for team collaboration
-- Better for large projects with many features
-- **Preferred structure** for most use cases
-- agentful auto-detects and works seamlessly with either structure
-
----
-
-## Step 3: Choose Your Development Mode
-
-agentful supports two ways to build:
-
-### Option A: Natural Conversation Mode (Interactive)
-
-**Best for:** Learning, exploring, getting advice, making decisions
+## Step 3: Start Claude and Generate Agents
 
 ```bash
 claude
 ```
 
-Then type:
-```
-/agentful
-```
-
-**Example conversation:**
-```
-You: I want to start building this task manager
-agentful: Great! I've analyzed your PRODUCT.md. I can see you want to build a task
-        manager with Next.js 14 and TypeScript. I detected 5 features prioritized by
-        importance.
-
-        I recommend we start with the "Add Task" feature since it's CRITICAL.
-        This will create the foundation for the other features.
-
-        Does this approach work for you?
-
-You: Yes, that sounds good
-agentful: Perfect. I'll:
-        1. Create the Task type definition
-        2. Build the TodoInput component
-        3. Create the TodoList container
-        4. Add state management
-        5. Write comprehensive tests
-
-        Ready to start?
-
-You: Go ahead
-agentful: Starting implementation...
-        ✓ Created src/lib/types.ts
-        ✓ Created src/components/TodoInput.tsx
-        ...
-
-You: Wait, can we add a character limit to the input?
-agentful: Absolutely! I'll add a 200 character limit with validation.
-        Updating TodoInput component...
-        ✓ Added maxLength prop and validation
-        ✓ Updated tests to cover edge cases
-
-        Should I continue with the rest of the feature?
-
-You: Yes
-agentful: Continuing...
-```
-
-**Benefits:**
-- Talk naturally, like pairing with a senior developer
-- Make decisions as you go
-- Get explanations for choices
-- Change direction mid-stream
-- Learn best practices
-
-### Option B: Structured Mode (Hands-off)
-
-**Best for:** Hands-off development, continuous building, maximum productivity
-
-```bash
-claude
-```
-
-Then type:
-```
-/agentful-start
-```
-
-agentful will:
-1. Analyze your product spec
-2. Generate specialized agents for your stack
-3. Start building features through structured development
-4. Continue until complete or paused
-5. Only stop when it needs a decision
-
-**Benefits:**
-- No micromanagement needed
-- Works continuously with Ralph Wiggum for extended sessions
-- Maximum productivity
-- Predictable workflow
-
-**For this tutorial**, we'll use **structured mode** to see agentful's full power, but you can switch to conversation mode anytime!
-
----
-
-## Step 4: Start Development (30 seconds)
-
-### Start Claude Code
-
-```bash
-claude
-```
-
-### Begin Structured Development
-
-In the Claude prompt, type:
+Then:
 
 ```
-/agentful-start
+/agentful-generate
 ```
 
----
+This generates specialized agents for your stack:
+- nextjs-agent (knows App Router patterns)
+- typescript-agent (enforces strict typing)
+- tailwind-agent (utility-first styling)
+- vitest-agent (fast unit testing)
+- react-agent (React patterns)
 
-## Step 5: Watch agentful Work
+## Step 4: Watch agentful Work
 
-### What You'll See
+agentful follows this loop:
 
-**Phase 1: Architecture Analysis (first 30 seconds)**
-
+**Phase 1: Architecture Analysis**
 ```
-🏗️  Architect Agent analyzing...
-
-Detected tech stack:
-- Next.js 14
-- TypeScript
-- Tailwind CSS
-- Vitest
-
-Generated specialized agents:
-✓ nextjs-agent
-✓ typescript-agent
-✓ tailwind-agent
-✓ vitest-agent
-✓ react-agent
-
-Architecture analysis complete.
+Architect analyzing tech stack...
+Detected: Next.js 14, TypeScript, Tailwind CSS, Vitest
+Generated 5 specialized agents
 ```
 
-**Phase 2: Planning (next 30 seconds)**
-
+**Phase 2: Planning**
 ```
-📋 Orchestrator planning work...
-
+Orchestrator planning work...
 Feature queue:
 1. Add Task (CRITICAL)
 2. Toggle Task Completion (CRITICAL)
@@ -583,510 +217,261 @@ Starting: Add Task feature
 ```
 
 **Phase 3: Implementation**
-
 ```
-🔧 Frontend Agent implementing...
-
-Created files:
-✓ src/lib/types.ts (Task interface)
-✓ src/components/TaskInput.tsx
-✓ src/components/TaskList.tsx
-✓ src/components/TaskItem.tsx
-✓ src/app/page.tsx (main page)
-
-Updated files:
-✓ src/app/globals.css (Tailwind imports)
+Frontend Agent implementing...
+Created:
+- src/lib/types.ts
+- src/components/TaskInput.tsx
+- src/components/TaskList.tsx
+- src/components/TaskItem.tsx
+- src/app/page.tsx
 ```
 
 **Phase 4: Testing**
-
 ```
-🧪 Tester Agent writing tests...
+Tester Agent writing tests...
+Created:
+- src/components/__tests__/TaskInput.test.tsx
+- src/components/__tests__/TaskList.test.tsx
+- src/components/__tests__/TaskItem.test.tsx
 
-Created test files:
-✓ src/components/__tests__/TaskInput.test.tsx
-✓ src/components/__tests__/TaskList.test.tsx
-✓ src/components/__tests__/TaskItem.test.tsx
-
-Running tests...
-✓ TaskInput renders correctly
-✓ TaskInput validates empty input
-✓ TaskInput validates max length
-✓ TaskList displays tasks
-✓ TaskItem toggles completion
-✓ TaskItem deletes task
-
-14 tests passing
+Running tests... 14 passing
 ```
 
 **Phase 5: Validation**
-
 ```
-🔍 Reviewer Agent validating...
-
-Running quality checks...
-
-TypeScript: ✅ No errors
-ESLint: ✅ No errors
-Tests: ✅ All passing
-Coverage: ✅ 87%
-Dead Code: ✅ None found
-Security: ✅ No issues
+Reviewer Agent validating...
+TypeScript: ✓ No errors
+ESLint: ✓ No errors
+Tests: ✓ All passing
+Coverage: ✓ 87%
 
 Feature complete: Add Task (100%)
 ```
 
-**Phase 6: Next Feature (continues)**
+Process repeats for each feature.
 
-```
-Next: Toggle Task Completion
-→ @frontend implementing toggle functionality
-→ @tester writing toggle tests
-→ @reviewer validating quality
+## Step 5: Monitor Progress
 
-Feature complete: Toggle Task Completion (100%)
-
-Next: Delete Task
-→ @frontend implementing delete functionality
-...
-```
-
-This continues until all features are complete.
-
----
-
-## Step 6: Monitor Progress (ongoing)
-
-While agentful works, check progress anytime:
+Check progress anytime:
 
 ```
 /agentful-status
 ```
 
-**Example output during development:**
-
+Output:
 ```
-🔧 Working on: Filter Tasks feature
-   Phase: implementation
-   Iterations: 15
-   Current task: Creating filter button group
+Working on: Filter Tasks feature
+Phase: implementation
+Iterations: 15
 
-Progress:
-   ████████████░░░░░░░ 60%
+Progress: 60%
 
 Features:
-   ✅ Add Task (100%)
-   ✅ Toggle Task Completion (100%)
-   ✅ Delete Task (100%)
-   🔄 Filter Tasks (40%)
-   ⏳ Task Counter (0%)
+✓ Add Task (100%)
+✓ Toggle Task Completion (100%)
+✓ Delete Task (100%)
+• Filter Tasks (40%)
+○ Task Counter (0%)
 
 Quality Gates:
-   ✅ Tests Passing (42/42)
-   ✅ No Type Errors (TypeScript detected)
-   ✅ Coverage 87%
-   ✅ No Dead Code
-   ✅ No Security Issues
+✓ Tests Passing (42/42)
+✓ No Type Errors
+✓ Coverage 87%
 
 Reading from: PRODUCT.md (flat structure)
-Detected stack: Next.js 14, TypeScript, Tailwind CSS
-
-No pending decisions.
-
-Next Actions:
-   • /agentful-start    - Continue development
-   • /agentful-status   - Check progress (you are here)
-   • /agentful-decide   - Answer pending decisions
-   • /agentful-validate - Run quality checks
-   • /agentful          - Switch to conversation mode
 ```
 
-**Try conversation mode mid-development:**
-```
-/agentful
-```
-```
-You: How's the filter feature coming along?
-agentful: Great! I'm 40% through the Filter Tasks feature. I've created:
-        ✓ FilterButtonGroup component
-        ✓ Filter state management
-        • Currently working on: Task filtering logic
+## Step 6: Handle Decisions
 
-        Should be done in about 5 more iterations. Want me to continue?
-
-You: Yes, but can we also add a task counter showing how many are left?
-agentful: Good idea! I'll add the Task Counter feature after this one.
-        It's already in your product spec as LOW priority, so I'll get to it
-        after the current feature completes.
-
-        Anything else you'd like to adjust?
-
-You: No, that's it
-agentful: Perfect! Continuing with Filter Tasks...
-```
-
-**Benefits of checking status:**
-- See exactly what agentful is working on
-- Track completion percentage
-- View quality gate status
-- Know if decisions are pending
-- Switch to conversation mode to make changes
-
----
-
-## Step 7: Handle Decisions (if needed)
-
-agentful may ask for clarification:
+If agentful needs input:
 
 ```
-⚠️  Decision needed:
-
-For the "Delete Task" feature, should we:
+Decision needed:
+For "Delete Task", should we:
 1. Show confirmation dialog before deleting
 2. Delete immediately without confirmation
-
-Context: This affects user experience. Confirmation is safer but
-adds friction. Immediate delete is faster but riskier.
 ```
 
-**To answer using structured mode:**
+Answer:
 
 ```
 /agentful-decide
 ```
 
-Then provide your preference:
+Then provide your choice:
 ```
-Option 2: Delete immediately without confirmation
-We can add undo functionality in v2 if needed.
-```
-
-**Or answer using conversation mode:**
-
-```
-/agentful
-```
-```
-You: Let's go with option 2, no confirmation
-agentful: Got it! Immediate delete it is.
-        Updating implementation...
-        ✓ Removed confirmation dialog
-        ✓ Updated tests
-
-        Feature complete: Delete Task (100%)
-
-        Ready to move on to Filter Tasks?
+Option 2: Delete immediately
 ```
 
-agentful will immediately resume with your decision.
+agentful resumes immediately.
 
----
+## Step 7: Review Results
 
-## Step 8: Review Results
-
-When agentful completes (100%), review what was built:
-
-### Check Generated Files
+When complete, review:
 
 ```bash
-# View component structure
+# View structure
 tree src/components
 
-# View test coverage
+# Test coverage
 npm run test -- --coverage
 
-# Run TypeScript check
+# Type check
 npx tsc --noEmit
 
-# Run linting
+# Lint
 npm run lint
-```
 
-### Test the App
-
-```bash
-# Start development server
+# Run dev server
 npm run dev
 ```
 
-Open http://localhost:3000 and test:
-1. Add a task
-2. Mark it complete
-3. Delete it
-4. Try filters
-
-### Review Code Quality
-
-```bash
-# Final validation
-/agentful-validate
-```
-
-**Expected output:**
-```
-✅ All tests passing (48/48)
-✅ No type errors (adapts to stack)
-✅ No ESLint errors
-✅ Test coverage: 87%
-✅ No dead code detected
-✅ No security issues
-
-Project complete! 🎉
-```
-
----
+Open http://localhost:3000 and test all features.
 
 ## What agentful Built
 
-### File Structure Created
+### File Structure
 
 ```
 src/
 ├── app/
-│   ├── page.tsx              # Main page with task manager
-│   ├── layout.tsx            # Root layout
-│   └── globals.css           # Tailwind styles
+│   ├── page.tsx
+│   ├── layout.tsx
+│   └── globals.css
 ├── components/
-│   ├── TaskInput.tsx         # Add task input component
-│   ├── TaskList.tsx          # Task list container
-│   ├── TaskItem.tsx          # Individual task display
-│   └── TaskFilters.tsx       # Filter button group
+│   ├── TaskInput.tsx
+│   ├── TaskList.tsx
+│   ├── TaskItem.tsx
+│   └── TaskFilters.tsx
 ├── lib/
-│   └── types.ts              # TypeScript interfaces
+│   └── types.ts
 └── components/
     └── __tests__/
-        ├── TaskInput.test.tsx    # 8 tests
-        ├── TaskList.test.tsx     # 12 tests
-        ├── TaskItem.test.tsx     # 14 tests
-        └── TaskFilters.test.tsx  # 14 tests
+        ├── TaskInput.test.tsx
+        ├── TaskList.test.tsx
+        ├── TaskItem.test.tsx
+        └── TaskFilters.test.tsx
 ```
 
-### Key Features Implemented
+### Features Implemented
 
-✅ **Add Task** - Input with validation, auto-clear, focus management
-✅ **Toggle Completion** - Checkbox with visual strikethrough
-✅ **Delete Task** - Remove button with smooth UX
-✅ **Filter Tasks** - All/Active/Completed with counts
-✅ **Task Counter** - "X tasks left" display
-✅ **Responsive Design** - Mobile-first Tailwind styling
-✅ **Accessibility** - Keyboard navigation, ARIA labels
-✅ **Tests** - 48 tests with 87% coverage
+- Add Task (input with validation)
+- Toggle Completion (checkbox with strikethrough)
+- Delete Task (remove button)
+- Filter Tasks (All/Active/Completed)
+- Task Counter ("X tasks left")
+- Responsive Design (mobile-first Tailwind)
+- Accessibility (keyboard navigation, ARIA)
+- Tests (48 tests, 87% coverage)
 
----
+## Common Issues
 
-## Common Issues and Solutions
+### agentful stops mid-development
 
-### Issue: agentful stops mid-development
-
-**Symptom:** No progress after 5+ minutes
-
-**Solution:**
-```bash
-# Check status
+Check status:
+```
 /agentful-status
-
-# Look for:
-# - Pending decisions? → /agentful-decide
-# - High iteration count? → /agentful-start to resume
-# - Errors? → /agentful-validate
 ```
 
-### Issue: Tests failing
+Look for:
+- Pending decisions → `/agentful-decide`
+- High iteration count → `/agentful-generate` to resume
+- Errors → `/agentful-validate`
 
-**Symptom:** Red test output
+### Tests failing
 
-**Solution:**
-Let agentful handle it. The Fixer agent will:
+Let agentful handle it. Fixer agent will:
 1. Identify failing tests
 2. Fix implementation
 3. Re-run tests
 4. Continue when passing
 
-### Issue: Low test coverage
+### TypeScript errors
 
-**Symptom:** Coverage < 80%
-
-**Solution:**
-agentful will automatically add more tests. Watch for:
-```
-🧪 Tester Agent: Adding edge case tests...
-Coverage now: 82% ✅
-```
-
-### Issue: TypeScript errors
-
-**Symptom:** Type errors in output
-
-**Solution:**
-The Fixer agent will resolve these. If persistent:
+Fixer agent resolves these. If persistent:
 ```bash
-# Check specific errors
 npx tsc --noEmit
-
-# Manually fix if needed
-# Then /agentful-start to continue
+# Fix manually if needed
+/agentful-generate  # Continue
 ```
-
----
 
 ## Customizing Your Project
 
-After agentful completes, you can:
-
 ### Add New Features
-
-**If using PRODUCT.md** (flat structure - also supported):
 
 Edit `PRODUCT.md`:
 ```markdown
 ### 6. Task Due Dates - MEDIUM
 **Description**: Add due dates to tasks
-...
-```
 
-**If using hierarchical structure** (.claude/product/ - preferred):
-
-Edit `.claude/product/index.md` or add a new domain file like `.claude/product/domains/tasks/index.md`:
-```markdown
-### 6. Task Due Dates - MEDIUM
-**Description**: Add due dates to tasks
-...
+**Acceptance Criteria**:
+- [ ] Date picker on add task
+- [ ] Display due date on task
+- [ ] Sort by due date
 ```
 
 Then:
-```bash
-/agentful-start
+```
+/agentful-generate
 ```
 
 ### Modify Existing Features
 
-**If using PRODUCT.md**:
+Update acceptance criteria in `PRODUCT.md`, then run `/agentful-generate`.
 
-Update acceptance criteria in `PRODUCT.md`:
-```markdown
-### 1. Add Task - CRITICAL
-**Acceptance Criteria**:
-- [ ] Input field for task description
-- [ ] Add button
-- [ ] Priority selector (Low/Medium/High) ← NEW
-...
-```
+### Switch to Hierarchical Structure
 
-**If using hierarchical structure**:
-
-Update the relevant domain file in `.claude/product/domains/`
-
-Then:
 ```bash
-/agentful-start
+mkdir -p .claude/product/domains
+mv PRODUCT.md .claude/product/index.md
+# Split content into domain files
 ```
 
-### Switch Between Structures
+agentful auto-detects the change.
 
-You can switch between flat and hierarchical anytime:
+## Recap
 
-- **Flat → Hierarchical**: Move `PRODUCT.md` → `.claude/product/index.md` and split into domain files
-- **Hierarchical → Flat**: Merge all `.claude/product/**/*.md` into single `PRODUCT.md`
+You built a complete task management app with:
 
-agentful auto-detects the change on next run.
+- 5 features fully implemented
+- 48 tests passing
+- 87% test coverage
+- No type errors
+- Responsive design
+- Accessibility features
+- In 30-45 minutes
 
-### Change Styling
+**Key Learnings**:
 
-Edit components directly:
-```tsx
-// src/components/TaskItem.tsx
-<div className="bg-blue-500 ...">  // Change color
-```
+1. **Intelligent Init** - agentful analyzes and creates appropriate structure
+2. **Product Structures** - Flat (PRODUCT.md) or hierarchical (.claude/product/), both auto-detected
+3. **Agent Generation** - `/agentful-generate` creates stack-specific agents
+4. **Progress Monitoring** - `/agentful-status` shows what's being worked on
+5. **Quality Automation** - Tests, type checking, linting enforced automatically
 
-agentful won't overwrite manual edits unless you run `/agentful-start` again.
+**Next Steps**:
 
----
-
-## Next Steps
+- Build more complex projects with hierarchical structure
+- Customize agentful for your specific stack
+- Deploy your project
 
 <div className="grid gap-4 md:grid-cols-2 mt-8">
 
 <div>
 
-### Deploy Your Project
-Deploy to Vercel, Netlify, or your preferred host
-→ Follow your hosting platform's guides
+### Configuration
+Modify agents and commands
+[Configuration Guide](/getting-started/configuration)
 
 </div>
 
 <div>
 
-### Customize agentful
-Modify agents and commands for your workflow
-→ [Configuration Guide](/getting-started/configuration)
+### Deploy
+Deploy to Vercel, Netlify, or your host
+Follow your platform's guides
 
 </div>
 
 </div>
-
----
-
-## Recap
-
-You just built a complete task management application with:
-
-✅ 5 features fully implemented
-✅ 48 tests passing
-✅ 87% test coverage
-✅ No type errors (TypeScript detected automatically)
-✅ Responsive design
-✅ Accessibility features
-✅ All in 30-45 minutes
-
-**What you learned:**
-
-### 1. Intelligent Init
-- agentful analyzes your project during init
-- Automatically detects the best structure (flat vs hierarchical)
-- Creates appropriate files based on project complexity
-- Detects your tech stack and generates specialized agents
-
-### 2. Product Structures
-- **Hierarchical (`.claude/product/index.md`)** - **Preferred** for organization and scalability
-- **Flat (`PRODUCT.md`)** - Also supported for simple projects
-- **Auto-detection** - agentful detects and works with either structure
-- **Switch anytime** - Change structures as your project grows
-
-### 3. Two Development Modes
-- **Structured (`/agentful-start`)** - Hands-off, continuous development
-- **Conversation (`/agentful`)** - Natural interaction, make decisions, explore options
-- **Switch mid-stream** - Use conversation mode to adjust course, then resume
-
-### 4. Progress Monitoring
-- `/agentful-status` - See what's being worked on
-- Track completion percentage and quality gates
-- Identify pending decisions
-- Switch modes to make changes
-
-### 5. Natural Conversation Interface
-- Talk to agentful like a senior developer
-- Get advice before implementing
-- Make mid-course corrections
-- Learn why agentful makes certain decisions
-
-### 6. Quality Automation
-- Tests written automatically
-- Type checking adapts to your stack
-- Linting and coverage enforced
-- Security scanning included
-
-**You're now ready to:**
-- Build more complex projects with hierarchical structure
-- Use natural conversation for exploratory development
-- Run continuous structured development for big projects with Ralph Wiggum
-- Switch between modes as needed
-- Customize agentful for your specific stack
-
-**Key Takeaways:**
-1. agentful does the hard work - it detects structure, stack, and patterns automatically
-2. No manual configuration needed - just edit your product spec and start building
-3. Use conversation mode when learning, structured mode for productivity
-4. Check status anytime to see progress and make adjustments
-5. agentful adapts to YOUR project - not the other way around
-
-Happy building! 🚀

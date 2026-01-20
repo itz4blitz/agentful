@@ -1,49 +1,51 @@
 ---
 title: Conversation Skill
-description: Natural language understanding and intent classification for agentful
+description: Intent classification and context management for natural language commands
 sidebar_position: 1
 ---
 
 # Conversation Skill
 
-The **conversation skill** provides natural language understanding, intent classification, and context management for agentful's conversational interface.
+Classifies user intent and manages conversation context for the `/agentful` command.
 
-## What It Does
+## What It Provides
 
-When you use the [`/agentful`](/commands/agentful) command, this skill:
-- **Classifies your intent** - Determines if you want to add features, fix bugs, check status, etc.
-- **Extracts information** - Pulls out feature names, bug descriptions, requirements
-- **Manages context** - Remembers previous messages in the conversation
-- **Handles ambiguity** - Asks clarifying questions when needed
-- **Resolves references** - Understands pronouns like "it", "that", "the feature"
+**Intent Classification Knowledge**
+- Patterns for recognizing feature requests, bug reports, status queries
+- Methods for extracting information from natural language
+- Ambiguity detection and resolution strategies
 
-## User Experience
+**Context Management Procedures**
+- How to track conversation state across messages
+- Pronoun resolution techniques
+- Session continuity patterns
 
-When you invoke the conversation skill, you'll see a processing indicator on a single line:
+## Intent Categories
 
-```
-/agentful is running... research authentication in this app and identify any gaps
-```
+The skill defines these intent types:
 
-The format is `/agentful is running...` followed by your input text, all on one line. After processing, agentful responds based on the classified intent.
+| Intent | Patterns | Action |
+|--------|----------|--------|
+| `feature_request` | "add", "create", "implement" | Delegate to orchestrator |
+| `bugfix_request` | "fix", "broken", "not working" | Start bugfix workflow |
+| `status_query` | "status", "progress", "how's it going" | Read state, report progress |
+| `validation_request` | "validate", "check quality", "run tests" | Trigger validation |
+| `continue_request` | "continue", "next", "keep going" | Resume last task |
+| `product_query` | "what are we building", "show product" | Display product spec |
 
-## Intent Classification
+## How Agents Use This
 
-The conversation skill recognizes these intents:
+The `/agentful` command uses this skill to:
 
-| Intent | Trigger | Action |
-|--------|---------|--------|
-| **feature_request** | "Add authentication", "Create login" | Delegate to orchestrator |
-| **bugfix_request** | "Fix the login bug", "Not working" | Start bugfix workflow |
-| **status_query** | "How's it going?", "What's left?" | Show status |
-| **validation_request** | "Run tests", "Check quality" | Run validation |
-| **decision_query** | "What needs decisions?" | Show pending decisions |
-| **continue_request** | "Continue", "Next" | Resume development |
-| **product_query** | "What are we building?" | Explain product |
+1. Read user input
+2. Match against intent patterns
+3. Extract relevant entities (feature names, requirements)
+4. Check conversation history for context
+5. Classify intent and route to appropriate handler
 
-## Conversation History
+## Context Structure
 
-The skill maintains conversation history in `.agentful/conversation-history.json`:
+Conversation history stored in `.agentful/conversation-history.json`:
 
 ```json
 {
@@ -53,154 +55,127 @@ The skill maintains conversation history in `.agentful/conversation-history.json
     {
       "user_input": "Add user authentication",
       "classified_intent": "feature_request",
+      "extracted_entities": {
+        "feature": "user authentication"
+      },
       "timestamp": "2026-01-19T02:00:00Z"
     }
   ],
   "context": {
     "last_intent": "feature_request",
+    "last_feature": "user authentication",
     "conversation_state": "active"
   }
 }
 ```
 
-## Context Management
+## Examples
 
-The conversation skill:
-
-### Maintains Context
-- Remembers the last action you took
-- Tracks conversation state (new, active, stalled)
-- Stores feature references for pronoun resolution
-
-### Handles Context Loss
-If you return after a long pause:
+### Feature Request
 ```
-agentful: Welcome back! While you were gone:
-• Completed: User authentication (100%)
-• Now working on: User profile feature
-• Progress: 45%
+Input: "Add user profiles with avatar upload"
 
-Want to continue where we left off?
+Classification:
+  intent: feature_request
+  entities: {
+    feature: "user profiles",
+    requirements: ["avatar upload"]
+  }
+
+Action: Delegate to orchestrator agent
 ```
 
-### Resolves References
+### Status Query
 ```
-You: /agentful Add authentication
-agentful: Starting authentication development...
-You: Make it use NextAuth
-agentful: [Understands "it" = authentication, switches to NextAuth]
+Input: "How's authentication going?"
+
+Classification:
+  intent: status_query
+  target: "authentication"
+
+Action: Read .agentful/state.json, report progress
 ```
 
-## Advanced Features
+### Context Resolution
+```
+Message 1: "Add authentication"
+Message 2: "Make it use NextAuth"
+
+Context resolution:
+  "it" → "authentication" (from last message)
+
+Action: Update authentication approach to use NextAuth
+```
+
+## Implementation Details
+
+**Location:** `.claude/skills/conversation/SKILL.md`
+
+**Model:** Sonnet (optimized for language understanding)
+
+**Tools Used:**
+- Read (conversation history, state files)
+- Write (update conversation history)
+- Glob (find relevant files)
+- Grep (search for context)
+
+## Common Patterns
 
 ### Ambiguity Detection
-```
-You: Add the user thing
-agentful: I found multiple user-related features:
-• User Authentication
-• User Profiles
-• User Settings
-
-Which one do you want to add?
+```markdown
+If user input matches multiple features:
+1. List all matches
+2. Ask user to clarify
+3. Wait for specific selection
 ```
 
 ### Mind Change Handling
-```
-You: Add authentication
-agentful: Starting authentication...
-You: Actually, start with profiles first
-agentful: [Detects priority change, switches to profiles]
-```
-
-### Status Inference
-```
-You: Is authentication done?
-agentful: Let me check... [reads state]
-Authentication is complete! ✅ (100%)
+```markdown
+If new intent contradicts previous:
+1. Detect contradiction
+2. Confirm with user
+3. Update context to new direction
 ```
 
-## Technical Details
-
-**Model:** Sonnet (optimized for language tasks)
-
-**Tools:**
-- Read - Read conversation history and state files
-- Write - Update conversation history
-- Edit - Modify conversation context
-- Glob - Find relevant files
-- Grep - Search for references
-
-**File Locations:**
-- Skill: `.claude/skills/conversation/SKILL.md`
-- History: `.agentful/conversation-history.json`
-- State: `.agentful/state.json`
-
-## Examples
-
-### Example 1: Feature Development
-```
-You: /agentful Add user profiles with avatar upload
-
-conversation skill:
-→ Intent: feature_request
-→ Feature: "user profiles"
-→ Requirements: ["avatar upload"]
-→ Context: {"feature": "user profiles", "requirements": ["avatar upload"]}
-
-Orchestrator: Starting user profiles with avatar upload...
+### Session Resumption
+```markdown
+If >30 minutes since last message:
+1. Summarize last state
+2. Ask if user wants to continue
+3. Provide context refresh
 ```
 
-### Example 2: Bug Fix
+## Usage by Commands
+
+**`/agentful`**
+- Primary consumer of this skill
+- Uses for every user interaction
+- Routes based on classified intent
+
+**`/agentful-status`**
+- Uses context to understand what "it" refers to
+- Determines what progress to show
+
+## Extending the Skill
+
+Add custom intents by editing `.claude/skills/conversation/SKILL.md`:
+
+```markdown
+## Custom Intent: deployment_request
+
+Patterns:
+- "deploy to [environment]"
+- "ship [feature]"
+- "release to production"
+
+Action:
+1. Extract environment (staging, production)
+2. Validate quality gates
+3. Delegate to deployment workflow
 ```
-You: /agentful The login button doesn't work
-
-conversation skill:
-→ Intent: bugfix_request
-→ Bug: "login button doesn't work"
-→ Context: {"bug": "login button", "severity": "high"}
-
-Orchestrator: Investigating login button issue...
-```
-
-### Example 3: Status Check
-```
-You: /agentful How's the authentication feature going?
-
-conversation skill:
-→ Intent: status_query
-→ Target: "authentication feature"
-→ Context: {"query": "authentication status"}
-
-agentful-status: Authentication is 75% complete...
-```
-
-## Best Practices
-
-### 1. Be Specific
-✅ **Good:** "Add user authentication with Google OAuth"
-❌ **Bad:** "Add auth stuff"
-
-### 2. Use Complete Sentences
-✅ **Good:** "I want to add user profile pages with avatar upload"
-❌ **Bad:** "Profiles avatar upload"
-
-### 3. Reference Previous Context
-✅ **Good:** "Actually, start with profiles instead of authentication"
-❌ **Bad:** "Start with profiles" (loses context)
-
-## Troubleshooting
-
-### Issue: "agentful doesn't understand me"
-**Solution:** Use more specific language. Instead of "fix the thing", say "fix the login button"
-
-### Issue: "agentful forgot what we were talking about"
-**Solution:** Long pauses (>30 min) cause context loss. Just summarize: "Continue with authentication"
-
-### Issue: "agentful asks too many questions"
-**Solution:** Provide complete requirements upfront: "Add authentication with Google OAuth, session duration 7 days"
 
 ## See Also
 
-- **[/agentful Command](/commands/agentful)** - Main conversational interface
-- **[Orchestrator Agent](/agents/orchestrator)** - How conversation skill delegates work
-- **[Product-Tracking Skill](/skills/product-tracking)** - How progress is tracked
+- **[/agentful Command](/commands/agentful)** - Uses this skill for intent classification
+- **[Orchestrator Agent](/agents/orchestrator)** - Receives delegated feature requests
+- **[Product-Tracking Skill](/skills/product-tracking)** - Used for status queries

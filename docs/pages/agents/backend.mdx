@@ -1,58 +1,18 @@
 # Backend Agent
 
-The Backend Agent implements server-side code following clean architecture patterns with proper separation of concerns.
+Implements server-side code: API routes, services, repositories, database schemas, authentication.
 
-## Overview
+**Model:** Sonnet
 
-The Backend Agent is responsible for all server-side development:
+**Tools:** Read, Write, Edit, Glob, Grep, Bash
 
-- API routes and controllers
-- Service layer (business logic)
-- Repository layer (data access)
-- Database schemas and migrations
-- Authentication and authorization
-- Input validation
-- Error handling
-
-## Configuration
-
-```yaml
-name: backend
-description: Implements backend services, repositories, controllers, APIs, database schemas, authentication. Never modifies frontend code.
-model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash
-```
-
-**Why Sonnet?** Backend implementation requires understanding patterns but not the highest reasoning level - Opus is better used for orchestration and architecture.
-
-**Framework-Specific Agents:** For framework-specific patterns (Next.js, NestJS, Express, etc.), the [Architect Agent](/agents/architect) generates specialized agents. Use those for framework-specific implementation details.
-
-## Scope
-
-### ✅ What the Backend Agent Does
-
-- **API Routes & Controllers** - HTTP endpoints, request handling
-- **Service Layer** - Business logic, use cases
-- **Repository Layer** - Data access, database queries
-- **Database** - Schemas, migrations, seeders
-- **Authentication** - JWT, sessions, OAuth, authorization
-- **Validation** - Input validation with Zod or similar
-- **Error Handling** - Proper error responses
-
-### ❌ What the Backend Agent Delegates
-
-- UI components → `@frontend`
-- Tests → `@tester`
-- Code review → `@reviewer`
-- Frontend build tools → `@frontend`
+**Scope:** Backend only. Delegates frontend to @frontend, tests to @tester.
 
 ## Implementation Pattern
 
-The Backend Agent follows **layered architecture** in this order:
+Follow layered architecture:
 
-### 1. Repository Layer First
-
-Data access logic:
+### 1. Repository Layer (Data Access)
 
 ```typescript
 // src/repositories/user.repository.ts
@@ -61,209 +21,59 @@ export class UserRepository {
     return db.user.findUnique({ where: { id } });
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return db.user.findUnique({ where: { email } });
-  }
-
   async create(data: CreateUserInput): Promise<User> {
     return db.user.create({ data });
-  }
-
-  async update(id: string, data: UpdateUserInput): Promise<User> {
-    return db.user.update({ where: { id }, data });
-  }
-
-  async delete(id: string): Promise<User> {
-    return db.user.delete({ where: { id } });
   }
 }
 ```
 
-**Key Principles:**
-- Single responsibility (data access only)
-- Database-specific logic
-- No business rules
-- Returns domain entities
+**Responsibility:** Database queries only.
 
-### 2. Service Layer Second
-
-Business logic:
+### 2. Service Layer (Business Logic)
 
 ```typescript
 // src/services/user.service.ts
-import { UserRepository } from '../repositories/user.repository';
-import { hashPassword, comparePassword } from '../lib/crypto';
-
 export class UserService {
   constructor(private repo: UserRepository) {}
 
   async registerUser(input: RegisterInput): Promise<User> {
-    // Check if user exists
     const existing = await this.repo.findByEmail(input.email);
-    if (existing) {
-      throw new ConflictError('User already exists');
-    }
+    if (existing) throw new ConflictError('User exists');
 
-    // Hash password
     const hashedPassword = await hashPassword(input.password);
-
-    // Create user
-    return this.repo.create({
-      ...input,
-      password: hashedPassword,
-    });
-  }
-
-  async authenticateUser(email: string, password: string): Promise<User> {
-    const user = await this.repo.findByEmail(email);
-    if (!user) {
-      throw new UnauthorizedError('Invalid credentials');
-    }
-
-    const isValid = await comparePassword(password, user.password);
-    if (!isValid) {
-      throw new UnauthorizedError('Invalid credentials');
-    }
-
-    return user;
+    return this.repo.create({ ...input, password: hashedPassword });
   }
 }
 ```
 
-**Key Principles:**
-- Business rules and validation
-- Orchestrates repositories
-- Handles errors
-- Domain-specific logic
+**Responsibility:** Business rules, orchestration, validation.
 
-### 3. Controller/Route Last
-
-HTTP handlers:
+### 3. Controller/Route (HTTP Handler)
 
 ```typescript
 // src/app/api/users/route.ts
-import { UserService } from '../../services/user.service';
-import { UserRepository } from '../../repositories/user.repository';
-import { registerSchema } from '../../schemas/user.schema';
-
 export async function POST(req: Request) {
-  try {
-    // Validate input
-    const body = await req.json();
-    const validated = registerSchema.parse(body);
-
-    // Execute use case
-    const service = new UserService(new UserRepository());
-    const user = await service.registerUser(validated);
-
-    // Return response
-    return Response.json(user, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return Response.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      );
-    }
-    if (error instanceof ConflictError) {
-      return Response.json({ error: error.message }, { status: 409 });
-    }
-    throw error;
-  }
-}
-```
-
-**Key Principles:**
-- Thin layer (delegation only)
-- HTTP-specific concerns
-- Input/output handling
-- Status codes
-
-## Technology-Specific Patterns
-
-### Next.js App Router (Route Handlers)
-
-```typescript
-// src/app/api/auth/login/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { AuthService } from '@/services/auth.service';
-
-export async function POST(req: NextRequest) {
   const body = await req.json();
-  const authService = new AuthService();
-  const result = await authService.login(body);
-  return NextResponse.json(result);
+  const validated = registerSchema.parse(body);
+
+  const service = new UserService(new UserRepository());
+  const user = await service.registerUser(validated);
+
+  return Response.json(user, { status: 201 });
 }
 ```
 
-### Express.js
-
-```typescript
-// src/routes/auth.routes.ts
-import { Router } from 'express';
-import { AuthService } from '../services/auth.service';
-import { authenticate } from '../middleware/auth';
-
-const router = Router();
-
-router.post('/register', async (req, res, next) => {
-  try {
-    const authService = new AuthService();
-    const user = await authService.register(req.body);
-    res.status(201).json(user);
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.post('/login', async (req, res, next) => {
-  try {
-    const authService = new AuthService();
-    const result = await authService.login(req.body);
-    res.json(result);
-  } catch (error) {
-    next(error);
-  }
-});
-
-export default router;
-```
-
-### NestJS
-
-```typescript
-// src/auth/auth.controller.ts
-import { Controller, Post, Body } from '@nestjs/common';
-import { AuthService } from './auth.service';
-
-@Controller('auth')
-export class AuthController {
-  constructor(private authService: AuthService) {}
-
-  @Post('register')
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
-  }
-
-  @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
-  }
-}
-```
+**Responsibility:** HTTP-specific logic, delegation.
 
 ## Authentication Patterns
 
-### JWT Authentication
+### JWT
 
 ```typescript
 // src/services/auth.service.ts
 import { sign, verify } from 'jsonwebtoken';
-import { UserRepository } from '../repositories/user.repository';
 
 export class AuthService {
-  constructor(private repo: UserRepository) {}
-
   async login(email: string, password: string) {
     const user = await this.repo.findByEmail(email);
     if (!user) throw new UnauthorizedError('Invalid credentials');
@@ -271,17 +81,8 @@ export class AuthService {
     const isValid = await comparePassword(password, user.password);
     if (!isValid) throw new UnauthorizedError('Invalid credentials');
 
-    const token = sign(
-      { userId: user.id },
-      process.env.JWT_SECRET!,
-      { expiresIn: '7d' }
-    );
-
+    const token = sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '7d' });
     return { token, user };
-  }
-
-  verifyToken(token: string) {
-    return verify(token, process.env.JWT_SECRET!);
   }
 }
 ```
@@ -290,64 +91,33 @@ export class AuthService {
 
 ```typescript
 // src/middleware/auth.ts
-import { Request, Response, NextFunction } from 'express';
-
-export function authenticate(req: Request, res: Response, next: NextFunction) {
+export function authenticate(req: Request) {
   const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) throw new UnauthorizedError('No token');
 
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided' });
-  }
-
-  try {
-    const decoded = verifyToken(token);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid token' });
-  }
+  const decoded = verify(token, process.env.JWT_SECRET!);
+  return decoded;
 }
 ```
 
-## Validation Patterns
+## Validation
 
-### Zod Schema Validation
+Use Zod for input validation:
 
 ```typescript
 // src/schemas/user.schema.ts
 import { z } from 'zod';
 
 export const registerSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email(),
+  password: z.string().min(8),
+  name: z.string().min(2)
 });
-
-export type RegisterInput = z.infer<typeof registerSchema>;
-```
-
-### Controller Validation
-
-```typescript
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const validated = registerSchema.parse(body);
-    // Proceed with validated data
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return Response.json(
-        { error: 'Validation failed', details: error.errors },
-        { status: 400 }
-      );
-    }
-  }
-}
 ```
 
 ## Error Handling
 
-### Custom Error Classes
+Custom error classes:
 
 ```typescript
 // src/lib/errors.ts
@@ -364,33 +134,19 @@ export class UnauthorizedError extends Error {
     this.name = 'UnauthorizedError';
   }
 }
-
-export class NotFoundError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'NotFoundError';
-  }
-}
 ```
 
-### Error Middleware
+Error middleware:
 
 ```typescript
 // src/middleware/error.ts
-import { Request, Response, NextFunction } from 'express';
-
-export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
+export function errorHandler(err: Error, req, res, next) {
   if (err instanceof ConflictError) {
     return res.status(409).json({ error: err.message });
   }
   if (err instanceof UnauthorizedError) {
     return res.status(401).json({ error: err.message });
   }
-  if (err instanceof NotFoundError) {
-    return res.status(404).json({ error: err.message });
-  }
-
-  console.error('Unexpected error:', err);
   res.status(500).json({ error: 'Internal server error' });
 }
 ```
@@ -399,129 +155,114 @@ export function errorHandler(err: Error, req: Request, res: Response, next: Next
 
 ```
 src/
-├── repositories/          # Data access layer
-│   ├── user.repository.ts
-│   ├── base.repository.ts
-│   └── index.ts
-├── services/              # Business logic
+├── repositories/        # Data access
+│   └── user.repository.ts
+├── services/            # Business logic
 │   ├── user.service.ts
-│   ├── auth.service.ts
-│   └── index.ts
-├── controllers/           # HTTP handlers
-│   ├── user.controller.ts
-│   ├── auth.controller.ts
-│   └── index.ts
-├── middleware/            # Express/Nest middleware
+│   └── auth.service.ts
+├── controllers/         # HTTP handlers
+│   └── user.controller.ts
+├── middleware/          # Express/Nest middleware
 │   ├── auth.ts
-│   ├── error.ts
-│   └── index.ts
-├── schemas/               # Validation schemas
-│   ├── user.schema.ts
-│   └── index.ts
-├── lib/                   # Utilities
-│   ├── crypto.ts
-│   ├── errors.ts
-│   └── validation.ts
-└── types/                 # TypeScript types
-    ├── user.types.ts
-    └── index.ts
+│   └── error.ts
+├── schemas/             # Validation
+│   └── user.schema.ts
+└── lib/                 # Utilities
+    ├── crypto.ts
+    └── errors.ts
+```
+
+## Framework Examples
+
+### Next.js App Router
+
+```typescript
+// src/app/api/auth/login/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const authService = new AuthService();
+  const result = await authService.login(body);
+  return NextResponse.json(result);
+}
+```
+
+### Express
+
+```typescript
+// src/routes/auth.routes.ts
+import { Router } from 'express';
+
+const router = Router();
+
+router.post('/login', async (req, res, next) => {
+  try {
+    const authService = new AuthService();
+    const result = await authService.login(req.body);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+});
+```
+
+### NestJS
+
+```typescript
+// src/auth/auth.controller.ts
+import { Controller, Post, Body } from '@nestjs/common';
+
+@Controller('auth')
+export class AuthController {
+  constructor(private authService: AuthService) {}
+
+  @Post('login')
+  async login(@Body() loginDto: LoginDto) {
+    return this.authService.login(loginDto);
+  }
+}
 ```
 
 ## Rules
 
-### ALWAYS
+**ALWAYS:**
+- Use TypeScript strict mode
+- Validate inputs with Zod
+- Handle errors explicitly
+- Follow Repository → Service → Controller pattern
+- Use environment variables for secrets
 
-1. Use TypeScript strict mode
-2. Handle errors explicitly with proper HTTP status codes
-3. Validate inputs with Zod or similar
-4. Follow the Repository → Service → Controller pattern
-5. Use environment variables for secrets
-6. Return consistent response formats
-
-### NEVER
-
-1. Leave TODO comments - implement fully or document blocker
-2. Modify frontend code (components, pages, styles)
-3. **NEVER modify code outside your domain** - stay in backend scope
-4. Skip error handling
-5. Hardcode secrets or configuration
-6. Mix concerns (e.g., database queries in controllers)
-7. Return different response formats inconsistently
-
-## Best Practices
-
-### Dependency Injection
-
-```typescript
-// Good: DI allows testing
-export class UserService {
-  constructor(private repo: UserRepository) {}
-
-  async getUser(id: string) {
-    return this.repo.findById(id);
-  }
-}
-
-// Bad: Hard dependency
-export class UserService {
-  async getUser(id: string) {
-    const repo = new UserRepository(); // ❌
-    return repo.findById(id);
-  }
-}
-```
-
-### Error Messages
-
-```typescript
-// Good: Specific, actionable errors
-throw new ConflictError('User with email "test@example.com" already exists');
-
-// Bad: Generic errors
-throw new Error('Failed'); // ❌
-```
-
-### Response Consistency
-
-```typescript
-// Good: Consistent structure
-return Response.json({
-  data: user,
-  meta: { timestamp: new Date().toISOString() }
-});
-
-// Bad: Inconsistent
-return Response.json(user); // ❌ Sometimes wrapped
-return Response.json({ user }); // ❌ Sometimes not
-```
+**NEVER:**
+- Modify frontend code (components, pages, styles)
+- Skip error handling
+- Hardcode secrets
+- Mix concerns (database queries in controllers)
 
 ## Common Tasks
 
-### Creating a New Feature
+**Create feature:**
+1. Repository - data access
+2. Service - business logic
+3. Schema - validation
+4. Controller - HTTP endpoint
+5. Delegate to @tester for tests
 
-1. **Repository** - Create data access methods
-2. **Service** - Implement business logic
-3. **Schema** - Define validation
-4. **Controller** - Create HTTP endpoint
-5. **Test** - Delegate to @tester
-
-### Adding Authentication
-
-1. Create auth service with JWT logic
+**Add authentication:**
+1. Create auth service with JWT
 2. Add authenticate middleware
-3. Protect routes with middleware
+3. Protect routes
 4. Add login/register endpoints
 
-### Database Migration
-
-1. Update schema (Prisma, Drizzle, etc.)
+**Database migration:**
+1. Update schema (Prisma/Drizzle)
 2. Generate migration
 3. Run migration
-4. Update repository if needed
+4. Update repository
 
 ## After Implementation
 
-Report to orchestrator:
+Report to Orchestrator:
 
 ```json
 {
@@ -530,85 +271,18 @@ Report to orchestrator:
     "src/services/user.service.ts",
     "src/app/api/users/route.ts"
   ],
-  "files_modified": [],
   "implementation": "User CRUD API with JWT authentication",
   "dependencies_added": ["jsonwebtoken", "bcryptjs", "zod"],
   "next_steps": [
     "Write unit tests for UserService",
-    "Write integration tests for API endpoints",
-    "Add frontend components for user management"
+    "Write integration tests for API endpoints"
   ]
 }
 ```
 
-## Troubleshooting
-
-### Circular Dependencies
-
-**Symptom:** Import cycles between services
-
-**Solutions:**
-1. Create a shared types file
-2. Use dependency injection
-3. Restructure to avoid bidirectional dependencies
-
-### Type Errors
-
-**Symptom:** TypeScript compilation fails
-
-**Solutions:**
-1. Run `npx tsc --noEmit` to see errors
-2. Fix type mismatches
-3. Ensure all imports are typed
-
-### Database Connection Issues
-
-**Symptom:** Repository methods fail
-
-**Solutions:**
-1. Check environment variables
-2. Verify database is running
-3. Test connection separately
-
-## Integration
-
-### With Orchestrator
-
-```
-[Orchestrator] → "Implement user authentication"
-  ↓
-[Backend] → Creates auth service, repository, routes
-  ↓
-[Orchestrator] → "Review authentication"
-  ↓
-[Reviewer] → Validates
-```
-
-### With Frontend
-
-```
-[Backend] → Creates POST /api/auth/login
-  ↓
-[Frontend] → Creates login form that calls API
-  ↓
-[Backend] → Returns JWT token
-```
-
-### With Tester
-
-```
-[Backend] → Implements UserService
-  ↓
-[Tester] → Writes unit tests
-  ↓
-[Backend] → Fixes any issues found
-```
-
 ## See Also
 
-- [Back to Agents Overview](/agents) - All available agents
-- [Frontend Agent](/agents/frontend) - Client-side implementation (do not modify)
-- [Architect Agent](/agents/architect) - Generates framework-specific agents
-- [Tester Agent](/agents/tester) - Writes tests for your backend code
-- [Reviewer Agent](/agents/reviewer) - Validates your backend implementation
-- [Orchestrator Agent](/agents/orchestrator) - Coordinates backend development
+- [Frontend Agent](/agents/frontend) - Client-side code
+- [Tester Agent](/agents/tester) - Tests for backend
+- [Reviewer Agent](/agents/reviewer) - Validates code
+- [Orchestrator Agent](/agents/orchestrator) - Coordinates work

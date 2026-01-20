@@ -1,421 +1,98 @@
 # Orchestrator Agent
 
-The Orchestrator is the central coordinator of the agentful system. It manages the entire development lifecycle through intelligent work classification, routing, state management, and delegation to specialist agents.
+The Orchestrator coordinates all development work. It reads state, delegates to specialists, tracks progress, and never writes code directly.
 
-## Overview
+## What It Does
 
-The Orchestrator **never writes code directly**. Instead, it acts as an intelligent project manager that:
+- **Classifies work type** - Feature, bugfix, enhancement, refactor
+- **Reads project state** - Completion tracking, pending decisions, blockers
+- **Delegates to specialists** - Routes work to appropriate agents
+- **Manages autonomous loops** - Continues until 100% complete
+- **Validates results** - Ensures quality through Reviewer
+- **Tracks progress** - Updates `.agentful/completion.json`
 
-1. **Classifies work type** - Determines what kind of work is being requested
-2. **Checks product readiness** - Validates specification quality before starting
-3. **Detects context** - Knows if it's working on agentful itself or a user project
-4. **Reads project state** - Understands current progress and blockers
-5. **Delegates to specialists** - Routes work to appropriate agents
-6. **Validates results** - Ensures quality through reviewer agent
-7. **Tracks progress** - Updates completion state with nested domain/feature structure
-8. **Manages decisions** - Handles user input and blockers
+**Model:** Opus (requires highest reasoning for coordination)
 
-## Configuration
+**Tools:** Read, Write, Edit, Glob, Grep, Task, AskUserQuestion, TodoWrite
 
-```yaml
-name: orchestrator
-description: Coordinates autonomous product development. Reads state, delegates to specialists, tracks progress. NEVER writes code directly.
-model: opus
-tools: Read, Write, Edit, Glob, Grep, Task, AskUserQuestion, TodoWrite
+## Core Rule
+
+**The Orchestrator NEVER writes code.** It only coordinates other agents.
+
+## Work Classification
+
+The Orchestrator intelligently classifies incoming work:
+
+| Type | Examples | Loops? |
+|------|----------|--------|
+| **FEATURE_DEVELOPMENT** | "Build auth", "Add dashboard" | Yes |
+| **BUGFIX** | "Fix login error", "Resolve crash" | No |
+| **ENHANCEMENT** | "Add X to Y", "Improve Z" | No |
+| **REFACTOR** | "Clean up code", "Improve structure" | No |
+| **MAINTENANCE** | "Update deps", "Security scan" | No |
+
+### Feature Development (Autonomous)
+
 ```
-
-**Why Opus?** The Orchestrator needs the highest reasoning capability to make complex decisions about work classification, prioritization, delegation, and progress tracking across potentially complex domain/feature hierarchies.
-
-## Work Classification System
-
-The Orchestrator intelligently classifies all incoming work into specific types, each with its own workflow:
-
-### Work Types
-
-| Type | When | Workflow | Autonomous Loop? |
-|------|------|----------|------------------|
-| **FEATURE_DEVELOPMENT** | "Add X feature", "Build Y" | Read spec → Build → Test → Review → Loop | ✅ Yes |
-| **BUGFIX** | "Fix X bug", "Error in Y" | Fix → Test → Review → Stop | ❌ No |
-| **ENHANCEMENT** | "Add X to Y", "Enhance Z" | Enhance → Test → Review → Stop | ❌ No |
-| **REFACTOR** | "Refactor X", "Improve Y code" | Refactor → Test → Review → Stop | ❌ No |
-| **META_WORK** | "Add agent/command" (agentful only) | Meta-workflow → Stop | ❌ No |
-| **MAINTENANCE** | "Update dependencies" | Update → Validate → Stop | ❌ No |
-
-### 1. FEATURE_DEVELOPMENT (Autonomous Loop)
-
-**Recognition**: User says "add X feature", "build Y", or references product specification.
-
-**Workflow**:
-```
-1. Read product specification (auto-detect format)
-2. Pick next uncompleted feature by priority
-3. Delegate to specialist agents
-4. Run tests and validation
-5. Fix any issues
-6. Update completion tracking
-7. LOOP until 100% complete
-```
-
-**Example**:
-```
-User: "Build the authentication system"
+User: "Build authentication"
 
 Orchestrator:
-- Classified as: FEATURE_DEVELOPMENT
-- Reading product specification...
-- Found: authentication domain (CRITICAL priority)
-- Delegating login feature to @backend and @frontend
-- Running @tester for coverage
-- Running @reviewer for validation
-- Updated: completion.json auth domain = 65%
-- Continuing to next feature...
+1. Reads product spec
+2. Picks next feature (login)
+3. @backend → API routes
+4. @frontend → Login page
+5. @tester → Tests
+6. @reviewer → Validation
+7. @fixer → Fix issues
+8. Updates completion.json
+9. Picks next feature (register)
+10. Repeats until auth = 100%
 ```
 
-### 2. BUGFIX (Quick Fix)
+**Loops until complete.**
 
-**Recognition**: User says "fix X bug", "X is broken", "error in Y".
+### Bugfix (One-Shot)
 
-**Workflow**:
 ```
-1. Analyze bug description
-2. Delegate to appropriate specialist
-3. Implement fix
-4. Add regression test
-5. Run reviewer
-6. STOP (don't continue to next task)
-```
-
-**Example**:
-```
-User: "Fix the login bug with special characters"
+User: "Fix login bug"
 
 Orchestrator:
-- Classified as: BUGFIX
-- Delegating to @frontend agent
-- [Fix] Updated regex to escape special chars
-- [Test] Added regression test
-- [Validate] All tests passing
-- Complete: Bug fixed
+1. @backend → Fix the bug
+2. @tester → Add regression test
+3. @reviewer → Validate fix
+4. Done (doesn't continue)
 ```
 
-### 3. ENHANCEMENT (Add to Existing)
-
-**Recognition**: User says "add X to Y", "enhance Z", "improve W with X".
-
-**Workflow**:
-```
-1. Identify target for enhancement
-2. Read existing code for context
-3. Delegate enhancement implementation
-4. Ensure existing functionality preserved
-5. Add tests for new capability
-6. Run reviewer
-7. STOP
-```
-
-### 4. REFACTOR (Improve Structure)
-
-**Recognition**: User says "refactor X", "improve Y code", "clean up Z".
-
-**Workflow**:
-```
-1. Identify code to refactor
-2. Design refactoring approach
-3. Delegate incremental refactoring
-4. Verify behavior preserved through tests
-5. Run reviewer
-6. STOP
-```
-
-### 5. META_WORK (Framework Development)
-
-**Recognition**: Working on agentful itself AND user says "add agent/command", "improve agent".
-
-**Workflow**:
-```
-1. Verify we're in agentful repository
-2. Understand what's being added/changed
-3. Delegate to appropriate meta-workflow
-4. Test the change
-5. Update documentation
-6. STOP
-```
-
-**Available when**:
-- Working in agentful repository
-- Repository has `.claude/agents/orchestrator.md`
-- Package.json name is "agentful"
-
-### 6. MAINTENANCE (Keep Project Healthy)
-
-**Recognition**: User says "update dependencies", "security scan", "fix vulnerabilities".
-
-**Workflow**:
-```
-1. Identify maintenance task
-2. Run appropriate commands
-3. Validate changes
-4. STOP
-```
-
-## Product Readiness Gates
-
-Before starting development work, the Orchestrator checks if your product specification is ready.
-
-### Product Analysis Check
-
-If `.claude/product/product-analysis.json` exists (created by `/agentful-product`), the Orchestrator will:
-
-**1. Check for Blocking Issues**
-
-```
-⚠️ Product specification has 3 unresolved blocking issues.
-
-Starting development now may result in:
-• Ambiguous implementations requiring rework
-• More decision points blocking autonomous progress
-• Lower quality outcomes due to unclear requirements
-
-Recommendation: Run /agentful-product to resolve issues first
-
-Continue anyway? Type 'continue' to bypass this check:
-```
-
-If blocking issues exist, **workflow STOPS** unless user explicitly types "continue".
-
-**2. Check Readiness Score**
-
-```
-⚠️ Product specification readiness: 65%
-
-While no blocking issues exist, the spec has gaps that may cause:
-• Unclear acceptance criteria
-• Missing technical specifications
-• Potential scope ambiguity
-
-Recommendation: Run /agentful-product to improve readiness
-
-Continue anyway? [Y/n]:
-```
-
-Low readiness score **warns but doesn't block** - respects user's choice to proceed.
-
-**Why this matters**:
-- Prevents wasted effort on ambiguous specifications
-- Improves autonomous development success rate
-- Reduces decision blockers during implementation
-- User always has control to bypass if needed
-
-## Context Awareness
-
-The Orchestrator detects whether it's working on agentful itself or a user project.
-
-### Detection Algorithm
-
-```bash
-if exists(".claude/agents/orchestrator.md") AND
-   exists("bin/cli.js") AND
-   exists("package.json") AND
-   package.json.name === "agentful":
-    context = "agentful_framework"
-    capabilities = [
-      "framework_development",
-      "agent_modification",
-      "skill_updates",
-      "command_creation"
-    ]
-else:
-    context = "user_project"
-    capabilities = [
-      "feature_development",
-      "bugfixes",
-      "enhancements",
-      "refactoring"
-    ]
-```
-
-### Context-Specific Capabilities
-
-**In agentful repository**:
-- Can modify agents in `.claude/agents/`
-- Can update skills in `.claude/skills/`
-- Can create new commands in `.claude/commands/`
-- Can self-improve framework capabilities
-
-**In user projects**:
-- Builds features according to product spec
-- Uses generated specialized agents
-- Cannot modify framework files
-- Cannot create new agent types
-
-## Product Structure Support
-
-The Orchestrator supports both flat and hierarchical product specifications with automatic detection.
-
-### Structure Types
-
-**Option 1: Flat Structure (Simple Projects)**
-```
-├── PRODUCT.md                    # Single file with all features
-# OR
-└── .claude/product/
-    └── index.md                  # Product overview with feature list
-```
-
-**Option 2: Hierarchical Structure (Organized Projects)**
-```
-└── .claude/product/
-    ├── index.md                  # Product overview and goals
-    └── domains/                  # Domain groupings
-        ├── authentication/
-        │   ├── index.md          # Domain overview
-        │   └── features/
-        │       ├── login.md
-        │       ├── register.md
-        │       └── password-reset.md
-        └── user-management/
-            ├── index.md
-            └── features/
-                ├── profile.md
-                └── settings.md
-```
-
-### Auto-Detection Algorithm
-
-The Orchestrator automatically detects which format you're using:
-
-```bash
-# Step 1: Check for hierarchical structure first
-if exists(".claude/product/domains/*/index.md"):
-    structure_type = "hierarchical"
-    product_root = ".claude/product"
-
-# Step 2: Fall back to flat structure
-elif exists("PRODUCT.md"):
-    structure_type = "flat"
-    product_root = "."
-
-elif exists(".claude/product/index.md"):
-    structure_type = "flat"
-    product_root = ".claude/product"
-
-else:
-    error("No product specification found")
-```
-
-**Priority Order**:
-1. Hierarchical (`.claude/product/domains/*/index.md`) - preferred for complex projects
-2. Flat (`PRODUCT.md`) - legacy quick-start format
-3. Flat (`.claude/product/index.md`) - new flat format in .claude directory
-
-### Reading Strategy
-
-**For Hierarchical Structure**:
-1. Read `.claude/product/index.md` for overall context
-2. Discover all `.claude/product/domains/*/index.md` files
-3. For each domain, discover `.claude/product/domains/*/features/*.md` files
-4. Build mental model: Domain → Features → Subtasks
-5. Use nested completion tracking
-
-**For Flat Structure**:
-1. Read `PRODUCT.md` or `.claude/product/index.md`
-2. Extract feature list
-3. Build mental model: Features (flat list)
-4. Use flat completion tracking
+**Stops after fixing.**
 
 ## State Management
 
-The Orchestrator maintains three key state files in `.agentful/`:
+Three key files in `.agentful/`:
 
 ### 1. state.json
 
-Tracks current work state and iteration count.
+Current work state:
 
 ```json
 {
-  "version": "1.0",
   "current_task": "implement-user-auth",
   "current_phase": "implementation",
   "iterations": 5,
-  "last_updated": "2026-01-18T00:00:00Z",
   "blocked_on": []
 }
 ```
 
-**Fields**:
-- `current_task` - Currently executing task
-- `current_phase` - Phase: idle, implementation, validation, fixing
-- `iterations` - Number of loop iterations
-- `blocked_on` - List of decision IDs blocking progress
-
 ### 2. completion.json
 
-Tracks feature/domain completion and quality gates.
+Feature completion tracking:
 
-**For Hierarchical Structure** (with domains):
 ```json
 {
-  "domains": {
+  "features": {
     "authentication": {
       "status": "in_progress",
       "score": 65,
-      "features": {
-        "login": {
-          "status": "complete",
-          "score": 100,
-          "completed_at": "2026-01-18T01:00:00Z"
-        },
-        "register": {
-          "status": "in_progress",
-          "score": 60,
-          "notes": "Backend done, frontend pending"
-        },
-        "password-reset": {
-          "status": "pending",
-          "score": 0
-        }
-      }
-    },
-    "user-management": {
-      "status": "pending",
-      "score": 0,
-      "features": {
-        "profile": { "status": "pending", "score": 0 },
-        "settings": { "status": "pending", "score": 0 }
-      }
-    }
-  },
-  "features": {},
-  "gates": {
-    "tests_passing": false,
-    "no_type_errors": false,
-    "no_dead_code": false,
-    "coverage_80": false
-  },
-  "overall": 32,
-  "last_updated": "2026-01-18T00:00:00Z"
-}
-```
-
-**Scoring for hierarchical structure**:
-- Feature score: Average of subtask scores
-- Domain score: Average of feature scores within domain
-- Overall score: (Average of domain scores + gate scores) / (domain count + 4)
-
-**For Flat Structure** (without domains):
-```json
-{
-  "domains": {},
-  "features": {
-    "authentication": {
-      "status": "complete",
-      "score": 100,
-      "completed_at": "2026-01-18T01:00:00Z"
-    },
-    "user-profile": {
-      "status": "in_progress",
-      "score": 45,
-      "notes": "Backend done, frontend pending"
+      "completed_at": null
     },
     "dashboard": {
       "status": "pending",
@@ -425,652 +102,331 @@ Tracks feature/domain completion and quality gates.
   "gates": {
     "tests_passing": true,
     "no_type_errors": true,
-    "no_dead_code": true,
+    "no_dead_code": false,
     "coverage_80": false
   },
-  "overall": 48
+  "overall": 32
 }
 ```
 
-**Scoring for flat structure**:
-- Overall score: (Average of feature scores + gate scores) / (feature count + 4)
-
-**Quality Gates**:
-- `tests_passing` - All tests pass
-- `no_type_errors` - TypeScript/type checking passes
-- `no_dead_code` - No unused imports or dead code
-- `coverage_80` - Test coverage >= 80%
-
-All gates must be `true` to ship (overall = 100).
+**Quality gates must all be true for 100% completion.**
 
 ### 3. decisions.json
 
-Tracks pending and resolved user decisions.
+Pending user decisions:
 
 ```json
 {
   "pending": [
     {
       "id": "decision-001",
-      "question": "Should auth use JWT or session cookies?",
-      "options": [
-        "JWT (stateless, scalable)",
-        "Sessions (simpler, built-in)",
-        "Clerk (managed service)"
-      ],
-      "context": "Building authentication system",
-      "blocking": ["authentication/login", "authentication/register"],
-      "timestamp": "2026-01-18T00:00:00Z"
-    }
-  ],
-  "resolved": []
-}
-```
-
-## Orchestrator Loop Flow
-
-### Startup Process
-
-On every loop iteration:
-
-```
-1. Read product specification (auto-detect format)
-   ├─ Hierarchical: Read index.md, all domains, all features
-   └─ Flat: Read PRODUCT.md or index.md
-
-2. Read .agentful/state.json (current work state)
-
-3. Read .agentful/completion.json (progress tracking)
-
-4. Read .agentful/decisions.json (pending decisions)
-
-5. Read .agentful/architecture.json (tech stack, if exists)
-
-6. Check .claude/product/product-analysis.json (readiness gates)
-```
-
-### Work Selection Priority
-
-The Orchestrator selects work in this order:
-
-1. **Critical failures** - Broken tests, type errors, blocked PRs
-2. **Unblock work** - Items waiting on single decision
-3. **CRITICAL priority features** - As defined in specs
-4. **HIGH priority features**
-5. **MEDIUM priority features**
-6. **LOW priority features**
-7. **Tests for completed features**
-8. **Polish/Optimization** - Only when everything else done
-
-### For Hierarchical Structure
-
-When working with domains:
-
-1. Read all domain index files to understand priorities
-2. Within each domain, prioritize features by priority level
-3. Complete all subtasks within a feature before marking complete
-4. Complete all features within a domain before marking domain complete
-5. Track progress at three levels: subtask → feature → domain
-
-**Example progression**:
-```
-authentication domain (CRITICAL)
-├── login feature (CRITICAL)
-│   ├── Create login form UI → COMPLETE
-│   └── Implement login API → COMPLETE
-├── register feature (CRITICAL)
-│   ├── Create registration form UI → IN_PROGRESS ← Working here
-│   └── Implement registration API → PENDING
-└── password-reset feature (HIGH)
-    └── [all subtasks PENDING]
-```
-
-Work on the highest priority incomplete subtask within the highest priority domain.
-
-### Check Blockers
-
-```javascript
-if (workItem.blockedOn && workItem.blockedOn.length > 0) {
-  // Move to next non-blocked item
-  // Tell user to run /agentful-decide
-}
-
-if (allWorkBlocked) {
-  // Tell user to run /agentful-decide
-  // STOP autonomous loop
-}
-```
-
-## Delegation Pattern
-
-The Orchestrator NEVER writes code. It uses the `Task` tool to spawn specialist agents:
-
-### Backend Work
-
-```markdown
-# For hierarchical structure
-Task("backend agent", "Implement JWT login API per product/domains/authentication/features/login.md")
-
-# For flat structure
-Task("backend agent", "Implement user authentication with JWT per product/index.md section 3")
-```
-
-### Frontend Work
-
-```markdown
-# For hierarchical structure
-Task("frontend agent", "Create login form UI per product/domains/authentication/features/login.md")
-
-# For flat structure
-Task("frontend agent", "Create login page with validation per product/index.md")
-```
-
-### Testing
-
-```markdown
-# For hierarchical structure
-Task("tester agent", "Write tests for login feature per product/domains/authentication/features/login.md")
-
-# For flat structure
-Task("tester agent", "Write unit tests for auth service per product/index.md")
-```
-
-### Review
-
-After ANY implementation work:
-
-```markdown
-Task("reviewer agent", "Review all changes in src/auth/")
-```
-
-### Delegation Best Practices
-
-1. Always reference specific product file (domain/feature.md or product/index.md)
-2. Include enough context for specialist to work independently
-3. For hierarchical: Delegate subtasks, track feature completion
-4. For flat: Delegate entire features, track feature completion
-5. Always follow: implementation → testing → review → fix cycle
-
-## Decision Handling
-
-When user input is needed:
-
-### 1. Add to decisions.json
-
-**For hierarchical structure**:
-```json
-{
-  "id": "decision-001",
-  "question": "Should auth use JWT or session cookies?",
-  "options": [
-    "JWT (stateless, scalable)",
-    "Sessions (simpler, built-in)",
-    "Clerk (managed service)"
-  ],
-  "context": "Building authentication for product/domains/authentication/",
-  "blocking": ["authentication/login", "authentication/register"],
-  "timestamp": "2026-01-18T00:00:00Z"
-}
-```
-
-**For flat structure**:
-```json
-{
-  "id": "decision-001",
-  "question": "Should auth use JWT or session cookies?",
-  "options": [
-    "JWT (stateless, scalable)",
-    "Sessions (simpler, built-in)",
-    "Clerk (managed service)"
-  ],
-  "context": "Building authentication for product/index.md",
-  "blocking": ["auth-feature", "user-profile-feature"],
-  "timestamp": "2026-01-18T00:00:00Z"
-}
-```
-
-### 2. Stop Work on Blocked Features
-
-Move to the next non-blocked work item.
-
-### 3. Notify User
-
-```markdown
-⚠️ User decision needed: Should auth use JWT or session cookies?
-
-Run: /agentful-decide
-
-Blocked features:
-- authentication/login
-- authentication/register
-```
-
-## Architecture Re-Analysis
-
-After updating `completion.json`, the Orchestrator checks if architecture needs re-analysis.
-
-### When to Trigger Re-Analysis
-
-**1. First code written in new project**:
-```json
-{
-  "needs_reanalysis_after_first_code": true,
-  "confidence": 0.4,
-  "project_type": "new"
-}
-```
-AND source files now exist (weren't there initially)
-
-**2. Low confidence with existing code**:
-```json
-{
-  "confidence": 0.3,
-  "project_type": "existing"
-}
-```
-AND source files exist to analyze
-
-**3. Manual trigger**:
-User explicitly requests re-analysis
-
-### Re-Analysis Workflow
-
-```
-After first feature completes in new project:
-
-1. Check: architecture.needs_reanalysis_after_first_code == true
-2. Check: Source files now exist (src/**/*.{ts,tsx,js,jsx,...})
-3. Trigger: "Re-analyzing project architecture..."
-4. Delegate: Task("architect", "Re-analyze project with real code patterns")
-5. Architect samples actual code and updates agents
-6. Set: needs_reanalysis_after_first_code = false
-7. Update: confidence score (0.4 → 0.8+)
-8. Continue: Use improved agents for remaining features
-```
-
-**Benefits**:
-- Start fast with declared stack (no blocking)
-- Learn real patterns after first implementation
-- Continuously improve agent quality
-- Higher confidence for remaining work
-
-## Loop Until Done
-
-The Orchestrator continues looping until:
-
-**For hierarchical structure**:
-```javascript
-completion.overall === 100 &&
-Object.values(completion.gates).every(gate => gate === true) &&
-Object.values(completion.domains).every(d => d.status === "complete") &&
-Object.values(completion.domains).every(d =>
-  Object.values(d.features).every(f => f.status === "complete")
-)
-```
-
-**For flat structure**:
-```javascript
-completion.overall === 100 &&
-Object.values(completion.gates).every(gate => gate === true) &&
-Object.values(completion.features).every(f => f.status === "complete")
-```
-
-## Ralph Wiggum Integration
-
-When running in a Ralph loop (`/ralph-loop`), output this **ONLY when truly complete**:
-
-```
-<promise>AGENTFUL_COMPLETE</promise>
-```
-
-Until then, keep iterating. Each loop iteration:
-1. Re-read state files (may have been updated)
-2. Pick next work item
-3. Delegate to specialist
-4. Wait for completion
-5. Run reviewer
-6. Fix issues
-7. Update completion
-8. Loop
-
-## Example Flows
-
-### Hierarchical Structure Flow
-
-```
-[Read product/index.md] → Overall product understanding
-[Read product/domains/authentication/index.md] → Auth domain overview
-[Read product/domains/authentication/features/login.md] → Login details
-[Read state] → authentication.login.score = 30
-[Delegate] → Task("@backend implement JWT login API per .../login.md")
-[Wait] → Backend completes
-[Delegate] → Task("@frontend implement login form per .../login.md")
-[Wait] → Frontend completes
-[Delegate] → Task("@tester write tests for login per .../login.md")
-[Wait] → Tester completes
-[Delegate] → Task("@reviewer review authentication changes")
-[Wait] → Reviewer finds: unused import, missing test, console.log
-[Delegate] → Task("@fixer fix authentication issues")
-[Wait] → Fixer completes
-[Delegate] → Task("@reviewer re-review authentication")
-[Wait] → Reviewer passes
-[Update] → completion.json:
-            authentication.login.status = "complete", score = 100
-            authentication.score = 33 (1 of 3 features done)
-[Loop] → Pick next feature in authentication domain...
-```
-
-### Flat Structure Flow
-
-```
-[Read PRODUCT.md] → Product overview
-[Read state] → auth feature at 30%
-[Delegate] → Task("@backend implement JWT auth per PRODUCT.md section 3")
-[Wait] → Backend completes
-[Delegate] → Task("@reviewer review authentication changes")
-[Wait] → Reviewer finds: unused import, missing tests, console.log
-[Delegate] → Task("@fixer fix issues")
-[Wait] → Fixer completes
-[Delegate] → Task("@reviewer re-review")
-[Wait] → Reviewer passes
-[Update] → completion.json: auth.status = "complete", score = 100
-[Loop] → Pick next feature...
-```
-
-## Agent Self-Improvement
-
-Agents can recognize when they need improvement and update themselves.
-
-### When Agents Should Self-Improve
-
-1. Encounter a pattern they don't handle well
-2. Make the same mistake repeatedly
-3. User provides feedback about suboptimal approach
-4. Identify a gap in their capabilities
-5. Tech stack changes (new frameworks, libraries, patterns)
-
-### Self-Improvement Workflow
-
-```
-1. Agent recognizes limitation
-   ↓
-2. Agent logs to .agentful/agent-improvements.json
-   {
-     "agent": "backend",
-     "issue": "Doesn't handle database migrations well",
-     "suggestion": "Add migration workflow",
-     "priority": "HIGH"
-   }
-   ↓
-3. Orchestrator reads agent-improvements.json
-   ↓
-4. If high-priority improvements exist:
-   - Classify as META_WORK → IMPROVE_AGENT
-   - Delegate improvement workflow
-   - Update agent file
-   - Test improved agent
-   ↓
-5. Mark improvement as complete
-```
-
-### Agent Improvement Tracking
-
-**`.agentful/agent-improvements.json`**:
-```json
-{
-  "pending": [
-    {
-      "id": "improvement-001",
-      "agent": "backend",
-      "issue": "Doesn't handle database migrations well",
-      "suggestion": "Add migration workflow with drift detection",
-      "priority": "HIGH",
-      "timestamp": "2026-01-18T00:00:00Z"
-    }
-  ],
-  "completed": [
-    {
-      "id": "improvement-000",
-      "agent": "frontend",
-      "issue": "Styling patterns outdated",
-      "suggestion": "Add Tailwind CSS patterns",
-      "completed_at": "2026-01-17T12:00:00Z"
+      "question": "JWT or session cookies?",
+      "options": ["JWT", "Sessions", "Clerk"],
+      "blocking": ["authentication"],
+      "timestamp": "2026-01-20T00:00:00Z"
     }
   ]
 }
 ```
 
-### Cross-Agent Improvement
+## Standard Workflow
 
-Agents can suggest improvements to OTHER agents:
+```
+1. Read product spec (auto-detect PRODUCT.md or .claude/product/)
+2. Read state.json (current progress)
+3. Read completion.json (what's done)
+4. Read decisions.json (what's blocked)
+5. Pick highest priority unblocked work
+6. Delegate to specialist agent
+7. Run Reviewer
+8. If issues → Fixer → Reviewer again
+9. Update completion.json
+10. Loop (if FEATURE_DEVELOPMENT)
+```
+
+## Delegation Pattern
+
+Always reference the product spec:
+
+```markdown
+Task("backend", "Implement JWT login per PRODUCT.md auth section")
+Task("frontend", "Create login page per PRODUCT.md auth UI spec")
+Task("tester", "Write tests for auth service")
+Task("reviewer", "Review all auth changes")
+```
+
+After ANY implementation, always run Reviewer:
+
+```markdown
+Task("reviewer", "Review changes in src/auth/")
+```
+
+If Reviewer fails, delegate to Fixer:
+
+```markdown
+Task("fixer", "Fix issues from last review")
+```
+
+## Decision Handling
+
+When user input needed:
+
+**1. Add to decisions.json:**
 
 ```json
 {
-  "id": "improvement-002",
-  "suggested_by": "tester",
-  "target_agent": "reviewer",
-  "issue": "Reviewer doesn't check accessibility issues",
-  "suggestion": "Add a11y quality gate",
-  "priority": "MEDIUM"
+  "id": "decision-001",
+  "question": "Should we use JWT or session cookies for auth?",
+  "options": ["JWT", "Sessions", "Clerk"],
+  "context": "Building authentication system",
+  "blocking": ["authentication"],
+  "timestamp": "2026-01-20T00:00:00Z"
 }
 ```
 
-## Best Practices
+**2. Stop work on blocked features**
 
-### DO
+Move to next non-blocked work.
 
-- Always check product readiness gates before starting
-- Always classify work type correctly
-- Always detect product structure (hierarchical vs flat)
-- Always check state.json before starting work
-- Always update completion.json after validated work
-- Always run reviewer after implementation
-- Use TodoWrite to track your own tasks
-- Move to next work when blocked on user input
-- Prioritize critical failures over new features
-- Track progress at appropriate level (domain/feature/subtask)
-
-### DON'T
-
-- Never write code yourself - delegate to specialists
-- Never skip the reviewer agent
-- Never make up decisions - ask the user
-- Never work on blocked features
-- Never assume features are complete without validation
-- Never mix hierarchical and flat completion tracking
-- Never continue autonomous loop for one-off tasks (bugfix, enhancement, etc.)
-
-## Troubleshooting
-
-### Orchestrator Stuck
-
-**Symptom**: Not progressing, looping on same task
-
-**Solutions**:
-1. Check `.agentful/state.json` for current task
-2. Check `.agentful/decisions.json` for blockers
-3. Run `/agentful-status` to see what's happening
-4. Manually resolve blockers with `/agentful-decide`
-5. Check if work type classification was correct (should one-off task not loop?)
-
-### Completion Score Not Updating
-
-**Symptom**: Features complete but overall score stays at 0
-
-**Solutions**:
-1. Verify reviewer is passing
-2. Check that all gates are true
-3. Ensure `status: "complete"` is set
-4. Verify score calculation for structure type
-5. For hierarchical: Check domain scores are calculating from feature scores
-
-### Wrong Structure Detection
-
-**Symptom**: Using flat tracking for hierarchical project or vice versa
-
-**Solutions**:
-1. Check product file locations match expected structure
-2. Verify `.claude/product/domains/*/index.md` files exist for hierarchical
-3. Ensure completion.json matches product structure
-4. Run architect to regenerate if needed
-
-### Infinite Loop
-
-**Symptom**: Agent keeps delegating same task
-
-**Solutions**:
-1. Check if reviewer is failing repeatedly
-2. Look for unfixable issues in decisions.json
-3. Verify agent can actually complete the task
-4. Consider if work type should be one-off (not autonomous loop)
-5. Manual intervention may be needed
-
-## Integration Points
-
-### With Architect
+**3. Notify user:**
 
 ```
-[Orchestrator] → "I need Next.js patterns"
-  ↓
-[Architect] → Generates nextjs-agent.md
-  ↓
-[Orchestrator] → Can now delegate to @nextjs-agent
+⚠️ Decision needed: Should we use JWT or session cookies?
+
+Run /agentful-decide to answer.
+
+Blocked: authentication
 ```
 
-### With Product Analysis
+## Loop Termination
 
-```
-[Orchestrator] → Starts development work
-  ↓
-[Check] → .claude/product/product-analysis.json exists
-  ↓
-[Check] → Blocking issues found
-  ↓
-[Block] → Ask user to resolve or continue
+The Orchestrator stops when:
+
+```javascript
+completion.overall === 100 &&
+all gates === true &&
+all features.status === "complete"
 ```
 
-### With Backend/Frontend
+Then outputs:
 
 ```
-[Orchestrator] → "Build auth feature"
-  ↓
-[Backend] → Implements API routes, services
-  ↓
-[Frontend] → Implements login page
-  ↓
-[Orchestrator] → "Validate this work"
+<promise>AGENTFUL_COMPLETE</promise>
 ```
 
-### With Tester
+## Example: Full Cycle
 
 ```
-[Orchestrator] → "Implementation done"
-  ↓
-[Tester] → Writes tests
-  ↓
-[Orchestrator] → "Run validation"
+User: "Build the authentication system"
+
+[Read PRODUCT.md] → Auth spec found
+[Read state.json] → No current work
+[Read completion.json] → Auth = 0%
+
+[Classify] → FEATURE_DEVELOPMENT (autonomous loop)
+
+[Delegate] Task("backend", "Implement JWT auth API per PRODUCT.md")
+[Wait] Backend completes
+
+[Delegate] Task("frontend", "Create login page per PRODUCT.md")
+[Wait] Frontend completes
+
+[Delegate] Task("tester", "Write tests for auth")
+[Wait] Tester completes
+
+[Delegate] Task("reviewer", "Review auth changes")
+[Wait] Reviewer finds: unused import, missing test, console.log
+
+[Delegate] Task("fixer", "Fix issues from last review")
+[Wait] Fixer completes
+
+[Delegate] Task("reviewer", "Re-review auth")
+[Wait] Reviewer passes
+
+[Update] completion.json: auth.score = 100, status = "complete"
+[Check] More features? No
+[Check] All gates true? Yes
+[Output] <promise>AGENTFUL_COMPLETE</promise>
 ```
 
-### With Reviewer
+## Product Spec Formats
 
+Auto-detects:
+
+**Flat structure:**
 ```
-[Orchestrator] → "Review auth changes"
-  ↓
-[Reviewer] → Finds issues
-  ↓
-[Orchestrator] → "Fix these issues"
-  ↓
-[Fixer] → Fixes issues
-  ↓
-[Orchestrator] → "Re-review"
+PRODUCT.md (single file)
+or
+.claude/product/index.md
+```
+
+**Hierarchical structure:**
+```
+.claude/product/
+├── index.md
+└── domains/
+    ├── authentication/
+    │   ├── index.md
+    │   └── features/
+    │       ├── login.md
+    │       └── register.md
+    └── dashboard/
+        └── features/
+            └── overview.md
+```
+
+The Orchestrator reads both formats and tracks completion accordingly.
+
+## Key Behaviors
+
+**Always run Reviewer:**
+```
+After implementation → Always run Reviewer
+If Reviewer fails → Always run Fixer
+After Fixer → Always run Reviewer again
+```
+
+**Never skip validation:**
+```
+Code written → Tests added → Reviewer validates → Gates checked
+```
+
+**Move on when blocked:**
+```
+Feature needs decision → Add to decisions.json → Pick next feature
+```
+
+**Update state after every step:**
+```
+Work completed → Update completion.json → Continue
+```
+
+## Common Issues
+
+### Stuck on Same Task
+
+**Check:**
+1. `.agentful/decisions.json` for blockers
+2. `.agentful/last-review.json` for validation failures
+3. If work type is one-off (bugfix), it won't loop
+
+**Fix:**
+- Resolve decisions with `/agentful-decide`
+- Check why Reviewer keeps failing
+
+### Completion Not Updating
+
+**Check:**
+1. Reviewer is passing (all gates true)
+2. Feature status set to "complete"
+3. Quality gates are all true
+
+**Fix:**
+- Fix remaining validation issues
+- Ensure all subtasks complete
+
+### Wrong Work Classification
+
+**Check:**
+If treating bugfix as feature (looping incorrectly)
+
+**Fix:**
+- User should be explicit: "Fix the bug" vs "Build the feature"
+- Orchestrator should detect one-off vs multi-step work
+
+## Monitoring
+
+```bash
+# Current state
+cat .agentful/state.json
+
+# Completion progress
+cat .agentful/completion.json
+
+# Pending decisions
+cat .agentful/decisions.json
+
+# Last review results
+cat .agentful/last-review.json
+
+# Full status
+# Run /agentful-status command
+```
+
+## Integration with Other Agents
+
+**Architect:**
+```
+Orchestrator → "I need Next.js specialist"
+Architect → Generates nextjs-agent.md
+Orchestrator → Can now delegate to @nextjs-agent
+```
+
+**Backend/Frontend:**
+```
+Orchestrator → Delegates implementation
+Backend/Frontend → Implements code
+Orchestrator → Runs Reviewer
+```
+
+**Tester:**
+```
+Orchestrator → "Implementation done, need tests"
+Tester → Writes tests
+Orchestrator → Runs Reviewer for coverage check
+```
+
+**Reviewer:**
+```
+Orchestrator → "Validate this work"
+Reviewer → Runs 9 checks, finds issues
+Orchestrator → Delegates to Fixer
+```
+
+**Fixer:**
+```
+Orchestrator → "Fix these issues"
+Fixer → Reads last-review.json, fixes problems
+Orchestrator → Re-runs Reviewer
 ```
 
 ## Advanced Usage
 
-### Custom Prioritization
+### Manual invocation
 
-Override default priority by editing `state.json`:
-
-```json
-{
-  "current_task": "custom-priority",
-  "priority": ["feature-a", "feature-b", "feature-c"]
-}
+```
+/agentful-start
 ```
 
-### Selective Execution
+Starts autonomous loop.
 
-Focus on specific features or domains:
+### Selective execution
 
-```markdown
-# For hierarchical
-[Read state] → Only work on "authentication" domain
-[Delegate] → Complete all features in authentication
-[Loop] → Until authentication domain is complete
+Focus on specific feature:
 
-# For flat
-[Read state] → Only work on "authentication" feature
-[Delegate] → Complete authentication feature
-[Stop] → Don't continue to next feature
+```
+User: "Only work on authentication, don't continue to other features"
 ```
 
-### Parallel Delegation
+Orchestrator will complete auth and stop.
 
-Spawn multiple agents at once for independent work:
+### Parallel work
 
-```markdown
-Task("@backend", "Implement user API")
-Task("@frontend", "Implement user profile page")
-Task("@tester", "Prepare tests for user feature")
+Can spawn multiple agents simultaneously:
+
+```
+Task("backend", "Implement user API")
+Task("frontend", "Implement user profile UI")
+Task("tester", "Prepare test fixtures")
 ```
 
-## Monitoring
-
-Check orchestrator progress:
-
-```bash
-# View completion state
-cat .agentful/completion.json
-
-# View current work
-cat .agentful/state.json
-
-# View blockers
-cat .agentful/decisions.json
-
-# Full status
-/agentful-status
-
-# Product readiness
-cat .claude/product/product-analysis.json
-```
-
-## Summary
-
-The Orchestrator is a sophisticated coordinator that:
-
-1. **Intelligently classifies work** into 6 types with appropriate workflows
-2. **Validates product readiness** before starting development
-3. **Detects context** (agentful vs user project) for capability awareness
-4. **Supports flexible product structures** (flat and hierarchical) with auto-detection
-5. **Tracks progress hierarchically** (domains → features → subtasks)
-6. **Manages autonomous loops** for feature development and one-off tasks for fixes
-7. **Delegates to specialists** and never writes code itself
-8. **Self-improves** by recognizing limitations and updating capabilities
-9. **Handles decisions** by blocking work and notifying users
-10. **Continuously validates** through reviewer integration
-
-This makes agentful capable of handling projects of any complexity, from simple single-file specs to complex multi-domain architectures, while maintaining intelligent work classification and quality gates throughout.
+All run in parallel, Orchestrator waits for all to complete.
 
 ## See Also
 
-- [Back to Agents Overview](/agents) - All available agents
-- [Architect Agent](/agents/architect) - Tech stack analysis
-- [Backend Agent](/agents/backend) - Server-side work delegation
-- [Frontend Agent](/agents/frontend) - Client-side work delegation
-- [Tester Agent](/agents/tester) - Test delegation
-- [Reviewer Agent](/agents/reviewer) - Validation delegation
-- [Fixer Agent](/agents/fixer) - Issue resolution delegation
-- [/agentful-start](/commands/agentful-start) - Start orchestrator
-- [/agentful](/commands/agentful) - Quick reference
-- [/agentful-status](/commands/agentful-status) - Check status
+- [Agents Overview](/agents) - All available agents
+- [Architect](/agents/architect) - Tech stack analysis
+- [Backend](/agents/backend) - Server implementation
+- [Frontend](/agents/frontend) - Client implementation
+- [Reviewer](/agents/reviewer) - Quality validation
+- [Fixer](/agents/fixer) - Issue resolution

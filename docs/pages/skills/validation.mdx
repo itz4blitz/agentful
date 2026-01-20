@@ -1,319 +1,209 @@
 ---
 title: Validation Skill
-description: Production readiness validation with quality gates for your codebase
+description: Quality gate checks and tool detection procedures
 sidebar_position: 3
 ---
 
 # Validation Skill
 
-The **validation skill** runs comprehensive production readiness checks, ensuring all code meets quality standards before deployment.
+Defines quality gates and tool detection procedures for production readiness checks.
 
-## What It Validates
+## What It Provides
 
-The skill checks 6 quality gates:
+**Quality Gate Definitions**
+- What to check (tests, types, lint, coverage, security)
+- Pass/fail criteria for each gate
+- Adaptation strategies for different tech stacks
 
-| Gate | Purpose | Adaptation |
-|------|---------|------------|
-| **Tests** | All tests must pass | Works with any test framework |
-| **Type Checking** | No type errors | TypeScript, Flow, or skipped |
-| **Linting** | Zero lint errors | ESLint, Biome, or skipped |
-| **Dead Code** | No unused code | Removes unused exports/imports |
-| **Coverage** | Minimum coverage | ≥80% required |
-| **Security** | No vulnerabilities | Runs security audit |
+**Tool Detection Procedures**
+- How to detect test frameworks (Vitest, Jest, Playwright)
+- How to detect type checkers (TypeScript, Flow)
+- How to detect linters (ESLint, Biome)
+- How to detect coverage tools
 
-## How It Works
+**Validation Execution Methods**
+- Command sequences to run for each tool
+- Output parsing patterns
+- Error reporting formats
 
-### 1. Test Validation
+## Quality Gates
 
-**Detects your test framework:**
-- Vitest
-- Jest
-- Playwright
-- Cypress
+### Tests
+**What to check:** All tests passing
 
-**Runs:**
+**Detection:**
 ```bash
-npm test                # Unit/integration tests
-npm run test:e2e        # E2E tests (if configured)
+# Check package.json scripts
+- npm test → run test command
+- check for: vitest, jest, @playwright/test
 ```
 
-**Pass Criteria:** All tests pass (0 failures)
+**Pass criteria:** Exit code 0, no failures
 
-### 2. Type Checking
-
-**Detects your setup:**
-- TypeScript → Runs `tsc --noEmit`
-- Flow → Runs `flow check`
-- JavaScript → Skips type checking
-
-**Pass Criteria:** 0 type errors
-
-### 3. Linting
-
-**Detects your linter:**
-- ESLint → Runs `eslint .`
-- Biome → Runs `biome check .`
-- None → Skips linting
-
-**Pass Criteria:** 0 lint errors
-
-### 4. Dead Code Detection
-
-**Finds:**
-- Unused exports
-- Unused imports
-- Empty files
-- Unreferenced variables
-
-**Method:** Static code analysis + dependency graph
-
-**Pass Criteria:** 0 unused exports/imports
-
-**Note:** The validation skill detects dead code issues. The [fixer agent](/agents/fixer) removes them.
-
-### 5. Coverage Validation
-
-**Detects your coverage tool:**
-- Vitest → Built-in coverage
-- Jest + Istanbul
-- c8
-- None → Warns but doesn't fail
-
-**Pass Criteria:** ≥80% code coverage
-
-### 6. Security Audit
-
-**Runs:**
-```bash
-npm audit              # Check for vulnerabilities
-# Or
-yarn audit
-```
-
-**Pass Criteria:** 0 high/critical vulnerabilities
-
-## Usage
-
-### By /agentful-validate Command
-
-```
-/agentful-validate
-```
-
-**Output:**
-```
-🔍 Running production readiness validation...
-
-✅ Tests Passing (47/47)
-❌ Type Checking (3 errors found)
-   src/components/LoginForm.tsx:23 - Type 'string' not assignable to type 'number'
-✅ Linting (0 errors)
-⚠️  Coverage (76% - target: 80%)
-   Missing coverage in:
-   • src/components/TaskItem.tsx
-   • lib/utils.ts
-✅ Dead Code (0 issues)
-✅ Security (0 vulnerabilities)
-
-Status: ❌ FAILED
-Fix required: Type errors must be resolved
-```
-
-### By Reviewer Agent
-
-The [reviewer agent](/agents/reviewer) automatically runs validation:
-1. After each feature implementation
-2. Before marking features as complete
-3. When `/agentful-validate` is invoked
-
-**Important:** The validation skill detects issues. It does NOT fix them. The [fixer agent](/agents/fixer) handles fixes.
-
-### By Fixer Agent
-
-The [fixer agent](/agents/fixer) uses validation results to:
-1. Identify issues that need fixing
-2. Apply fixes automatically where possible
-3. Re-validation is triggered by orchestrator to verify fixes
-
-## Quality Gate Details
-
-### Test Validation
-
-**What it checks:**
-- Unit tests pass
-- Integration tests pass
-- E2E tests pass (if configured)
-- Test files aren't skipped
-
-**How it adapts:**
-- No test framework → Skips (warns user)
-- Monorepo → Tests each package
-- Workspaces → Runs tests in dependency order
-
-**Example failures:**
-```
-❌ Test failed: User authentication › should log in with valid credentials
-   Expected: true
-   Received: false
-   at src/__tests__/auth.test.ts:45
-```
+**Adaptation:**
+- No test script → Skip, warn user
+- Multiple test types → Run all (unit, integration, e2e)
 
 ### Type Checking
+**What to check:** No type errors
 
-**What it checks:**
-- TypeScript: `tsc --noEmit` passes
-- Flow: `flow check` passes
-- JSDoc: Validates type annotations
+**Detection:**
+```bash
+# Check for tsconfig.json
+if exists → run: tsc --noEmit
 
-**How it adapts:**
-- No tsconfig.json → Skips type checking
-- JavaScript files → Doesn't fail on .js files
-- @ts-check → Respects TypeScript comments
-
-**Example failures:**
+# Check for Flow
+if .flowconfig → run: flow check
 ```
-❌ Type error in LoginForm.tsx:23
-   Type 'string' is not assignable to type 'number'
-```
+
+**Pass criteria:** 0 errors
+
+**Adaptation:**
+- JavaScript only → Skip type checking
+- @ts-check comments → Validate those files
 
 ### Linting
+**What to check:** 0 lint errors
 
-**What it checks:**
-- ESLint configuration found → Runs `eslint .`
-- Biome configuration found → Runs `biome check .`
-- No linter → Skips
+**Detection:**
+```bash
+# Check for ESLint config
+.eslintrc.* or package.json "eslintConfig" → run: eslint .
 
-**How it adapts:**
-- .eslintrc.js, .eslintrc.json, .eslintrc.yml
-- biome.json
-- package.json "eslintConfig"
-
-**Example failures:**
-```
-❌ Lint error in utils.ts:42
-   'foo' is assigned a value but never used
+# Check for Biome
+biome.json → run: biome check .
 ```
 
-### Dead Code Detection
+**Pass criteria:** 0 errors (warnings OK)
 
-**What it finds:**
-- Exported functions never imported
-- Exported components never used
-- Files with no exports/imports (except entry points)
-- Unused dependencies
+**Adaptation:**
+- No linter → Skip
+
+### Dead Code
+**What to check:** No unused exports/imports
 
 **Method:**
 ```bash
 # Build dependency graph
-# Find unreferenced exports
-# Find unused imports
-# Report and optionally remove
+1. Find all exports
+2. Find all imports
+3. Mark exports never imported as dead
+4. Mark imports never used as dead
 ```
 
-**Example findings:**
-```
-⚠️  Dead code found:
-   • src/lib/unusedHelper.ts (exported but never imported)
-   • src/components/OldButton.tsx (replaced by NewButton.tsx)
-   • Import 'lodash' in utils.ts (unused)
-```
+**Pass criteria:** 0 unused exports/imports
 
-### Coverage Validation
+**Note:** Detection only. Removal delegated to fixer agent.
 
-**What it measures:**
-- Statement coverage
-- Branch coverage
-- Function coverage
-- Line coverage
+### Coverage
+**What to check:** ≥80% coverage
 
-**Pass threshold:** 80% average
-
-**How it adapts:**
-- No coverage tool configured → Warns but doesn't fail
-- Custom threshold in package.json → Uses that instead
-
-**Example output:**
-```
-Coverage: 76.3% (target: 80%)
-┌─────────────────────────────────┐
-│ File            │ % Stmts │ % Branch │
-├─────────────────────────────────┤
-│ LoginForm.tsx  │   92.3  │   88.9   │
-│ utils.ts       │   65.2  │   50.0   │
-│ TaskItem.tsx    │   71.4  │   66.7   │
-└─────────────────────────────────┘
+**Detection:**
+```bash
+# Check test runner config
+- Vitest → vitest.config.ts coverage settings
+- Jest → jest.config.js coverage settings
 ```
 
-### Security Audit
+**Pass criteria:** 80% average (statement, branch, function, line)
 
-**What it checks:**
-- npm packages for known vulnerabilities
-- yarn audit (if using yarn)
-- pnpm audit (if using pnpm)
+**Adaptation:**
+- No coverage config → Warn, don't fail
+- Custom threshold in package.json → Use that
 
-**Severity levels:**
-- ✅ Pass: 0 vulnerabilities
-- ⚠️  Warning: Low/medium severity
-- ❌ Fail: High/critical severity
+### Security
+**What to check:** No high/critical vulnerabilities
 
-**Example findings:**
-```
-⚠️  1 moderate severity vulnerability
-Package: lodash
-Vulnerability: Prototype Pollution
-Patch: 4.17.21
+**Method:**
+```bash
+npm audit
+# or
+yarn audit
+# or
+pnpm audit
 ```
 
-## Auto-Fixing
+**Pass criteria:** 0 high or critical vulnerabilities
 
-**Important:** The validation skill only detects issues. The [fixer agent](/agents/fixer) handles all fixes.
+## How Agents Use This
 
-✅ **Auto-fixable by fixer agent:**
-- Unused imports (removes them)
-- Simple type errors (adds type annotations)
-- Lint errors (applies --fix)
-- Dead code (removes unused exports)
+**Reviewer Agent:**
+1. Reads this skill for validation procedures
+2. Executes each quality gate check
+3. Reports results
+4. Delegates fixes to fixer agent if needed
 
-❌ **Requires manual fix:**
-- Test failures (logic errors)
-- Complex type errors (design issues)
-- Coverage gaps (need tests)
-- Security vulnerabilities (need updates)
+**Fixer Agent:**
+1. Reads validation results
+2. Applies auto-fixes where possible
+3. Triggers re-validation
+
+## Validation Output Format
+
+```json
+{
+  "gates": {
+    "tests": {
+      "passed": true,
+      "details": "47 tests passed"
+    },
+    "types": {
+      "passed": false,
+      "errors": [
+        {
+          "file": "src/components/LoginForm.tsx",
+          "line": 23,
+          "message": "Type 'string' not assignable to type 'number'"
+        }
+      ]
+    },
+    "lint": {
+      "passed": true,
+      "details": "0 errors"
+    },
+    "coverage": {
+      "passed": false,
+      "percentage": 76,
+      "threshold": 80,
+      "uncovered": [
+        "src/components/TaskItem.tsx",
+        "lib/utils.ts"
+      ]
+    },
+    "security": {
+      "passed": true,
+      "vulnerabilities": 0
+    }
+  },
+  "overall_passed": false
+}
+```
+
+## Auto-Fix Capabilities
+
+**This skill defines what's auto-fixable:**
+
+Auto-fixable:
+- Unused imports → Remove
+- Lint errors with --fix → Apply fixes
+- Simple type errors → Add annotations
+
+Not auto-fixable:
+- Test failures → Logic bugs
+- Complex type errors → Design issues
+- Coverage gaps → Need new tests
+- Security vulnerabilities → Need updates
 
 ## Configuration
 
-### Override Coverage Threshold
-
-**package.json:**
-```json
-{
-  "agentful": {
-    "validation": {
-      "coverageThreshold": 90
-    }
-  }
-}
-```
-
-### Skip Type Checking
-
-**For JavaScript projects:**
-```json
-{
-  "agentful": {
-    "validation": {
-      "typeCheck": false
-    }
-  }
-}
-```
-
-### Custom Test Commands
+Override defaults in `package.json`:
 
 ```json
 {
   "agentful": {
     "validation": {
+      "coverageThreshold": 90,
+      "typeCheck": false,
       "testCommand": "vitest run --coverage",
       "e2eCommand": "playwright test"
     }
@@ -321,69 +211,84 @@ Patch: 4.17.21
 }
 ```
 
-## Technical Details
+## Implementation Details
+
+**Location:** `.claude/skills/validation/SKILL.md`
 
 **Model:** Sonnet
 
-**Tools:**
-- Read - Read config files
-- Write - Write coverage reports
-- Edit - Fix auto-fixable issues
-- Glob - Find test files
-- Grep - Search for patterns
-- Bash - Run validation commands
+**Tools Used:**
+- Read (config files)
+- Glob (find test files)
+- Grep (search patterns)
+- Bash (run validation commands)
 
 **Config Files Read:**
-- package.json (scripts, dependencies)
-- tsconfig.json (TypeScript config)
-- .eslintrc.* (ESLint config)
-- biome.json (Biome config)
-- vitest.config.ts (Vitest config)
-- jest.config.js (Jest config)
+- `package.json`
+- `tsconfig.json`
+- `.eslintrc.*`
+- `biome.json`
+- `vitest.config.ts` / `jest.config.js`
+- `playwright.config.ts` / `cypress.config.ts`
 
-## Best Practices
+## Error Reporting Patterns
 
-### 1. Run Validation Frequently
+### Test Failure
 ```
-/agentful-validate
+❌ Test failed: User authentication › should log in with valid credentials
+   Expected: true
+   Received: false
+   at src/__tests__/auth.test.ts:45
 ```
-Run after each feature to catch issues early.
 
-### 2. Fix Issues Promptly
-Don't let validation errors accumulate. Fix them as they appear.
+### Type Error
+```
+❌ Type error in LoginForm.tsx:23
+   Type 'string' is not assignable to type 'number'
+```
 
-### 3. Monitor Coverage
-Keep coverage at 80%+ to prevent technical debt.
+### Coverage Gap
+```
+⚠️  Coverage below threshold: 76% (target: 80%)
+   Missing coverage:
+   • src/components/TaskItem.tsx (65%)
+   • lib/utils.ts (50%)
+```
 
-### 4. Review Dead Code Findings
-Sometimes code appears unused but is loaded dynamically. Review before removing.
+## Usage by Commands
 
-## Troubleshooting
+**`/agentful-validate`**
+- Primary consumer of this skill
+- Runs all quality gate checks
+- Reports results to user
 
-### Issue: "TypeScript errors but I'm using JavaScript"
-**Solution:** Type checking should auto-skip. If not, add `"typeCheck": false` to agentful config.
+**Orchestrator Agent**
+- Uses validation before marking features complete
+- Delegates to reviewer agent which uses this skill
 
-### Issue: "Tests pass locally but fail in validation"
-**Cause:** Environment difference (NODE_ENV, test database, etc.)
-**Solution:** Ensure tests pass in all environments
+## Extending the Skill
 
-### Issue: "Coverage inaccurate"
-**Cause:** Files excluded from coverage measurement
-**Solution:** Check vitest.config.ts or jest.config.js for exclude patterns
+Add custom quality gates by editing `.claude/skills/validation/SKILL.md`:
 
-### Issue: "Dead code false positives"
-**Cause:** Dynamic imports, conditional requires
-**Solution:** Add /* @__NO_SIDE_EFFECTS__ */ or review findings before removal
+```markdown
+## Custom Gate: API Contract Validation
 
-## Exit Codes
+What to check: OpenAPI spec matches implementation
 
-| Code | Meaning |
-|------|---------|
-| 0 | All gates passed ✅ |
-| 1 | One or more gates failed ❌ |
+Detection:
+- Find openapi.yml or swagger.json
+- Run: npm run validate:api-contract
+
+Pass criteria: 0 mismatches
+
+Command:
+\`\`\`bash
+npx swagger-cli validate openapi.yml
+\`\`\`
+```
 
 ## See Also
 
-- **[/agentful-validate](/commands/agentful-validate)** - Run validation manually
-- **[Reviewer Agent](/agents/reviewer)** - How reviewer uses validation
-- **[Fixer Agent](/agents/fixer)** - Auto-fixing validation failures
+- **[/agentful-validate](/commands/agentful-validate)** - Runs validation checks
+- **[Reviewer Agent](/agents/reviewer)** - Uses this skill for code review
+- **[Fixer Agent](/agents/fixer)** - Applies fixes based on validation results

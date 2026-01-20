@@ -1,164 +1,77 @@
 ---
 title: Quick Start - agentful
-description: Get up and running with agentful in 5 minutes. Learn the basics of structured product development.
+description: Get started with agentful in 5 minutes.
 ---
 
 # Quick Start
 
-Get agentful building your project through structured development in 5 minutes.
+Build your project in 5 minutes.
 
----
-
-## Overview
-
-This quick start will walk you through:
-
-1. ✅ Initializing agentful with intelligent detection
-2. ✅ Defining your product
-3. ✅ Starting structured development
-4. ✅ Monitoring progress
-5. ✅ Understanding the workflow
-
-**Time:** 5 minutes
-**Prerequisites:** [agentful installed](/getting-started/installation)
-
----
-
-## Step 1: Initialize agentful with Intelligent Detection (30 seconds)
+## Step 1: Initialize
 
 ```bash
-# In your project directory
 npx @itz4blitz/agentful init
 ```
 
-**What happens during init:**
+agentful analyzes your project and creates the appropriate structure:
+- Simple (< 3 domains): `PRODUCT.md`
+- Complex (≥ 3 domains): `.claude/product/index.md` with `domains/`
 
-agentful analyzes your project and **automatically detects the best structure**:
+Both structures work. agentful auto-detects which you're using.
 
-```
-🔍 Analyzing your project...
+## Step 2: Define Your Product
 
-  Language:    TypeScript
-  Frameworks:  Next.js, React
-  Package Mgr: npm
-  Build:       Next.js
+Edit the product spec agentful created.
 
-📊 Detected domains:
-
-  • Authentication       ██████████ 95%
-  • User Management     ████████░░ 80%
-  • Project Management  ██████░░░░ 60%
-
-  Analysis completed in 2.3s (85% confidence)
-```
-
-Then agentful creates the appropriate structure:
-
-**For Simple Projects:**
-```
-📄 Using flat product structure (simple project)
-  ✓ Created PRODUCT.md
-```
-
-**For Complex Projects:**
-```
-📁 Using hierarchical product structure (detected complex project)
-  ✓ Created .claude/product/ with domain structure
-     → Organized by 3 domain(s)
-  ✓ Created .claude/product/domains/authentication/
-  ✓ Created .claude/product/domains/user-management/
-  ✓ Created .claude/product/domains/project-management/
-```
-
-### How Detection Works
-
-agentful automatically chooses the best structure based on:
-
-| Criteria | Simple (Flat) | Complex (Hierarchical) |
-|----------|---------------|------------------------|
-| **Domains detected** | < 3 domains | ≥ 3 domains |
-| **Frameworks** | 0-1 frameworks | ≥ 2 frameworks |
-| **Monorepo** | No | Yes (npm workspaces, pnpm, turborepo) |
-| **Project type** | Learning, MVP, single-purpose | Multi-domain, team, long-term |
-
-**Don't worry about the choice** - agentful does the hard work for you! You can switch between structures anytime if needed.
-
-### What Gets Created
-
-**Always created:**
-- `.claude/` - 7 specialized agents, 5 commands, skills
-- `.agentful/` - Runtime state tracking (gitignored)
-- `CLAUDE.md` - Project instructions for Claude
-
-**For simple projects (also supported):**
-- `PRODUCT.md` - Single-file product spec at root
-
-**For complex projects (preferred):**
-- `.claude/product/index.md` - Main product specification
-- `.claude/product/domains/*/index.md` - Domain-specific specs
-
----
-
-## Step 2: Define Your Product (2 minutes)
-
-Edit the product spec that agentful created for you. The file location depends on your project structure.
-
----
-
-### For Simple Projects (Flat Structure)
-
-If agentful created `PRODUCT.md` in your project root (also supported for simple workflows), edit it:
+### Simple Projects (PRODUCT.md)
 
 ```markdown
 # Product Specification
 
 ## Overview
-A simple todo list application.
+A todo list application.
 
 ## Tech Stack
-- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: None (in-memory for now)
-- **Testing**: Vitest
+- Frontend: Next.js 14, TypeScript, Tailwind CSS
+- Backend: Next.js API Routes
+- Database: None (in-memory)
+- Testing: Vitest
 
 ## Features
 
 ### 1. Add Todo - CRITICAL
-**Description**: Users can add new todo items
+**Description**: Users can add new todos
 
 **Acceptance Criteria**:
 - [ ] Input field for new todos
 - [ ] Add button
 - [ ] Todo appears in list
+- [ ] Input clears after adding
+- [ ] Validation: empty todos not allowed
 
-### 2. Toggle Todo - HIGH
-**Description**: Users can mark todos as complete
+### 2. Toggle Todo - CRITICAL
+**Description**: Users can mark todos complete
 
 **Acceptance Criteria**:
-- [ ] Click todo to toggle completion
+- [ ] Click to toggle completion
 - [ ] Visual indicator for completed todos
 
-### 3. Delete Todo - MEDIUM
+### 3. Delete Todo - HIGH
 **Description**: Users can delete todos
 
 **Acceptance Criteria**:
 - [ ] Delete button on each todo
-- [ ] Confirmation prompt
+- [ ] Task removes from list
 ```
 
-**That's it!** Skip to Step 3.
+### Complex Projects (.claude/product/)
 
----
-
-### For Complex Projects (Hierarchical Structure - Preferred)
-
-If agentful created `.claude/product/` (preferred for most projects), edit `.claude/product/index.md`:
-
+**`.claude/product/index.md`**:
 ```markdown
 # Product Specification
 
 ## Overview
-A todo list application with user accounts and sharing.
+A todo app with user accounts.
 
 ## Domains
 - Authentication
@@ -166,370 +79,107 @@ A todo list application with user accounts and sharing.
 - Sharing
 
 ## Tech Stack
-- **Frontend**: Next.js 14, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes
-- **Database**: PostgreSQL with Prisma
-- **Testing**: Vitest + Playwright
+- Frontend: Next.js 14, TypeScript, Tailwind
+- Backend: Next.js API Routes
+- Database: PostgreSQL with Prisma
+- Testing: Vitest + Playwright
 ```
 
-Then edit the domain files agentful created, like `.claude/product/domains/authentication/index.md`:
-
+**`.claude/product/domains/authentication/index.md`**:
 ```markdown
 # Authentication Domain
-
-## Overview
-Handle user registration, login, and session management.
 
 ## Features
 
 ### 1. User Registration - CRITICAL
-**Description**: Users can create accounts with email/password
+**Description**: Users can create accounts
 
 **Acceptance Criteria**:
 - [ ] Email validation (required, valid format)
 - [ ] Password min 8 characters, 1 uppercase, 1 number
 - [ ] Unique email check
 - [ ] Success: redirect to dashboard
-- [ ] Error: show inline error message
-
-### 2. User Login - CRITICAL
-**Description**: Users can log in with credentials
-
-**Acceptance Criteria**:
-- [ ] Email/password input
-- [ ] JWT token generation
-- [ ] Session persistence
-- [ ] Error handling for invalid credentials
+- [ ] Error: show inline message
 ```
 
-Create additional domain files as needed:
-- `.claude/product/domains/tasks/index.md` - Task CRUD operations
-- `.claude/product/domains/sharing/index.md` - Share lists with others
+Create additional domain files as needed.
 
----
-
-### Switching Between Structures
-
-You can change your mind anytime:
-
-**Simple → Complex:**
-```bash
-mkdir -p .claude/product/domains
-mv PRODUCT.md .claude/product/index.md
-# Split content into domain files
-```
-
-**Complex → Simple:**
-```bash
-cat .claude/product/index.md > PRODUCT.md
-cat .claude/product/domains/*/*.md >> PRODUCT.md
-rm -rf .claude/product/
-```
-
-agentful auto-detects the change!
-
----
-
-## Step 3: Start Claude Code (10 seconds)
+## Step 3: Start Claude
 
 ```bash
 claude
 ```
 
-This starts the Claude Code CLI with agentful's specialized agents loaded.
-
----
-
-## Step 4: Begin Structured Development (30 seconds)
-
-In the Claude Code prompt, type:
+## Step 4: Generate Agents
 
 ```
-/agentful-start
+/agentful-generate
 ```
 
-**What happens next:**
+This generates specialized agents for your tech stack. agentful detects:
+- Frontend framework (Next.js, React, Vue, etc.)
+- Backend framework (Express, NestJS, etc.)
+- Database/ORM (Prisma, Drizzle, etc.)
+- Testing tools (Vitest, Jest, Playwright)
+- Build tools (Vite, Webpack, etc.)
 
-### Phase 1: Architecture Analysis (10 seconds)
-
-```
-🏗️  Architect Agent analyzing...
-
-Detected tech stack from package.json:
-- Next.js 14
-- TypeScript
-- Tailwind CSS
-- Vitest
-
-Generated specialized agents:
-✓ nextjs-agent (knows App Router patterns)
-✓ typescript-agent (enforces strict typing)
-✓ tailwind-agent (utility-first styling)
-✓ vitest-agent (fast unit testing)
-
-Architecture analysis complete!
-```
-
-### Phase 2: Planning (10 seconds)
-
-```
-📋 Orchestrator planning work...
-
-Reading product spec from: `.claude/product/index.md` (preferred) or `PRODUCT.md` (also supported)
-
-Detected structure: Flat (or Hierarchical with 3 domains)
-
-Priority queue:
-1. Add Todo feature (CRITICAL)
-2. Toggle Todo feature (HIGH)
-3. Delete Todo feature (MEDIUM)
-
-Starting: Add Todo feature
-```
-
-### Phase 3: Implementation (varies)
-
-```
-🔧 Frontend Agent implementing...
-
-Created:
-- src/app/page.tsx (main page)
-- src/components/TodoList.tsx
-- src/components/TodoInput.tsx
-- src/hooks/useTodos.ts
-
-Following Next.js 14 App Router patterns...
-```
-
-### Phase 4: Testing (varies)
-
-```
-🧪 Tester Agent writing tests...
-
-Created:
-- src/components/__tests__/TodoList.test.tsx
-- src/hooks/__tests__/useTodos.test.ts
-
-Running tests with Vitest...
-✓ All tests passing (14/14)
-```
-
-### Phase 5: Validation (20 seconds)
-
-```
-🔍 Reviewer Agent validating...
-
-Quality Gates (adapts to your stack):
-✅ All tests passing
-✅ No type errors (TypeScript)
-⚠️  Test coverage: 65% (target: 80%)
-✅ No dead code
-✅ No security issues
-
-Coverage below 80%, continuing...
-```
-
-**When Quality Gates Run:**
-- Automatically after each feature implementation
-- When you run `/agentful-validate` manually
-- Before marking a feature as complete
-
-**What Happens on Failure:**
-1. Reviewer agent identifies specific issues
-2. Issues saved to `.agentful/last-review.json`
-3. Fixer agent automatically invoked to resolve issues
-4. Quality gates re-run after fixes
-5. Process repeats until all gates pass
-
-**Adaptive Behavior:**
-- TypeScript project? → Type checking enabled
-- JavaScript only? → Type checking skipped
-- ESLint configured? → Lint check runs
-- No linter? → Lint check skipped
-
-### Phase 6: Iteration (continues)
-
-```
-🔄 Fixer Agent improving coverage...
-
-Added tests for edge cases...
-Coverage now: 82% ✅
-
-Feature complete: Add Todo (100%)
-
-Next: Toggle Todo feature...
-```
-
----
-
-## Step 5: Monitor Progress (ongoing)
-
-Check progress anytime:
-
-```
-/agentful-status
-```
-
-**Output:**
-```
-🔧 Working on: Toggle Todo feature
-   Phase: implementation
-   Iterations: 8
-
-Progress:
-   ████████░░░░░░░░░░░ 40%
-
-Quality Gates:
-   ✅ Tests Passing
-   ✅ No Type Errors
-   ✅ Coverage 82%
-   ✅ No Dead Code
-   ⚠️  1 pending decision:
-      1. Should completed todos move to bottom?
-
-Next Actions:
-   • /agentful-start    - Continue development
-   • /agentful-decide  - Answer pending decision
-   • /agentful-validate- Run quality checks
-```
-
----
-
-## Step 6: Handle Decisions (if needed)
-
-Sometimes agentful needs your input:
-
-```
-⚠️  Decision needed:
-Should completed todos move to the bottom of the list?
-
-Options:
-1. Yes, move to bottom
-2. No, keep in place
-3. Sort by completion date
-```
-
-**To answer:**
-
-```
-/agentful-decide
-```
-
-Then provide your answer:
-```
-Option 1: Yes, move to bottom
-```
-
-agentful will immediately resume with your decision.
-
----
+Then creates stack-specific agents that know your framework's patterns.
 
 ## Understanding the Workflow
 
-### The Development Loop
+agentful uses a structured development loop:
 
-```
-┌─────────────────────────────────────────┐
-│  1. Architect: Analyze tech stack       │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│  2. Orchestrator: Plan next task        │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│  3. Specialist: Implement feature       │
-│     (@frontend, @backend, @tester)      │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│  4. Reviewer: Validate quality          │
-└─────────────────────────────────────────┘
-              ↓
-         Issues found?
-              ↓
-       ┌──────┴──────┐
-       ↓             ↓
-┌─────────────┐  ┌─────────────┐
-│ 5. Fixer    │  │ 6. Complete │
-│    Fix issues│  │    Update   │
-└─────────────┘  │  Progress   │
-       │         └─────────────┘
-       └─────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│  7. Loop again until 100% complete      │
-└─────────────────────────────────────────┘
-```
+1. **Architect** - Analyzes tech stack, generates specialized agents
+2. **Orchestrator** - Plans work, delegates tasks
+3. **Specialists** - Implement features (@frontend, @backend, @tester)
+4. **Reviewer** - Validates quality gates
+5. **Fixer** - Auto-fixes issues
 
-### Agent Roles
+### Quality Gates
 
-| Agent | When it activates | What it does |
-|-------|------------------|--------------|
-| **@architect** | Once at start | Analyzes tech stack, generates specialized agents |
-| **@orchestrator** | Every iteration | Plans work, delegates to specialists |
-| **@frontend** | Building UI | Components, pages, hooks, styling |
-| **@backend** | Building APIs | Services, repositories, controllers |
-| **@tester** | After implementation | Writes unit, integration, E2E tests |
-| **@reviewer** | After testing | Validates quality gates, finds issues |
-| **@fixer** | When issues found | Auto-fixes validation failures |
+Code must pass all gates before completion:
+- All tests passing
+- No type errors (if TypeScript detected)
+- No lint errors (if linter configured)
+- Test coverage ≥ 80%
+- No dead code
+- No security issues
 
----
+Gates automatically adapt to your stack. TypeScript project? Type checking enabled. JavaScript only? Type checking skipped.
 
 ## Common Commands
 
-### Start/Resume Development
 ```
-/agentful-start
-```
-
-### Check Progress
-```
-/agentful-status
+/agentful-generate  - Generate specialized agents for your stack
+/agentful-status    - Check progress
+/agentful-decide    - Answer pending decisions
+/agentful-validate  - Run quality checks
 ```
 
-### Answer Pending Decisions
-```
-/agentful-decide
-```
+## Tips
 
-### Run Quality Checks
-```
-/agentful-validate
-```
+### Start Small
 
----
-
-## Tips for Success
-
-### 1. Start Small
-
-Your first time? Build something simple:
-
-✅ **Good first projects:**
+Good first projects:
 - Todo app
 - Blog with markdown
 - Contact form
 - Weather widget
 
-❌ **Avoid for first time:**
+Avoid for first time:
 - Real-time collaboration
 - Payment processing
 - Complex authentication
 
-### 2. Be Specific in Your Product Spec
+### Be Specific
 
-The more specific your requirements, the better agentful understands:
-
-**For simple projects (PRODUCT.md - also supported):
-
-**Vague:**
+Vague:
 ```markdown
 ## Features
 1. User management
 ```
 
-**Specific:**
+Specific:
 ```markdown
 ### 1. User Registration - CRITICAL
 **Description**: Users can register with email/password
@@ -539,37 +189,10 @@ The more specific your requirements, the better agentful understands:
 - [ ] Password min 8 characters, 1 uppercase, 1 number
 - [ ] Unique email check
 - [ ] Success: redirect to dashboard
-- [ ] Error: show inline error message
+- [ ] Error: show inline message
 ```
 
-**For complex projects (.claude/product/ - preferred):**
-
-**Vague:**
-```markdown
-# .claude/product/domains/users.md
-## Features
-1. Registration
-```
-
-**Specific:**
-```markdown
-# .claude/product/domains/users.md
-## Features
-
-### 1. User Registration - CRITICAL
-**Description**: Users can register with email/password
-
-**Acceptance Criteria**:
-- [ ] Email validation (required, valid format)
-- [ ] Password min 8 characters, 1 uppercase, 1 number
-- [ ] Unique email check
-- [ ] Success: redirect to dashboard
-- [ ] Error: show inline error message
-```
-
-### 3. Use Priority Levels
-
-Order features by priority:
+### Use Priority Levels
 
 ```markdown
 ### 1. Core feature - CRITICAL
@@ -578,123 +201,27 @@ Order features by priority:
 ### 4. Future enhancement - LOW
 ```
 
-agentful works CRITICAL → HIGH → MEDIUM → LOW
+agentful works CRITICAL → HIGH → MEDIUM → LOW.
 
-### 4. Let It Run
+### Switch Between Structures
 
-Don't micromanage. agentful works best when you:
+You can change anytime:
 
-✅ **Do:**
-- Start it and let it run
-- Check in periodically with `/agentful-status`
-- Answer decisions when prompted
-- Review code at milestones
-- Use `/agentful` for natural conversation when you need to make changes
-
-❌ **Don't:**
-- Interrupt after every file
-- Change your product spec mid-development
-- Manually edit files agentful created
-- Stop and start repeatedly
-
-> **Switching structures?** You can change between flat (`PRODUCT.md`) and hierarchical (`.claude/product/`) anytime. agentful auto-detects the change on the next run.
-
-### 5. Use Natural Conversation
-
-Instead of always using structured mode, you can talk to agentful naturally:
-
+**Simple → Complex**:
 ```bash
-/agentful
+mkdir -p .claude/product/domains
+mv PRODUCT.md .claude/product/index.md
+# Split content into domain files
 ```
 
-```
-You: I need to add user authentication
-agentful: I'll help you add authentication. I can see you have Next.js set up.
-        Would you like to use NextAuth.js or implement custom JWT?
-
-You: Let's use NextAuth.js with Google provider
-agentful: Perfect. I'll:
-        1. Install next-auth
-        2. Configure Google OAuth
-        3. Create login/logout pages
-        4. Add session management
-        5. Write tests
-        Ready to proceed?
-
-You: Yes, go ahead
-agentful: Starting implementation...
-```
-
-This is great for:
-- Exploratory development
-- Getting advice before implementing
-- Making mid-course corrections
-- Learning why agentful makes certain decisions
-
-### 6. Use Extended Development Sessions for Big Projects
-
-For complex projects, use **Ralph Wiggum loops** - an automated iteration tool that runs agentful continuously:
-
+**Complex → Simple**:
 ```bash
-/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+cat .claude/product/index.md > PRODUCT.md
+cat .claude/product/domains/*/*.md >> PRODUCT.md
+rm -rf .claude/product/
 ```
 
-**What is Ralph Wiggum?** A Claude Code plugin that runs commands in a loop with automatic iteration. Instead of manually restarting `/agentful-start` after each feature, Ralph Wiggum keeps development going automatically until completion or max iterations.
-
-Let it run overnight, wake up to progress.
-
-**Perfect for:**
-- Large projects with many features
-- When you want maximum progress overnight
-- Hands-off development sessions
-
----
-
-## Understanding agentful's Intelligence
-
-agentful is smart - it adapts to your project automatically:
-
-### Automatic Structure Detection
-
-**During init:**
-- Analyzes your project structure
-- Counts detected domains (features, modules, areas)
-- Checks for multiple frameworks
-- Detects monorepo setup
-- Chooses optimal structure (flat vs hierarchical)
-
-**During development:**
-- Auto-detects which structure you're using
-- Reads from `.claude/product/index.md` (preferred) OR `PRODUCT.md` (also supported)
-- No configuration needed - just pick what fits your project
-
-### Tech Stack Detection
-
-**Automatically detects:**
-- Frontend framework (Next.js, React, Vue, etc.)
-- Backend framework (Express, NestJS, etc.)
-- Database/ORM (Prisma, Drizzle, etc.)
-- Testing tools (Vitest, Jest, Playwright)
-- Styling approach (Tailwind, CSS Modules, etc.)
-- Build tools (Vite, Webpack, tsup)
-
-**Generates specialized agents:**
-- Stack-specific agents (e.g., `nextjs-agent`, `prisma-agent`)
-- Knows your framework's patterns and conventions
-- Follows best practices for your stack
-
-### Quality Gate Adaptation
-
-Quality gates automatically adapt to your stack:
-
-- **TypeScript project?** → Checks for type errors
-- **JavaScript project?** → Skips type checking
-- **ESLint configured?** → Runs ESLint
-- **Biome configured?** → Runs Biome instead
-- **Playwright installed?** → Runs E2E tests
-- **No E2E framework?** → Skips E2E checks
-
----
+agentful auto-detects the change on next run.
 
 ## What to Expect
 
@@ -711,28 +238,26 @@ Quality gates automatically adapt to your stack:
 - 5-10 features
 
 **Complex Project (SaaS MVP)**
-- 2-4 hours (or overnight with Ralph)
+- 2-4 hours
 - 50-100 iterations
 - 10-20 features
 
 ### Quality Expectations
 
 agentful aims for:
-- ✅ All tests passing
-- ✅ No type errors (adapts to stack)
-- ✅ 80%+ test coverage
-- ✅ No dead code
-- ✅ No security issues
+- All tests passing
+- No type errors (adapts to stack)
+- 80%+ test coverage
+- No dead code
+- No security issues
 
-**Note:** Code may need refactoring for production. agentful builds working MVPs, not production-optimized code.
-
----
+Code may need refactoring for production. agentful builds working MVPs.
 
 ## Troubleshooting
 
-### Issue: agentful seems stuck
+### agentful seems stuck
 
-**Solution:** Check status
+Check status:
 ```
 /agentful-status
 ```
@@ -740,23 +265,18 @@ agentful aims for:
 If iterations > 20 without progress:
 1. Check for pending decisions
 2. Run `/agentful-decide`
-3. Or restart: `/agentful-start`
+3. Or restart with `/agentful-generate`
 
-### Issue: Not making progress on features
+### Not making progress
 
-**Solution:** Review your product spec (`.claude/product/index.md` or `PRODUCT.md`)
+Review your product spec:
 - Are acceptance criteria clear?
 - Is tech stack specified?
-- Try breaking features into smaller chunks
+- Break features into smaller chunks
 
-### Issue: Too many validation errors
+### Too many validation errors
 
-**Solution:** Let Fixer work
-- agentful will auto-fix most issues
-- If stuck, run `/agentful-validate` to see specific errors
-- Some errors may require manual intervention
-
----
+Let Fixer work. agentful auto-fixes most issues. If stuck, run `/agentful-validate` to see specific errors.
 
 ## Next Steps
 
@@ -765,16 +285,16 @@ If iterations > 20 without progress:
 <div>
 
 ### Build Your First Project
-Create a complete structured project
-→ [First Project Guide](/getting-started/first-project)
+Create a complete project
+[First Project Guide](/getting-started/first-project)
 
 </div>
 
 <div>
 
 ### Configuration
-Customize agentful for your needs
-→ [Configuration Guide](/getting-started/configuration)
+Customize agentful
+[Configuration Guide](/getting-started/configuration)
 
 </div>
 
@@ -784,42 +304,20 @@ Customize agentful for your needs
 
 ## Quick Reference
 
-**Essential Commands:**
-- `/agentful` - Natural conversation interface (talk to agentful like a senior developer)
-- `/agentful-start` - Begin or resume structured development
-- `/agentful-status` - Check progress and what's being worked on
+**Essential Commands**:
+- `/agentful-generate` - Generate specialized agents for your stack
+- `/agentful-status` - Check progress
 - `/agentful-decide` - Answer pending decisions
-- `/agentful-validate` - Run all quality checks
+- `/agentful-validate` - Run quality checks
 
-**Key Files:**
-- `.claude/product/index.md` - **Preferred:** Main product spec (hierarchical structure, auto-detected)
-- `PRODUCT.md` - **Also supported:** Product spec (flat structure, auto-detected)
-- `.claude/product/domains/*` - Domain-specific specs (hierarchical only)
-- `CLAUDE.md` - Project instructions
+**Key Files**:
+- `.claude/product/index.md` - Product spec (hierarchical, preferred)
+- `PRODUCT.md` - Product spec (flat, also supported)
+- `.claude/product/domains/*` - Domain specs (hierarchical only)
 - `.agentful/state.json` - Current state
-- `.agentful/completion.json` - Progress tracking
 - `.agentful/architecture.json` - Detected tech stack
 
-**Intelligent Structure Detection:**
-- **Simple projects** (< 3 domains) → `PRODUCT.md` created (also supported)
-- **Complex projects** (≥ 3 domains) → `.claude/product/` created (preferred)
-- **Switch anytime** → agentful auto-detects changes
-
-**Two Ways to Use agentful:**
-1. **Natural Conversation** (`/agentful`) - Talk to agentful, get advice, explore options
-2. **Structured Mode** (`/agentful-start`) - Hands-off development, continuous building
-
-**Extended Development Sessions:**
-```bash
-/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
-```
-Uses Ralph Wiggum plugin to run development continuously with automatic iteration.
-
-**Quick Decision Guide:**
-| Need | Command |
-|------|---------|
-| Start building | `/agentful-start` |
-| Check progress | `/agentful-status` |
-| Answer questions | `/agentful-decide` |
-| Make changes mid-flight | `/agentful` (conversation mode) |
-| Run quality checks | `/agentful-validate` |
+**Structure Detection**:
+- Simple (< 3 domains) → `PRODUCT.md`
+- Complex (≥ 3 domains) → `.claude/product/`
+- Switch anytime → Auto-detected

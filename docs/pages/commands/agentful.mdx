@@ -1,12 +1,12 @@
 # /agentful
 
-The **main conversational interface** for agentful. Just talk naturally - no need to remember specific commands or syntax.
+Natural language interface for agentful. Talk naturally - no need to remember specific commands.
 
 ## Usage
 
-\```bash
+```bash
 /agentful [your request in plain English]
-\```
+```
 
 ## Examples
 
@@ -33,29 +33,22 @@ The **main conversational interface** for agentful. Just talk naturally - no nee
 - "How's it going?"
 - "What's the status?"
 - "What's left?"
-- "Progress check"
 - "What are you working on?"
 
 ### Feature Development
 - "Add [feature]"
 - "Build [feature]"
-- "Create [feature]"
 - "Implement [feature]"
-
-Example: "Add user authentication with JWT"
 
 ### Bug Fixes
 - "Fix [issue]"
 - "The [component] is broken"
 - "[feature] isn't working"
 
-Example: "Fix the login redirect bug"
-
 ### Questions
 - "What are we building?"
 - "How does [feature] work?"
-- "Tech stack?"
-- "Architecture?"
+- "What's the tech stack?"
 
 ### Actions
 - "Continue" - Resume development
@@ -64,60 +57,12 @@ Example: "Fix the login redirect bug"
 
 ## How It Works
 
-1. **Understands Intent** - Classifies what you want (status, feature, bugfix, etc.)
-2. **Checks Context** - Reads product spec, state, and conversation history
-3. **Routes to Specialist** - Delegates to appropriate agent (orchestrator, tester, etc.)
-4. **Provides Updates** - Shows progress and asks questions when needed
+1. **Understands Intent** - Classifies what you want
+2. **Checks Context** - Reads product spec, state, history
+3. **Routes to Specialist** - Delegates to appropriate agent
+4. **Provides Updates** - Shows progress, asks questions when needed
 
-## Example Conversations
-
-### Feature Development
-
-```bash
-You:  /agentful "Add user profiles"
-
-Agent: Got it! Starting user profiles development...
-      [Analyzing project structure...]
-      [Delegating to architect agent...]
-
-Agent: User profiles feature plan created:
-      • User profile data model
-      • Profile CRUD API
-      • Profile settings page
-      Starting implementation...
-```
-
-### Status Check
-
-```bash
-You:  /agentful "How's it going?"
-
-Agent: Overall Progress: ████████████░░░░ 45%
-
-      Features:
-      ✅ Authentication Backend  100%
-      🔄 Authentication Frontend  45%
-      ⏸ User Profiles              0%
-
-      Currently working on: Login page component
-      Want to continue or check something else?
-```
-
-### Bug Fix
-
-```bash
-You:  /agentful "The login button is broken"
-
-Agent: Investigating login button issue...
-      [Analyzing LoginForm component...]
-      Found: Missing onClick handler
-      Fixing now...
-
-Agent: Fixed! Login button now triggers authentication.
-      Tests passing. ✅
-```
-
-## Integration with Commands
+## Routing
 
 `/agentful` automatically routes to specialized commands:
 
@@ -129,49 +74,23 @@ Agent: Fixed! Login button now triggers authentication.
 | "Run tests" | `/agentful-validate` |
 | "Add [feature]" | Orchestrator agent |
 
-## Conversation History
-
-agentful remembers your conversation:
-- Last 100 messages
-- Context across sessions
-- Your preferences and project knowledge
-
-## Tips
-
-- **Be specific** for features: "Add OAuth login with GitHub"
-- **Describe bugs** clearly: "Login redirects to wrong page after auth"
-- **Use natural language** - no need for technical jargon
-- **Ask questions** - agentful knows your project inside and out
-
-## When to Use /agentful vs Specific Commands
+## When to Use
 
 **Use `/agentful`** for:
-- Natural conversation and exploration
-- Quick status checks ("How's it going?")
-- Feature requests ("Add user profiles")
-- Bug reports ("The login button is broken")
+- Natural conversation
+- Quick status checks
+- Feature requests
+- Bug reports
 
-**Use `/agentful-start`** when:
-- You want autonomous development to run continuously
-- You're ready for a full development session
-- You need precise control over the development loop
-
-**Use `/agentful-product`** when:
-- Planning a new product from scratch
-- Refining existing requirements
-- Answering architectural questions before development
-
-Read more: [Command Comparison](/commands#quick-command-comparison)
+**Use specific commands** for:
+- Precise control (`/agentful-start`)
+- Long development sessions
+- Quality validation (`/agentful-validate`)
 
 ## Related Commands
 
-- [`/agentful-product`](./agentful-product) - Plan requirements before development
-- [`/agentful-start`](./agentful-start) - Start autonomous development
-- [`/agentful-status`](./agentful-status) - Check detailed progress
-- [`/agentful-decide`](./agentful-decide) - Answer pending decisions
-- [`/agentful-validate`](./agentful-validate) - Run quality checks
-
-## See Also
-
-- [Orchestrator Agent](/agents/orchestrator) - Routes your requests to specialist agents
-- [All Agents](/agents) - Available specialist agents
+- [/agentful-product](./agentful-product) - Plan requirements
+- [/agentful-start](./agentful-start) - Start autonomous development
+- [/agentful-status](./agentful-status) - Check progress
+- [/agentful-decide](./agentful-decide) - Answer decisions
+- [/agentful-validate](./agentful-validate) - Run quality checks
