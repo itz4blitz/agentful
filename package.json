@@ -10,17 +10,23 @@
     "init": "node bin/cli.js init",
     "release": "semantic-release",
     "release:dry-run": "semantic-release --dry-run",
-    "version": "node -e \"const pkg=require('./package.json'); const v=require('./version.json'); v.version=pkg.version; require('fs').writeFileSync('version.json', JSON.stringify(v, null, 2));\"",
     "docs:dev": "vocs dev",
     "docs:build": "vocs build",
     "docs:preview": "vocs preview"
+  },
+  "exports": {
+    ".": {
+      "import": "./lib/index.js"
+    }
   },
   "files": [
     "bin/",
     "lib/",
     "template/",
+    "templates/",
     ".claude/",
-    "version.json"
+    "version.json",
+    "LICENSE"
   ],
   "keywords": [
     "claude-code",

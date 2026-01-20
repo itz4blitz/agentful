@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import { analyzeProject, exportToArchitectureJson } from '../lib/project-analyzer.js';
 import AgentGenerator from '../lib/agent-generator.js';
 import DomainStructureGenerator from '../lib/domain-structure-generator.js';
+import { detectTechStack } from '../lib/tech-stack-detector.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -582,87 +583,13 @@ function showStatus() {
   console.log('');
 }
 
-function detectTechStack() {
-  const targetDir = process.cwd();
-  const detected = {
-    language: null,
-    framework: null,
-    dependencies: [],
-    devDependencies: []
-  };
-
-  // Check for package.json (Node.js/JavaScript/TypeScript)
-  const packageJsonPath = path.join(targetDir, 'package.json');
-  if (fs.existsSync(packageJsonPath)) {
-    try {
-      const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-      detected.dependencies = Object.keys(pkg.dependencies || {});
-      detected.devDependencies = Object.keys(pkg.devDependencies || {});
-      detected.language = pkg.type === 'module' ? 'TypeScript/ESM' : 'JavaScript/TypeScript';
-
-      // Detect framework
-      if (detected.dependencies.includes('next')) {
-        detected.framework = 'Next.js';
-      } else if (detected.dependencies.includes('react')) {
-        detected.framework = 'React';
-      } else if (detected.dependencies.includes('vue')) {
-        detected.framework = 'Vue';
-      } else if (detected.dependencies.includes('express')) {
-        detected.framework = 'Express';
-      } else if (detected.dependencies.includes('nestjs')) {
-        detected.framework = 'NestJS';
-      }
-    } catch (err) {
-      log(colors.yellow, '⚠️  Could not parse package.json');
-    }
-  }
-
-  // Check for requirements.txt or pyproject.toml (Python)
-  const requirementsPath = path.join(targetDir, 'requirements.txt');
-  const pyprojectPath = path.join(targetDir, 'pyproject.toml');
-  if (fs.existsSync(requirementsPath) || fs.existsSync(pyprojectPath)) {
-    detected.language = 'Python';
-    const requirements = fs.existsSync(requirementsPath)
-      ? fs.readFileSync(requirementsPath, 'utf-8')
-      : '';
-    if (requirements.includes('django')) detected.framework = 'Django';
-    else if (requirements.includes('flask')) detected.framework = 'Flask';
-    else if (requirements.includes('fastapi')) detected.framework = 'FastAPI';
-  }
-
-  // Check for go.mod (Go)
-  if (fs.existsSync(path.join(targetDir, 'go.mod'))) {
-    detected.language = 'Go';
-    detected.framework = 'Standard Library';
-  }
-
-  // Check for Cargo.toml (Rust)
-  if (fs.existsSync(path.join(targetDir, 'Cargo.toml'))) {
-    detected.language = 'Rust';
-  }
-
-  // Check for .csproj or .fsproj (C#/.NET)
-  const csprojFiles = fs.readdirSync(targetDir).filter(f => f.endsWith('.csproj'));
-  if (csprojFiles.length > 0) {
-    detected.language = 'C#';
-    detected.framework = 'ASP.NET';
-  }
-
-  // Check for pom.xml (Java)
-  if (fs.existsSync(path.join(targetDir, 'pom.xml'))) {
-    detected.language = 'Java';
-    detected.framework = 'Maven';
-  }
-
-  return detected;
-}
-
 function generateAgentPrompt(stack) {
   let prompt = `# Tech Stack Analysis\n\n`;
   prompt += `**Language**: ${stack.language || 'Unknown'}\n`;
-  prompt += `**Framework**: ${stack.framework || 'None'}\n\n`;
+  const primaryFramework = stack.frameworks && stack.frameworks.length > 0 ? stack.frameworks[0] : null;
+  prompt += `**Framework**: ${primaryFramework || 'None'}\n\n`;
 
-  if (stack.dependencies.length > 0) {
+  if (stack.dependencies && stack.dependencies.length > 0) {
     prompt += `**Key Dependencies**:\n`;
     stack.dependencies.slice(0, 10).forEach(dep => {
       prompt += `- ${dep}\n`;
@@ -724,11 +651,11 @@ async function generateAgents() {
     process.exit(1);
   }
 
-  // Detect tech stack
+  // Detect tech stack using library function
   log(colors.dim, 'Analyzing tech stack...');
-  const stack = detectTechStack();
+  const stack = await detectTechStack(process.cwd());
 
-  if (!stack.language) {
+  if (!stack.language || stack.language === 'unknown') {
     log(colors.yellow, '⚠️  Could not detect language/framework');
     log(colors.dim, 'Supported: Node.js, Python, Go, Rust, C#, Java');
     console.log('');
@@ -739,7 +666,8 @@ async function generateAgents() {
     return;
   }
 
-  log(colors.green, `✓ Detected: ${stack.language} ${stack.framework ? `(${stack.framework})` : ''}`);
+  const primaryFramework = stack.frameworks.length > 0 ? stack.frameworks[0] : null;
+  log(colors.green, `✓ Detected: ${stack.language} ${primaryFramework ? `(${primaryFramework})` : ''}`);
   log(colors.dim, `   Dependencies: ${stack.dependencies.length} packages`);
 
   // Update architecture.json
@@ -762,7 +690,7 @@ async function generateAgents() {
 
   log(colors.bright, 'Detected Stack:');
   if (stack.language) log(colors.cyan, `  Language:    ${stack.language}`);
-  if (stack.framework) log(colors.cyan, `  Framework:   ${stack.framework}`);
+  if (primaryFramework) log(colors.cyan, `  Framework:   ${primaryFramework}`);
   if (stack.dependencies.length > 0) {
     log(colors.cyan, `  Dependencies: ${stack.dependencies.length} packages`);
   }

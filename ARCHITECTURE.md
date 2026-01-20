@@ -81,6 +81,11 @@ This file is an **exception** to the user-editable rule:
 - Helps new team members understand spec completeness
 - Persists across sessions (not transient runtime state)
 
+**Note for agentful repository maintainers:**
+- This file should NOT exist in the agentful npm package repository itself
+- It's only created in user projects when they run `/agentful-product`
+- The agentful repo contains templates (`.claude/product/index.md`) but not the generated analysis
+
 #### Special Case: `.claude/agents/ephemeral/`
 
 This subdirectory is **gitignored** for temporary agents:

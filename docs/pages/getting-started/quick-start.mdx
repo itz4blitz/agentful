@@ -1,11 +1,11 @@
 ---
 title: Quick Start - agentful
-description: Get up and running with agentful in 5 minutes. Learn the basics of autonomous product development.
+description: Get up and running with agentful in 5 minutes. Learn the basics of structured product development.
 ---
 
 # Quick Start
 
-Get agentful building your project autonomously in 5 minutes.
+Get agentful building your project through structured development in 5 minutes.
 
 ---
 
@@ -15,7 +15,7 @@ This quick start will walk you through:
 
 1. ✅ Initializing agentful with intelligent detection
 2. ✅ Defining your product
-3. ✅ Starting autonomous development
+3. ✅ Starting structured development
 4. ✅ Monitoring progress
 5. ✅ Understanding the workflow
 
@@ -240,7 +240,7 @@ This starts the Claude Code CLI with agentful's specialized agents loaded.
 
 ---
 
-## Step 4: Begin Autonomous Development (30 seconds)
+## Step 4: Begin Structured Development (30 seconds)
 
 In the Claude Code prompt, type:
 
@@ -328,6 +328,24 @@ Quality Gates (adapts to your stack):
 
 Coverage below 80%, continuing...
 ```
+
+**When Quality Gates Run:**
+- Automatically after each feature implementation
+- When you run `/agentful-validate` manually
+- Before marking a feature as complete
+
+**What Happens on Failure:**
+1. Reviewer agent identifies specific issues
+2. Issues saved to `.agentful/last-review.json`
+3. Fixer agent automatically invoked to resolve issues
+4. Quality gates re-run after fixes
+5. Process repeats until all gates pass
+
+**Adaptive Behavior:**
+- TypeScript project? → Type checking enabled
+- JavaScript only? → Type checking skipped
+- ESLint configured? → Lint check runs
+- No linter? → Lint check skipped
 
 ### Phase 6: Iteration (continues)
 
@@ -583,7 +601,7 @@ Don't micromanage. agentful works best when you:
 
 ### 5. Use Natural Conversation
 
-Instead of always using autonomous mode, you can talk to agentful naturally:
+Instead of always using structured mode, you can talk to agentful naturally:
 
 ```bash
 /agentful
@@ -613,20 +631,22 @@ This is great for:
 - Making mid-course corrections
 - Learning why agentful makes certain decisions
 
-### 6. Use 24/7 Mode for Big Projects
+### 6. Use Extended Development Sessions for Big Projects
 
-For complex projects, use Ralph Wiggum loops:
+For complex projects, use **Ralph Wiggum loops** - an automated iteration tool that runs agentful continuously:
 
 ```bash
 /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
 ```
+
+**What is Ralph Wiggum?** A Claude Code plugin that runs commands in a loop with automatic iteration. Instead of manually restarting `/agentful-start` after each feature, Ralph Wiggum keeps development going automatically until completion or max iterations.
 
 Let it run overnight, wake up to progress.
 
 **Perfect for:**
 - Large projects with many features
 - When you want maximum progress overnight
-- Hands-off development
+- Hands-off development sessions
 
 ---
 
@@ -745,7 +765,7 @@ If iterations > 20 without progress:
 <div>
 
 ### Build Your First Project
-Create a complete autonomous project
+Create a complete structured project
 → [First Project Guide](/getting-started/first-project)
 
 </div>
@@ -766,7 +786,7 @@ Customize agentful for your needs
 
 **Essential Commands:**
 - `/agentful` - Natural conversation interface (talk to agentful like a senior developer)
-- `/agentful-start` - Begin or resume autonomous development
+- `/agentful-start` - Begin or resume structured development
 - `/agentful-status` - Check progress and what's being worked on
 - `/agentful-decide` - Answer pending decisions
 - `/agentful-validate` - Run all quality checks
@@ -787,12 +807,13 @@ Customize agentful for your needs
 
 **Two Ways to Use agentful:**
 1. **Natural Conversation** (`/agentful`) - Talk to agentful, get advice, explore options
-2. **Autonomous Mode** (`/agentful-start`) - Hands-off development, 24/7 capability
+2. **Structured Mode** (`/agentful-start`) - Hands-off development, continuous building
 
-**24/7 Development:**
+**Extended Development Sessions:**
 ```bash
 /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
 ```
+Uses Ralph Wiggum plugin to run development continuously with automatic iteration.
 
 **Quick Decision Guide:**
 | Need | Command |

@@ -14,14 +14,16 @@ Get agentful up and running in your project in under a minute.
 Before installing agentful, ensure you have:
 
 - **Claude Code** installed - [Get it here](https://code.anthropic.com)
-- **Node.js 18+** installed - [Download here](https://nodejs.org/)
+- **Node.js 22+** installed - [Download here](https://nodejs.org/)
 - A project directory to work in
 
-**Optional (for 24/7 development):**
-- Ralph Wiggum plugin for Claude Code
+**Optional (for extended development sessions):**
+- **Ralph Wiggum plugin** for Claude Code - A Claude Code tool that enables automatic iteration loops
   ```bash
   /plugin install ralph-wiggum@anthropics
   ```
+
+  **What is Ralph Wiggum?** A plugin that allows Claude Code to run commands repeatedly with a maximum iteration count and completion promise. Perfect for letting agentful work continuously on larger projects overnight or during extended sessions. Instead of manually restarting `/agentful-start` after each feature, Ralph Wiggum keeps the development loop running automatically.
 
 ---
 
@@ -88,9 +90,9 @@ After running `npx @itz4blitz/agentful init`, you'll see:
 Next steps:
   1. Edit your product specification (see options below)
   2. Run: claude
-  3. Type: /agentful (natural) or /agentful-start (autonomous)
+  3. Type: /agentful (conversation) or /agentful-start (structured)
 
-For autonomous 24/7 development:
+For extended development sessions:
   /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
 ```
 
@@ -235,11 +237,11 @@ The `.agentful/` directory contains runtime state that shouldn't be committed:
 
 ### Issue: "Command not found: npx"
 
-**Solution:** Install Node.js 18+ from [nodejs.org](https://nodejs.org/)
+**Solution:** Install Node.js 22+ from [nodejs.org](https://nodejs.org/)
 
 ```bash
 # Verify Node.js is installed
-node --version  # Should be v18+
+node --version  # Should be v22+
 
 # Verify npx is available
 npx --version
@@ -455,7 +457,7 @@ Learn how to use agentful in 5 minutes
 <div>
 
 ### First Project
-Build your first autonomous project
+Build your first structured project
 → [First Project Guide](/getting-started/first-project)
 
 </div>

@@ -301,6 +301,38 @@ For hierarchical structure examples, check:
 
 **No**: The system auto-detects ONE format. Choose the format that best fits your project size and complexity.
 
+## Product Analysis File
+
+After running `/agentful-product`, a `product-analysis.json` file is generated:
+
+```bash
+.claude/product/
+├── index.md                    # Your product spec (template)
+└── product-analysis.json       # Generated analysis (created by /agentful-product)
+```
+
+**Key points:**
+- **Not in templates**: This file doesn't exist in the agentful package itself
+- **Generated on demand**: Created when you run `/agentful-product` in your project
+- **Purpose**: Analyzes your product spec for completeness, clarity, feasibility, testability, and consistency
+- **Scores readiness**: 0-100% score with blocking issues and recommendations
+- **Version controlled**: Commit to git to track spec quality improvements over time
+
+**Example content:**
+```json
+{
+  "version": "1.0",
+  "timestamp": "2026-01-20T00:00:00Z",
+  "readiness_score": 75,
+  "dimensions": {
+    "completeness": { "score": 85 },
+    "clarity": { "score": 90 }
+  },
+  "blocking_issues": [],
+  "can_start_development": true
+}
+```
+
 ## Summary
 
 | Format | Best For | Tracking | File Structure |
