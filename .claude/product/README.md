@@ -6,16 +6,7 @@ agentful supports **both** flat and hierarchical product structures with automat
 
 ### Simple Projects (Flat Structure)
 
-Just create a single `PRODUCT.md` file at your project root:
-
-```bash
-your-project/
-├── PRODUCT.md          # All features in one file
-├── src/
-└── package.json
-```
-
-Or use `.claude/product/index.md`:
+Create `.claude/product/index.md` with all your features:
 
 ```bash
 your-project/
@@ -54,8 +45,7 @@ your-project/
 The system automatically detects which format you're using:
 
 1. **Hierarchical**: If `.claude/product/domains/*/index.md` exists
-2. **Flat (legacy)**: If `PRODUCT.md` exists at root
-3. **Flat (new)**: If `.claude/product/index.md` exists (without domains)
+2. **Flat**: If `.claude/product/index.md` exists (without domains)
 
 ### Detection Algorithm
 
@@ -63,11 +53,8 @@ The system automatically detects which format you're using:
 if exists(".claude/product/domains/*/index.md"):
     → Use hierarchical structure
     → Track at subtask → feature → domain levels
-else if exists("PRODUCT.md"):
-    → Use flat structure (legacy)
-    → Track at feature level
 else if exists(".claude/product/index.md"):
-    → Use flat structure (new)
+    → Use flat structure
     → Track at feature level
 else:
     → Error: No product specification found
@@ -83,7 +70,7 @@ else:
 - Single developer or small team
 - Simple feature list without dependencies
 
-**Example `PRODUCT.md`:**
+**Example `.claude/product/index.md`:**
 
 ```markdown
 # My App
@@ -209,16 +196,13 @@ Priority: CRITICAL
 
 ## Migration Path
 
-You can start flat and migrate to hierarchical as your project grows:
+You can start flat and expand to hierarchical as your project grows:
 
 ```
 Phase 1: Quick Start
-└── PRODUCT.md (all features in one file)
+└── .claude/product/index.md (all features in one file)
 
-Phase 2: Organize (optional)
-└── .claude/product/index.md (move to .claude directory)
-
-Phase 3: Scale Up (when needed)
+Phase 2: Scale Up (when needed)
 └── .claude/product/domains/ (split by domain)
     ├── authentication/
     ├── user-management/
@@ -285,7 +269,6 @@ For hierarchical structure examples, check:
 ### "No product specification found"
 
 **Solution**: Create one of:
-- `PRODUCT.md` at root
 - `.claude/product/index.md`
 - `.claude/product/domains/*/index.md`
 
@@ -294,7 +277,7 @@ For hierarchical structure examples, check:
 **Cause**: completion.json structure doesn't match product files
 
 **Solution**: Don't mix formats. Choose one:
-- All flat: `PRODUCT.md` + `completion.json` with `features` object
+- All flat: `.claude/product/index.md` + `completion.json` with `features` object
 - All hierarchical: `.claude/product/domains/` + `completion.json` with `domains` object
 
 ### Can I use both formats?
@@ -337,8 +320,7 @@ After running `/agentful-product`, a `product-analysis.json` file is generated:
 
 | Format | Best For | Tracking | File Structure |
 |--------|----------|----------|----------------|
-| Flat (PRODUCT.md) | Small projects, MVPs | Feature level | Single file |
-| Flat (.claude/product/index.md) | Small projects, organized | Feature level | Single file in .claude |
+| Flat (.claude/product/index.md) | Small projects, MVPs | Feature level | Single file |
 | Hierarchical | Large projects, teams | Subtask/feature/domain level | Multiple files, domain folders |
 
 Choose the format that matches your project needs. The system will auto-detect and adapt!

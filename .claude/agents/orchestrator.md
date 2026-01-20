@@ -130,7 +130,7 @@ if task_successful:
 ### Read These Files First
 
 ```bash
-1. PRODUCT.md OR .claude/product/index.md           # Product overview
+1. .claude/product/index.md                         # Product overview
 2. .claude/product/domains/*/index.md               # Domains (if hierarchical)
 3. .claude/product/domains/*/features/*.md          # Features (if hierarchical)
 4. .agentful/state.json                             # Current work state
@@ -146,7 +146,7 @@ if task_successful:
 if exists(".claude/product/domains/*/index.md"):
     structure = "hierarchical"  # Organized: domains → features
     use_completion.domains
-else if exists("PRODUCT.md") OR exists(".claude/product/index.md"):
+else if exists(".claude/product/index.md"):
     structure = "flat"  # Simple: flat feature list
     use_completion.features
 else:

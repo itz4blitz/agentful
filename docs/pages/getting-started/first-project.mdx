@@ -35,13 +35,13 @@ npx @itz4blitz/agentful init
 agentful analyzes your Next.js project and:
 1. Detects tech stack (Next.js, TypeScript, Tailwind)
 2. Finds 2 domains (Task Management, UI Components)
-3. Creates `PRODUCT.md` (< 3 domains = flat structure)
+3. Creates `.claude/product/index.md`
 
-If you had ≥3 domains, it would create `.claude/product/` with domain directories.
+For complex projects with many domains, you can organize into domain subdirectories.
 
 ## Step 2: Define Your Product
 
-Edit `PRODUCT.md`:
+Edit `.claude/product/index.md`:
 
 ```markdown
 # Product Specification
@@ -279,7 +279,7 @@ Quality Gates:
 ✓ No Type Errors
 ✓ Coverage 87%
 
-Reading from: PRODUCT.md (flat structure)
+Reading from: .claude/product/index.md
 ```
 
 ## Step 6: Handle Decisions
@@ -400,7 +400,7 @@ npx tsc --noEmit
 
 ### Add New Features
 
-Edit `PRODUCT.md`:
+Edit `.claude/product/index.md`:
 ```markdown
 ### 6. Task Due Dates - MEDIUM
 **Description**: Add due dates to tasks
@@ -418,17 +418,17 @@ Then:
 
 ### Modify Existing Features
 
-Update acceptance criteria in `PRODUCT.md`, then run `/agentful-generate`.
+Update acceptance criteria in `.claude/product/index.md`, then run `/agentful-generate`.
 
-### Switch to Hierarchical Structure
+### Add Domain Structure
+
+For complex projects, organize into domains:
 
 ```bash
-mkdir -p .claude/product/domains
-mv PRODUCT.md .claude/product/index.md
+mkdir -p .claude/product/domains/tasks
+mv .claude/product/index.md .claude/product/index.md.bak
 # Split content into domain files
 ```
-
-agentful auto-detects the change.
 
 ## Recap
 
@@ -445,14 +445,14 @@ You built a complete task management app with:
 **Key Learnings**:
 
 1. **Intelligent Init** - agentful analyzes and creates appropriate structure
-2. **Product Structures** - Flat (PRODUCT.md) or hierarchical (.claude/product/), both auto-detected
+2. **Product Structure** - Hierarchical `.claude/product/` with optional domain organization
 3. **Agent Generation** - `/agentful-generate` creates stack-specific agents
 4. **Progress Monitoring** - `/agentful-status` shows what's being worked on
 5. **Quality Automation** - Tests, type checking, linting enforced automatically
 
 **Next Steps**:
 
-- Build more complex projects with hierarchical structure
+- Build more complex projects with domain organization
 - Customize agentful for your specific stack
 - Deploy your project
 

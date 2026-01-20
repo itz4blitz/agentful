@@ -16,10 +16,8 @@ This skill tracks the completion progress of product development with support fo
 The system supports **both** flat and hierarchical product structures with automatic detection:
 
 ```
-Option 1: Flat Structure (Legacy/Quick Start)
-├── PRODUCT.md                    # Single file with all features
-    OR
-├── .claude/product/
+Option 1: Flat Structure (Simple)
+└── .claude/product/
     └── index.md                  # Single file with all features
 
 Option 2: Hierarchical Structure (Organized)
@@ -53,11 +51,7 @@ if exists(".claude/product/domains/*/index.md"):
     use_domains = true
 else:
     # Step 2: Fall back to flat structure
-    if exists("PRODUCT.md"):
-        structure_type = "flat"
-        product_root = "."
-        use_domains = false
-    elif exists(".claude/product/index.md"):
+    if exists(".claude/product/index.md"):
         structure_type = "flat"
         product_root = ".claude/product"
         use_domains = false
@@ -67,8 +61,7 @@ else:
 
 **Priority Order:**
 1. Hierarchical (`.claude/product/domains/*/index.md`) - preferred for organized projects
-2. Flat (`PRODUCT.md`) - legacy quick-start format at root
-3. Flat (`.claude/product/index.md`) - new flat format in .claude directory
+2. Flat (`.claude/product/index.md`) - simple flat format for projects without domains
 
 ### Parsing Product Structure
 
@@ -105,9 +98,7 @@ if domain_files.length > 0:
 
 ```bash
 # 1. Detect structure
-if exists("PRODUCT.md"):
-    product_file = "PRODUCT.md"
-elif exists(".claude/product/index.md"):
+if exists(".claude/product/index.md"):
     product_file = ".claude/product/index.md"
 else:
     error("No product specification found")
@@ -549,7 +540,7 @@ Map to completion.json:
 
 ### Parsing Flat Product Structure
 
-Parse `PRODUCT.md` (or `.claude/product/index.md`) to extract feature list:
+Parse `.claude/product/index.md` to extract feature list:
 
 ```markdown
 ## Features
@@ -591,12 +582,11 @@ Always detect structure type before any operation:
 ```bash
 # Detect structure
 domains_found = Glob(".claude/product/domains/*/index.md")
-product_md_exists = exists("PRODUCT.md")
 product_index_exists = exists(".claude/product/index.md")
 
 if domains_found:
     use_hierarchical_tracking()
-else if product_md_exists or product_index_exists:
+else if product_index_exists:
     use_flat_tracking()
 else:
     error("No product specification found")
@@ -629,8 +619,8 @@ When subtask work completes:
 
 When orchestrator asks for progress update:
 
-1. Detect structure type (no domains, PRODUCT.md exists → flat)
-2. Determine product file: `PRODUCT.md` or `.claude/product/index.md`
+1. Detect structure type (no domains, `.claude/product/index.md` exists → flat)
+2. Read `.claude/product/index.md` for product specification
 3. Read completion.json
 4. Calculate overall percentage
 5. Identify next priority feature
@@ -650,5 +640,4 @@ When feature work completes:
 | Structure Type | Detection | Product File | Completion Schema | Tracking Method |
 |---------------|-----------|--------------|-------------------|-----------------|
 | Hierarchical | `.claude/product/domains/*/index.md` exists | `.claude/product/index.md` | Nested `domains` object | Track at subtask → feature → domain levels |
-| Flat (legacy) | `PRODUCT.md` exists | `PRODUCT.md` | Flat `features` object | Track at feature level |
-| Flat (new) | `.claude/product/index.md` exists | `.claude/product/index.md` | Flat `features` object | Track at feature level |
+| Flat | `.claude/product/index.md` exists | `.claude/product/index.md` | Flat `features` object | Track at feature level |

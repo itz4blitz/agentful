@@ -132,7 +132,7 @@ Pending user decisions:
 ## Standard Workflow
 
 ```
-1. Read product spec (auto-detect PRODUCT.md or .claude/product/)
+1. Read product spec (.claude/product/index.md)
 2. Read state.json (current progress)
 3. Read completion.json (what's done)
 4. Read decisions.json (what's blocked)
@@ -149,8 +149,8 @@ Pending user decisions:
 Always reference the product spec:
 
 ```markdown
-Task("backend", "Implement JWT login per PRODUCT.md auth section")
-Task("frontend", "Create login page per PRODUCT.md auth UI spec")
+Task("backend", "Implement JWT login per .claude/product/ auth section")
+Task("frontend", "Create login page per .claude/product/ auth UI spec")
 Task("tester", "Write tests for auth service")
 Task("reviewer", "Review all auth changes")
 ```
@@ -219,16 +219,16 @@ Then outputs:
 ```
 User: "Build the authentication system"
 
-[Read PRODUCT.md] → Auth spec found
+[Read .claude/product/] → Auth spec found
 [Read state.json] → No current work
 [Read completion.json] → Auth = 0%
 
 [Classify] → FEATURE_DEVELOPMENT (autonomous loop)
 
-[Delegate] Task("backend", "Implement JWT auth API per PRODUCT.md")
+[Delegate] Task("backend", "Implement JWT auth API per .claude/product/")
 [Wait] Backend completes
 
-[Delegate] Task("frontend", "Create login page per PRODUCT.md")
+[Delegate] Task("frontend", "Create login page per .claude/product/")
 [Wait] Frontend completes
 
 [Delegate] Task("tester", "Write tests for auth")
@@ -249,33 +249,26 @@ User: "Build the authentication system"
 [Output] <promise>AGENTFUL_COMPLETE</promise>
 ```
 
-## Product Spec Formats
+## Product Spec Format
 
-Auto-detects:
+Uses the hierarchical structure:
 
-**Flat structure:**
-```
-PRODUCT.md (single file)
-or
-.claude/product/index.md
-```
-
-**Hierarchical structure:**
 ```
 .claude/product/
-├── index.md
-└── domains/
-    ├── authentication/
-    │   ├── index.md
-    │   └── features/
-    │       ├── login.md
-    │       └── register.md
-    └── dashboard/
-        └── features/
-            └── overview.md
+├── index.md           # Project overview
+├── domains/           # Business domains (for complex projects)
+│   ├── authentication/
+│   │   ├── index.md
+│   │   └── features/
+│   │       ├── login.md
+│   │       └── register.md
+│   └── dashboard/
+│       └── features/
+│           └── overview.md
+└── README.md
 ```
 
-The Orchestrator reads both formats and tracks completion accordingly.
+The Orchestrator reads this structure and tracks completion accordingly.
 
 ## Key Behaviors
 

@@ -38,10 +38,10 @@ Use `/agentful-product` for guided product planning:
 
 #### Option B: Manual Creation
 
-Create your specification manually:
+Create your specification manually in `.claude/product/`:
 
-**Flat structure** (single file at project root):
-- `PRODUCT.md` - All features in one file
+**Flat structure** (single file):
+- `.claude/product/index.md` - All features in one file
 
 **Hierarchical structure** (organized by domain):
 - `.claude/product/index.md` - Product overview
@@ -195,10 +195,11 @@ Full documentation: [agentful.app](https://agentful.app)
 
 ```
 your-project/
-├── PRODUCT.md                      # Product specification (flat)
 ├── CLAUDE.md                       # Project instructions
 ├── .claude/
-│   ├── product/                    # Product specification (hierarchical)
+│   ├── product/                    # Product specification
+│   │   ├── index.md                # Product spec (flat or hierarchical)
+│   │   └── domains/                # Optional: hierarchical structure
 │   ├── agents/                     # Agent definitions
 │   ├── commands/                   # Slash commands
 │   ├── skills/                     # Reusable skills

@@ -60,7 +60,7 @@ The command reads these files in order:
 
 | File | Purpose |
 |------|---------|
-| `.claude/product/index.md` or `PRODUCT.md` | Product spec (auto-detected) |
+| `.claude/product/index.md` | Product spec |
 | `.agentful/state.json` | Current work state and progress |
 | `.agentful/completion.json` | Feature completion percentages |
 | `.agentful/decisions.json` | Pending user decisions |
@@ -114,7 +114,7 @@ delegate to specialist agents, validate, update state, continue until complete."
 2. Orchestrator reads completion.json
    → Auth feature at 30%, needs implementation
 
-3. Orchestrator reads product spec (auto-detects `.claude/product/index.md` or `PRODUCT.md`)
+3. Orchestrator reads product spec (.claude/product/index.md)
    → Auth requirements: JWT tokens, refresh, logout
 
 4. Orchestrator delegates to @backend
@@ -311,7 +311,7 @@ Time Elapsed: 2 hours 14 minutes
 ### Best Practices
 
 1. **Keep your product spec updated**
-   - Use `.claude/product/index.md` (preferred) or `PRODUCT.md` (also supported)
+   - Use `.claude/product/index.md`
    - Clear requirements = better autonomous decisions
    - Update as requirements evolve
 
@@ -395,8 +395,8 @@ EOF
 # Check agent configuration
 ls .claude/agents/
 
-# Verify PRODUCT.md exists
-cat PRODUCT.md
+# Verify product spec exists
+cat .claude/product/index.md
 
 # Try running orchestrator directly
 Task("orchestrator", "Test orchestrator agent")

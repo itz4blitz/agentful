@@ -47,7 +47,7 @@ Each agent has explicit scope boundaries and responsibilities.
 ### Workflow
 
 ```
-1. Define product spec (PRODUCT.md or .claude/product/)
+1. Define product spec (.claude/product/)
 2. Run /agentful-start
 3. Orchestrator identifies next task
 4. Domain agents implement
@@ -76,7 +76,7 @@ npx @itz4blitz/agentful init
 This creates:
 - `.claude/` - Agents, commands, skills (version control this)
 - `.agentful/` - Runtime state (gitignored)
-- `PRODUCT.md` - Product specification template
+- `.claude/product/` - Product specification structure
 
 ---
 
@@ -91,7 +91,7 @@ claude
 /agentful-product
 ```
 
-Answer guided questions. Creates structured `PRODUCT.md`.
+Answer guided questions. Creates structured `.claude/product/` hierarchy.
 
 **Existing codebases:**
 
@@ -104,7 +104,7 @@ Reverse-engineers spec from your code.
 
 **Manual:**
 
-Edit `PRODUCT.md`:
+Edit `.claude/product/index.md`:
 
 ```markdown
 ## Overview
@@ -183,7 +183,6 @@ Gates adapt to your stack. The framework detects available tools and runs approp
 
 ```
 your-project/
-├── PRODUCT.md              # Product specification
 ├── CLAUDE.md               # Project context
 ├── .claude/                # Framework (version control)
 │   ├── agents/
@@ -207,6 +206,13 @@ your-project/
 │   │   ├── product-tracking/
 │   │   ├── validation/
 │   │   └── conversation/
+│   ├── product/            # Product specification
+│   │   ├── index.md        # Project overview
+│   │   ├── domains/        # Business domains
+│   │   │   └── auth/
+│   │   │       ├── index.md
+│   │   │       └── features/
+│   │   └── README.md
 │   └── settings.json
 └── .agentful/              # Runtime state (gitignored)
     ├── state.json
@@ -216,7 +222,7 @@ your-project/
     └── last-validation.json
 ```
 
-**Version control:** `.claude/`, `PRODUCT.md`, `CLAUDE.md`
+**Version control:** `.claude/`, `CLAUDE.md`
 
 **Gitignore:** `.agentful/`, `.claude/agents/ephemeral/`
 

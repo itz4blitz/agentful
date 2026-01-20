@@ -125,7 +125,7 @@ This subdirectory is **gitignored** for temporary agents:
 
 | File | Location | Version Control | Purpose | Modified By |
 |------|----------|----------------|---------|-------------|
-| `PRODUCT.md` | Root or `.claude/product/index.md` | ✅ YES | Main product spec | Human |
+| `index.md` | `.claude/product/` | ✅ YES | Main product spec | Human |
 | `product-analysis.json` | `.claude/product/` | ✅ YES | Spec readiness score | agentful |
 | Domain specs | `.claude/product/domains/` | ✅ YES | Feature details | Human |
 

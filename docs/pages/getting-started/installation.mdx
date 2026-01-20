@@ -21,22 +21,25 @@ npx @itz4blitz/agentful init
 This analyzes your project, detects your tech stack, and creates:
 - `.claude/` - 7 agents, 5 commands, skills
 - `.agentful/` - Runtime state (gitignored)
-- Either `PRODUCT.md` (simple) or `.claude/product/` (complex)
+- `.claude/product/` - Product specification structure
 - `CLAUDE.md` - Project instructions
 
 ## What Gets Created
 
 ```
 your-project/
-├── PRODUCT.md              # Product spec (simple projects)
 ├── CLAUDE.md               # Project instructions
 ├── .claude/
 │   ├── agents/             # 7 specialized agents
 │   ├── commands/           # 5 slash commands
 │   ├── skills/             # Domain skills
-│   ├── product/            # Product spec (complex projects)
-│   │   ├── index.md
-│   │   └── domains/
+│   ├── product/            # Product specification
+│   │   ├── index.md        # Project overview
+│   │   ├── domains/        # Business domains (optional)
+│   │   │   └── auth/
+│   │   │       ├── index.md
+│   │   │       └── features/
+│   │   └── README.md
 │   └── settings.json
 └── .agentful/              # Runtime state (gitignored)
     ├── state.json
@@ -45,20 +48,16 @@ your-project/
     └── architecture.json
 ```
 
-## Structure Detection
+## Product Structure
 
-agentful auto-detects the best structure:
+agentful uses `.claude/product/index.md` for your product specification.
 
-**Simple projects** (< 3 domains, single framework):
-- Creates `PRODUCT.md` at root
-- Single file, easier to start
+**Simple projects**:
+- Keep all features in `index.md`
 
-**Complex projects** (≥ 3 domains, multiple frameworks, monorepo):
-- Creates `.claude/product/index.md` with `domains/`
-- Organized by domain
-- Preferred for most projects
-
-You can switch between structures anytime. agentful auto-detects on each run.
+**Complex projects**:
+- Organize into domain subdirectories under `domains/`
+- Each domain has its own `index.md` and `features/`
 
 ## Verify Installation
 
@@ -70,9 +69,9 @@ ls -la .agentful/
 # Check state
 cat .agentful/state.json
 
-# Check structure
-ls -la PRODUCT.md              # Simple
-ls -la .claude/product/        # Complex
+# Check product structure
+ls -la .claude/product/
+cat .claude/product/index.md
 ```
 
 ## Init Options
@@ -93,9 +92,9 @@ Faster init without project analysis:
 npx @itz4blitz/agentful init --no-smart
 ```
 
-### Force Hierarchical
+### Generate Domains
 
-Force hierarchical structure regardless of complexity:
+Generate domain subdirectories for complex projects:
 
 ```bash
 npx @itz4blitz/agentful init --generate-domains
@@ -150,7 +149,7 @@ npx @itz4blitz/agentful init
 ## Uninstall
 
 ```bash
-rm -rf .claude .agentful PRODUCT.md CLAUDE.md
+rm -rf .claude .agentful CLAUDE.md
 ```
 
 ## Next Steps

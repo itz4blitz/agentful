@@ -10,7 +10,7 @@ Analyzes tech stack and generates framework-specific agents dynamically.
 
 ## What It Does
 
-1. **Reads PRODUCT.md** - Identifies tech stack
+1. **Reads .claude/product/index.md** - Identifies tech stack
 2. **Detects existing code** - Analyzes package.json, source files
 3. **Generates agents** - Creates framework-specific agents in `.claude/agents/generated/`
 4. **Updates on changes** - Regenerates when stack changes
@@ -30,7 +30,7 @@ Architect creates agents like:
 
 ## Tech Stack Detection
 
-Reads `PRODUCT.md` or analyzes existing code:
+Reads `.claude/product/index.md` or analyzes existing code:
 
 ```markdown
 ## Tech Stack

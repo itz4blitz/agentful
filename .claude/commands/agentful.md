@@ -268,18 +268,7 @@ This is optional but recommended for complex projects. Run `/agentful-product` t
 
 Create a product specification (choose one):
 
-**Flat structure** (simple projects):
-```markdown
-# PRODUCT.md
-
-## Features
-
-- [CRITICAL] User authentication (login, register, password reset)
-- [HIGH] User profiles (edit, avatar, preferences)
-- [MEDIUM] Dashboard (analytics, activity feed)
-```
-
-**Hierarchical structure** (complex projects):
+**Hierarchical structure** (recommended):
 ```
 .claude/product/
 ├── index.md                 # Product overview

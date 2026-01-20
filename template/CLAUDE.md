@@ -4,7 +4,7 @@
 
 ## Quick Start
 
-1. Edit `PRODUCT.md` (or `.claude/product/` for larger projects)
+1. Edit `.claude/product/index.md` to define your product requirements
 2. Run: `claude`
 3. Type: `/agentful-start`
 
@@ -28,7 +28,7 @@ claude --dangerously-skip-permissions
 ## When to Use What
 
 **Starting fresh?**
-→ Run `/agentful-product` to analyze your PRODUCT.md, then `/agentful-start`
+→ Run `/agentful-product` to analyze your product spec, then `/agentful-start`
 
 **Existing project?**
 → Run `/agentful-start` directly (auto-detects tech stack)
@@ -43,16 +43,16 @@ claude --dangerously-skip-permissions
 → Check `.agentful/decisions.json` or run `/agentful-decide`
 
 **Unclear requirements?**
-→ Run `/agentful-product` in reverse-engineering mode or improve PRODUCT.md
+→ Run `/agentful-product` in reverse-engineering mode or improve `.claude/product/index.md`
 
 **Want to add features?**
-→ Edit PRODUCT.md, then run `/agentful-start` (picks up changes automatically)
+→ Edit `.claude/product/index.md`, then run `/agentful-start` (picks up changes automatically)
 
 ## File Structure
 
 **Product Specification** (you edit these):
-- `PRODUCT.md` - Flat structure (recommended for <20 features)
-- `.claude/product/` - Hierarchical structure (for larger projects)
+- `.claude/product/index.md` - Flat structure (all features in one file)
+- `.claude/product/domains/` - Hierarchical structure (organized by domain)
 
 **Runtime State** (managed by agentful, gitignored):
 - `.agentful/state.json` - Current work phase and progress
@@ -81,22 +81,22 @@ The `reviewer` agent runs these checks automatically. The `fixer` agent resolves
 ## Troubleshooting
 
 **"agentful keeps asking me unclear questions"**
-→ Your PRODUCT.md needs more detail. Run `/agentful-product` to analyze and improve it.
+→ Your product spec needs more detail. Run `/agentful-product` to analyze and improve it.
 
 **"Validation keeps failing"**
 → Check `.agentful/last-validation.json` for details. The `fixer` agent should auto-resolve, but you can run `/agentful-validate` manually.
 
 **"Agent isn't working on the right feature"**
-→ Check priority in PRODUCT.md. CRITICAL > HIGH > MEDIUM > LOW. Run `/agentful-status` to see current focus.
+→ Check priority in `.claude/product/index.md`. CRITICAL > HIGH > MEDIUM > LOW. Run `/agentful-status` to see current focus.
 
 **"State seems stuck or corrupted"**
 → Delete `.agentful/state.json` and run `/agentful-start` to reset. Completion progress is preserved.
 
 **"Tech stack not detected correctly"**
-→ Add explicit tech stack section to PRODUCT.md or check `.agentful/architecture.json` for what was detected.
+→ Add explicit tech stack section to `.claude/product/index.md` or check `.agentful/architecture.json` for what was detected.
 
-**"How do I switch from flat to hierarchical product structure?"**
-→ Run `/agentful-product migrate` or manually create `.claude/product/index.md` and move content. Auto-detected.
+**"How do I expand to hierarchical product structure?"**
+→ Create `.claude/product/domains/` directories and organize features by domain. Auto-detected.
 
 **"Agent generated wrong type of code"**
 → Check that the right specialized agent was generated. Run `/agents` to list all agents.

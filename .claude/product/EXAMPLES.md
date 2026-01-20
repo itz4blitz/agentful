@@ -4,7 +4,7 @@ This file shows concrete examples of both flat and hierarchical product structur
 
 ## Example 1: Flat Structure (Simple Project)
 
-### File: PRODUCT.md
+### File: .claude/product/index.md
 
 ```markdown
 # TaskFlow - Task Management App
@@ -600,7 +600,7 @@ POST /api/auth/login
 
 | Aspect | Flat Structure | Hierarchical Structure |
 |--------|---------------|----------------------|
-| **Files** | 1 file (PRODUCT.md) | 10+ files (domains/features) |
+| **Files** | 1 file (.claude/product/index.md) | 10+ files (domains/features) |
 | **Organization** | Feature list | Domains → Features → Subtasks |
 | **Tracking** | Feature-level (6 items) | Subtask-level (20+ items) |
 | **Scalability** | Good for < 20 features | Good for 20+ features |

@@ -36,7 +36,6 @@ First, detect which product structure format is being used:
 domains_found = Glob(".claude/product/domains/*/index.md")
 
 # Step 2: Check for flat structure
-product_md_exists = exists("PRODUCT.md")
 product_index_exists = exists(".claude/product/index.md")
 
 if domains_found:
@@ -49,11 +48,6 @@ if domains_found:
         # Read all feature files in this domain
         for feature_file in Glob(".claude/product/domains/{domain}/features/*.md"):
             Read(feature_file)
-
-elif product_md_exists:
-    format = "flat"
-    product_root = "."
-    Read("PRODUCT.md")
 
 elif product_index_exists:
     format = "flat"
@@ -325,7 +319,7 @@ if structure == "hierarchical":
             domain.features.append(feature)
         domains.append(domain)
 else:
-    product_spec = Read("PRODUCT.md" OR ".claude/product/index.md")
+    product_spec = Read(".claude/product/index.md")
 ```
 
 ### Step 2: Analyze Each Dimension
@@ -735,9 +729,8 @@ Analysis saved to: .claude/product/product-analysis.json
       "recommendation": {
         "action": "Create product specification",
         "options": [
-          "Use PRODUCT.md for simple projects",
-          "Use .claude/product/index.md for organized flat structure",
-          "Use .claude/product/domains/* for complex projects"
+          "Use .claude/product/index.md for simple flat structure",
+          "Use .claude/product/domains/* for complex projects with hierarchical organization"
         ]
       }
     }

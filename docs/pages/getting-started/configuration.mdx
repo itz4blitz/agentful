@@ -30,38 +30,9 @@ You can modify:
 
 ## Product Structure
 
-agentful supports flat and hierarchical structures with automatic detection.
+agentful uses a hierarchical structure for organizing product specifications.
 
-### Flat Structure
-
-Best for quick prototypes, MVPs, small projects.
-
-**Option A: Root file**
-```
-PRODUCT.md          # All features in one file
-```
-
-**Option B: .claude directory**
-```
-.claude/product/index.md    # All features in one file
-```
-
-Example:
-```markdown
-# My App
-
-## Features
-
-### 1. User Authentication - CRITICAL
-- Login with email/password
-- JWT token handling
-
-### 2. User Profile - HIGH
-- Edit profile
-- Upload avatar
-```
-
-### Hierarchical Structure (Preferred)
+### Hierarchical Structure
 
 Best for large projects, team collaboration.
 
@@ -101,36 +72,10 @@ Best for large projects, team collaboration.
 - [ ] JWT generation
 ```
 
-### Auto-Detection
+### When to Use Domains
 
-agentful auto-detects which format you're using:
-1. Hierarchical: If `.claude/product/domains/*/index.md` exists
-2. Flat (.claude): If `.claude/product/index.md` exists (no domains)
-3. Flat (legacy): If `PRODUCT.md` exists at root
-
-No configuration needed.
-
-### Migration
-
-```bash
-# Flat → Hierarchical
-mkdir -p .claude/product/domains
-mv PRODUCT.md .claude/product/index.md
-# Split content into domain files
-
-# Hierarchical → Flat
-cat .claude/product/index.md > PRODUCT.md
-cat .claude/product/domains/*/*.md >> PRODUCT.md
-rm -rf .claude/product/
-```
-
-### When to Use Each
-
-| Format | Use When | Benefits |
-|--------|----------|----------|
-| Flat (PRODUCT.md) | Very small project | Simplest setup |
-| Flat (.claude/product/index.md) | Want organization, small project | Keeps root clean |
-| Hierarchical (.claude/product/domains/) | Most projects, 20+ features | Domain-driven, scalable (preferred) |
+For complex projects with multiple business domains, organize into domain subdirectories.
+For simpler projects, keep all features in `index.md`.
 
 ## Settings Configuration
 
@@ -376,7 +321,7 @@ Deploys after validation.
 
 ## Configuration
 
-Add to PRODUCT.md:
+Add to .claude/product/index.md:
 ```markdown
 ## Deployment
 - Platform: Vercel

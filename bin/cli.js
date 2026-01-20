@@ -131,7 +131,7 @@ async function init() {
   // Initialize using lib/init.js
   log(colors.dim, 'Copying templates...');
   try {
-    const result = await initProject(targetDir, { includeProduct: true });
+    const result = await initProject(targetDir);
 
     console.log('');
     log(colors.green, 'Initialized agentful successfully!');
@@ -161,7 +161,7 @@ async function init() {
   log(colors.dim, '  - Domain-specific agents (auth, billing, etc.)');
   log(colors.dim, '  - Skills for frameworks you use');
   console.log('');
-  log(colors.dim, 'Optional: Edit CLAUDE.md and PRODUCT.md first to customize.');
+  log(colors.dim, 'Optional: Edit CLAUDE.md and .claude/product/index.md first to customize.');
   console.log('');
 }
 

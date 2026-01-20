@@ -109,7 +109,24 @@ Stored in `.agentful/completion.json`:
 
 ## Product Structure Support
 
-### Flat Structure (PRODUCT.md)
+### Product Specification (.claude/product/)
+```
+.claude/product/
+├── index.md           # Features for simple projects
+└── domains/           # Domains for complex projects
+    ├── authentication/
+    │   └── index.md
+    └── profiles/
+        └── index.md
+```
+
+**Parsing:**
+1. Read index.md for features or domain list
+2. If domains exist, parse each domain/index.md
+3. Calculate progress per feature/domain
+4. Aggregate using priority weights
+
+**Feature Format:**
 ```markdown
 ## Features
 
@@ -123,28 +140,11 @@ Stored in `.agentful/completion.json`:
 - [ ] Avatar Upload
 ```
 
-**Parsing:**
+**Calculation:**
 1. Find heading with priority tag
 2. Count checkboxes (total)
 3. Count checked boxes (complete)
 4. Calculate: (checked / total) × 100
-
-### Hierarchical Structure (.claude/product/)
-```
-.claude/product/
-├── index.md
-└── domains/
-    ├── authentication/
-    │   └── index.md
-    └── profiles/
-        └── index.md
-```
-
-**Parsing:**
-1. Read index.md for domain list
-2. Parse each domain/index.md
-3. Calculate progress per domain
-4. Aggregate using priority weights
 
 ## Priority-Based Selection
 
@@ -232,7 +232,7 @@ Quality Gates:
 **Files:**
 - `.agentful/completion.json` - Progress data
 - `.agentful/state.json` - Current work state
-- `PRODUCT.md` or `.claude/product/` - Product specification
+- `.claude/product/` - Product specification
 
 ## Update Procedures
 

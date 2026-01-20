@@ -52,7 +52,7 @@ When no product spec exists, guides you through creation with 4 questions:
 
 When product spec exists but never analyzed:
 
-- Reads product specification
+- Reads `.claude/product/index.md`
 - Analyzes for completeness and clarity
 - Identifies blocking issues and warnings
 - Calculates readiness score (0-100)
@@ -303,13 +303,9 @@ Options in refinement mode are **specific to context**, not generic:
 
 ### Product Specification
 
-**Flat structure** (simple projects):
-- `PRODUCT.md` at project root
-
-**Hierarchical structure** (complex projects):
 - `.claude/product/index.md` - Product overview
-- `.claude/product/domains/*/index.md` - Domain overviews
-- `.claude/product/domains/*/features/*.md` - Feature specs
+- `.claude/product/domains/*/index.md` - Domain overviews (optional)
+- `.claude/product/domains/*/features/*.md` - Feature specs (optional)
 
 ### Analysis Results
 
@@ -369,7 +365,7 @@ Options in refinement mode are **specific to context**, not generic:
 ### Workflow 2: Analyze Existing Spec
 
 ```bash
-# You already have PRODUCT.md or .claude/product/index.md
+# You already have .claude/product/index.md
 /agentful-product
 
 # System analyzes and shows readiness score
@@ -415,7 +411,7 @@ Options in refinement mode are **specific to context**, not generic:
 # Resolve some issues
 /agentful-product
 
-# Manually update PRODUCT.md with more details
+# Manually update .claude/product/index.md with more details
 # Then re-analyze
 /agentful-product
 
@@ -487,7 +483,7 @@ Before marking analysis as "ready for development", verifies:
 - Better: "User submits email/password, receives JWT token, redirected to dashboard"
 
 **❌ Not re-analyzing after updates:**
-- Manually updating PRODUCT.md without running analysis
+- Manually updating .claude/product/index.md without running analysis
 - Miss opportunities to catch new issues
 
 ## Integration with Development

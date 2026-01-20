@@ -28,7 +28,7 @@ if user_text:
   goto DISCUSSION_MODE
 
 # Step 2: Check if product spec exists
-product_spec_exists = exists(".claude/product/index.md") OR exists("PRODUCT.md")
+product_spec_exists = exists(".claude/product/index.md")
 
 if !product_spec_exists:
   has_substantial_codebase = check_codebase_exists()
@@ -169,7 +169,7 @@ Task("product-analyzer", "Analyze .claude/product/index.md and generate product-
 
 The product analyzer should:
 
-1. **Read product specification**: `.claude/product/index.md` or `PRODUCT.md`
+1. **Read product specification**: `.claude/product/index.md`
 
 2. **Analyze for completeness and clarity**:
    - Tech stack: All stack choices specified (not placeholders)
@@ -425,7 +425,7 @@ Task("product-analyzer", "Analyze .claude/product/index.md and generate product-
 
 ## File Locations
 
-- **Product spec**: `.claude/product/index.md` (or `PRODUCT.md` for legacy)
+- **Product spec**: `.claude/product/index.md`
 - **Analysis results**: `.claude/product/product-analysis.json`
 - **Domain structure**: `.claude/product/domains/*/index.md` (optional hierarchical)
 
