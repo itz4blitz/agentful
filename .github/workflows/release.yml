@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '!CHANGELOG.md'
+      - '.github/workflows/gh-pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -12,10 +17,13 @@ permissions:
   pull-requests: write
   id-token: write
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
-    # Skip if commit message contains [skip ci] or is a release commit
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
 
     steps:
@@ -31,6 +39,14 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: npm ci
 
@@ -43,3 +59,21 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx semantic-release
+
+      - name: Notify Discord on failure
+        if: failure()
+        run: |
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "Release Failed",
+                "description": "Release workflow failed for agentful",
+                "color": 15158332,
+                "fields": [
+                  {"name": "Commit", "value": "`${{ github.sha }}`", "inline": true},
+                  {"name": "Run", "value": "[View logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})", "inline": true}
+                ],
+                "footer": {"text": "agentful release"}
+              }]
+            }'

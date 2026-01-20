@@ -1,4 +1,4 @@
-name: Deploy Documentation to GitHub Pages
+name: Deploy Documentation
 
 on:
   push:
@@ -6,8 +6,7 @@ on:
       - main
     paths:
       - 'docs/**'
-      - 'package.json'
-      - 'package-lock.json'
+      - 'vocs.config.ts'
   workflow_dispatch:
 
 permissions:
@@ -16,7 +15,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
 
 jobs:
@@ -33,7 +32,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
 
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -46,32 +45,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Clean previous build
-        run: rm -rf docs/dist
-
       - name: Build documentation
         run: npm run docs:build
-
-      - name: Verify build output
-        run: |
-          echo "Checking build output..."
-          ls -la docs/dist/
-          if [ ! -f "docs/dist/index.html" ]; then
-            echo "ERROR: index.html not found in docs/dist!"
-            exit 1
-          fi
-          echo "Build output verified successfully"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -93,11 +68,27 @@ jobs:
             -d '{
               "embeds": [{
                 "title": "Docs Deployed",
-                "description": "[agentful.app](https://agentful.app) has been updated",
+                "description": "[agentful.app](https://agentful.app) updated",
                 "color": 1095681,
                 "fields": [
-                  {"name": "Commit", "value": "`${{ github.sha }}`", "inline": true},
-                  {"name": "Branch", "value": "`${{ github.ref_name }}`", "inline": true}
+                  {"name": "Commit", "value": "`${{ github.sha }}`", "inline": true}
+                ],
+                "footer": {"text": "agentful docs"}
+              }]
+            }'
+
+      - name: Notify Discord on failure
+        if: failure()
+        run: |
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "Docs Deploy Failed",
+                "description": "Documentation deployment failed",
+                "color": 15158332,
+                "fields": [
+                  {"name": "Run", "value": "[View logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})", "inline": true}
                 ],
                 "footer": {"text": "agentful docs"}
               }]
