@@ -1,3 +1,31 @@
+# [0.4.0](https://github.com/itz4blitz/agentful/compare/v0.3.0...v0.4.0) (2026-01-20)
+
+
+### Features
+
+* remove PRODUCT.md, use hierarchical .claude/product/ only ([44eea9a](https://github.com/itz4blitz/agentful/commit/44eea9a22fe2a971c85143b61e7cc0f9dae879bb))
+
+
+### BREAKING CHANGES
+
+* PRODUCT.md at project root is no longer supported.
+All product specifications must now use .claude/product/ structure.
+
+Changes:
+- Remove PRODUCT.md template file
+- Update init to create .claude/product/index.md with comprehensive template
+- Update init to create .claude/product/README.md with structure docs
+- Remove all PRODUCT.md detection and parsing logic
+- Update all agents, commands, skills to use .claude/product/ only
+- Update all documentation to reference hierarchical structure
+
+Migration for existing projects:
+- Move PRODUCT.md contents to .claude/product/index.md
+- Or run /agentful-product to restructure
+
+The hierarchical structure scales better for complex projects while
+still supporting simple flat structure via .claude/product/index.md.
+
 # [0.3.0](https://github.com/itz4blitz/agentful/compare/v0.2.1...v0.3.0) (2026-01-20)
 
 
