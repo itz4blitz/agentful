@@ -53,6 +53,7 @@ export default defineConfig({
           { text: '/agentful-status', link: '/commands/agentful-status' },
           { text: '/agentful-decide', link: '/commands/agentful-decide' },
           { text: '/agentful-validate', link: '/commands/agentful-validate' },
+          { text: '/agentful-analyze', link: '/commands/agentful-analyze' },
           { text: '/agentful-agents', link: '/commands/agentful-agents' },
           { text: '/agentful-skills', link: '/commands/agentful-skills' },
         ],

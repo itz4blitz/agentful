@@ -1,6 +1,18 @@
 {
   "includeCoAuthoredBy": false,
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash bin/hooks/health-check.sh",
+            "timeout": 5,
+            "description": "Quick agentful health check"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Write|Edit",
@@ -13,6 +25,17 @@
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash bin/hooks/analyze-trigger.sh",
+            "timeout": 3,
+            "description": "Check if file changes warrant analysis"
+          }
+        ]
+      },
       {
         "matcher": "Write|Edit",
         "hooks": [
@@ -37,7 +60,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "if [ -f .agentful/state.json ]; then jq -r '.current_phase // \"idle\"' .agentful/state.json 2>/dev/null || echo 'idle'; else echo 'idle'; fi"
+            "command": "if [ -f .agentful/state.json ]; then jq -r '.current_phase // \"idle\"' .agentful/state.json 2>/dev/null || echo 'idle'; else echo 'idle'; fi",
+            "description": "Track current agentful phase"
           }
         ]
       }

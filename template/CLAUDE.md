@@ -1,19 +1,14 @@
-# agentful Product Development
+# agentful
 
-This project uses **agentful** for human-in-the-loop product development.
+**agentful** is an autonomous product development framework that uses specialized AI agents to build software from a product specification. It coordinates architecture, development, testing, and validation through human-in-the-loop checkpoints, ensuring quality while maintaining 24/7 development velocity.
 
 ## Quick Start
 
-1. Edit your product specification:
-   - **Flat structure** (recommended for beginners): Edit `PRODUCT.md` at project root
-   - **Hierarchical structure** (for larger projects): Edit files in `.claude/product/`
+1. Edit `PRODUCT.md` (or `.claude/product/` for larger projects)
 2. Run: `claude`
 3. Type: `/agentful-start`
 
-That's it. agentful will begin structured development with human checkpoints.
-
-## For Extended Development Sessions
-
+For extended sessions:
 ```bash
 claude --dangerously-skip-permissions
 /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
@@ -24,218 +19,99 @@ claude --dangerously-skip-permissions
 | Command | Description |
 |---------|-------------|
 | `/agentful-start` | Begin or resume structured development |
-| `/agentful-status` | Check current progress |
-| `/agentful-decide` | Answer pending decisions |
-| `/agentful-validate` | Run all quality checks |
+| `/agentful-status` | Check current progress and completion % |
+| `/agentful-decide` | Answer pending decisions blocking work |
+| `/agentful-validate` | Run all quality checks manually |
+| `/agentful-product` | Analyze and improve product specification |
+| `/agents` | List all available specialized agents |
 
-## Agents
+## When to Use What
 
-agentful uses specialized agents that work together:
+**Starting fresh?**
+→ Run `/agentful-product` to analyze your PRODUCT.md, then `/agentful-start`
 
-| Agent | Purpose |
-|-------|---------|
-| `orchestrator` | Coordinates all work, never codes directly |
-| `architect` | Analyzes tech stack and generates specialized agents |
-| `backend` | Services, repositories, controllers, APIs |
-| `frontend` | Components, pages, hooks, styling |
-| `tester` | Unit, integration, E2E tests |
-| `reviewer` | Code review, dead code detection, quality gates |
-| `fixer` | Fixes validation failures automatically |
+**Existing project?**
+→ Run `/agentful-start` directly (auto-detects tech stack)
 
-## State Files
+**Need to check progress?**
+→ Run `/agentful-status` to see completion % and current phase
 
-Progress is tracked in `.agentful/`:
+**Validation failures?**
+→ The `fixer` agent auto-fixes issues, or run `/agentful-validate` manually
 
-- `state.json` - Current work state and phase
-- `completion.json` - Feature completion percentages and quality gates
-- `decisions.json` - Pending and resolved decisions
-- `last-validation.json` - Most recent validation report
+**Agent needs your input?**
+→ Check `.agentful/decisions.json` or run `/agentful-decide`
 
-## Product Specification
+**Unclear requirements?**
+→ Run `/agentful-product` in reverse-engineering mode or improve PRODUCT.md
 
-Your product is defined in one of two formats:
+**Want to add features?**
+→ Edit PRODUCT.md, then run `/agentful-start` (picks up changes automatically)
 
-### Flat Structure (Recommended for Beginners)
+## File Structure
 
-- **Location**: `PRODUCT.md` at project root
-- **Format**: Single file with all features
-- **Best for**: Small projects, MVPs, quick prototypes
+**Product Specification** (you edit these):
+- `PRODUCT.md` - Flat structure (recommended for <20 features)
+- `.claude/product/` - Hierarchical structure (for larger projects)
 
-### Hierarchical Structure (For Larger Projects)
+**Runtime State** (managed by agentful, gitignored):
+- `.agentful/state.json` - Current work phase and progress
+- `.agentful/completion.json` - Feature completion % and quality gates
+- `.agentful/decisions.json` - Pending and resolved decisions
+- `.agentful/last-validation.json` - Most recent validation report
+- `.agentful/architecture.json` - Detected tech stack and generated agents
 
-- **Location**: `.claude/product/` directory
-- **Format**: Multiple files organized by domain
-- **Best for**: Large projects, teams, complex products
-
-The system auto-detects which format you're using. Both formats contain:
-
-- Overview and goals
-- Tech stack decisions
-- Feature list with priorities
-- Acceptance criteria
-- Architecture notes
-
-### Choosing the Right Structure
-
-**Start with flat structure if:**
-- You're new to agentful
-- Building an MVP or prototype
-- Project has less than 20 features
-- Working alone or in a small team
-
-**Use hierarchical structure if:**
-- Project has 20+ features across multiple domains
-- Multiple team members need to edit specs simultaneously
-- You need better organization for complex projects
-- Your PRODUCT.md file is getting too long (500+ lines)
-
-### Migrating Between Formats
-
-You can start with flat and migrate to hierarchical as your project grows. See the migration guide in your product specification file for detailed instructions.
-
-The system auto-detects format changes automatically - no configuration needed!
-
-## How It Works
-
-```mermaid
-flowchart LR
-    Start([🚀 Initialize<br/>npx @itz4blitz/agentful init]) --> Define[📝 Define Product<br/>Edit PRODUCT.md]
-    Define --> Build[⚡ Start Building<br/>/agentful-start]
-    Build --> Loop{🔄 24/7 Development Loop}
-
-    Loop --> Spec[📋 Your Specs<br/>PRODUCT.md]
-    Loop --> Tech[🛠️ Tech Stack<br/>Auto-detected]
-    Loop --> Dev[🤖 Autonomous Development]
-    Loop --> Complete[✅ 100% Complete]
-
-    Spec --> Agents[Specialized Agents]
-    Tech --> Agents
-    Agents --> Dev
-    Dev --> Validate[Quality Gates]
-    Validate -->|❌ Fix| Dev
-    Validate -->|✅ Pass| Update[Update Progress]
-    Update --> Check{Done?}
-    Check -->|No| Loop
-    Check -->|Yes| Complete([🎉 Complete!])
-
-    style Start fill:#10b981,stroke:#059669,color:#fff
-    style Define fill:#3b82f6,stroke:#2563eb,color:#fff
-    style Build fill:#8b5cf6,stroke:#7c3aed,color:#fff
-    style Loop fill:#f59e0b,stroke:#d97706,color:#fff
-    style Agents fill:#06b6d4,stroke:#0891b2,color:#fff
-    style Dev fill:#ec4899,stroke:#db2777,color:#fff
-    style Validate fill:#f97316,stroke:#ea580c,color:#fff
-    style Update fill:#84cc16,stroke:#65a30d,color:#fff
-    style Complete fill:#10b981,stroke:#059669,color:#fff
-```
-
-1. **Initialization** - Architect analyzes PRODUCT.md and generates tech-specific agents
-2. **Planning** - Orchestrator reads state and picks next priority task
-3. **Implementation** - Specialist agents implement features
-4. **Validation** - Reviewer runs quality checks
-5. **Fixing** - Fixer resolves any issues found
-6. **Iteration** - Loop continues until 100% complete
+**Configuration** (auto-generated, customizable):
+- `.claude/agents/` - Specialized agents for your tech stack
+- `.claude/commands/` - Slash commands
+- `.claude/settings.json` - Hooks and permissions
 
 ## Quality Gates
 
-Code must pass all gates before completion:
+Every feature must pass validation before marked complete:
 
-- ✅ All tests passing
-- ✅ No TypeScript errors
-- ✅ No dead code (unused exports, files, dependencies)
-- ✅ Test coverage ≥ 80%
-- ✅ No security issues
+- **Tests** - All tests passing with ≥80% coverage
+- **TypeScript** - No type errors (if using TypeScript)
+- **Dead Code** - No unused exports, files, or dependencies
+- **Security** - No known vulnerabilities in dependencies
+- **Linting** - Code follows project style guide
 
-## Decision Handling
+The `reviewer` agent runs these checks automatically. The `fixer` agent resolves failures.
 
-When agentful needs your input:
+## Troubleshooting
 
-1. Question is added to `decisions.json`
-2. Development continues on unblocked features
-3. Run `/agentful-decide` to answer
-4. agentful resumes blocked work
+**"agentful keeps asking me unclear questions"**
+→ Your PRODUCT.md needs more detail. Run `/agentful-product` to analyze and improve it.
 
-## Tech Stack Auto-Detection
+**"Validation keeps failing"**
+→ Check `.agentful/last-validation.json` for details. The `fixer` agent should auto-resolve, but you can run `/agentful-validate` manually.
 
-agentful automatically detects your tech stack from:
-- Product specification (`PRODUCT.md` or `.claude/product/index.md`) - Explicit tech stack section
-- `package.json` - Dependencies and frameworks
-- Existing code - File patterns and imports
+**"Agent isn't working on the right feature"**
+→ Check priority in PRODUCT.md. CRITICAL > HIGH > MEDIUM > LOW. Run `/agentful-status` to see current focus.
 
-It then generates specialized agents for your specific stack.
+**"State seems stuck or corrupted"**
+→ Delete `.agentful/state.json` and run `/agentful-start` to reset. Completion progress is preserved.
 
-## Example Flow
+**"Tech stack not detected correctly"**
+→ Add explicit tech stack section to PRODUCT.md or check `.agentful/architecture.json` for what was detected.
 
-```
-You: /agentful-start
+**"How do I switch from flat to hierarchical product structure?"**
+→ Run `/agentful-product migrate` or manually create `.claude/product/index.md` and move content. Auto-detected.
 
-agentful: Detected Next.js + TypeScript + Prisma + Tailwind
-         → Generated nextjs-agent, prisma-agent, tailwind-agent
+**"Agent generated wrong type of code"**
+→ Check that the right specialized agent was generated. Run `/agents` to list all agents.
 
-agentful: Starting work on authentication (priority: CRITICAL)
-         → @backend implementing JWT service
-         → @backend implementing login API route
-         → @frontend creating login page
-         → @tester writing auth tests
-
-agentful: Running validation...
-         → TypeScript: ✅
-         → Lint: ✅
-         → Tests: ✅
-         → Coverage: 82% ✅
-         → Dead code: ✅
-         → Security: ✅
-
-agentful: Authentication complete (100%)
-         Next: User profile feature...
-
-[Continues 24/7 until complete]
-```
-
-## Customization
-
-All agents and commands can be customized in `.claude/`:
-
-- `.claude/agents/` - Add or modify agents
-- `.claude/commands/` - Add or modify commands
-- `.claude/skills/` - Add domain-specific skills
+**"Need to rollback or restart a feature"**
+→ Edit completion % in `.agentful/completion.json` for specific feature, then run `/agentful-start`.
 
 ## Getting Help
 
-If agentful gets stuck:
-
-1. Run `/agentful-status` to see current state
-2. Check your product specification (`PRODUCT.md` or `.claude/product/`) for unclear requirements
-3. Run `/agentful-decide` if decisions are pending
-4. Run `/agentful-validate` to check for issues
-
-## Architecture
-
-```
-.your-project/
-├── PRODUCT.md              # Your product spec - flat structure (you edit this)
-├── CLAUDE.md               # This file
-├── .claude/                # agentful configuration
-│   ├── product/            # Product spec - hierarchical structure (alternative)
-│   │   ├── index.md        # Product overview
-│   │   ├── product-analysis.json  # Readiness analysis
-│   │   └── domains/        # Domain-specific specs
-│   ├── agents/             # Specialized agents
-│   │   └── ephemeral/      # One-off agents (gitignored)
-│   ├── commands/           # Slash commands
-│   ├── skills/             # Domain skills
-│   └── settings.json       # Hooks and permissions
-├── .agentful/              # Runtime state (gitignored, managed by npm package)
-│   ├── state.json
-│   ├── completion.json
-│   ├── decisions.json
-│   ├── architecture.json
-│   ├── last-validation.json
-│   └── conversation-history.json
-└── src/                    # Your code (generated by agentful)
-```
-
-**Note**: You can use either `PRODUCT.md` (flat) or `.claude/product/` (hierarchical). agentful auto-detects which format you're using.
+**Documentation**: See `.claude/commands/` for detailed command documentation
+**Product Planning**: Run `/agentful-product --help` for comprehensive product analysis
+**Agent Reference**: Run `/agents` to see all specialized agents and their roles
+**GitHub**: [github.com/itz4blitz/agentful](https://github.com/itz4blitz/agentful)
+**Issues**: Report bugs or request features on GitHub Issues
+**Version**: Check `package.json` for your agentful version
 
 ---
 

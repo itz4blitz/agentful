@@ -79,7 +79,7 @@ Continue anyway? [Y/n]:")
 
 ### Step 1: Classify the Request
 
-When a user provides a request (via slash command or direct conversation), classify it:
+When a user provides a request, classify it:
 
 ```
 User: "Add authentication to my app"
@@ -101,16 +101,6 @@ User: "Refactor auth service for better testability"
 → Type: REFACTOR
 → Source: Direct request
 → Workflow: Refactoring (improve structure, preserve behavior)
-
-User: "Add a /agentful-deploy command"
-→ Type: META_WORK
-→ Source: Working on agentful itself
-→ Workflow: Meta-development (create command, update CLI, document)
-
-User: "Update dependencies and fix breaking changes"
-→ Type: MAINTENANCE
-→ Source: Direct request
-→ Workflow: Maintenance (update, fix, validate)
 ```
 
 ### Step 2: Detect Context
@@ -142,8 +132,6 @@ Based on classification + context, choose the appropriate workflow:
 | REFACTOR | Any | Refactor → Test → Validate | ❌ No |
 | META_WORK | agentful only | Meta-workflow | ❌ No |
 | MAINTENANCE | Any | Maintenance workflow | ❌ No |
-| IMPROVE_AGENTS | agentful only | Self-improvement | ❌ No |
-| UPDATE_SKILLS | agentful only | Skill update | ❌ No |
 | EPHEMERAL_TASK | Any | One-off specialized task | ❌ No |
 
 ## Work Type Details
@@ -165,227 +153,60 @@ Based on classification + context, choose the appropriate workflow:
 9. LOOP until 100% complete
 ```
 
-**Example**:
-```
-User: "Build the authentication system"
-
-Orchestrator:
-- Classified as: FEATURE_DEVELOPMENT
-- Reading PRODUCT.md...
-- Found: Authentication feature (CRITICAL priority)
-- Delegating to @backend for JWT implementation
-- Delegating to @frontend for login form
-- Delegating to @tester for tests
-- Delegating to @reviewer for validation
-- Updated: completion.json auth.score = 100
-- Continuing to next feature...
-```
-
 ### 2. BUGFIX (Quick Fix)
 
 **When**: User says "fix X bug", "X is broken", "error in Y"
 
 **Workflow**:
-```
-1. Analyze the bug description
-2. Delegate to appropriate specialist (@backend, @frontend, @fixer)
-3. Implement fix
-4. Add regression test
-5. Run @reviewer for validation
-6. STOP (don't loop to next task)
-```
-
-**Example**:
-```
-User: "Fix the login bug with special characters"
-
-Orchestrator:
-- Classified as: BUGFIX
-- Delegating to @frontend agent to investigate and fix
-- [Fix] Updated regex to properly escape special chars
-- [Test] Added regression test for special chars
-- [Validate] All tests passing
-- Complete: Bug fixed in 5 minutes
-```
+- Analyze bug description
+- Delegate to appropriate specialist (@backend, @frontend, @fixer)
+- Implement fix
+- Add regression test
+- Run @reviewer for validation
+- STOP (don't loop to next task)
 
 ### 3. ENHANCEMENT (Add to Existing)
 
 **When**: User says "add X to Y", "enhance Z", "improve W with X"
 
 **Workflow**:
-```
-1. Identify what's being enhanced
-2. Read existing code for context
-3. Delegate to specialist to add enhancement
-4. Ensure existing functionality preserved
-5. Add tests for new capability
-6. Run @reviewer for validation
-7. STOP
-```
-
-**Example**:
-```
-User: "Add error handling to the user service"
-
-Orchestrator:
-- Classified as: ENHANCEMENT
-- Target: src/services/userService.ts
-- Delegating to @backend agent
-- [Enhancement] Added try-catch blocks, error types
-- [Test] Added error scenario tests
-- [Validate] Existing tests still passing + new tests pass
-- Complete
-```
+- Identify what's being enhanced
+- Read existing code for context
+- Delegate to specialist to add enhancement
+- Ensure existing functionality preserved
+- Add tests for new capability
+- Run @reviewer for validation
+- STOP
 
 ### 4. REFACTOR (Improve Structure)
 
 **When**: User says "refactor X", "improve Y code", "clean up Z"
 
 **Workflow**:
-```
-1. Identify code to refactor
-2. Design refactoring approach
-3. Delegate to specialist for incremental refactoring
-4. After each change: Run tests to ensure behavior preserved
-5. Run @reviewer for validation
-6. STOP
-```
-
-**Example**:
-```
-User: "Refactor auth service for better testability"
-
-Orchestrator:
-- Classified as: REFACTOR
-- Target: src/auth/authService.ts
-- Delegating to @backend agent
-- [Refactor] Extracting interfaces, improving separation
-- [Test] All existing tests passing (behavior preserved)
-- [Validate] Code quality improved
-- Complete
-```
+- Identify code to refactor
+- Design refactoring approach
+- Delegate to specialist for incremental refactoring
+- After each change: Run tests to ensure behavior preserved
+- Run @reviewer for validation
+- STOP
 
 ### 5. META_WORK (Framework Development)
 
 **When**: Working on agentful itself AND user says "add X agent/command", "improve Y", "update Z"
 
 **Workflow**:
-```
-1. Verify we're in agentful repository
-2. Understand what's being added/changed
-3. Delegate to appropriate meta-workflow:
-   - ADD_AGENT: Create new agent, update orchestrator
-   - ADD_COMMAND: Create new command, update CLI
-   - IMPROVE_AGENT: Enhance existing agent
-   - UPDATE_SKILL: Modify .claude/skills/
-4. Test the change
-5. Update documentation
-6. STOP
-```
+- Verify we're in agentful repository
+- Understand what's being added/changed
+- Delegate to appropriate meta-workflow:
+  - ADD_AGENT: Create new agent, update orchestrator
+  - ADD_COMMAND: Create new command, update CLI
+  - IMPROVE_AGENT: Enhance existing agent
+  - UPDATE_SKILL: Modify .claude/skills/
+- Test the change
+- Update documentation
+- STOP
 
-**Example**:
-```
-User (in agentful repo): "Add a /agentful-deploy command"
-
-Orchestrator:
-- Context: Working in agentful repository
-- Classified as: META_WORK → ADD_COMMAND
-- Delegating meta-workflow...
-- [Create] .claude/commands/agentful-deploy.md
-- [Update] bin/cli.js to register command
-- [Test] Command executes correctly
-- [Document] Added deployment documentation
-- Complete
-```
-
-### 6. MAINTENANCE (Keep Project Healthy)
-
-**When**: User says "update dependencies", "security scan", "fix vulnerabilities"
-
-**Workflow**:
-```
-1. Identify maintenance task
-2. Run appropriate commands:
-   - Dependency updates: npm outdated → update → test
-   - Security: npm audit → fix → validate
-   - Tech debt: Scan TODOs, prioritize
-3. Run @reviewer for validation
-4. STOP
-```
-
-**Example**:
-```
-User: "Update dependencies and fix breaking changes"
-
-Orchestrator:
-- Classified as: MAINTENANCE → DEPENDENCY_UPDATE
-- Running: npm outdated
-- Found: 15 packages outdated
-- Updating package.json...
-- Running: npm install
-- Running: npm test
-- [Validate] All tests passing
-- Complete: 15 packages updated
-```
-
-### 7. IMPROVE_AGENTS (Self-Improvement)
-
-**When**: Working on agentful itself AND user says "this agent needs improvement", "optimize X agent"
-
-**Workflow**:
-```
-1. Identify which agent needs improvement
-2. Analyze current agent behavior
-3. Design improvements
-4. Edit agent file directly (OR delegate to meta-specialist)
-5. Test improved agent on sample task
-6. Update documentation if needed
-7. STOP
-```
-
-**Example**:
-```
-User (in agentful repo): "The backend agent could be better about database migrations"
-
-Orchestrator:
-- Context: Working in agentful repository
-- Classified as: META_WORK → IMPROVE_AGENT
-- Target: .claude/agents/backend.md
-- Delegating meta-workflow...
-- [Analyze] Current backend agent lacks migration patterns
-- [Improve] Added migration workflow to backend.md
-- [Test] Tested on sample migration task
-- Complete: Backend agent now handles migrations
-```
-
-### 8. UPDATE_SKILLS (Skill System Updates)
-
-**When**: Working on agentful itself AND user says "update validation skill", "add quality gate"
-
-**Workflow**:
-```
-1. Identify which skill to update
-2. Modify skill in .claude/skills/
-3. Test updated skill
-4. Update documentation
-5. STOP
-```
-
-**Example**:
-```
-User (in agentful repo): "Add an accessibility quality gate"
-
-Orchestrator:
-- Context: Working in agentful repository
-- Classified as: META_WORK → UPDATE_SKILL
-- Target: .claude/skills/validation/SKILL.md
-- Delegating meta-workflow...
-- [Update] Added a11y gate to validation skill
-- [Test] Gate detects accessibility issues
-- Complete: Accessibility gate added
-```
-
-### 9. EPHEMERAL_TASK (One-Off Specialized Tasks)
+### 6. EPHEMERAL_TASK (One-Off Specialized Tasks)
 
 **When**: Task doesn't fit existing agents AND won't be repeated
 
@@ -393,7 +214,6 @@ Orchestrator:
 - One-time operation (migration, cleanup, audit)
 - Too specific for a permanent agent
 - Clear, finite scope
-- Doesn't fit core agent responsibilities
 
 **Workflow**:
 ```
@@ -406,45 +226,17 @@ Orchestrator:
 ```
 
 **When to use ephemeral agents**:
-- ✅ One-time database migration
-- ✅ Complex data import/export
-- ✅ Large-scale cleanup tasks
-- ✅ Security audit of specific module
-- ✅ Performance optimization project
-- ✅ Third-party integration setup
+- ✅ One-time database migration, complex data import/export, large-scale cleanup tasks
+- ✅ Security audit of specific module, performance optimization project
 - ❌ Regular backend/frontend work (use core agents)
 - ❌ Repeatable tasks (create domain agent)
-- ❌ Simple fixes (delegate directly)
-
-**Example**:
-```
-User: "Migrate all user data from MongoDB to PostgreSQL"
-
-Orchestrator:
-- Classified as: EPHEMERAL_TASK
-- Reason: One-time migration, doesn't fit backend agent
-- Generating ephemeral agent...
-- [Create] .claude/agents/ephemeral/20260120-migrate-user-data.md
-- [Agent Definition]
-  * Source: MongoDB users collection
-  * Target: PostgreSQL users table
-  * Transform: ObjectId → UUID, field mapping
-  * Validation: Count match, no data loss
-- [Spawn] Task("ephemeral/20260120-migrate-user-data", "Execute migration")
-- [Wait] Agent completes migration (1,543 users migrated)
-- [Cleanup] Move to ephemeral/completed/
-- Complete: Migration successful
-```
 
 **Ephemeral Agent Generation**:
-
 ```bash
-# 1. Create agent file
 timestamp = format_timestamp("20060102-150405")
 task_slug = slugify(task_description)
 agent_path = ".claude/agents/ephemeral/{timestamp}-{task_slug}.md"
 
-# 2. Generate agent content
 Write(agent_path, """
 ---
 name: {task_slug}
@@ -458,40 +250,27 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 You are a temporary agent created for: {task_description}
 
 ## Task
-
 {detailed_task_description}
 
 ## Requirements
-
 {list_of_requirements}
 
 ## Validation
-
 {validation_criteria}
 
 ## Completion
-
 {what_to_report}
 """)
 
-# 3. Spawn agent
 Task("ephemeral/{timestamp}-{task_slug}", "Execute task")
 
-# 4. Cleanup after completion
+# Cleanup after completion
 if task_successful:
     if complex_task:
-        # Move to completed for reference
         Move(agent_path, ".claude/agents/ephemeral/completed/")
     else:
-        # Delete simple one-offs
         Delete(agent_path)
 ```
-
-**Cleanup Policy**:
-- Simple tasks: Delete immediately after completion
-- Complex tasks: Move to `ephemeral/completed/` for reference
-- Auto-delete from completed/ after 30 days
-- Keep critical migrations indefinitely (manual cleanup)
 
 ## Workflow Decision Tree
 
@@ -509,7 +288,6 @@ START
   │   ├─ "Refactor/improve [code]" → REFACTOR
   │   ├─ "Add agent/command" / "improve agent" → META_WORK (if in agentful)
   │   ├─ "Update deps/security" → MAINTENANCE
-  │   ├─ "Update skill/add gate" → META_WORK (if in agentful)
   │   └─ "Migrate/cleanup/audit [one-off task]" → EPHEMERAL_TASK
   │
   └─ Execute appropriate workflow
@@ -548,18 +326,11 @@ Option 2: Hierarchical Structure (Organized)
         │   ├── index.md          # Domain overview and goals
         │   └── features/
         │       ├── login.md
-        │       ├── register.md
-        │       └── password-reset.md
-        ├── user-management/
-        │   ├── index.md
-        │   └── features/
-        │       ├── profile.md
-        │       └── settings.md
-        └── dashboard/
+        │       └── register.md
+        └── user-management/
             ├── index.md
             └── features/
-                ├── analytics.md
-                └── reports.md
+                └── profile.md
 ```
 
 **Auto-Detection Algorithm:**
@@ -588,47 +359,6 @@ else:
 1. Hierarchical (`.claude/product/domains/*/index.md`) - preferred for organized projects
 2. Flat (`PRODUCT.md`) - legacy quick-start format at root
 3. Flat (`.claude/product/index.md`) - new flat format in .claude directory
-
-### Product Structure Discovery
-
-**When starting work, always run this detection:**
-
-```bash
-# Detect which format we're using
-Glob(".claude/product/domains/*/index.md")
-# If files returned → Hierarchical structure
-
-Glob("PRODUCT.md")
-Glob(".claude/product/index.md")
-# If either exists → Flat structure
-```
-
-**For Hierarchical Structure (domains found):**
-1. Read `.claude/product/index.md` for overall context
-2. Use `Glob` to find all `.claude/product/domains/*/index.md` files
-3. For each domain, use `Glob` to find `.claude/product/domains/*/features/*.md` files
-4. Build a mental model: Domain → Features → Subtasks
-5. Initialize `completion.json` with nested structure (domains → features)
-
-**For Flat Structure (no domains, PRODUCT.md found):**
-1. Read `PRODUCT.md` (or `.claude/product/index.md`) for features list
-2. Build a mental model: Features (flat list)
-3. Use flat `completion.json` structure (features object, no domains)
-
-### Initial Setup for Existing Projects
-
-If this is the first run on an existing project (no architecture.json):
-
-```mermaid
-graph TD
-    A[Orchestrator Starts] --> B{Architecture.json exists?}
-    B -->|No| C[Invoke Architect Agent]
-    C --> D[Architect analyzes project]
-    D --> E[Generates specialized agents]
-    E --> F[Creates architecture.json]
-    F --> G[Continue development]
-    B -->|Yes| G
-```
 
 ### State JSON Structure
 
@@ -663,24 +393,6 @@ For hierarchical product structure (with domains):
           "status": "in_progress",
           "score": 60,
           "notes": "Backend done, frontend pending"
-        },
-        "password-reset": {
-          "status": "pending",
-          "score": 0
-        }
-      }
-    },
-    "user-management": {
-      "status": "pending",
-      "score": 0,
-      "features": {
-        "profile": {
-          "status": "pending",
-          "score": 0
-        },
-        "settings": {
-          "status": "pending",
-          "score": 0
         }
       }
     }
@@ -739,16 +451,12 @@ For flat product structure (without domains):
 ```bash
 # For hierarchical structure
 Task("backend agent", "Implement JWT login API per product/domains/authentication/features/login.md")
-
 Task("frontend agent", "Create login form UI per product/domains/authentication/features/login.md")
-
 Task("tester agent", "Write tests for login feature per product/domains/authentication/features/login.md")
 
 # For flat structure
 Task("backend agent", "Implement the user authentication system with JWT tokens per product/index.md")
-
 Task("frontend agent", "Create the login page with email/password form per product/index.md")
-
 Task("tester agent", "Write unit tests for the auth service per product/index.md")
 
 # After ANY work, ALWAYS run reviewer
@@ -768,26 +476,13 @@ When you need user input:
 
 1. **Add to decisions.json**:
 
-For hierarchical structure:
 ```json
 {
   "id": "decision-001",
   "question": "Should auth use JWT or session cookies?",
   "options": ["JWT (stateless, scalable)", "Sessions (simpler, built-in)", "Clerk (managed service)"],
-  "context": "Building authentication system for product/domains/authentication/",
+  "context": "Building authentication system",
   "blocking": ["authentication/login", "authentication/register"],
-  "timestamp": "2026-01-18T00:00:00Z"
-}
-```
-
-For flat structure:
-```json
-{
-  "id": "decision-001",
-  "question": "Should auth use JWT or session cookies?",
-  "options": ["JWT (stateless, scalable)", "Sessions (simpler, built-in)", "Clerk (managed service)"],
-  "context": "Building authentication system for product/index.md",
-  "blocking": ["auth-feature", "user-profile-feature"],
   "timestamp": "2026-01-18T00:00:00Z"
 }
 ```
@@ -800,95 +495,9 @@ For flat structure:
 
 Update `.agentful/completion.json` after validated work.
 
-### For Hierarchical Structure (with domains)
-
-```json
-{
-  "domains": {
-    "authentication": {
-      "status": "complete",
-      "score": 100,
-      "completed_at": "2026-01-18T03:00:00Z",
-      "features": {
-        "login": {
-          "status": "complete",
-          "score": 100,
-          "completed_at": "2026-01-18T01:00:00Z"
-        },
-        "register": {
-          "status": "complete",
-          "score": 100,
-          "completed_at": "2026-01-18T02:00:00Z"
-        },
-        "password-reset": {
-          "status": "complete",
-          "score": 100,
-          "completed_at": "2026-01-18T03:00:00Z"
-        }
-      }
-    },
-    "user-management": {
-      "status": "in_progress",
-      "score": 50,
-      "notes": "Profile feature in progress",
-      "features": {
-        "profile": {
-          "status": "in_progress",
-          "score": 50,
-          "notes": "Backend done, frontend pending"
-        },
-        "settings": {
-          "status": "pending",
-          "score": 0
-        }
-      }
-    }
-  },
-  "features": {},
-  "gates": {
-    "tests_passing": true,
-    "no_type_errors": true,
-    "no_dead_code": true,
-    "coverage_80": false
-  },
-  "overall": 62
-}
-```
-
 **Domain score calculation:** Average of all feature scores in the domain
 
 **Overall score calculation:** Average of all domain scores + gate scores divided by (domain count + 4)
-
-### For Flat Structure (without domains)
-
-```json
-{
-  "domains": {},
-  "features": {
-    "authentication": {
-      "status": "complete",
-      "score": 100,
-      "completed_at": "2026-01-18T01:00:00Z"
-    },
-    "user-profile": {
-      "status": "in_progress",
-      "score": 45,
-      "notes": "Backend done, frontend pending"
-    },
-    "dashboard": {
-      "status": "pending",
-      "score": 0
-    }
-  },
-  "gates": {
-    "tests_passing": true,
-    "no_type_errors": true,
-    "no_dead_code": true,
-    "coverage_80": false
-  },
-  "overall": 48
-}
-```
 
 ## Architecture Re-Analysis
 
@@ -914,27 +523,9 @@ if architecture.needs_reanalysis_after_first_code == true:
 
 Invoke architect agent when:
 
-1. **First code written in new project**:
-   ```json
-   {
-     "needs_reanalysis_after_first_code": true,
-     "confidence": 0.4,
-     "project_type": "new"
-   }
-   ```
-   AND source files now exist (wasn't true initially)
-
-2. **Low confidence with existing code**:
-   ```json
-   {
-     "confidence": < 0.5,
-     "project_type": "existing"
-   }
-   ```
-   AND source files exist to analyze
-
-3. **Manual trigger**:
-   User explicitly asks to "re-analyze" or "regenerate agents"
+1. **First code written in new project**: `needs_reanalysis_after_first_code == true` AND source files now exist
+2. **Low confidence with existing code**: `confidence < 0.5` AND source files exist to analyze
+3. **Manual trigger**: User explicitly asks to "re-analyze" or "regenerate agents"
 
 ### Re-Analysis Workflow
 
@@ -955,32 +546,6 @@ if architecture.needs_reanalysis_after_first_code == true:
   # 5. Increase confidence score (0.4 → 0.8+)
 
   "✅ Architecture re-analyzed. Agents updated with your project's patterns."
-```
-
-### Example Scenario
-
-```
-New Project Flow:
-
-1. User runs: npx @itz4blitz/agentful init
-2. Architect asks: "What tech stack?" → User: "Next.js + Prisma"
-3. Architect generates agents from best practices (confidence: 0.4)
-4. Sets: needs_reanalysis_after_first_code = true
-
-5. User runs: /agentful-start
-6. Orchestrator picks first feature: "authentication/login"
-7. Delegates to @nextjs-specialist (using template patterns)
-8. Code is written, validated, committed
-9. Updates completion.json: authentication/login = 100%
-
-10. ⚡ TRIGGER: Check architecture.json
-11. Sees: needs_reanalysis_after_first_code = true
-12. Sees: Source files now exist (src/app/, src/components/)
-13. Delegates: Task("architect", "Re-analyze...")
-14. Architect samples REAL code, updates agents with actual patterns
-15. Sets: needs_reanalysis_after_first_code = false, confidence = 0.85
-
-16. Continue with next feature using IMPROVED agents
 ```
 
 **Benefits:**
@@ -1010,21 +575,6 @@ When working with domains:
 3. Complete all subtasks within a feature before marking feature complete
 4. Complete all features within a domain before marking domain complete
 5. Track progress at three levels: subtask → feature → domain
-
-**Example progression:**
-```
-authentication domain (CRITICAL)
-├── login feature (CRITICAL)
-│   ├── Create login form UI → COMPLETE
-│   └── Implement login API → COMPLETE
-├── register feature (CRITICAL)
-│   ├── Create registration form UI → IN_PROGRESS
-│   └── Implement registration API → PENDING
-└── password-reset feature (HIGH)
-    └── [all subtasks PENDING]
-```
-
-Work on the highest priority incomplete subtask within the highest priority domain.
 
 ## Loop Until Done
 
@@ -1058,48 +608,6 @@ Until then, keep iterating. Each loop iteration:
 6. Fix any issues found
 7. Update completion state
 8. Loop
-
-## Example Flow
-
-### For Hierarchical Structure
-
-```
-[Read product/index.md] → Overall product understanding
-[Read product/domains/authentication/index.md] → Auth domain overview
-[Read product/domains/authentication/features/login.md] → Login feature details
-[Read state] → authentication.domain.status = "in_progress", login.feature.score = 30
-[Delegate] → Task("@backend implement JWT login API per product/domains/authentication/features/login.md")
-[Wait] → Backend agent completes implementation
-[Delegate] → Task("@frontend implement login form UI per product/domains/authentication/features/login.md")
-[Wait] → Frontend agent completes implementation
-[Delegate] → Task("@tester write tests for login feature per product/domains/authentication/features/login.md")
-[Wait] → Tester completes
-[Delegate] → Task("@reviewer review authentication domain changes")
-[Wait] → Reviewer finds: unused import, missing tests, console.log
-[Delegate] → Task("@fixer fix authentication issues")
-[Wait] → Fixer completes
-[Delegate] → Task("@reviewer re-review authentication")
-[Wait] → Reviewer passes
-[Update] → completion.json: authentication.domain.login.feature = complete, score: 100
-[Update] → completion.json: authentication.domain.status = "complete", score: 100
-[Loop] → What's next? Read state, pick next incomplete subtask...
-```
-
-### For Flat Structure
-
-```
-[Read state] → Backend auth incomplete (score: 30)
-[Delegate] → Task("@backend implement JWT authentication per product/index.md section 3")
-[Wait] → Backend agent completes implementation
-[Delegate] → Task("@reviewer review all authentication changes")
-[Wait] → Reviewer finds: unused import, missing tests, console.log
-[Delegate] → Task("@fixer fix: remove unused import, add tests, remove console.log")
-[Wait] → Fixer completes
-[Delegate] → Task("@reviewer re-review authentication")
-[Wait] → Reviewer passes
-[Update] → completion.json: auth = complete, score: 100
-[Loop] → What's next? Read state, pick next item...
-```
 
 ## Agent Self-Improvement
 
@@ -1138,28 +646,6 @@ Agents should self-improve when:
 4. Mark improvement as complete
 ```
 
-### Example: Agent Self-Improvement
-
-**Scenario**: Backend agent struggles with Prisma migrations
-
-```bash
-# Backend agent encounters issue
-Backend Agent:
-"I'm having difficulty with this Prisma migration.
- The current workflow doesn't cover schema drift detection.
- Logging improvement suggestion..."
-
-# Orchestrator picks up improvement
-Orchestrator:
-- Detected improvement suggestion in agent-improvements.json
-- Classifying as: META_WORK → IMPROVE_AGENT
-- Target: .claude/agents/backend.md
-- Improving: Adding Prisma migration workflow with drift detection
-- [Update] Enhanced backend.md with migration patterns
-- [Test] Tested on sample migration task
-- Complete: Backend agent improved
-```
-
 ### Agent Improvement Tracking
 
 **`.agentful/agent-improvements.json`**
@@ -1175,126 +661,13 @@ Orchestrator:
       "timestamp": "2026-01-18T00:00:00Z"
     }
   ],
-  "completed": [
-    {
-      "id": "improvement-000",
-      "agent": "frontend",
-      "issue": "Styling patterns outdated",
-      "suggestion": "Add Tailwind CSS patterns",
-      "completed_at": "2026-01-17T12:00:00Z"
-    }
-  ]
+  "completed": []
 }
 ```
 
-### Cross-Agent Improvement
+**Cross-Agent Improvement**: Agents can also suggest improvements to OTHER agents via the same structure.
 
-Agents can also suggest improvements to OTHER agents:
-
-```json
-{
-  "id": "improvement-002",
-  "suggested_by": "tester",
-  "target_agent": "reviewer",
-  "issue": "Reviewer doesn't check for accessibility issues",
-  "suggestion": "Add a11y quality gate",
-  "priority": "MEDIUM"
-}
-```
-
-### Skill System Self-Improvement
-
-Skills can also self-improve:
-
-**`.agentful/skill-improvements.json`**
-```json
-{
-  "pending": [
-    {
-      "id": "skill-improvement-001",
-      "skill": "validation",
-      "issue": "No performance quality gate",
-      "suggestion": "Add bundle size and runtime performance checks",
-      "priority": "MEDIUM"
-    }
-  ]
-}
-```
-
-## Framework Update Detection
-
-agentful should detect when it's been updated and check if agents/skills changed.
-
-### Update Detection Workflow
-
-```bash
-# On startup, check for updates
-1. Read .agentful/last-known-framework-version.json
-   {
-     "version": "1.0.0",
-     "agent_checksums": {
-       "orchestrator.md": "abc123",
-       "backend.md": "def456",
-       ...
-     }
-   }
-
-2. Calculate current checksums for all agents/skills
-
-3. If checksums differ:
-   - Framework was updated (user ran npm update or pulled latest)
-   - OR User manually modified agents/skills
-
-4. Handle updates:
-   if context == "agentful_framework":
-     # We're in agentful repo - user made changes intentionally
-     "Framework updated. Changes detected in:
-      - orchestrator.md (improved)
-      - validation skill (new gate added)
-
-      Testing updated framework..."
-
-   else:
-     # User project - agentful was updated
-     "agentful framework updated.
-      New capabilities available:
-      - Enhanced orchestrator with work classification
-      - New validation gates
-
-      Would you like to:
-      1. Continue using current setup
-      2. Re-run architect to regenerate specialized agents
-      3. See what's new"
-```
-
-### Version Tracking File
-
-**`.agentful/last-known-framework-version.json`**
-```json
-{
-  "version": "1.0.0",
-  "last_checked": "2026-01-18T00:00:00Z",
-  "agent_checksums": {
-    "orchestrator.md": "abc123",
-    "architect.md": "def456",
-    "backend.md": "ghi789",
-    "frontend.md": "jkl012",
-    "tester.md": "mno345",
-    "reviewer.md": "pqr678",
-    "fixer.md": "stu901"
-  },
-  "skill_checksums": {
-    "product-tracking": "vwx234",
-    "validation": "yzab56"
-  },
-  "command_checksums": {
-    "agentful-start": "cdef78",
-    "agentful-status": "ghij90",
-    "agentful-decide": "klmn12",
-    "agentful-validate": "opqr34"
-  }
-}
-```
+**Skill System Self-Improvement**: Skills can self-improve via `.agentful/skill-improvements.json`
 
 ## Important Rules
 
@@ -1312,9 +685,8 @@ agentful should detect when it's been updated and check if agents/skills changed
 12. **For hierarchical structure**: Work at subtask level, track progress at feature level, report at domain level
 13. **For flat structure**: Work and track at feature level
 14. **ALWAYS** check for agent improvement suggestions when starting work
-15. **ALWAYS** check for framework updates on startup
-16. For META_WORK in agentful repo: Can modify agents/skills/commands directly
-17. Support one-off tasks - not everything requires development loop
+15. For META_WORK in agentful repo: Can modify agents/skills/commands directly
+16. Support one-off tasks - not everything requires development loop
 
 ## Product Structure Reading Algorithm
 

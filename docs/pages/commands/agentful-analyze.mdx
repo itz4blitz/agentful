@@ -1,0 +1,215 @@
+# /agentful-analyze
+
+Unified analysis command that detects gaps, validates configuration, identifies stale settings, and suggests or applies fixes.
+
+## Overview
+
+`/agentful-analyze` consolidates multiple analysis capabilities into a single command with three modes:
+
+| Mode | Speed | Purpose |
+|------|-------|---------|
+| `quick` | ~5s | Fast health check, ideal for hooks |
+| `full` | ~30s | Comprehensive analysis with recommendations |
+| `fix` | varies | Auto-fix detected issues |
+
+## Usage
+
+```bash
+# Quick health check (default)
+/agentful-analyze
+
+# Full comprehensive analysis
+/agentful-analyze full
+
+# Auto-fix detected issues
+/agentful-analyze fix
+```
+
+## Quick Mode
+
+Fast health check that runs in under 5 seconds. Perfect for hook-triggered analysis.
+
+**Checks performed:**
+- Required files exist (state.json, completion.json, decisions.json)
+- Architecture detection status
+- Pending decisions count
+- Last validation age
+- Agent staleness (confidence < 0.6 or older than architecture)
+
+**Example output:**
+```
+agentful Health Check
+
+State Files:     [OK] All present
+Architecture:    [OK] Detected (confidence: 0.85)
+Pending:         [WARN] 2 decisions blocking progress
+Last Validation: [OK] 2 hours ago
+Agents:          [OK] All current
+
+Run '/agentful-analyze full' for detailed recommendations.
+```
+
+## Full Mode
+
+Comprehensive analysis that examines every aspect of your agentful setup.
+
+**Analysis categories:**
+
+### 1. Gap Detection
+- Missing product specification
+- Incomplete domain coverage
+- Missing feature definitions
+- Undefined acceptance criteria
+
+### 2. Configuration Validation
+- Agent definitions match architecture
+- Skills align with detected stack
+- Hooks properly configured
+- State files in sync
+
+### 3. Staleness Detection
+- Agents with low confidence scores
+- Architecture older than code changes
+- Outdated skill definitions
+- Stale validation results
+
+### 4. Recommendations
+Prioritized list of suggested fixes with:
+- Severity (critical, warning, info)
+- Specific action to take
+- Command to run
+
+**Example output:**
+```
+agentful Full Analysis
+
+Gap Detection
+  [CRITICAL] No product specification found
+    Create PRODUCT.md or .claude/product/index.md
+
+  [WARNING] Domain 'payments' has no features defined
+    Add feature files to .claude/product/domains/payments/features/
+
+Configuration Validation
+  [OK] Agent definitions valid
+  [OK] Skills match detected stack
+  [WARNING] Hooks not configured
+    Add hooks to .claude/settings.json for automated analysis
+
+Staleness Detection
+  [WARNING] frontend agent has low confidence (0.4)
+    Run '/agentful-agents' to regenerate from actual code
+
+  [INFO] Last validation was 3 days ago
+    Run '/agentful-validate' to refresh
+
+Recommendations (by priority)
+  1. [CRITICAL] Create product specification
+  2. [WARNING] Configure hooks for self-updating
+  3. [WARNING] Regenerate frontend agent
+  4. [INFO] Run validation
+```
+
+## Fix Mode
+
+Automatically applies fixes for detected issues where safe to do so.
+
+**Auto-fixable issues:**
+- Initialize missing state files
+- Update stale architecture detection
+- Regenerate low-confidence agents
+- Clear resolved decisions
+- Reset stuck state
+
+**Non-auto-fixable issues** (requires manual action):
+- Create product specification
+- Define features
+- Make architectural decisions
+- Configure hooks
+
+**Example:**
+```bash
+/agentful-analyze fix
+
+Applying fixes...
+
+[FIXED] Initialized missing state.json
+[FIXED] Updated architecture detection
+[FIXED] Regenerated frontend agent (0.4 -> 0.82)
+[SKIPPED] Product spec required (manual action needed)
+[SKIPPED] Hooks configuration (manual action needed)
+
+3 issues fixed, 2 require manual action.
+Run '/agentful-analyze full' to verify.
+```
+
+## Hook Integration
+
+`/agentful-analyze` is designed to work with Claude Code hooks for automated triggering.
+
+### Recommended Hook Configuration
+
+Add to `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "command": "bin/hooks/analyze-trigger.sh \"$TOOL_INPUT\""
+      }
+    ],
+    "SessionStart": [
+      {
+        "command": "bin/hooks/health-check.sh"
+      }
+    ]
+  }
+}
+```
+
+### How It Works
+
+1. **SessionStart**: Runs quick health check when you start Claude Code
+2. **PostToolUse**: Triggers when key files change:
+   - `package.json` - Dependencies changed
+   - `architecture.json` - Stack detection updated
+   - Agent files - May need skill updates
+
+The hooks suggest running `/agentful-analyze` rather than running it automatically, keeping you in control.
+
+## When to Use
+
+| Scenario | Recommended Mode |
+|----------|------------------|
+| Starting a new session | `quick` (via hook) |
+| After major code changes | `full` |
+| Before starting development | `full` |
+| Something seems wrong | `full` then `fix` |
+| CI/CD pipeline | `quick` |
+
+## Integration with Other Commands
+
+`/agentful-analyze` complements other commands:
+
+- **Before `/agentful-start`**: Run `full` to ensure setup is ready
+- **After `/agentful-agents`**: Run `quick` to verify agents generated correctly
+- **After `/agentful-skills`**: Run `quick` to check skill alignment
+- **When stuck**: Run `full` then `fix` to diagnose and resolve
+
+## Exit Codes
+
+When run programmatically:
+
+| Code | Meaning |
+|------|---------|
+| 0 | All checks passed |
+| 1 | Warnings detected (non-blocking) |
+| 2 | Critical issues detected (blocking) |
+
+## See Also
+
+- [/agentful-validate](/commands/agentful-validate) - Run quality gates
+- [/agentful-agents](/commands/agentful-agents) - Generate domain agents
+- [/agentful-skills](/commands/agentful-skills) - Discover and generate skills
