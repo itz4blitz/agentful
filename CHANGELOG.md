@@ -1,3 +1,20 @@
+# [0.2.0](https://github.com/itz4blitz/agentful/compare/v0.1.11...v0.2.0) (2026-01-20)
+
+
+### Bug Fixes
+
+* remove dead links in docs ([e514b7b](https://github.com/itz4blitz/agentful/commit/e514b7be07cfbba52faeef2c28f2f1d8d4da5880))
+* remove dead links introduced by doc improvements ([7e40894](https://github.com/itz4blitz/agentful/commit/7e4089495c612d6ac4ae1399ea78b05b92baf00e))
+* typo and add /agentful-product to docs sidebar ([bbfbd2c](https://github.com/itz4blitz/agentful/commit/bbfbd2c09c241a557a5c59fcba46f846fee39a99))
+* upgrade @semantic-release/npm to v13 for OIDC support ([31d1e9f](https://github.com/itz4blitz/agentful/commit/31d1e9f2b73cdd97425809c387ee302eb5feee5a))
+* upgrade semantic-release to v25 for OIDC support ([2eced0f](https://github.com/itz4blitz/agentful/commit/2eced0f5e1088587cbc0ede155d1acd906137fff))
+
+
+### Features
+
+* add /agentful-analyze command and trim bloated files ([199b40b](https://github.com/itz4blitz/agentful/commit/199b40ba24c6ad14bdd124949432929781ac9007))
+* major architecture overhaul - agents, skills, positioning, docs ([51b504e](https://github.com/itz4blitz/agentful/commit/51b504ec9437c64b52585a5719465489ba853a00))
+
 ## [0.2.3](https://github.com/itz4blitz/agentful/compare/v0.2.2...v0.2.3) (2026-01-18)
 
 
