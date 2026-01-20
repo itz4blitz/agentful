@@ -36,6 +36,10 @@
     "url": "git+https://github.com/itz4blitz/agentful.git"
   },
   "homepage": "https://agentful.app",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "engines": {
     "node": ">=22.0.0"
   },

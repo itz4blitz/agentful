@@ -10,7 +10,13 @@
         "prepareCmd": "node -e \"const pkg=require('./package.json'); const v=require('./version.json'); v.version=pkg.version; require('fs').writeFileSync('version.json', JSON.stringify(v, null, 2));\""
       }
     ],
-    "@semantic-release/npm",
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": true,
+        "pkgRoot": "."
+      }
+    ],
     [
       "@semantic-release/git",
       {
