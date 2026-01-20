@@ -1,3 +1,10 @@
+## [0.2.1](https://github.com/itz4blitz/agentful/compare/v0.2.0...v0.2.1) (2026-01-20)
+
+
+### Bug Fixes
+
+* address architectural issues across codebase ([e20412b](https://github.com/itz4blitz/agentful/commit/e20412b8a2fe266bb9c6625fd165acc1c0a6234f))
+
 # [0.2.0](https://github.com/itz4blitz/agentful/compare/v0.1.11...v0.2.0) (2026-01-20)
 
 
