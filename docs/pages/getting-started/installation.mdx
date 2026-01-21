@@ -111,6 +111,23 @@ agentful init
 
 Note: `npx` always uses the latest version.
 
+## Updating
+
+After initial installation, use the `/agentful-update` command to update your agentful configuration:
+
+```bash
+# In Claude Code
+/agentful-update
+```
+
+This command:
+- Updates agents, commands, and skills to the latest version
+- Preserves your customizations via 3-way merge
+- Creates automatic backups before updating
+- Safely handles configuration conflicts
+
+**Important**: Do NOT re-run `npx @itz4blitz/agentful init` for updates. Use `/agentful-update` instead to avoid overwriting your customizations.
+
 ## Troubleshooting
 
 ### Command not found: npx

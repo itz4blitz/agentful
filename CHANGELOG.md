@@ -4,6 +4,20 @@
 
 ### Added
 
+#### 🔄 Safe Configuration Updates
+- **NEW**: `/agentful-update` command for safe configuration updates
+  - Updates `.claude/` directory without overwriting customizations
+  - Preserves user modifications and project-specific configurations
+  - Intelligent merge strategy for template updates
+- **NEW**: Post-merge git hook for automatic `.claude/` restoration
+  - Auto-installs at `.git/hooks/post-merge`
+  - Automatically restores `.claude/` directory after git pull/merge
+  - Ensures configuration consistency across team updates
+- **NEW**: Template directory separation for development safety
+  - Templates stored in `template/.claude/` directory
+  - Working configurations in `.claude/` directory
+  - Prevents accidental template modifications during development
+
 #### 🧪 Comprehensive Test Suite
 - **NEW**: Complete test coverage with 370 tests (100% passing)
   - Unit tests for CLI and initialization logic

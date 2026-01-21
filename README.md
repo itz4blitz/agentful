@@ -21,6 +21,23 @@ npx @itz4blitz/agentful init
 
 This command creates the necessary directory structure and configuration files in your project.
 
+### Updating
+
+After initial installation, use the `/agentful-update` command to update your configuration:
+
+```bash
+claude  # Start Claude Code
+/agentful-update
+```
+
+This command:
+- Fetches the latest templates from the current agentful version
+- Performs a 3-way merge to preserve your customizations
+- Creates backups before applying changes
+- Gracefully handles conflicts and reports issues
+
+**Important**: Run `npx @itz4blitz/agentful init` only once during initial setup. For all subsequent updates, use `/agentful-update` instead of re-running init.
+
 ## Usage
 
 ### 1. Define Product Specification
@@ -177,6 +194,7 @@ User configuration is stored in `.claude/` (version controlled):
 | `/agentful-status` | Display progress and current state |
 | `/agentful-validate` | Run all quality checks |
 | `/agentful-decide` | Answer pending decisions |
+| `/agentful-update` | Smart update mechanism - fetches latest templates and gracefully migrates changes |
 
 ## Technology Support
 
