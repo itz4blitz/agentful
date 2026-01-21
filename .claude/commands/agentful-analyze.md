@@ -21,12 +21,45 @@ Unified analysis command that detects gaps in skills, agents, and configuration.
 
 Fast health check (under 10 seconds). No deep codebase scanning.
 
+#### State File Validation
+
+Before checking anything, validate state files:
+
+```javascript
+function validate_state_file(file_path, required_fields) {
+  // Check file exists
+  if (!exists(file_path)) {
+    return { valid: false, error: `File not found: ${file_path}`, action: "not_found" };
+  }
+
+  // Check file is valid JSON
+  let content;
+  try {
+    content = JSON.parse(Read(file_path));
+  } catch (e) {
+    return { valid: false, error: `Invalid JSON in ${file_path}`, action: "corrupted" };
+  }
+
+  // Check required fields exist (if specified)
+  if (required_fields) {
+    for (const field of required_fields) {
+      if (!(field in content)) {
+        return { valid: false, error: `Missing field '${field}' in ${file_path}`, action: "incomplete", missing_field: field };
+      }
+    }
+  }
+
+  return { valid: true, content };
+}
+```
+
 **What it checks:**
 
 1. **Core Setup**
    - `.agentful/architecture.json` exists and is valid JSON
    - Core agents exist (backend, frontend, tester, reviewer, fixer, orchestrator)
    - Skills directory structure is valid
+   - State files are valid JSON (state.json, completion.json, etc.)
 
 2. **Tech Stack Alignment**
    - Read `package.json` or equivalent dependency file
@@ -40,19 +73,27 @@ Fast health check (under 10 seconds). No deep codebase scanning.
 **Process:**
 
 ```typescript
-// 1. Check architecture.json
+// 1. Validate and check architecture.json
 const archPath = ".agentful/architecture.json";
-if (!exists(archPath)) {
-  issues.push({ type: "critical", msg: "Missing architecture.json - run /agentful-start" });
+const archValidation = validate_state_file(archPath, ["language", "framework"]);
+
+if (!archValidation.valid) {
+  if (archValidation.action == "not_found") {
+    issues.push({ type: "critical", msg: "Missing architecture.json - run /agentful-start" });
+  } else if (archValidation.action == "corrupted") {
+    issues.push({ type: "critical", msg: "Corrupted architecture.json - backup and regenerate", fix: "reset_architecture" });
+  } else if (archValidation.action == "incomplete") {
+    issues.push({ type: "warning", msg: `Incomplete architecture.json - missing field: ${archValidation.missing_field}` });
+  }
 } else {
-  const arch = JSON.parse(Read(archPath));
+  const arch = archValidation.content;
   if (!arch.language || !arch.framework) {
     issues.push({ type: "warning", msg: "Incomplete architecture analysis" });
   }
 }
 
 // 2. Check core agents
-const coreAgents = ["backend", "frontend", "tester", "reviewer", "fixer", "orchestrator"];
+const coreAgents = ["backend", "frontend", "tester", "reviewer", "fixer", "orchestrator", "architect", "product-analyzer"];
 const existingAgents = Glob(".claude/agents/*.md").map(extractName);
 const missingAgents = coreAgents.filter(a => !existingAgents.includes(a));
 if (missingAgents.length > 0) {
@@ -84,14 +125,25 @@ for (const dep of deps) {
   }
 }
 
-// 4. Check state files
-const stateFiles = [".agentful/state.json", ".agentful/completion.json"];
-for (const file of stateFiles) {
-  if (exists(file)) {
-    try {
-      JSON.parse(Read(file));
-    } catch {
-      issues.push({ type: "error", msg: `Corrupted state file: ${file}`, fix: `reset_state:${file}` });
+// 4. Validate state files with proper validation
+const stateFilesConfig = [
+  { path: ".agentful/state.json", fields: ["current_task", "current_phase", "iterations"] },
+  { path: ".agentful/completion.json", fields: ["features", "gates"] },
+  { path: ".agentful/decisions.json", fields: ["pending"], optional: true }
+];
+
+for (const config of stateFilesConfig) {
+  if (exists(config.path) || !config.optional) {
+    const validation = validate_state_file(config.path, config.fields);
+
+    if (!validation.valid) {
+      if (validation.action == "not_found" && !config.optional) {
+        issues.push({ type: "warning", msg: `Missing state file: ${config.path}`, fix: `initialize_state:${config.path}` });
+      } else if (validation.action == "corrupted") {
+        issues.push({ type: "error", msg: `Corrupted state file: ${config.path}`, fix: `reset_state:${config.path}` });
+      } else if (validation.action == "incomplete") {
+        issues.push({ type: "warning", msg: `Incomplete state file: ${config.path} (missing: ${validation.missing_field})`, fix: `repair_state:${config.path}` });
+      }
     }
   }
 }
@@ -108,7 +160,7 @@ Status: ⚠️  WARNINGS
 
 Core Setup:
   ✓ architecture.json valid
-  ✓ All core agents present (6/6)
+  ✓ All core agents present (8/8)
   ✓ State files intact
 
 Tech Stack Alignment:
@@ -166,21 +218,33 @@ Comprehensive analysis including codebase scanning.
 // Run quick checks first
 await runQuickChecks();
 
-// 1. Domain discovery (lightweight version of /agentful-agents)
-const domains = await Task("domain-explorer-lightweight", {
-  mode: "fast",
-  confidence_threshold: 0.75
-});
+// 1. Domain discovery (inline lightweight scan)
+// Scan common domain directories for structure
+const srcDirs = Glob("src/**/").filter(d =>
+  !d.includes("node_modules") &&
+  !d.includes("test") &&
+  !d.includes("__")
+);
 
+const domains = [];
+for (const dir of srcDirs) {
+  const files = Glob(`${dir}/*.{ts,tsx,js,jsx}`);
+  if (files.length >= 3) {  // At least 3 files suggests a domain
+    const domainName = extractDomainName(dir);
+    domains.push({ name: domainName, path: dir, fileCount: files.length });
+  }
+}
+
+const coreAgents = ["backend", "frontend", "tester", "reviewer", "fixer", "orchestrator", "architect", "product-analyzer"];
 const domainAgents = Glob(".claude/agents/*.md")
-  .filter(p => !["backend", "frontend", "tester", "reviewer", "fixer", "orchestrator"].includes(extractName(p)));
+  .filter(p => !coreAgents.includes(extractName(p)));
 
 // Check for missing domain agents
 for (const domain of domains) {
   if (!domainAgents.some(a => extractName(a) === domain.name)) {
     issues.push({
       type: "info",
-      msg: `Domain '${domain.name}' detected (${domain.confidence}%) but no agent exists`,
+      msg: `Domain '${domain.name}' detected (${domain.fileCount} files) but no agent exists`,
       fix: `generate_domain_agent:${domain.name}`
     });
   }
@@ -198,15 +262,33 @@ for (const agent of domainAgents) {
   }
 }
 
-// 2. Skill content validation
+// 2. Skill content validation (inline basic checks)
 const skills = Glob(".claude/skills/*/SKILL.md");
 for (const skillPath of skills) {
-  const validation = await Task("skill-validator", { path: skillPath });
-  if (validation.status !== "valid") {
+  const content = Read(skillPath);
+  const skillName = extractSkillName(skillPath);
+  const validationIssues = [];
+
+  // Check if skill is just a placeholder
+  if (content.length < 500) {
+    validationIssues.push("too short (likely placeholder)");
+  }
+
+  // Check if skill has TODO markers
+  if (content.includes("TODO") || content.includes("PLACEHOLDER")) {
+    validationIssues.push("contains TODOs/placeholders");
+  }
+
+  // Check if skill has basic structure
+  if (!content.includes("## Overview") && !content.includes("## Usage")) {
+    validationIssues.push("missing standard sections");
+  }
+
+  if (validationIssues.length > 0) {
     issues.push({
       type: "warning",
-      msg: `Skill '${extractSkillName(skillPath)}' has issues: ${validation.issues.join(", ")}`,
-      fix: `regenerate_skill:${extractSkillName(skillPath)}`
+      msg: `Skill '${skillName}' has issues: ${validationIssues.join(", ")}`,
+      fix: `regenerate_skill:${skillName}`
     });
   }
 }
@@ -339,23 +421,29 @@ for (const issue of fixGroups.critical) {
   await applyFix(issue.fix);
 }
 
-// Skills (parallel)
+// Skills (delegate to architect)
 if (fixGroups.skills.length > 0) {
   console.log("\n🔧 Fixing skills...");
-  fixTasks.push(...fixGroups.skills.map(issue =>
-    Task("fix-applier", { fix: issue.fix, msg: issue.msg })
-  ));
+  for (const issue of fixGroups.skills) {
+    await Task("architect", {
+      action: "manage_skills",
+      fix: issue.fix,
+      msg: issue.msg
+    });
+  }
 }
 
-// Agents (parallel)
+// Agents (delegate to architect)
 if (fixGroups.agents.length > 0) {
   console.log("\n🔧 Fixing agents...");
-  fixTasks.push(...fixGroups.agents.map(issue =>
-    Task("fix-applier", { fix: issue.fix, msg: issue.msg })
-  ));
+  for (const issue of fixGroups.agents) {
+    await Task("architect", {
+      action: "manage_agents",
+      fix: issue.fix,
+      msg: issue.msg
+    });
+  }
 }
-
-await Promise.all(fixTasks);
 
 // Architecture updates (sequential)
 for (const issue of fixGroups.architecture) {
@@ -413,7 +501,7 @@ Status: ✓ HEALTHY
 
 Core Setup:
   ✓ architecture.json valid
-  ✓ All core agents present (6/6)
+  ✓ All core agents present (8/8)
   ✓ State files intact
 
 Tech Stack Alignment:
@@ -438,18 +526,34 @@ async function applyFix(fixString: string): Promise<void> {
 
   switch (action) {
     case "generate_skill":
-      await Task("skill-generator", { skill_name: params[0] });
+      // Delegate to architect agent
+      await Task("architect", {
+        action: "generate_skill",
+        skill_name: params[0],
+        context: "detected missing skill for framework"
+      });
       break;
 
     case "regenerate_skill":
-      await Task("skill-regenerator", { skill_name: params[0] });
+      // Delegate to architect agent
+      await Task("architect", {
+        action: "regenerate_skill",
+        skill_name: params[0],
+        context: "skill outdated or has quality issues"
+      });
       break;
 
     case "generate_domain_agent":
-      await Task("agent-generator", { domain: params[0] });
+      // Delegate to architect agent
+      await Task("architect", {
+        action: "generate_agent",
+        domain: params[0],
+        context: "domain detected in codebase without agent"
+      });
       break;
 
     case "archive_agent":
+      // Inline archival logic
       const agentPath = `.claude/agents/${params[0]}.md`;
       const archivePath = `.claude/agents/archived/${params[0]}.md`;
       const content = Read(agentPath);
@@ -458,6 +562,7 @@ async function applyFix(fixString: string): Promise<void> {
       break;
 
     case "update_architecture":
+      // Inline architecture update logic
       const arch = JSON.parse(Read(".agentful/architecture.json"));
       if (params[0] === "add") {
         arch.dependencies = arch.dependencies || [];
@@ -469,6 +574,7 @@ async function applyFix(fixString: string): Promise<void> {
       break;
 
     case "reset_state":
+      // Inline state reset logic
       const statePath = params[0];
       const backup = Read(statePath);
       Write(`${statePath}.backup`, backup);
@@ -487,7 +593,8 @@ This command can be called from PostToolUse hooks:
 ```typescript
 // .claude/hooks/post-edit-package-json.ts
 if (file_path.includes("package.json")) {
-  Task("agentful-analyzer", { mode: "quick", context: "package.json changed" });
+  // Trigger quick analysis via /agentful-analyze command
+  console.log("Dependency file changed - run /agentful-analyze to check alignment");
 }
 ```
 
@@ -496,7 +603,8 @@ if (file_path.includes("package.json")) {
 ```typescript
 // .claude/hooks/post-architecture-update.ts
 if (file_path === ".agentful/architecture.json") {
-  Task("agentful-analyzer", { mode: "quick", context: "architecture updated" });
+  // Trigger quick analysis via /agentful-analyze command
+  console.log("Architecture updated - run /agentful-analyze to validate setup");
 }
 ```
 
@@ -541,7 +649,7 @@ npm install next@15
 1. **Quick mode** is non-invasive and fast - suitable for hooks
 2. **Full mode** scans codebase - takes longer but thorough
 3. **Fix mode** requires user confirmation before changes
-4. All fixes are applied using existing sub-agents (skill-generator, agent-generator, etc.)
+4. All fixes are delegated to the architect agent or applied inline
 5. State files are backed up before reset
 6. Agents are archived (not deleted) when stale
 

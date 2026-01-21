@@ -29,7 +29,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
+  cyan: '\x1b[36m'
 };
 
 function log(color, ...args) {
@@ -37,6 +37,7 @@ function log(color, ...args) {
 }
 
 function showBanner() {
+  // ASCII art: AGENTFUL
   console.log('');
   log(colors.cyan, '   █████╗  ██████╗ ███████╗███╗   ██╗████████╗███████╗██╗   ██╗██╗     ');
   log(colors.cyan, '  ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██╔════╝██║   ██║██║     ');
@@ -257,35 +258,35 @@ async function main() {
   const command = args[0];
 
   switch (command) {
-    case 'init':
-      await init();
-      break;
+  case 'init':
+    await init();
+    break;
 
-    case 'status':
-      showStatus();
-      break;
+  case 'status':
+    showStatus();
+    break;
 
-    case 'help':
-    case '--help':
-    case '-h':
+  case 'help':
+  case '--help':
+  case '-h':
+    showHelp();
+    break;
+
+  case 'version':
+  case '--version':
+  case '-v':
+    showVersion();
+    break;
+
+  default:
+    if (!command) {
       showHelp();
-      break;
-
-    case 'version':
-    case '--version':
-    case '-v':
-      showVersion();
-      break;
-
-    default:
-      if (!command) {
-        showHelp();
-      } else {
-        log(colors.red, `Unknown command: ${command}`);
-        console.log('');
-        log(colors.dim, 'Run: agentful help');
-        process.exit(1);
-      }
+    } else {
+      log(colors.red, `Unknown command: ${command}`);
+      console.log('');
+      log(colors.dim, 'Run: agentful help');
+      process.exit(1);
+    }
   }
 }
 

@@ -7,6 +7,24 @@ description: Analyze codebase and generate domain agents + tech skills based on 
 
 Analyze codebase, detect tech stack, discover business domains, generate domain agents and tech skills.
 
+## Relationship to /agentful-analyze
+
+**Important**: This command has overlapping functionality with `/agentful-analyze`. Here's the distinction:
+
+- **`/agentful-analyze`** (RECOMMENDED): Comprehensive analysis command that:
+  - Detects tech stack
+  - Generates specialized agents (backend, frontend, domain agents)
+  - Creates tech skills
+  - Analyzes product requirements
+  - Is the primary command for project setup
+
+- **`/agentful-generate`** (LEGACY/SPECIALIZED): Domain-focused generation that:
+  - Only generates domain agents and tech skills
+  - Doesn't handle product analysis
+  - Narrower scope than analyze
+
+**Recommendation**: Use `/agentful-analyze` for most cases. This command may be merged into analyze in a future version.
+
 ## Key Concepts
 
 **Agents** = Actors that DO work. They have tools, write code, make decisions.
@@ -145,30 +163,162 @@ description: <Tech> patterns and best practices for this project
 [Official docs links]
 ```
 
-### Step 6: Create architecture.json
+### Step 6: Validate Generated Agents
 
-Write to `.agentful/architecture.json`:
+After creating agents, validate they are properly formatted:
 
-```json
-{
-  "techStack": {
-    "languages": ["TypeScript"],
-    "frontend": { "framework": "React", "version": "18.x" },
-    "backend": { "framework": "Express", "version": "4.x" },
-    "database": { "type": "SQLite", "orm": "Prisma" },
-    "testing": ["Vitest", "Jest"]
-  },
-  "domains": [
-    { "name": "books", "confidence": 95 },
-    { "name": "authors", "confidence": 95 }
-  ],
-  "generatedAgents": ["books", "authors"],
-  "generatedSkills": ["react", "express", "prisma", "typescript"],
-  "analyzedAt": "2026-01-20T00:00:00Z"
+```javascript
+function validate_generated_agent(agentPath) {
+  try {
+    const content = Read(agentPath);
+
+    // Check for frontmatter
+    if (!content.startsWith('---')) {
+      return { valid: false, error: "Missing frontmatter" };
+    }
+
+    // Check for required frontmatter fields
+    const requiredFields = ['name', 'description'];
+    for (const field of requiredFields) {
+      if (!content.includes(`${field}:`)) {
+        return { valid: false, error: `Missing required field: ${field}` };
+      }
+    }
+
+    // Check for basic sections
+    const requiredSections = ['## Your Scope', '## Domain Structure'];
+    for (const section of requiredSections) {
+      if (!content.includes(section)) {
+        return { valid: false, error: `Missing section: ${section}` };
+      }
+    }
+
+    return { valid: true };
+
+  } catch (error) {
+    return { valid: false, error: error.message };
+  }
+}
+
+// Validate each generated agent
+const validationResults = [];
+
+for (const agentName of generatedAgents) {
+  const agentPath = `.claude/agents/${agentName}.md`;
+  const validation = validate_generated_agent(agentPath);
+
+  if (!validation.valid) {
+    validationResults.push({
+      agent: agentName,
+      path: agentPath,
+      valid: false,
+      error: validation.error
+    });
+  } else {
+    validationResults.push({
+      agent: agentName,
+      path: agentPath,
+      valid: true
+    });
+  }
+}
+
+// Check for failures
+const failed = validationResults.filter(r => !r.valid);
+
+if (failed.length > 0) {
+  console.error(`
+⚠️  Some generated agents have issues:
+
+${failed.map(f => `  - ${f.agent}: ${f.error}`).join('\n')}
+
+Rolling back generation...
+`);
+  rollback_generation(generatedAgents, generatedSkills);
+  throw new Error("Agent generation failed validation");
 }
 ```
 
-### Step 7: Report Results
+### Step 7: Rollback Mechanism
+
+If generation fails halfway, clean up:
+
+```javascript
+function rollback_generation(agentsToRemove, skillsToRemove) {
+  console.log("\n🔄 Rolling back partial generation...\n");
+
+  // Remove generated agents
+  for (const agentName of agentsToRemove) {
+    const agentPath = `.claude/agents/${agentName}.md`;
+    if (exists(agentPath)) {
+      Bash(`rm "${agentPath}"`);
+      console.log(`  Removed: ${agentPath}`);
+    }
+  }
+
+  // Remove generated skills
+  for (const skillName of skillsToRemove) {
+    const skillPath = `.claude/skills/${skillName}/SKILL.md`;
+    if (exists(skillPath)) {
+      Bash(`rm -rf ".claude/skills/${skillName}"`);
+      console.log(`  Removed: .claude/skills/${skillName}/`);
+    }
+  }
+
+  // Remove architecture.json if it was created
+  if (exists('.agentful/architecture.json')) {
+    Bash('rm .agentful/architecture.json');
+    console.log(`  Removed: .agentful/architecture.json`);
+  }
+
+  console.log("\n✅ Rollback complete. No partial state left.\n");
+}
+```
+
+### Step 8: Create Standardized architecture.json
+
+Use consistent schema:
+
+```javascript
+// Standard schema for architecture.json
+const architectureSchema = {
+  version: "1.0", // Schema version for future compatibility
+  techStack: {
+    languages: ["TypeScript"],
+    frontend: {
+      framework: "React",
+      version: "18.x",
+      buildTool: "Vite"
+    },
+    backend: {
+      framework: "Express",
+      version: "4.x",
+      runtime: "Node.js"
+    },
+    database: {
+      type: "SQLite",
+      orm: "Prisma",
+      version: "5.x"
+    },
+    testing: {
+      frameworks: ["Vitest", "Jest"],
+      coverage: true
+    }
+  },
+  domains: [
+    { name: "books", confidence: 95, files: 12 },
+    { name: "authors", confidence: 95, files: 8 }
+  ],
+  generatedAgents: ["books", "authors"],
+  generatedSkills: ["react", "express", "prisma", "typescript"],
+  analyzedAt: "2026-01-20T00:00:00Z",
+  detectionMethod: "codebase-analysis"
+};
+
+Write('.agentful/architecture.json', JSON.stringify(architectureSchema, null, 2));
+```
+
+### Step 9: Report Results
 
 ```
 ✅ Generation Complete

@@ -38,37 +38,24 @@ tools: Read, Write, Edit, Glob, Grep
 
 ### 2. Readiness Scoring
 
-**Calculate specification completeness (0-100%):**
+**IMPORTANT:** The authoritative readiness scoring formula is defined in `.claude/agents/product-analyzer.md`.
 
-```
-Base Score Calculation:
-- Complete feature definition: 20 points per feature
-  - Description exists: 5 points
-  - Acceptance criteria defined: 10 points
-  - Priority assigned: 3 points
-  - User story present: 2 points
+**Reference the product-analyzer agent for:**
+- Complete readiness scoring formula with dimension weights
+- Ready to Build criteria (score >= 75%, zero blocking issues, tech stack 100% specified)
+- Quality dimension definitions (completeness, clarity, feasibility, testability, consistency)
+- Blocking vs warning criteria
+- Tech stack compatibility validation
 
-- Product fundamentals: 40 points total
-  - Tech stack specified: 10 points
-  - Goals are clear and measurable: 15 points
-  - Target users defined: 10 points
-  - Success metrics defined: 5 points
-
-Final Score = (total_points / max_possible_points) * 100
-```
-
-**Identify blocking issues** (prevents development):
-- Missing critical "what" (feature description)
-- Missing critical "why" (business value, goals)
-- Missing critical "who" (target users, stakeholders)
-- Conflicting requirements
-- Undefined core tech stack
+**This skill provides:**
+- Gap identification patterns
+- Refinement guidance
+- Best practices for product specification quality
 
 **Prioritize gaps by severity:**
-- **Critical (Blocking)**: Cannot proceed without this information
-- **High**: Major ambiguity that will cause rework
-- **Medium**: Missing nice-to-have details
-- **Low**: Formatting, organization, documentation improvements
+- **BLOCKING**: Cannot proceed without this information
+- **WARNING**: Major ambiguity that will cause rework
+- **RECOMMENDATION**: Nice-to-have details for better clarity
 
 ### 3. Refinement Guidance
 
@@ -149,11 +136,11 @@ Follow this systematic approach:
    - Include error handling
    - Testable by QA or automated tests
 
-3. **Priority is assigned**
-   - Must-have (P0)
-   - Should-have (P1)
-   - Nice-to-have (P2)
-   - Future consideration (P3)
+3. **Priority is assigned using standard levels**
+   - CRITICAL (must-have for MVP)
+   - HIGH (important for launch)
+   - MEDIUM (nice-to-have)
+   - LOW (future consideration)
 
 4. **Technical considerations noted** (if applicable)
    - Performance requirements
@@ -186,117 +173,32 @@ Follow this systematic approach:
    - Clear responsibilities
    - Minimal coupling
 
-### Step 3: Calculate Readiness Score
+### Step 3: Delegate to Product Analyzer
 
-**Scoring formula:**
+For comprehensive analysis including readiness scoring, **delegate to the product-analyzer agent**:
 
-```javascript
-// Feature completeness (60% of total score)
-featureScore = features.reduce((score, feature) => {
-  let points = 0;
-  if (feature.description) points += 5;
-  if (feature.acceptanceCriteria && feature.acceptanceCriteria.length > 0) points += 10;
-  if (feature.priority) points += 3;
-  if (feature.userStory) points += 2;
-  return score + points;
-}, 0);
-
-const maxFeaturePoints = features.length * 20;
-const featurePercentage = (featureScore / maxFeaturePoints) * 60;
-
-// Product fundamentals (40% of total score)
-let fundamentalsScore = 0;
-if (hasTechStack) fundamentalsScore += 10;
-if (hasMeasurableGoals) fundamentalsScore += 15;
-if (hasTargetUsers) fundamentalsScore += 10;
-if (hasSuccessMetrics) fundamentalsScore += 5;
-
-const fundamentalsPercentage = fundamentalsScore;
-
-// Final score
-readinessScore = Math.round(featurePercentage + fundamentalsPercentage);
+```bash
+Task("product-analyzer", "Analyze .claude/product/index.md and generate product-analysis.json with readiness score and issues.")
 ```
 
-**Categorize issues by severity:**
+The product-analyzer will:
+- Calculate readiness score (0-100%) using weighted quality dimensions
+- Identify blocking issues, warnings, and recommendations
+- Validate priority levels (CRITICAL/HIGH/MEDIUM/LOW)
+- Check tech stack compatibility
+- Detect circular dependencies
+- Auto-generate completion.json structure
+- Apply Ready to Build criteria
 
-- **Blocking**: Missing critical information that prevents development
-  - No feature description
-  - No goals defined
-  - No tech stack specified
-  - Conflicting requirements
-
-- **High Priority**: Major gaps that will cause significant rework
-  - Missing or vague acceptance criteria
-  - Ambiguous priorities
-  - Undefined edge cases
-  - Missing non-functional requirements
-
-- **Medium Priority**: Information that would improve clarity
-  - Missing user stories
-  - Inconsistent formatting
-  - Incomplete domain organization
-  - Missing dependency documentation
-
-- **Low Priority**: Nice-to-have improvements
-  - Formatting inconsistencies
-  - Missing examples
-  - Documentation gaps
-  - Organizational improvements
+**See `.claude/agents/product-analyzer.md` for:**
+- Complete readiness scoring formula
+- Ready to Build criteria
+- Quality dimension weights
+- Validation logic
 
 ### Step 4: Generate Report
 
-**Save analysis to `.claude/product/product-analysis.json`:**
-
-```json
-{
-  "readiness_score": 75,
-  "analyzed_at": "2026-01-20T10:30:00Z",
-  "structure_type": "hierarchical",
-  "summary": {
-    "total_features": 12,
-    "complete_features": 9,
-    "incomplete_features": 3,
-    "total_domains": 3
-  },
-  "blocking_issues": [],
-  "high_priority": [
-    {
-      "type": "missing_acceptance_criteria",
-      "feature": "User Authentication",
-      "domain": "auth",
-      "description": "Feature 'User Authentication' lacks specific acceptance criteria",
-      "suggestion": "Add criteria for: successful login, failed login attempts, session management, logout"
-    }
-  ],
-  "medium_priority": [
-    {
-      "type": "missing_priority",
-      "feature": "Dashboard Widget",
-      "domain": "dashboard",
-      "description": "Feature priority not specified",
-      "suggestion": "Assign priority: P0 (must-have), P1 (should-have), P2 (nice-to-have), or P3 (future)"
-    }
-  ],
-  "low_priority": [
-    {
-      "type": "formatting",
-      "domain": "reporting",
-      "description": "Inconsistent heading levels in domain index",
-      "suggestion": "Use consistent markdown heading hierarchy"
-    }
-  ],
-  "strengths": [
-    "Clear tech stack definition",
-    "Well-organized domain structure",
-    "Measurable business goals"
-  ],
-  "next_steps": [
-    "Add acceptance criteria for User Authentication feature",
-    "Assign priority to Dashboard Widget feature",
-    "Define edge cases for Payment Processing"
-  ]
-}
-```
+**Save analysis to `.agentful/product-analysis.json`** (done by product-analyzer agent).
 
 ### Step 5: Provide Recommendations
 
@@ -327,7 +229,7 @@ readinessScore = Math.round(featurePercentage + fundamentalsPercentage);
 
 - **DO** use the product-analyzer agent for deep, comprehensive analysis
 - **DO** ask specific, targeted questions with concrete examples
-- **DO** save analysis results to `.claude/product/product-analysis.json` for tracking over time
+- **DO** save analysis results to `.agentful/product-analysis.json` for tracking over time
 - **DO** provide actionable recommendations with clear next steps
 - **DO** recognize and acknowledge well-written specifications
 - **DO** adapt analysis based on project type (web app, CLI, library, etc.)
@@ -335,6 +237,8 @@ readinessScore = Math.round(featurePercentage + fundamentalsPercentage);
 - **DO** identify dependencies between features
 - **DO** suggest prioritization when conflicts arise
 - **DO** use consistent terminology from the product spec
+- **DO** validate priority levels are CRITICAL/HIGH/MEDIUM/LOW
+- **DO** check for circular dependencies in feature relationships
 
 ### Don'ts
 
@@ -346,6 +250,8 @@ readinessScore = Math.round(featurePercentage + fundamentalsPercentage);
 - **NEVER** ignore conflicting requirements
 - **NEVER** assume you know the user's intent - verify
 - **NEVER** overlook non-functional requirements (performance, security, etc.)
+- **NEVER** accept P0/P1/P2/P3 priority levels - use CRITICAL/HIGH/MEDIUM/LOW
+- **NEVER** suggest third-party services by default - prefer in-stack solutions
 
 ## Integration
 
@@ -362,8 +268,9 @@ readinessScore = Math.round(featurePercentage + fundamentalsPercentage);
 - Deep domain analysis
 - Dependency mapping
 - Gap identification
+- Readiness calculation
 
-**Updates `.claude/product/product-analysis.json`:**
+**Updates `.agentful/product-analysis.json`:**
 - Maintains history of analyses
 - Tracks improvement over time
 - Provides baseline for future reviews
@@ -376,9 +283,9 @@ User: "I've created my product spec. Is it ready?"
 
 Product Planning:
 1. Detect structure (flat/hierarchical)
-2. Run completeness analysis
-3. Calculate readiness score
-4. Generate report with specific gaps
+2. Delegate to product-analyzer agent
+3. Review generated product-analysis.json
+4. Present readiness score and blocking issues
 5. Ask clarifying questions for each gap
 ```
 
@@ -402,7 +309,7 @@ Product Planning:
 1. Analyze dashboard domain/feature
 2. Check dependencies on other features
 3. Verify acceptance criteria are testable
-4. Calculate feature-specific readiness
+4. Delegate to product-analyzer for readiness score
 5. Provide go/no-go recommendation with reasoning
 ```
 
@@ -417,7 +324,13 @@ Always structure your response as:
 
 ### Readiness Score: X/100
 
-[Brief summary of overall readiness]
+[Brief summary of overall readiness - reference product-analyzer results]
+
+### Ready to Build: YES/NO
+
+- Readiness score: X% (>= 75% required)
+- Blocking issues: X (0 required)
+- Tech stack: X% complete (100% required)
 
 ### Blocking Issues (X)
 
@@ -425,13 +338,13 @@ Always structure your response as:
   - **Why it's blocking**: [Explanation]
   - **To resolve**: [Specific questions or required information]
 
-### High Priority Gaps (X)
+### Warnings (X)
 
 - **[Feature/Domain]**: [Specific gap]
   - **Impact**: [What could go wrong]
   - **Recommendation**: [How to address it]
 
-### Medium Priority Improvements (X)
+### Recommendations (X)
 
 - **[Feature/Domain]**: [Improvement area]
   - **Benefit**: [Why this helps]
@@ -455,7 +368,7 @@ Always structure your response as:
 
 ---
 
-*Analysis saved to `.claude/product/product-analysis.json`*
+*Analysis saved to `.agentful/product-analysis.json`*
 ```
 
 ## Advanced Techniques
@@ -469,6 +382,11 @@ When analyzing features, map dependencies:
 
 Create dependency graph in analysis report.
 
+**Delegate to product-analyzer for:**
+- Circular dependency detection
+- Topological sort for build order
+- Dependency conflict resolution
+
 ### Risk Assessment
 
 Identify risks in specifications:
@@ -480,10 +398,10 @@ Identify risks in specifications:
 ### Phased Planning
 
 For large products, suggest phases:
-- **MVP (Phase 1)**: Core must-have features
-- **Phase 2**: Important enhancements
-- **Phase 3**: Nice-to-have additions
-- **Future**: Ideas for later consideration
+- **MVP (CRITICAL features)**: Core must-have features
+- **Launch (HIGH features)**: Important enhancements
+- **Post-launch (MEDIUM features)**: Nice-to-have additions
+- **Future (LOW features)**: Ideas for later consideration
 
 ### Stakeholder Alignment
 
@@ -491,6 +409,38 @@ Check for stakeholder considerations:
 - Are user needs clearly mapped to features?
 - Are business goals aligned with technical approach?
 - Are success metrics measurable and agreed upon?
+
+---
+
+## Priority Level Guidelines
+
+**Standard priority levels** (ONLY these are valid):
+
+- **CRITICAL**: Must-have for MVP, blocking for launch
+  - Core functionality
+  - Essential user flows
+  - Critical infrastructure
+
+- **HIGH**: Important for launch, significant value
+  - Major features
+  - Important integrations
+  - Key optimizations
+
+- **MEDIUM**: Nice-to-have, enhances experience
+  - Convenience features
+  - Minor improvements
+  - Optional integrations
+
+- **LOW**: Future consideration, not needed for launch
+  - Nice-to-haves
+  - Experimental features
+  - Deferred improvements
+
+**Invalid priority levels** (flag as BLOCKING issue):
+- P0, P1, P2, P3
+- Must-have, Should-have, Nice-to-have
+- 1, 2, 3, 4
+- Any custom values
 
 ---
 
@@ -503,11 +453,11 @@ Check for stakeholder considerations:
 **Skill Actions**:
 1. Detect hierarchical structure at `.claude/product/domains/*/index.md`
 2. Read all domain index files
-3. Analyze each feature for completeness
-4. Calculate readiness score: 68/100
-5. Generate `.claude/product/product-analysis.json`
-6. Respond with structured feedback showing 2 blocking issues, 5 high priority gaps
-7. Ask 8 specific clarifying questions
-8. Provide next steps to reach 85%+ readiness
+3. Delegate to product-analyzer agent for comprehensive analysis
+4. Read generated `.agentful/product-analysis.json`
+5. Present readiness score and Ready to Build status
+6. List blocking issues with specific resolution steps
+7. Ask clarifying questions for each gap
+8. Provide next steps to achieve Ready to Build status
 
 **Outcome**: User has clear, actionable path to complete their specification before development begins.

@@ -9,7 +9,7 @@ This command shows the current state of autonomous product development.
 
 ## Display Format
 
-### Product Readiness (if `.claude/product/product-analysis.json` exists)
+### Product Readiness (if `.agentful/product-analysis.json` exists)
 
 Display this section FIRST, before the header:
 
@@ -116,9 +116,94 @@ Iterations: 24
 
 ## Implementation
 
-Read and display:
+### State File Validation
 
-1. `.claude/product/product-analysis.json` (optional) - Product readiness score and breakdown
+Before reading any state files, validate their existence and structure:
+
+```javascript
+function validate_state_file(file_path, required_fields) {
+  // Check file exists
+  if (!exists(file_path)) {
+    return { valid: false, error: `File not found: ${file_path}`, action: "not_found" };
+  }
+
+  // Check file is valid JSON
+  let content;
+  try {
+    content = JSON.parse(Read(file_path));
+  } catch (e) {
+    return { valid: false, error: `Invalid JSON in ${file_path}`, action: "corrupted" };
+  }
+
+  // Check required fields exist
+  for (const field of required_fields) {
+    if (!(field in content)) {
+      return { valid: false, error: `Missing field '${field}' in ${file_path}`, action: "incomplete" };
+    }
+  }
+
+  return { valid: true, content };
+}
+```
+
+### Validate Required Files
+
+```bash
+# Validate state.json
+validation = validate_state_file(".agentful/state.json", ["current_task", "current_phase", "iterations"])
+
+if !validation.valid:
+  if validation.action == "not_found":
+    console.log(`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          No Active Development Session
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+No state file found. Run /agentful-start to begin development.
+`)
+    return  # Exit - nothing to show
+  else if validation.action == "corrupted":
+    console.log("❌ Corrupted state.json file. Run /agentful-start to reset.")
+    return
+  else if validation.action == "incomplete":
+    console.log("⚠️  Incomplete state.json. Run /agentful-start to repair.")
+    return
+
+# Validate completion.json
+validation = validate_state_file(".agentful/completion.json", ["features", "gates"])
+
+if !validation.valid:
+  if validation.action == "not_found":
+    console.log("⚠️  No completion.json found. Run /agentful-start to initialize.")
+    return
+  else if validation.action == "corrupted":
+    console.log("❌ Corrupted completion.json file. Run /agentful-start to reset.")
+    return
+
+# Validate product-analysis.json (optional - may not exist)
+product_analysis_exists = exists(".agentful/product-analysis.json")
+if product_analysis_exists:
+  validation = validate_state_file(".agentful/product-analysis.json", ["readiness_score", "issues"])
+
+  if !validation.valid && validation.action == "corrupted":
+    console.log("⚠️  Corrupted product-analysis.json - skipping product readiness section")
+    product_analysis_exists = false
+
+# Validate decisions.json (optional - may not exist)
+decisions_exists = exists(".agentful/decisions.json")
+if decisions_exists:
+  validation = validate_state_file(".agentful/decisions.json", ["pending"])
+
+  if !validation.valid && validation.action == "corrupted":
+    console.log("⚠️  Corrupted decisions.json - initializing with empty array")
+    Write(".agentful/decisions.json", JSON.stringify({ pending: [], resolved: [] }))
+```
+
+### Read and Display
+
+After validation passes, read and display:
+
+1. `.agentful/product-analysis.json` (optional) - Product readiness score and breakdown
    - Only display product readiness section if this file exists
    - Calculate emoji based on score thresholds (90-100: ✅, 70-89: ⚠️, <70: ❌)
    - Show blocking issues count if > 0

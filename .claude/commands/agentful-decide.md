@@ -9,6 +9,73 @@ This command helps you resolve pending decisions that are blocking development.
 
 ## Process
 
+### 0. Validate Decisions File
+
+Before reading decisions, validate the file structure:
+
+```javascript
+function validate_state_file(file_path, required_fields) {
+  // Check file exists
+  if (!exists(file_path)) {
+    return { valid: false, error: `File not found: ${file_path}`, action: "initialize" };
+  }
+
+  // Check file is valid JSON
+  let content;
+  try {
+    content = JSON.parse(Read(file_path));
+  } catch (e) {
+    return { valid: false, error: `Invalid JSON in ${file_path}`, action: "backup_and_reset" };
+  }
+
+  // Check required fields exist
+  for (const field of required_fields) {
+    if (!(field in content)) {
+      return { valid: false, error: `Missing field '${field}' in ${file_path}`, action: "add_field", missing_field: field };
+    }
+  }
+
+  return { valid: true, content };
+}
+```
+
+```bash
+# Validate decisions.json
+validation = validate_state_file(".agentful/decisions.json", ["pending", "resolved"])
+
+if !validation.valid:
+  if validation.action == "initialize":
+    # Create default decisions.json with empty arrays
+    Write(".agentful/decisions.json", JSON.stringify({
+      pending: [],
+      resolved: []
+    }))
+    console.log(`
+✅ No pending decisions!
+
+All features are unblocked. Run /agentful-start to continue development.
+`)
+    return  # Exit - no decisions to process
+  else if validation.action == "backup_and_reset":
+    # Backup corrupted file
+    Bash("cp .agentful/decisions.json .agentful/decisions.json.backup-$(date +%s)")
+    # Create fresh file
+    Write(".agentful/decisions.json", JSON.stringify({
+      pending: [],
+      resolved: []
+    }))
+    console.log("⚠️  Corrupted decisions.json backed up and reset. No decisions to process.")
+    return
+  else if validation.action == "add_field":
+    content = JSON.parse(Read(".agentful/decisions.json"))
+    if validation.missing_field == "pending":
+      content.pending = []
+    else if validation.missing_field == "resolved":
+      content.resolved = []
+    Write(".agentful/decisions.json", JSON.stringify(content))
+    console.log("✓ Repaired decisions.json with missing fields")
+```
+
 ### 1. Read Decisions
 
 Read `.agentful/decisions.json`:
@@ -33,70 +100,209 @@ Read `.agentful/decisions.json`:
 }
 ```
 
-### 2. Present to User
+### 2. Validate Blocked Features
 
-For each pending decision, display:
+Before presenting decisions, validate that blocked features referenced actually exist:
 
-```
-┌────────────────────────────────────────────────────────────┐
-│ Decision #1                                                │
-├────────────────────────────────────────────────────────────┤
-│ Question: How should we handle inventory race conditions   │
-│ during flash sales?                                        │
-│                                                            │
-│ Context: Shopfinity expects 1000+ concurrent checkouts     │
-│ during Black Friday. Current implementation allows          │
-│ overselling when multiple users attempt to purchase        │
-│ the same item simultaneously.                              │
-│                                                            │
-│ Options:                                                   │
-│   [1] Pessimistic locking (database row locks)             │
-│       Pros: Simple, guarantees consistency                 │
-│       Cons: Poor performance under high concurrency        │
-│                                                            │
-│   [2] Optimistic locking with automatic retry              │
-│       Pros: Better performance, handles spikes well        │
-│       Cons: Requires retry logic, potential starvation     │
-│                                                            │
-│   [3] Queue-based processing                               │
-│       Pros: Full control, can prioritize customers         │
-│       Cons: Complex, adds infrastructure                   │
-│                                                            │
-│   [4] Custom input...                                      │
-│                                                            │
-│ Blocking: checkout-feature, order-history-feature          │
-└────────────────────────────────────────────────────────────┘
+```javascript
+function validate_blocking_references(decision, productSpec) {
+  const invalidRefs = [];
 
-Your choice:
-```
+  for (const blockedFeature of decision.blocking || []) {
+    // Check if feature exists in product spec
+    let found = false;
 
-### 3. Record Decision
-
-After user selects:
-
-```bash
-# Move from pending to resolved
-{
-  "resolved": [
-    {
-      "id": "decision-001",
-      "question": "How should we handle inventory race conditions during flash sales?",
-      "answer": "Queue-based processing",
-      "timestamp_resolved": "2026-01-18T00:30:00Z"
+    // Check flat features
+    if (productSpec.features && productSpec.features[blockedFeature]) {
+      found = true;
     }
-  ],
-  "pending": []
+
+    // Check domain-nested features
+    if (productSpec.domains) {
+      for (const [domainId, domain] of Object.entries(productSpec.domains)) {
+        if (domain.features && domain.features[blockedFeature]) {
+          found = true;
+          break;
+        }
+        // Check with domain prefix (e.g., "checkout-feature" vs just "feature")
+        if (blockedFeature.startsWith(domainId + '-')) {
+          const featureName = blockedFeature.substring(domainId.length + 1);
+          if (domain.features && domain.features[featureName]) {
+            found = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!found) {
+      invalidRefs.push(blockedFeature);
+    }
+  }
+
+  if (invalidRefs.length > 0) {
+    console.warn(`⚠️  Decision ${decision.id} references non-existent features: ${invalidRefs.join(', ')}`);
+    console.warn(`   These features are not found in .claude/product/`);
+    console.warn(`   Decision may be stale or product spec changed.`);
+  }
+
+  return invalidRefs;
 }
 ```
 
-### 4. Update State
+### 3. Present to User
 
-Remove from `.agentful/state.json` blocked_on array:
+For each pending decision, use AskUserQuestion tool:
 
-```json
-{
-  "blocked_on": []  // Was: ["checkout-feature", "order-history-feature"]
+```javascript
+// Load product spec to validate blocked features
+const productSpec = load_product_spec('.claude/product/');
+
+// For each decision
+for (const decision of decisions.pending) {
+  // Validate blocking references
+  const invalidRefs = validate_blocking_references(decision, productSpec);
+
+  // Present using AskUserQuestion
+  const response = AskUserQuestion({
+    question: decision.question,
+    context: `
+${decision.context}
+
+${invalidRefs.length > 0 ? `⚠️ Warning: Some blocked features not found in product spec: ${invalidRefs.join(', ')}` : ''}
+
+Blocking: ${decision.blocking.join(', ')}
+`,
+    options: [
+      ...decision.options.map((opt, idx) => ({
+        id: `option-${idx + 1}`,
+        label: opt,
+        value: opt
+      })),
+      {
+        id: 'custom',
+        label: 'Custom input...',
+        value: '__CUSTOM__'
+      }
+    ]
+  });
+
+  // Handle response (see next section)
+  process_decision_response(decision, response);
 }
+```
+
+### 4. Process Decision Response
+
+Handle user's choice, including custom input:
+
+```javascript
+function process_decision_response(decision, response) {
+  let finalAnswer;
+
+  if (response.value === '__CUSTOM__') {
+    // Option 4: Custom input handling
+    const customAnswer = AskUserQuestion({
+      question: `Please provide your custom solution for: ${decision.question}`,
+      context: decision.context,
+      input_type: 'text' // Free-form text input
+    });
+
+    finalAnswer = customAnswer.text || customAnswer.value;
+
+    // Validate custom answer is not empty
+    if (!finalAnswer || finalAnswer.trim().length === 0) {
+      console.log("❌ Custom answer cannot be empty. Decision not recorded.");
+      return;
+    }
+  } else {
+    // User selected a predefined option
+    finalAnswer = response.value;
+  }
+
+  // Record the decision
+  record_decision(decision, finalAnswer);
+}
+```
+
+### 5. Record Decision with History
+
+Append to history instead of overwriting:
+
+```javascript
+function record_decision(decision, answer) {
+  // Read current decisions
+  const decisionsFile = Read('.agentful/decisions.json');
+  const decisions = JSON.parse(decisionsFile);
+
+  // Create resolved entry with full history
+  const resolvedEntry = {
+    id: decision.id,
+    question: decision.question,
+    options: decision.options || [],
+    context: decision.context || "",
+    blocking: decision.blocking || [],
+    answer: answer,
+    timestamp_asked: decision.timestamp,
+    timestamp_resolved: new Date().toISOString()
+  };
+
+  // Remove from pending
+  decisions.pending = decisions.pending.filter(d => d.id !== decision.id);
+
+  // Append to resolved history (don't overwrite)
+  if (!decisions.resolved) {
+    decisions.resolved = [];
+  }
+  decisions.resolved.push(resolvedEntry);
+
+  // Keep last 100 resolved decisions (prevent unbounded growth)
+  if (decisions.resolved.length > 100) {
+    decisions.resolved = decisions.resolved.slice(-100);
+  }
+
+  // Save updated decisions
+  Write('.agentful/decisions.json', JSON.stringify(decisions, null, 2));
+
+  console.log(`✅ Decision ${decision.id} resolved: ${answer}`);
+
+  // Update state.json to unblock features
+  update_blocked_features(decision.blocking);
+}
+
+function update_blocked_features(blockedFeatures) {
+  if (!blockedFeatures || blockedFeatures.length === 0) return;
+
+  const stateFile = Read('.agentful/state.json');
+  const state = JSON.parse(stateFile);
+
+  // Remove these features from blocked_on array
+  if (state.blocked_on) {
+    state.blocked_on = state.blocked_on.filter(
+      feature => !blockedFeatures.includes(feature)
+    );
+  }
+
+  state.last_updated = new Date().toISOString();
+
+  Write('.agentful/state.json', JSON.stringify(state, null, 2));
+}
+```
+
+### 6. Summary Output
+
+After all decisions are resolved:
+
+```
+✅ All decisions resolved!
+
+Resolved:
+  1. How should we handle inventory race conditions? → Queue-based processing
+  2. Which payment gateway should we use? → Stripe
+
+Unblocked features: checkout-feature, order-history-feature, payment-integration
+
+Run /agentful-start to continue development.
 ```
 
 ## Example Decisions Across Different Domains
@@ -178,37 +384,87 @@ If decisions.json is empty or pending array is empty:
 All features are unblocked. Run /agentful-start to continue development.
 ```
 
-## Implementation
+## Complete Implementation Flow
 
-Use AskUserQuestion tool to present decisions interactively:
+```javascript
+async function execute_decide_command() {
+  // 1. Validate decisions.json
+  const validation = validate_state_file('.agentful/decisions.json', ['pending', 'resolved']);
 
+  if (!validation.valid) {
+    handle_invalid_file(validation);
+    return;
+  }
+
+  const decisions = validation.content;
+
+  // 2. Check if there are pending decisions
+  if (!decisions.pending || decisions.pending.length === 0) {
+    console.log(`
+✅ No pending decisions!
+
+All features are unblocked. Run /agentful-start to continue development.
+`);
+    return;
+  }
+
+  // 3. Load product spec for validation
+  const productSpec = load_product_spec('.claude/product/');
+
+  // 4. Process each decision
+  const resolved = [];
+
+  for (let i = 0; i < decisions.pending.length; i++) {
+    const decision = decisions.pending[i];
+
+    console.log(`\n[${i + 1}/${decisions.pending.length}] ${decision.question}`);
+
+    // Validate blocked features exist
+    const invalidRefs = validate_blocking_references(decision, productSpec);
+
+    // Present decision to user
+    const response = AskUserQuestion({
+      question: decision.question,
+      context: `
+${decision.context}
+
+${invalidRefs.length > 0 ? `⚠️ Warning: Some blocked features not found in product spec: ${invalidRefs.join(', ')}` : ''}
+
+Blocking: ${decision.blocking.join(', ')}
+`,
+      options: [
+        ...decision.options.map((opt, idx) => ({
+          id: `option-${idx + 1}`,
+          label: opt,
+          value: opt
+        })),
+        {
+          id: 'custom',
+          label: 'Custom input...',
+          value: '__CUSTOM__'
+        }
+      ]
+    });
+
+    // Handle response
+    const answer = process_decision_response(decision, response);
+
+    if (answer) {
+      record_decision(decision, answer);
+      resolved.push({ question: decision.question, answer });
+    }
+  }
+
+  // 5. Show summary
+  if (resolved.length > 0) {
+    console.log(`
+✅ All decisions resolved!
+
+Resolved:
+${resolved.map((r, i) => `  ${i + 1}. ${r.question} → ${r.answer}`).join('\n')}
+
+Run /agentful-start to continue development.
+`);
+  }
+}
 ```
-AskUserQuestion({
-  questions: [{
-    id: "decision-001",
-    question: "How should we handle inventory race conditions?",
-    options: [
-      {
-        label: "Pessimistic locking",
-        description: "Database row locks during checkout"
-      },
-      {
-        label: "Optimistic locking",
-        description: "Automatic retry on conflict"
-      },
-      {
-        label: "Queue-based processing",
-        description: "Serialize checkout requests"
-      }
-    ],
-    context: "Expected 1000+ concurrent checkouts during Black Friday...",
-    blocking: ["checkout-feature", "order-history-feature"]
-  }]
-})
-```
-
-After receiving answers:
-1. Update decisions.json (move to resolved)
-2. Update state.json blocked_on (clear the array)
-3. Show summary of what was resolved
-4. Suggest running /agentful-start

@@ -32,8 +32,13 @@ build/
 # Documentation build
 docs/.vocs/
 docs/.vocs/dist/
+docs/dist/
+
+# Test coverage
+coverage/
 
 # Environment
 .env
 .env.local
 .env.*.local
+.test-health-check-*/

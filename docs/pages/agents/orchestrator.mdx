@@ -403,9 +403,9 @@ User: "Only work on authentication, don't continue to other features"
 
 Orchestrator will complete auth and stop.
 
-### Parallel work
+### Sequential Execution
 
-Can spawn multiple agents simultaneously:
+Agents execute one at a time in the order called:
 
 ```
 Task("backend", "Implement user API")
@@ -413,10 +413,13 @@ Task("frontend", "Implement user profile UI")
 Task("tester", "Prepare test fixtures")
 ```
 
-All run in parallel, Orchestrator waits for all to complete.
+Each task blocks until complete before the next starts.
+
+See [Background Agent Patterns](/concepts/background-agents) for details on current sequential execution and future parallel execution plans.
 
 ## See Also
 
+- [Background Agent Patterns](/concepts/background-agents) - How agent delegation works
 - [Agents Overview](/agents) - All available agents
 - [Architect](/agents/architect) - Tech stack analysis
 - [Backend](/agents/backend) - Server implementation

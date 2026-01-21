@@ -12,8 +12,115 @@ Natural language interface for human-in-the-loop product development with Claude
 When this command is invoked:
 
 1. **Check if user provided input**: If arguments are provided, this is a natural language request
-2. **If NO input**: Show the Quick Reference section below
-3. **If input provided**: Delegate to conversation skill
+2. **If NO input**: Show brief status + quick reference
+3. **If input provided**: Delegate to conversation skill (with validation)
+
+## Validation
+
+```javascript
+function validate_state_file(file_path, required_fields) {
+  // Check file exists
+  if (!exists(file_path)) {
+    return { valid: false, action: "not_found" };
+  }
+
+  // Check file is valid JSON
+  let content;
+  try {
+    content = JSON.parse(Read(file_path));
+  } catch (e) {
+    return { valid: false, action: "corrupted" };
+  }
+
+  // Check required fields exist
+  if (required_fields) {
+    for (const field of required_fields) {
+      if (!(field in content)) {
+        return { valid: false, action: "incomplete", missing_field: field };
+      }
+    }
+  }
+
+  return { valid: true, content };
+}
+```
+
+```javascript
+function execute_agentful_command(args) {
+  // Extract user input
+  const userInput = args ? args.trim() : "";
+
+  if (!userInput || userInput.length === 0) {
+    // No input - show brief status and quick reference
+    show_brief_status_and_help();
+  } else {
+    // User provided natural language input - delegate to conversation
+    delegate_to_conversation(userInput);
+  }
+}
+
+function show_brief_status_and_help() {
+  // Validate state files before reading
+  const stateValidation = validate_state_file('.agentful/state.json', ['current_phase']);
+  const completionValidation = validate_state_file('.agentful/completion.json', ['overall_progress']);
+
+  if (stateValidation.valid && completionValidation.valid) {
+    const state = stateValidation.content;
+    const completion = completionValidation.content;
+
+    console.log(`
+Current Status:
+  Phase: ${state.current_phase || 'idle'}
+  Progress: ${completion.overall_progress || 0}%
+  ${state.current_task ? `Working on: ${state.current_task}` : 'No active task'}
+
+`);
+  } else {
+    // State files don't exist yet or are invalid - that's ok for welcome message
+    console.log("\nWelcome to agentful!\n");
+  }
+
+  // Show quick reference
+  display_quick_reference();
+}
+
+function delegate_to_conversation(userInput) {
+  // Validate conversation skill exists
+  if (!exists('.claude/skills/conversation/SKILL.md')) {
+    console.error(`
+❌ Conversation skill not found!
+
+The conversation skill handles natural language input. To fix:
+
+1. Ensure .claude/skills/conversation/SKILL.md exists
+2. Or run: /agentful-analyze to set up the project
+
+Cannot process natural language without conversation skill.
+`);
+    return;
+  }
+
+  // Delegate using Task tool with explicit method
+  try {
+    Task("conversation", userInput);
+  } catch (error) {
+    console.error(`
+❌ Failed to process request: ${error.message}
+
+Possible causes:
+- Conversation skill has syntax errors
+- Task tool not available
+- Invalid input format
+
+Try using specific commands instead:
+  /agentful-start     - Start development
+  /agentful-status    - Show progress
+  /agentful-validate  - Run quality checks
+  /agentful-decide    - Answer decisions
+`);
+  }
+}
+```
 
 ### With Natural Language Input
 

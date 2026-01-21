@@ -31,6 +31,87 @@ You are the **Frontend Agent**. You implement user interfaces and client-side co
 - Tests → `@tester`
 - Code review → `@reviewer`
 
+## Error Handling
+
+When you encounter errors during frontend implementation:
+
+### Common Error Scenarios
+
+1. **Component Import Failures**
+   - Symptom: Module not found, cannot resolve path, circular dependency detected
+   - Recovery: Verify import path matches file location, check tsconfig paths, resolve circular imports by extracting shared code
+   - Example:
+     ```typescript
+     // Error: Cannot find module '@/components/Button'
+     // Check: Does tsconfig.json have paths configured?
+     // Fix: Use correct path or add to tsconfig paths
+     import { Button } from '@/components/ui/Button'; // ✅
+     ```
+
+2. **State Management Setup Errors**
+   - Symptom: Store not initialized, provider missing, hooks called outside provider
+   - Recovery: Wrap app in provider, initialize store before render, check provider hierarchy
+   - Example:
+     ```typescript
+     // Error: "useStore" called outside provider
+     // Fix: Wrap component tree with provider
+     <StoreProvider>
+       <App />
+     </StoreProvider>
+     ```
+
+3. **API Contract Mismatches**
+   - Symptom: Type errors from API responses, unexpected null, missing properties
+   - Recovery: Validate API response shape, add runtime type checking with Zod, coordinate with backend for contract
+   - Example:
+     ```typescript
+     // Backend returns { userId: string } but code expects { user_id: string }
+     // Fix: Align on naming convention or add adapter layer
+     const adapter = (data) => ({ user_id: data.userId });
+     ```
+
+4. **Styling Conflicts**
+   - Symptom: Styles not applied, CSS specificity issues, Tailwind classes not working
+   - Recovery: Check class name ordering, verify Tailwind config includes component paths, use cn() helper for conflicts
+   - Example:
+     ```typescript
+     // Tailwind classes not applying
+     // Check: Is path in tailwind.config.js content array?
+     content: ["./src/**/*.{ts,tsx}"]
+     ```
+
+### Retry Strategy
+
+- Max retry attempts: 2
+- Retry with exponential backoff: 1s, 2s
+- If still failing after 2 attempts: Log error and escalate to orchestrator
+
+### Escalation
+
+When you cannot recover:
+1. Log error details to state.json under "errors" key
+2. Add blocking decision to decisions.json if architectural (e.g., state management library choice)
+3. Report to orchestrator with context: component affected, error type, potential solutions
+4. Continue with non-blocked work (other components/pages)
+
+### Error Logging Format
+
+```json
+{
+  "timestamp": "2026-01-20T10:30:00Z",
+  "agent": "frontend",
+  "task": "Implementing login form component",
+  "error": "Cannot resolve module '@/components/Button'",
+  "context": {
+    "file": "src/pages/LoginPage.tsx",
+    "import_path": "@/components/Button",
+    "tsconfig_paths": { "@/*": ["./src/*"] }
+  },
+  "recovery_attempted": "Verified tsconfig.json paths, checked file exists at src/components/Button.tsx",
+  "resolution": "component-import-mismatch - needs path adjustment"
+}
+```
+
 ## Core Architecture Principles
 
 ### Component Architecture

@@ -41,14 +41,14 @@ if !product_spec_exists:
     goto INIT_MODE
 
 # Step 3: Check if analysis exists
-analysis_exists = exists(".claude/product/product-analysis.json")
+analysis_exists = exists(".agentful/product-analysis.json")
 
 if !analysis_exists:
   mode = "ANALYSIS"
   goto ANALYSIS_MODE
 
 # Step 4: Read analysis to check for blocking issues
-Read(".claude/product/product-analysis.json")
+Read(".agentful/product-analysis.json")
 blocking_issues = analysis.issues.filter(i => i.severity === "blocking" && !i.resolved)
 
 if blocking_issues.length > 0:
@@ -151,6 +151,41 @@ Generate product spec at `.claude/product/index.md` with user's input, then imme
 
 When product spec exists but never analyzed, or re-analysis requested.
 
+### Validation
+
+Before running analysis, check if product spec exists and is readable:
+
+```javascript
+function validate_product_spec(file_path) {
+  // Check file exists
+  if (!exists(file_path)) {
+    return { valid: false, error: `Product spec not found: ${file_path}` };
+  }
+
+  // Check file is readable (not corrupted)
+  try {
+    const content = Read(file_path);
+    if (content.length < 50) {
+      return { valid: false, error: `Product spec is too short (likely empty or corrupted)` };
+    }
+  } catch (e) {
+    return { valid: false, error: `Cannot read product spec: ${e.message}` };
+  }
+
+  return { valid: true };
+}
+```
+
+```bash
+# Validate product spec before analysis
+validation = validate_product_spec(".claude/product/index.md")
+
+if !validation.valid:
+  console.log(`❌ ${validation.error}`)
+  console.log("Run /agentful-product to initialize product specification.")
+  return
+```
+
 ### Process
 
 ```
@@ -176,7 +211,7 @@ The product analyzer should:
    - Features: Clear descriptions and acceptance criteria
    - Architecture: Clear folder structure and patterns
 
-3. **Generate analysis file** at `.claude/product/product-analysis.json`:
+3. **Generate analysis file** at `.agentful/product-analysis.json`:
 
 ```json
 {
@@ -240,9 +275,58 @@ To resolve: Run /agentful-product
 
 When analysis exists with unresolved blocking issues.
 
+### Validation
+
+Before reading analysis, validate the file:
+
+```javascript
+function validate_state_file(file_path, required_fields) {
+  // Check file exists
+  if (!exists(file_path)) {
+    return { valid: false, error: `File not found: ${file_path}`, action: "not_found" };
+  }
+
+  // Check file is valid JSON
+  let content;
+  try {
+    content = JSON.parse(Read(file_path));
+  } catch (e) {
+    return { valid: false, error: `Invalid JSON in ${file_path}`, action: "corrupted" };
+  }
+
+  // Check required fields exist
+  for (const field of required_fields) {
+    if (!(field in content)) {
+      return { valid: false, error: `Missing field '${field}' in ${file_path}`, action: "incomplete" };
+    }
+  }
+
+  return { valid: true, content };
+}
+```
+
+```bash
+# Validate product-analysis.json
+validation = validate_state_file(".agentful/product-analysis.json", ["issues", "readiness_score"])
+
+if !validation.valid:
+  if validation.action == "not_found":
+    console.log("❌ No analysis found. Re-running analysis...")
+    # Fall back to ANALYSIS mode
+    goto ANALYSIS_MODE
+  else if validation.action == "corrupted":
+    console.log("❌ Corrupted analysis file. Re-running analysis...")
+    # Backup and re-analyze
+    Bash("cp .agentful/product-analysis.json .agentful/product-analysis.json.backup-$(date +%s)")
+    goto ANALYSIS_MODE
+  else if validation.action == "incomplete":
+    console.log("❌ Incomplete analysis file. Re-running analysis...")
+    goto ANALYSIS_MODE
+```
+
 ### Process
 
-Read `.claude/product/product-analysis.json` and walk through each blocking issue:
+Read `.agentful/product-analysis.json` and walk through each blocking issue:
 
 ```
 🔧 Product Specification Refinement
@@ -426,7 +510,7 @@ Task("product-analyzer", "Analyze .claude/product/index.md and generate product-
 ## File Locations
 
 - **Product spec**: `.claude/product/index.md`
-- **Analysis results**: `.claude/product/product-analysis.json`
+- **Analysis results**: `.agentful/product-analysis.json`
 - **Domain structure**: `.claude/product/domains/*/index.md` (optional hierarchical)
 
 ---

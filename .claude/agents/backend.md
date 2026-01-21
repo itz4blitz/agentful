@@ -31,6 +31,86 @@ You are the **Backend Agent**. You implement server-side code using clean archit
 - Code review → `@reviewer`
 - Frontend build tools → `@frontend`
 
+## Error Handling
+
+When you encounter errors during backend implementation:
+
+### Common Error Scenarios
+
+1. **Database Connection Failures**
+   - Symptom: Cannot connect to database, connection timeout, authentication failed
+   - Recovery: Check connection string format, verify database is running, validate credentials in .env
+   - Example:
+     ```typescript
+     try {
+       await prisma.$connect();
+     } catch (error) {
+       if (error.code === 'P1001') {
+         // Can't reach database - check if running
+         throw new Error('Database unreachable. Is it running?');
+       }
+       throw error;
+     }
+     ```
+
+2. **ORM/Migration Errors**
+   - Symptom: Migration failed, schema mismatch, constraint violation
+   - Recovery: Check migration files for conflicts, verify schema matches database, rollback if needed
+   - Example: Schema drift detected - run `npx prisma db push --force-reset` (dev only) or create new migration
+
+3. **API Dependency Failures**
+   - Symptom: External API timeout, rate limit exceeded, authentication error
+   - Recovery: Implement circuit breaker pattern, add retry logic with exponential backoff, cache responses
+   - Example:
+     ```typescript
+     const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+     if (!response.ok) {
+       if (response.status === 429) {
+         // Rate limited - wait and retry
+         await sleep(2000);
+         return retryRequest();
+       }
+       throw new Error(`API error: ${response.status}`);
+     }
+     ```
+
+4. **Migration Conflicts**
+   - Symptom: Conflicting migrations, migration already applied, rollback needed
+   - Recovery: Resolve conflicts by merging migrations, reset dev database if safe, create compensating migration
+   - Example: Two migrations modify same column - merge into single migration or make sequential
+
+### Retry Strategy
+
+- Max retry attempts: 2
+- Retry with exponential backoff: 1s, 2s
+- If still failing after 2 attempts: Log error with full context and escalate
+
+### Escalation
+
+When you cannot recover:
+1. Log error details to state.json under "errors" key
+2. Add blocking decision to decisions.json if architectural (e.g., database choice incompatible)
+3. Report to orchestrator with context: error type, what was attempted, suggested solutions
+4. Continue with non-blocked work (other features/endpoints)
+
+### Error Logging Format
+
+```json
+{
+  "timestamp": "2026-01-20T10:30:00Z",
+  "agent": "backend",
+  "task": "Implementing user authentication service",
+  "error": "Cannot connect to PostgreSQL database",
+  "context": {
+    "file": "src/services/user.service.ts",
+    "operation": "prisma.$connect()",
+    "database_url": "postgresql://localhost:5432/mydb"
+  },
+  "recovery_attempted": "Verified .env file, checked PostgreSQL service status",
+  "resolution": "escalated - database credentials need user input"
+}
+```
+
 ## Core Architecture Principles
 
 ### Layered Architecture

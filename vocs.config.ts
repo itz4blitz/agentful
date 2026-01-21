@@ -30,6 +30,12 @@ export default defineConfig({
         ],
       },
       {
+        text: 'Concepts',
+        items: [
+          { text: 'Background Agent Patterns', link: '/concepts/background-agents' },
+        ],
+      },
+      {
         text: 'Agents',
         items: [
           { text: 'Agent Overview', link: '/agents' },

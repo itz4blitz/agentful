@@ -289,17 +289,17 @@ For hierarchical structure examples, check:
 After running `/agentful-product`, a `product-analysis.json` file is generated:
 
 ```bash
-.claude/product/
-├── index.md                    # Your product spec (template)
+.agentful/
 └── product-analysis.json       # Generated analysis (created by /agentful-product)
 ```
 
 **Key points:**
 - **Not in templates**: This file doesn't exist in the agentful package itself
 - **Generated on demand**: Created when you run `/agentful-product` in your project
+- **Runtime state**: Stored in `.agentful/` as it's derived from your spec and regenerated each time
 - **Purpose**: Analyzes your product spec for completeness, clarity, feasibility, testability, and consistency
 - **Scores readiness**: 0-100% score with blocking issues and recommendations
-- **Version controlled**: Commit to git to track spec quality improvements over time
+- **Not version controlled**: Gitignored like other runtime state in `.agentful/`
 
 **Example content:**
 ```json
