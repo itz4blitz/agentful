@@ -427,9 +427,9 @@ describe('JSON Schemas', () => {
     });
   });
 
-  describe('.claude/settings.json', () => {
+  describe('template/.claude/settings.json', () => {
     it('should have valid settings.json', () => {
-      const settingsPath = path.join(projectRoot, '.claude', 'settings.json');
+      const settingsPath = path.join(projectRoot, 'template', '.claude', 'settings.json');
 
       if (fs.existsSync(settingsPath)) {
         const content = fs.readFileSync(settingsPath, 'utf-8');

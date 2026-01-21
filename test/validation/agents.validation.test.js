@@ -6,7 +6,7 @@ import yaml from 'js-yaml';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..', '..');
-const agentsDir = path.join(projectRoot, '.claude', 'agents');
+const agentsDir = path.join(projectRoot, 'template', '.claude', 'agents');
 
 /**
  * Agent Metadata Validation Tests

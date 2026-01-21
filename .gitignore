@@ -1,8 +1,9 @@
 # agentful runtime state (gitignored in user projects)
 .agentful/
 
-# Ephemeral agents (one-off temporary agents)
-.claude/agents/ephemeral/
+# Agentful's own working directory (templates are in template/.claude/)
+.claude/
+!template/.claude/
 
 # Dependencies
 node_modules/

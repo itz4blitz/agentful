@@ -1,0 +1,59 @@
+{
+  "includeCoAuthoredBy": false,
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node bin/hooks/health-check.js",
+            "timeout": 5,
+            "description": "Quick agentful health check"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node bin/hooks/analyze-trigger.js",
+            "timeout": 3,
+            "description": "Check if file changes warrant analysis"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const fs=require('fs');try{const s=JSON.parse(fs.readFileSync('.agentful/state.json','utf8'));console.log(s.current_phase||'idle')}catch{console.log('idle')}\"",
+            "description": "Track current agentful phase"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(git:*)",
+      "Bash(cat:*)",
+      "Bash(echo:*)",
+      "Bash(jq:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~/.*)",
+      "Bash(rm -rf /.*)",
+      "Bash(dd:*)",
+      "Bash(mkfs:*)"
+    ]
+  }
+}

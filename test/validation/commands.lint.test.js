@@ -6,7 +6,7 @@ import yaml from 'js-yaml';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..', '..');
-const commandsDir = path.join(projectRoot, '.claude', 'commands');
+const commandsDir = path.join(projectRoot, 'template', '.claude', 'commands');
 
 /**
  * Command Markdown Validation Tests

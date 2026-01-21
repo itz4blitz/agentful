@@ -29,7 +29,6 @@
     "bin/",
     "lib/",
     "template/",
-    ".claude/",
     "version.json",
     "LICENSE"
   ],
