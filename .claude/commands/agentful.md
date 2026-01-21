@@ -466,4 +466,4 @@ It learns **your project's patterns** and generates agents that match your conve
 - **Documentation**: https://agentful.app
 - **GitHub**: https://github.com/itz4blitz/agentful
 - **Issues**: https://github.com/itz4blitz/agentful/issues
-- **Version**: 0.1.11 (check updates: `npm outdated @itz4blitz/agentful`)
+- **Version**: 0.5.0 (check updates: `npm outdated @itz4blitz/agentful`)
