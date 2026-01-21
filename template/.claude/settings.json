@@ -1,7 +1,18 @@
 {
   "includeCoAuthoredBy": false,
   "hooks": {
-    "SessionStart": [],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node bin/hooks/health-check.js",
+            "timeout": 5,
+            "description": "Quick agentful health check"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Write|Edit",
