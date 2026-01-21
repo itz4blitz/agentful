@@ -1,18 +1,7 @@
 {
   "includeCoAuthoredBy": false,
   "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash bin/hooks/health-check.sh",
-            "timeout": 5,
-            "description": "Quick agentful health check"
-          }
-        ]
-      }
-    ],
+    "SessionStart": [],
     "PreToolUse": [
       {
         "matcher": "Write|Edit",
@@ -30,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash bin/hooks/analyze-trigger.sh",
+            "command": "node bin/hooks/analyze-trigger.js",
             "timeout": 3,
             "description": "Check if file changes warrant analysis"
           }
