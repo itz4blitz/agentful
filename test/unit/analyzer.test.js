@@ -3,17 +3,23 @@ import { CodebaseAnalyzer, analyzeCodebase } from '../../lib/core/analyzer.js';
 import { validateArchitecture } from '../../lib/validation.js';
 import fs from 'fs/promises';
 import path from 'path';
+import os from 'os';
 
 describe('CodebaseAnalyzer', () => {
-  const testProjectRoot = process.cwd();
-  const testOutputPath = '.agentful/test-architecture.json';
+  let testProjectRoot;
+  const testOutputPath = 'test-architecture.json';
+
+  beforeEach(async () => {
+    // Create temporary directory for each test
+    testProjectRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'analyzer-test-'));
+  });
 
   afterEach(async () => {
-    // Cleanup test files
+    // Cleanup temporary directory
     try {
-      await fs.unlink(path.join(testProjectRoot, testOutputPath));
+      await fs.rm(testProjectRoot, { recursive: true, force: true });
     } catch (error) {
-      // Ignore if file doesn't exist
+      // Ignore if directory doesn't exist
     }
   });
 

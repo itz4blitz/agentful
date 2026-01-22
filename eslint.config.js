@@ -49,6 +49,18 @@ export default [
     }
   },
   {
+    files: ['test/**/*.js', 'test/**/*.test.js'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'CallExpression[callee.object.name="process"][callee.property.name="cwd"]',
+          message: 'Do not use process.cwd() in tests. Use createTestDir() from test/helpers/test-dir.js instead for proper test isolation.'
+        }
+      ]
+    }
+  },
+  {
     ignores: [
       'node_modules/',
       'dist/',

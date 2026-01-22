@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { execSync } from 'child_process';
-import fs from 'fs';
+import fs from 'fs/promises';
+import * as fsSync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import os from 'os';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const preFeatureScript = path.join(__dirname, '../../../bin/hooks/pre-feature.js');
@@ -17,14 +19,12 @@ const preFeatureScript = path.join(__dirname, '../../../bin/hooks/pre-feature.js
  */
 
 describe('Pre-Feature Hook', () => {
-  let originalCwd;
   let testDir;
   let mockFs;
 
   beforeEach(() => {
-    originalCwd = process.cwd();
     // Create a temporary directory structure for testing
-    testDir = path.join(__dirname, '../../../.test-tmp');
+    testDir = fsSync.mkdtempSync(path.join(os.tmpdir(), 'pre-feature-test-'));
 
     // Mock fs module
     mockFs = {
@@ -35,7 +35,7 @@ describe('Pre-Feature Hook', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
-    process.chdir(originalCwd);
+    fsSync.rmSync(testDir, { recursive: true, force: true });
   });
 
   /**
@@ -51,7 +51,7 @@ describe('Pre-Feature Hook', () => {
     try {
       const stdout = execSync(`${envVars} node ${preFeatureScript}`, {
         encoding: 'utf8',
-        cwd: originalCwd,
+        cwd: testDir,
         stdio: 'pipe'
       });
       return { exitCode: 0, stdout, stderr: '' };
@@ -100,34 +100,28 @@ describe('Pre-Feature Hook', () => {
 
       it('should pass when feature file exists in flat structure', () => {
         // Create the flat structure
-        const featureDir = path.join(originalCwd, '.claude/product/features');
-        const completionPath = path.join(originalCwd, '.agentful/completion.json');
+        const featureDir = path.join(testDir, '.claude/product/features');
+        const completionPath = path.join(testDir, '.agentful/completion.json');
 
-        try {
-          fs.mkdirSync(featureDir, { recursive: true });
-          fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
 
-          fs.writeFileSync(
-            path.join(featureDir, 'test-flat.md'),
-            '# Test Feature'
-          );
-          fs.writeFileSync(
-            completionPath,
-            JSON.stringify({ domains: {} })
-          );
+        fsSync.writeFileSync(
+          path.join(featureDir, 'test-flat.md'),
+          '# Test Feature'
+        );
+        fsSync.writeFileSync(
+          completionPath,
+          JSON.stringify({ domains: {} })
+        );
 
-          const result = runPreFeature({
-            AGENTFUL_FEATURE: 'test-flat'
-          });
+        const result = runPreFeature({
+          AGENTFUL_FEATURE: 'test-flat'
+        });
 
-          // Should have warnings (missing agents) but no errors
-          expect(result.exitCode).toBe(0);
-          expect(result.stderr).not.toContain('ERROR: Feature file not found');
-        } finally {
-          // Cleanup
-          fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-          fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-        }
+        // Should have warnings (missing agents) but no errors
+        expect(result.exitCode).toBe(0);
+        expect(result.stderr).not.toContain('ERROR: Feature file not found');
       });
     });
 
@@ -144,18 +138,17 @@ describe('Pre-Feature Hook', () => {
       });
 
       it('should pass when feature file exists in hierarchical structure', () => {
-        const domainDir = path.join(originalCwd, '.claude/product/domains/test-domain/features');
-        const completionPath = path.join(originalCwd, '.agentful/completion.json');
+        const domainDir = path.join(testDir, '.claude/product/domains/test-domain/features');
+        const completionPath = path.join(testDir, '.agentful/completion.json');
 
-        try {
-          fs.mkdirSync(domainDir, { recursive: true });
-          fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(domainDir, { recursive: true });
+        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
 
-          fs.writeFileSync(
+        fsSync.writeFileSync(
             path.join(domainDir, 'test-hierarchical.md'),
             '# Test Feature'
           );
-          fs.writeFileSync(
+        fsSync.writeFileSync(
             completionPath,
             JSON.stringify({
               domains: {
@@ -172,11 +165,6 @@ describe('Pre-Feature Hook', () => {
           // Should have warnings (missing agents) but no errors
           expect(result.exitCode).toBe(0);
           expect(result.stderr).not.toContain('ERROR: Feature file not found');
-        } finally {
-          // Cleanup
-          fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-          fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-        }
       });
     });
   });
@@ -192,15 +180,14 @@ describe('Pre-Feature Hook', () => {
     });
 
     it('should not error when completion.json exists', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(
           path.join(featureDir, 'test.md'),
           '# Test'
         );
@@ -210,23 +197,16 @@ describe('Pre-Feature Hook', () => {
         });
 
         expect(result.stderr).not.toContain('ERROR: .agentful/completion.json not found');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
   });
 
   describe('Check 3: Domain Blocked Status', () => {
     it('should error when domain status is blocked', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/domains/blocked-domain/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/domains/blocked-domain/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           completionPath,
           JSON.stringify({
             domains: {
@@ -234,7 +214,7 @@ describe('Pre-Feature Hook', () => {
             }
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           path.join(featureDir, 'test-feature.md'),
           '# Test'
         );
@@ -246,21 +226,14 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(1);
         expect(result.stderr).toContain("ERROR: Domain 'blocked-domain' is blocked");
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should not error when domain status is in-progress', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/domains/active-domain/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/domains/active-domain/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           completionPath,
           JSON.stringify({
             domains: {
@@ -268,7 +241,7 @@ describe('Pre-Feature Hook', () => {
             }
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           path.join(featureDir, 'test-feature.md'),
           '# Test'
         );
@@ -279,27 +252,20 @@ describe('Pre-Feature Hook', () => {
         });
 
         expect(result.stderr).not.toContain("ERROR: Domain 'active-domain' is blocked");
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should not error when domain is not in completion.json (unknown status)', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/domains/unknown-domain/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/domains/unknown-domain/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           completionPath,
           JSON.stringify({
             domains: {}
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           path.join(featureDir, 'test-feature.md'),
           '# Test'
         );
@@ -310,22 +276,15 @@ describe('Pre-Feature Hook', () => {
         });
 
         expect(result.stderr).not.toContain("ERROR: Domain 'unknown-domain' is blocked");
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should handle missing domains property in completion.json', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/domains/test-domain/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/domains/test-domain/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({}));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({}));
+        fsSync.writeFileSync(
           path.join(featureDir, 'test-feature.md'),
           '# Test'
         );
@@ -337,25 +296,18 @@ describe('Pre-Feature Hook', () => {
 
         // Should not error due to missing domains property
         expect(result.stderr).not.toContain("ERROR: Domain 'test-domain' is blocked");
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
   });
 
   describe('Check 4: Blocking Decisions', () => {
     it('should error when feature is blocked by decisions (flat structure)', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const decisionsPath = path.join(originalCwd, '.agentful/decisions.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const decisionsPath = path.join(testDir, '.agentful/decisions.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(
           decisionsPath,
           JSON.stringify({
             pending: [
@@ -366,7 +318,7 @@ describe('Pre-Feature Hook', () => {
             ]
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           path.join(featureDir, 'blocked-feature.md'),
           '# Test'
         );
@@ -378,22 +330,15 @@ describe('Pre-Feature Hook', () => {
         expect(result.exitCode).toBe(1);
         expect(result.stderr).toContain("ERROR: Feature 'blocked-feature' is blocked by decisions: DECISION-001");
         expect(result.stderr).toContain('Run /agentful-decide to resolve blocking decisions');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should error when feature is blocked by decisions (hierarchical structure)', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const decisionsPath = path.join(originalCwd, '.agentful/decisions.json');
-      const featureDir = path.join(originalCwd, '.claude/product/domains/test-domain/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const decisionsPath = path.join(testDir, '.agentful/decisions.json');
+      const featureDir = path.join(testDir, '.claude/product/domains/test-domain/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           completionPath,
           JSON.stringify({
             domains: {
@@ -401,7 +346,7 @@ describe('Pre-Feature Hook', () => {
             }
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           decisionsPath,
           JSON.stringify({
             pending: [
@@ -412,7 +357,7 @@ describe('Pre-Feature Hook', () => {
             ]
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           path.join(featureDir, 'blocked-feature.md'),
           '# Test'
         );
@@ -424,23 +369,16 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(1);
         expect(result.stderr).toContain("ERROR: Feature 'blocked-feature' is blocked by decisions: DECISION-002");
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should handle multiple blocking decisions', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const decisionsPath = path.join(originalCwd, '.agentful/decisions.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const decisionsPath = path.join(testDir, '.agentful/decisions.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(
           decisionsPath,
           JSON.stringify({
             pending: [
@@ -459,7 +397,7 @@ describe('Pre-Feature Hook', () => {
             ]
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           path.join(featureDir, 'multi-blocked.md'),
           '# Test'
         );
@@ -470,23 +408,16 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(1);
         expect(result.stderr).toContain("ERROR: Feature 'multi-blocked' is blocked by decisions: DEC-001, DEC-002");
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should not error when no blocking decisions exist', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const decisionsPath = path.join(originalCwd, '.agentful/decisions.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const decisionsPath = path.join(testDir, '.agentful/decisions.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(
           decisionsPath,
           JSON.stringify({
             pending: [
@@ -497,7 +428,7 @@ describe('Pre-Feature Hook', () => {
             ]
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           path.join(featureDir, 'unblocked.md'),
           '# Test'
         );
@@ -507,22 +438,15 @@ describe('Pre-Feature Hook', () => {
         });
 
         expect(result.stderr).not.toContain('is blocked by decisions');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should handle decisions.json not existing', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(
           path.join(featureDir, 'test.md'),
           '# Test'
         );
@@ -533,24 +457,17 @@ describe('Pre-Feature Hook', () => {
 
         // Should not error when decisions.json doesn't exist
         expect(result.stderr).not.toContain('is blocked by decisions');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should handle invalid JSON in decisions.json gracefully', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const decisionsPath = path.join(originalCwd, '.agentful/decisions.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const decisionsPath = path.join(testDir, '.agentful/decisions.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(decisionsPath, 'invalid json {]');
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(decisionsPath, 'invalid json {]');
+        fsSync.writeFileSync(
           path.join(featureDir, 'test.md'),
           '# Test'
         );
@@ -561,24 +478,17 @@ describe('Pre-Feature Hook', () => {
 
         // Should ignore invalid JSON and not crash
         expect(result.stderr).not.toContain('is blocked by decisions');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should handle missing pending array in decisions.json', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const decisionsPath = path.join(originalCwd, '.agentful/decisions.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const decisionsPath = path.join(testDir, '.agentful/decisions.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(decisionsPath, JSON.stringify({}));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(decisionsPath, JSON.stringify({}));
+        fsSync.writeFileSync(
           path.join(featureDir, 'test.md'),
           '# Test'
         );
@@ -589,22 +499,15 @@ describe('Pre-Feature Hook', () => {
 
         // Should handle missing pending array
         expect(result.stderr).not.toContain('is blocked by decisions');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should handle partial path match in blocking array', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const decisionsPath = path.join(originalCwd, '.agentful/decisions.json');
-      const featureDir = path.join(originalCwd, '.claude/product/domains/auth/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const decisionsPath = path.join(testDir, '.agentful/decisions.json');
+      const featureDir = path.join(testDir, '.claude/product/domains/auth/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           completionPath,
           JSON.stringify({
             domains: {
@@ -612,7 +515,7 @@ describe('Pre-Feature Hook', () => {
             }
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           decisionsPath,
           JSON.stringify({
             pending: [
@@ -623,7 +526,7 @@ describe('Pre-Feature Hook', () => {
             ]
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           path.join(featureDir, 'login.md'),
           '# Test'
         );
@@ -635,29 +538,22 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(1);
         expect(result.stderr).toContain("ERROR: Feature 'login' is blocked by decisions: DEC-AUTH");
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
   });
 
   describe('Check 5: Tech Stack Analysis (architecture.json)', () => {
     it('should warn when tech stack is null', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const architecturePath = path.join(originalCwd, '.agentful/architecture.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const architecturePath = path.join(testDir, '.agentful/architecture.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(
           architecturePath,
           JSON.stringify({ techStack: null })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           path.join(featureDir, 'test.md'),
           '# Test'
         );
@@ -668,24 +564,17 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(0); // Warning, not error
         expect(result.stdout).toContain('WARNING: Tech stack not analyzed. Run /agentful-generate');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should warn when tech stack is missing', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const architecturePath = path.join(originalCwd, '.agentful/architecture.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const architecturePath = path.join(testDir, '.agentful/architecture.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(architecturePath, JSON.stringify({}));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(architecturePath, JSON.stringify({}));
+        fsSync.writeFileSync(
           path.join(featureDir, 'test.md'),
           '# Test'
         );
@@ -696,23 +585,16 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toContain('WARNING: Tech stack not analyzed. Run /agentful-generate');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should not warn when tech stack is analyzed', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const architecturePath = path.join(originalCwd, '.agentful/architecture.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const architecturePath = path.join(testDir, '.agentful/architecture.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(
           architecturePath,
           JSON.stringify({
             techStack: {
@@ -721,7 +603,7 @@ describe('Pre-Feature Hook', () => {
             }
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           path.join(featureDir, 'test.md'),
           '# Test'
         );
@@ -731,22 +613,15 @@ describe('Pre-Feature Hook', () => {
         });
 
         expect(result.stdout).not.toContain('WARNING: Tech stack not analyzed');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should not warn when architecture.json does not exist', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(
           path.join(featureDir, 'test.md'),
           '# Test'
         );
@@ -756,24 +631,17 @@ describe('Pre-Feature Hook', () => {
         });
 
         expect(result.stdout).not.toContain('WARNING: Tech stack not analyzed');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should handle invalid JSON in architecture.json gracefully', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const architecturePath = path.join(originalCwd, '.agentful/architecture.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const architecturePath = path.join(testDir, '.agentful/architecture.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(architecturePath, 'invalid json');
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(architecturePath, 'invalid json');
+        fsSync.writeFileSync(
           path.join(featureDir, 'test.md'),
           '# Test'
         );
@@ -784,31 +652,24 @@ describe('Pre-Feature Hook', () => {
 
         // Should not crash or warn on invalid JSON
         expect(result.stdout).not.toContain('WARNING: Tech stack not analyzed');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
   });
 
   describe('Check 6: Required Agents Exist', () => {
     it('should warn when backend agent is missing', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
-      const agentsDir = path.join(originalCwd, '.claude/agents');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');
+      const agentsDir = path.join(testDir, '.claude/agents');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(agentsDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-        fs.mkdirSync(agentsDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         // Create all agents except backend
-        fs.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
-        fs.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
-        fs.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
+        fsSync.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
+        fsSync.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
+        fsSync.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'test'
@@ -816,29 +677,22 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toContain('WARNING: Core agent missing: .claude/agents/backend.md');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should warn when frontend agent is missing', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
-      const agentsDir = path.join(originalCwd, '.claude/agents');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');
+      const agentsDir = path.join(testDir, '.claude/agents');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(agentsDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-        fs.mkdirSync(agentsDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         // Create all agents except frontend
-        fs.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
-        fs.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
-        fs.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
+        fsSync.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
+        fsSync.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
+        fsSync.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'test'
@@ -846,29 +700,22 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toContain('WARNING: Core agent missing: .claude/agents/frontend.md');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should warn when tester agent is missing', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
-      const agentsDir = path.join(originalCwd, '.claude/agents');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');
+      const agentsDir = path.join(testDir, '.claude/agents');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(agentsDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-        fs.mkdirSync(agentsDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         // Create all agents except tester
-        fs.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
-        fs.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
-        fs.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
+        fsSync.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
+        fsSync.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
+        fsSync.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'test'
@@ -876,29 +723,22 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toContain('WARNING: Core agent missing: .claude/agents/tester.md');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should warn when reviewer agent is missing', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
-      const agentsDir = path.join(originalCwd, '.claude/agents');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');
+      const agentsDir = path.join(testDir, '.claude/agents');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(agentsDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-        fs.mkdirSync(agentsDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         // Create all agents except reviewer
-        fs.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
-        fs.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
-        fs.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
+        fsSync.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
+        fsSync.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
+        fsSync.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'test'
@@ -906,27 +746,20 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toContain('WARNING: Core agent missing: .claude/agents/reviewer.md');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should warn for multiple missing agents', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
-      const agentsDir = path.join(originalCwd, '.claude/agents');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');
+      const agentsDir = path.join(testDir, '.claude/agents');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(agentsDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-        fs.mkdirSync(agentsDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         // Only create backend agent
-        fs.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
+        fsSync.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'test'
@@ -937,30 +770,23 @@ describe('Pre-Feature Hook', () => {
         expect(result.stdout).toContain('WARNING: Core agent missing: .claude/agents/tester.md');
         expect(result.stdout).toContain('WARNING: Core agent missing: .claude/agents/reviewer.md');
         expect(result.stdout).toContain('Pre-feature validation passed with 3 warning(s)');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should not warn when all agents exist', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
-      const agentsDir = path.join(originalCwd, '.claude/agents');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');
+      const agentsDir = path.join(testDir, '.claude/agents');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(agentsDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-        fs.mkdirSync(agentsDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         // Create all required agents
-        fs.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
-        fs.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
-        fs.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
-        fs.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
+        fsSync.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
+        fsSync.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
+        fsSync.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
+        fsSync.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'test'
@@ -968,10 +794,6 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(0);
         expect(result.stdout).not.toContain('WARNING: Core agent missing');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
   });
 
@@ -1005,17 +827,14 @@ describe('Pre-Feature Hook', () => {
     });
 
     it('should exit 0 with warnings only', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
-      const agentsDir = path.join(originalCwd, '.claude/agents');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');
+      const agentsDir = path.join(testDir, '.claude/agents');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(agentsDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-        fs.mkdirSync(agentsDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         // Don't create any agents (4 warnings)
 
@@ -1025,30 +844,23 @@ describe('Pre-Feature Hook', () => {
 
         expect(result.exitCode).toBe(0);
         expect(result.stdout).toContain('Pre-feature validation passed with 4 warning(s)');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should exit 0 with no errors or warnings', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
-      const agentsDir = path.join(originalCwd, '.claude/agents');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');
+      const agentsDir = path.join(testDir, '.claude/agents');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(agentsDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-        fs.mkdirSync(agentsDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         // Create all agents
-        fs.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
-        fs.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
-        fs.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
-        fs.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
+        fsSync.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
+        fsSync.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
+        fsSync.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
+        fsSync.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'test'
@@ -1057,24 +869,17 @@ describe('Pre-Feature Hook', () => {
         expect(result.exitCode).toBe(0);
         expect(result.stdout).not.toContain('warning');
         expect(result.stderr).not.toContain('ERROR');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
   });
 
   describe('JSON Parse Error Handling', () => {
     it('should handle invalid completion.json gracefully', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, 'invalid json {]');
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(completionPath, 'invalid json {]');
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'test'
@@ -1082,45 +887,31 @@ describe('Pre-Feature Hook', () => {
 
         // Should not crash, should skip checks that require parsing
         expect(result.exitCode).toBe(0);
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
   });
 
   describe('Edge Cases', () => {
     it('should handle feature with special characters in name', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(path.join(featureDir, 'my-feature-v2.md'), '# Test');
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(path.join(featureDir, 'my-feature-v2.md'), '# Test');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'my-feature-v2'
         });
 
         expect(result.stderr).not.toContain('ERROR: Feature file not found');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should handle domain with special characters in name', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const featureDir = path.join(originalCwd, '.claude/product/domains/user-auth-v2/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const featureDir = path.join(testDir, '.claude/product/domains/user-auth-v2/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           completionPath,
           JSON.stringify({
             domains: {
@@ -1128,7 +919,7 @@ describe('Pre-Feature Hook', () => {
             }
           })
         );
-        fs.writeFileSync(path.join(featureDir, 'login.md'), '# Test');
+        fsSync.writeFileSync(path.join(featureDir, 'login.md'), '# Test');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'login',
@@ -1136,23 +927,16 @@ describe('Pre-Feature Hook', () => {
         });
 
         expect(result.stderr).not.toContain('ERROR: Feature file not found');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should handle empty blocking array in decision', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const decisionsPath = path.join(originalCwd, '.agentful/decisions.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const decisionsPath = path.join(testDir, '.agentful/decisions.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(
           decisionsPath,
           JSON.stringify({
             pending: [
@@ -1163,30 +947,23 @@ describe('Pre-Feature Hook', () => {
             ]
           })
         );
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'test'
         });
 
         expect(result.stderr).not.toContain('is blocked by decisions');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should handle decision without blocking property', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const decisionsPath = path.join(originalCwd, '.agentful/decisions.json');
-      const featureDir = path.join(originalCwd, '.claude/product/features');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const decisionsPath = path.join(testDir, '.agentful/decisions.json');
+      const featureDir = path.join(testDir, '.claude/product/features');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-
-        fs.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
-        fs.writeFileSync(
+        fsSync.writeFileSync(completionPath, JSON.stringify({ domains: {} }));
+        fsSync.writeFileSync(
           decisionsPath,
           JSON.stringify({
             pending: [
@@ -1197,34 +974,27 @@ describe('Pre-Feature Hook', () => {
             ]
           })
         );
-        fs.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
+        fsSync.writeFileSync(path.join(featureDir, 'test.md'), '# Test');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'test'
         });
 
         expect(result.stderr).not.toContain('is blocked by decisions');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
   });
 
   describe('Full Integration Scenarios', () => {
     it('should pass all checks in a valid hierarchical project', () => {
-      const completionPath = path.join(originalCwd, '.agentful/completion.json');
-      const architecturePath = path.join(originalCwd, '.agentful/architecture.json');
-      const decisionsPath = path.join(originalCwd, '.agentful/decisions.json');
-      const featureDir = path.join(originalCwd, '.claude/product/domains/auth/features');
-      const agentsDir = path.join(originalCwd, '.claude/agents');
+      const completionPath = path.join(testDir, '.agentful/completion.json');
+      const architecturePath = path.join(testDir, '.agentful/architecture.json');
+      const decisionsPath = path.join(testDir, '.agentful/decisions.json');
+      const featureDir = path.join(testDir, '.claude/product/domains/auth/features');
+      const agentsDir = path.join(testDir, '.claude/agents');        fsSync.mkdirSync(path.join(testDir, '.agentful'), { recursive: true });
+        fsSync.mkdirSync(featureDir, { recursive: true });
+        fsSync.mkdirSync(agentsDir, { recursive: true });
 
-      try {
-        fs.mkdirSync(path.join(originalCwd, '.agentful'), { recursive: true });
-        fs.mkdirSync(featureDir, { recursive: true });
-        fs.mkdirSync(agentsDir, { recursive: true });
-
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           completionPath,
           JSON.stringify({
             domains: {
@@ -1232,7 +1002,7 @@ describe('Pre-Feature Hook', () => {
             }
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           architecturePath,
           JSON.stringify({
             techStack: {
@@ -1241,19 +1011,19 @@ describe('Pre-Feature Hook', () => {
             }
           })
         );
-        fs.writeFileSync(
+        fsSync.writeFileSync(
           decisionsPath,
           JSON.stringify({
             pending: []
           })
         );
-        fs.writeFileSync(path.join(featureDir, 'login.md'), '# Login Feature');
+        fsSync.writeFileSync(path.join(featureDir, 'login.md'), '# Login Feature');
 
         // Create all agents
-        fs.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
-        fs.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
-        fs.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
-        fs.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
+        fsSync.writeFileSync(path.join(agentsDir, 'backend.md'), '# Backend');
+        fsSync.writeFileSync(path.join(agentsDir, 'frontend.md'), '# Frontend');
+        fsSync.writeFileSync(path.join(agentsDir, 'tester.md'), '# Tester');
+        fsSync.writeFileSync(path.join(agentsDir, 'reviewer.md'), '# Reviewer');
 
         const result = runPreFeature({
           AGENTFUL_FEATURE: 'login',
@@ -1263,10 +1033,6 @@ describe('Pre-Feature Hook', () => {
         expect(result.exitCode).toBe(0);
         expect(result.stderr).not.toContain('ERROR');
         expect(result.stdout).not.toContain('WARNING');
-      } finally {
-        fs.rmSync(path.join(originalCwd, '.claude'), { recursive: true, force: true });
-        fs.rmSync(path.join(originalCwd, '.agentful'), { recursive: true, force: true });
-      }
     });
 
     it('should fail with multiple errors in invalid project', () => {

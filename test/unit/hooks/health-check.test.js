@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { spawnSync } from 'child_process';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import os from 'os';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..', '..', '..');
@@ -21,28 +22,15 @@ const healthCheckPath = path.join(projectRoot, 'bin', 'hooks', 'health-check.js'
 
 describe('Health Check', () => {
   let testDir;
-  let originalCwd;
 
-  beforeEach(() => {
-    // Create a temporary test directory
-    testDir = path.join(projectRoot, '.test-health-check-' + Date.now());
-    fs.mkdirSync(testDir, { recursive: true });
-
-    // Save original cwd
-    originalCwd = process.cwd();
-
-    // Change to test directory
-    process.chdir(testDir);
+  beforeEach(async () => {
+    // Create a temporary test directory in OS temp dir
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'health-check-test-'));
   });
 
-  afterEach(() => {
-    // Restore original cwd
-    process.chdir(originalCwd);
-
+  afterEach(async () => {
     // Clean up test directory
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
-    }
+    await fs.rm(testDir, { recursive: true, force: true });
   });
 
   /**
@@ -65,43 +53,43 @@ describe('Health Check', () => {
   /**
    * Helper to create directory structure
    */
-  function createDir(dirPath) {
-    fs.mkdirSync(path.join(testDir, dirPath), { recursive: true });
+  async function createDir(dirPath) {
+    await fs.mkdir(path.join(testDir, dirPath), { recursive: true });
   }
 
   /**
    * Helper to create file with content
    */
-  function createFile(filePath, content = '{}') {
+  async function createFile(filePath, content = '{}') {
     const fullPath = path.join(testDir, filePath);
-    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-    fs.writeFileSync(fullPath, content, 'utf8');
+    await fs.mkdir(path.dirname(fullPath), { recursive: true });
+    await fs.writeFile(fullPath, content, 'utf8');
   }
 
   /**
    * Helper to create all required directories
    */
-  function createAllDirectories() {
-    createDir('.agentful');
-    createDir('.claude/agents');
-    createDir('.claude/commands');
-    createDir('.claude/product');
-    createDir('.claude/skills');
+  async function createAllDirectories() {
+    await createDir('.agentful');
+    await createDir('.claude/agents');
+    await createDir('.claude/commands');
+    await createDir('.claude/product');
+    await createDir('.claude/skills');
   }
 
   /**
    * Helper to create all required state files
    */
-  function createAllStateFiles() {
-    createFile('.agentful/state.json', '{}');
-    createFile('.agentful/completion.json', '{}');
-    createFile('.agentful/decisions.json', '{}');
+  async function createAllStateFiles() {
+    await createFile('.agentful/state.json', '{}');
+    await createFile('.agentful/completion.json', '{}');
+    await createFile('.agentful/decisions.json', '{}');
   }
 
   /**
    * Helper to create all core agents
    */
-  function createAllCoreAgents() {
+  async function createAllCoreAgents() {
     const agents = [
       'orchestrator',
       'backend',
@@ -113,9 +101,9 @@ describe('Health Check', () => {
       'product-analyzer'
     ];
 
-    agents.forEach(agent => {
-      createFile(`.claude/agents/${agent}.md`, '# Agent');
-    });
+    for (const agent of agents) {
+      await createFile(`.claude/agents/${agent}.md`, '# Agent');
+    }
   }
 
   describe('Critical Check 1: .agentful directory', () => {
@@ -127,8 +115,8 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should proceed to other checks when .agentful exists', () => {
-      createDir('.agentful');
+    it('should proceed to other checks when .agentful exists', async () => {
+      await createDir('.agentful');
 
       const result = runHealthCheck();
 
@@ -139,13 +127,13 @@ describe('Health Check', () => {
   });
 
   describe('Critical Check 2: Core state files', () => {
-    it('should report error for missing state.json', () => {
-      createDir('.agentful');
-      createFile('.agentful/completion.json');
-      createFile('.agentful/decisions.json');
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should report error for missing state.json', async () => {
+      await createDir('.agentful');
+      await createFile('.agentful/completion.json');
+      await createFile('.agentful/decisions.json');
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -154,13 +142,13 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should report error for missing completion.json', () => {
-      createDir('.agentful');
-      createFile('.agentful/state.json');
-      createFile('.agentful/decisions.json');
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should report error for missing completion.json', async () => {
+      await createDir('.agentful');
+      await createFile('.agentful/state.json');
+      await createFile('.agentful/decisions.json');
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -169,13 +157,13 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should report error for missing decisions.json', () => {
-      createDir('.agentful');
-      createFile('.agentful/state.json');
-      createFile('.agentful/completion.json');
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should report error for missing decisions.json', async () => {
+      await createDir('.agentful');
+      await createFile('.agentful/state.json');
+      await createFile('.agentful/completion.json');
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -184,11 +172,11 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should report multiple missing state files', () => {
-      createDir('.agentful');
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should report multiple missing state files', async () => {
+      await createDir('.agentful');
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -201,13 +189,13 @@ describe('Health Check', () => {
   });
 
   describe('Critical Check 3: .claude directory structure', () => {
-    it('should report error for missing .claude/agents', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createDir('.claude/commands');
-      createDir('.claude/product');
-      createDir('.claude/skills');
-      createFile('.claude/settings.json');
+    it('should report error for missing .claude/agents', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createDir('.claude/commands');
+      await createDir('.claude/product');
+      await createDir('.claude/skills');
+      await createFile('.claude/settings.json');
 
       const result = runHealthCheck();
 
@@ -215,14 +203,14 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should report error for missing .claude/commands', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createDir('.claude/agents');
-      createDir('.claude/product');
-      createDir('.claude/skills');
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should report error for missing .claude/commands', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createDir('.claude/agents');
+      await createDir('.claude/product');
+      await createDir('.claude/skills');
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -230,14 +218,14 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should report error for missing .claude/product', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createDir('.claude/agents');
-      createDir('.claude/commands');
-      createDir('.claude/skills');
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should report error for missing .claude/product', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createDir('.claude/agents');
+      await createDir('.claude/commands');
+      await createDir('.claude/skills');
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -245,14 +233,14 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should report error for missing .claude/skills', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createDir('.claude/agents');
-      createDir('.claude/commands');
-      createDir('.claude/product');
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should report error for missing .claude/skills', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createDir('.claude/agents');
+      await createDir('.claude/commands');
+      await createDir('.claude/product');
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -260,10 +248,10 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should report all missing .claude directories', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createFile('.claude/settings.json');
+    it('should report all missing .claude directories', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createFile('.claude/settings.json');
 
       const result = runHealthCheck();
 
@@ -288,16 +276,16 @@ describe('Health Check', () => {
     ];
 
     coreAgents.forEach((agent) => {
-      it(`should report error for missing ${agent} agent`, () => {
-        createDir('.agentful');
-        createAllStateFiles();
-        createAllDirectories();
-        createFile('.claude/settings.json');
+      it(`should report error for missing ${agent} agent`, async () => {
+        await createDir('.agentful');
+        await createAllStateFiles();
+        await createAllDirectories();
+        await createFile('.claude/settings.json');
 
         // Create all agents except the one being tested
-        coreAgents.filter(a => a !== agent).forEach(a => {
-          createFile(`.claude/agents/${a}.md`, '# Agent');
-        });
+        for (const a of coreAgents.filter(a => a !== agent)) {
+          await createFile(`.claude/agents/${a}.md`, '# Agent');
+        }
 
         const result = runHealthCheck();
 
@@ -306,15 +294,15 @@ describe('Health Check', () => {
       });
     });
 
-    it('should report multiple missing core agents', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
+    it('should report multiple missing core agents', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
 
       // Only create orchestrator and backend
-      createFile('.claude/agents/orchestrator.md', '# Agent');
-      createFile('.claude/agents/backend.md', '# Agent');
+      await createFile('.claude/agents/orchestrator.md', '# Agent');
+      await createFile('.claude/agents/backend.md', '# Agent');
 
       const result = runHealthCheck();
 
@@ -329,13 +317,13 @@ describe('Health Check', () => {
   });
 
   describe('Critical Check 5: Product specification', () => {
-    it('should pass when .claude/product/index.md exists', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
-      createFile('.claude/product/index.md', '# Product');
+    it('should pass when .claude/product/index.md exists', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
+      await createFile('.claude/product/index.md', '# Product');
 
       const result = runHealthCheck();
 
@@ -344,14 +332,14 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should pass when hierarchical product structure exists', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
-      createDir('.claude/product/domains/auth');
-      createFile('.claude/product/domains/auth/index.md', '# Auth');
+    it('should pass when hierarchical product structure exists', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
+      await createDir('.claude/product/domains/auth');
+      await createFile('.claude/product/domains/auth/index.md', '# Auth');
 
       const result = runHealthCheck();
 
@@ -359,12 +347,12 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should warn when no product specification exists', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should warn when no product specification exists', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -373,14 +361,14 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should warn when domains directory exists but no index.md files', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
-      createDir('.claude/product/domains/auth');
-      createDir('.claude/product/domains/payments');
+    it('should warn when domains directory exists but no index.md files', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
+      await createDir('.claude/product/domains/auth');
+      await createDir('.claude/product/domains/payments');
       // Don't create index.md files in domains
 
       const result = runHealthCheck();
@@ -389,13 +377,13 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should handle empty domains directory gracefully', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
-      createDir('.claude/product/domains');
+    it('should handle empty domains directory gracefully', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
+      await createDir('.claude/product/domains');
       // Empty domains directory
 
       const result = runHealthCheck();
@@ -406,11 +394,11 @@ describe('Health Check', () => {
   });
 
   describe('Critical Check 6: Settings file', () => {
-    it('should report error when settings.json is missing', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createAllCoreAgents();
+    it('should report error when settings.json is missing', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -418,12 +406,12 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should report error when settings.json has invalid JSON', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createAllCoreAgents();
-      createFile('.claude/settings.json', '{ invalid json }');
+    it('should report error when settings.json has invalid JSON', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createAllCoreAgents();
+      await createFile('.claude/settings.json', '{ invalid json }');
 
       const result = runHealthCheck();
 
@@ -431,12 +419,12 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should pass when settings.json is valid', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createAllCoreAgents();
-      createFile('.claude/settings.json', '{"project": "agentful"}');
+    it('should pass when settings.json is valid', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createAllCoreAgents();
+      await createFile('.claude/settings.json', '{"project": "agentful"}');
 
       const result = runHealthCheck();
 
@@ -448,12 +436,12 @@ describe('Health Check', () => {
   });
 
   describe('Warning Check: Architecture analysis', () => {
-    it('should warn when architecture.json is missing', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should warn when architecture.json is missing', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -464,13 +452,13 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should warn when architecture.json is missing techStack', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
-      createFile('.agentful/architecture.json', '{"domains": ["auth", "payments"]}');
+    it('should warn when architecture.json is missing techStack', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
+      await createFile('.agentful/architecture.json', '{"domains": ["auth", "payments"]}');
 
       const result = runHealthCheck();
 
@@ -479,13 +467,13 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should warn when architecture.json is missing domains', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
-      createFile('.agentful/architecture.json', '{"techStack": ["node", "react"]}');
+    it('should warn when architecture.json is missing domains', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
+      await createFile('.agentful/architecture.json', '{"techStack": ["node", "react"]}');
 
       const result = runHealthCheck();
 
@@ -493,13 +481,13 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should warn when architecture.json has invalid JSON', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
-      createFile('.agentful/architecture.json', '{ invalid json }');
+    it('should warn when architecture.json has invalid JSON', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
+      await createFile('.agentful/architecture.json', '{ invalid json }');
 
       const result = runHealthCheck();
 
@@ -508,13 +496,13 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should pass when architecture.json is valid', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
-      createFile('.agentful/architecture.json', '{"techStack": ["node", "react"], "domains": ["auth", "payments"]}');
+    it('should pass when architecture.json is valid', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
+      await createFile('.agentful/architecture.json', '{"techStack": ["node", "react"], "domains": ["auth", "payments"]}');
 
       const result = runHealthCheck();
 
@@ -526,14 +514,14 @@ describe('Health Check', () => {
   });
 
   describe('Summary: All checks pass', () => {
-    it('should show success message when all checks pass with no warnings', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
-      createFile('.claude/product/index.md');
-      createFile('.agentful/architecture.json', '{"techStack": ["node"], "domains": ["auth"]}');
+    it('should show success message when all checks pass with no warnings', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
+      await createFile('.claude/product/index.md');
+      await createFile('.agentful/architecture.json', '{"techStack": ["node"], "domains": ["auth"]}');
 
       const result = runHealthCheck();
 
@@ -541,12 +529,12 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should show warning summary when warnings exist but no errors', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should show warning summary when warnings exist but no errors', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
       // Missing architecture.json and product specification
 
       const result = runHealthCheck();
@@ -558,12 +546,12 @@ describe('Health Check', () => {
   });
 
   describe('Summary: Critical errors', () => {
-    it('should exit with error message when critical issues exist', () => {
-      createDir('.agentful');
+    it('should exit with error message when critical issues exist', async () => {
+      await createDir('.agentful');
       // Missing state files
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -573,13 +561,13 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should exit with correct error count', () => {
-      createDir('.agentful');
+    it('should exit with correct error count', async () => {
+      await createDir('.agentful');
       // Only missing state.json and completion.json
-      createFile('.agentful/decisions.json');
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+      await createFile('.agentful/decisions.json');
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
 
       const result = runHealthCheck();
 
@@ -591,8 +579,8 @@ describe('Health Check', () => {
   });
 
   describe('Edge cases and boundary conditions', () => {
-    it('should handle very large error counts', () => {
-      createDir('.agentful');
+    it('should handle very large error counts', async () => {
+      await createDir('.agentful');
       // Missing everything except .agentful directory
 
       const result = runHealthCheck();
@@ -602,12 +590,12 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should report warnings and errors separately', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
+    it('should report warnings and errors separately', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
       // Missing architecture.json (warning) and product spec (warning)
 
       const result = runHealthCheck();
@@ -617,13 +605,13 @@ describe('Health Check', () => {
       expect(result.exitCode).toBe(0);
     });
 
-    it('should handle mixed warnings and no errors', () => {
-      createDir('.agentful');
-      createAllStateFiles();
-      createAllDirectories();
-      createFile('.claude/settings.json');
-      createAllCoreAgents();
-      createFile('.claude/product/index.md');
+    it('should handle mixed warnings and no errors', async () => {
+      await createDir('.agentful');
+      await createAllStateFiles();
+      await createAllDirectories();
+      await createFile('.claude/settings.json');
+      await createAllCoreAgents();
+      await createFile('.claude/product/index.md');
       // Missing only architecture.json (1 warning)
 
       const result = runHealthCheck();
