@@ -1,3 +1,8 @@
+---
+name: agentful-mode
+description: Toggle agentful mode on/off for automatic routing
+---
+
 # /agentful-mode
 
 Toggle agentful mode on/off. When enabled, all user prompts automatically route to `/agentful`.

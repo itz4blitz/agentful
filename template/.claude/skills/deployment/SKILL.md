@@ -53,10 +53,10 @@ Execute this checklist before every production deployment:
 ## Code Quality
 - [ ] All tests passing (unit, integration, e2e)
 - [ ] Code coverage ≥80%
-- [ ] No TypeScript errors (`tsc --noEmit`)
-- [ ] No ESLint errors or warnings
-- [ ] No Prettier formatting issues
-- [ ] Security vulnerabilities checked (`npm audit`)
+- [ ] No Type errors
+- [ ] No errors or warnings
+- [ ] No formatting issues
+- [ ] Security vulnerabilities checked
 
 ## Build & Performance
 - [ ] Production build succeeds locally
