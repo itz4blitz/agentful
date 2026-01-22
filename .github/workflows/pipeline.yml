@@ -171,6 +171,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
       - name: Build documentation
         run: npm run docs:build
 
@@ -214,10 +217,10 @@ jobs:
         run: npm ci
 
       - name: Validate agent templates
-        run: npm run test -- test/validation/agents.validation.test.js
+        run: npm test -- test/validation/agents.validation.test.js --run
 
       - name: Validate command templates
-        run: npm run test -- test/validation/commands.lint.test.js
+        run: npm test -- test/validation/commands.lint.test.js --run
 
   # ============================================================================
   # STAGE 3: SECURITY AUDIT
@@ -246,7 +249,8 @@ jobs:
       - name: Check for known vulnerabilities
         run: |
           # Check if there are any high/critical vulnerabilities
-          AUDIT_OUTPUT=$(npm audit --json)
+          # npm audit --json exits with 1 if vulnerabilities found, so use || true
+          AUDIT_OUTPUT=$(npm audit --json || true)
           HIGH_VULNS=$(echo $AUDIT_OUTPUT | jq '.metadata.vulnerabilities.high // 0')
           CRITICAL_VULNS=$(echo $AUDIT_OUTPUT | jq '.metadata.vulnerabilities.critical // 0')
 
