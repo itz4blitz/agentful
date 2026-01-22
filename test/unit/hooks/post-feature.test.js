@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import { validateFeatureCompletion } from '../../../bin/hooks/post-feature.js';
+
+vi.mock('child_process');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..', '..', '..');
@@ -24,6 +27,9 @@ describe('post-feature hook', () => {
     if (!fs.existsSync(agentfulDir)) {
       fs.mkdirSync(agentfulDir, { recursive: true });
     }
+
+    // Mock execSync to prevent running actual commands
+    vi.mocked(execSync).mockImplementation(() => '');
 
     // Mock console.log to suppress output during tests
     vi.spyOn(console, 'log').mockImplementation(() => {});
