@@ -5,21 +5,6 @@
 import fs from 'fs';
 import { execSync } from 'child_process';
 
-const FEATURE = process.env.AGENTFUL_FEATURE || '';
-const DOMAIN = process.env.AGENTFUL_DOMAIN || '';
-const TIMESTAMP = new Date().toISOString();
-
-// Exit successfully if no feature specified
-if (!FEATURE) {
-  process.exit(0);
-}
-
-let errors = 0;
-const validationResults = [];
-
-console.log(`=== Post-Feature Validation: ${FEATURE} ===`);
-console.log('');
-
 // Helper function to run command and capture output
 function runCommand(command, description) {
   try {
