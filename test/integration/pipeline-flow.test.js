@@ -31,12 +31,9 @@ describe('Pipeline Integration', () => {
     // Create mock executor
     executor = {
       execute: vi.fn(async (jobDef, context, options) => {
-        // Simulate agent work
+        // Simulate agent work with progress callbacks
         if (options.onProgress) {
           options.onProgress(50);
-        }
-        await new Promise(resolve => setTimeout(resolve, 10));
-        if (options.onProgress) {
           options.onProgress(100);
         }
         return {
@@ -316,10 +313,10 @@ describe('Pipeline Integration', () => {
 
   describe('Cancellation', () => {
     it('should cancel running pipeline', async () => {
-      // Make executor slow
+      // Make executor slow (but not CI-slow)
       executor.execute = vi.fn(async () => {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        return { success: true, output: {}, duration: 2000 };
+        await new Promise(resolve => setTimeout(resolve, 50));
+        return { success: true, output: {}, duration: 50 };
       });
 
       const pipeline = {
@@ -332,7 +329,7 @@ describe('Pipeline Integration', () => {
       const runId = await engine.startPipeline(pipeline);
 
       // Wait a bit then cancel
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 10));
       const cancelled = await engine.cancelPipeline(runId);
 
       expect(cancelled).toBe(true);
@@ -364,7 +361,7 @@ async function waitForCompletion(engine, runId, timeout = 10000) {
       return status;
     }
 
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 10));
   }
 
   throw new Error(`Pipeline ${runId} did not complete within ${timeout}ms`);
