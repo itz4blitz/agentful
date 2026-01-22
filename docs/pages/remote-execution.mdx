@@ -142,10 +142,9 @@ Execute an agent with a task.
 ```json
 {
   "executionId": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "pending",
+  "state": "pending",
   "agent": "backend",
-  "task": "Implement user authentication",
-  "createdAt": "2026-01-22T10:30:00.000Z"
+  "task": "Implement user authentication"
 }
 ```
 
@@ -156,18 +155,24 @@ Check execution status and retrieve output.
 **Response:**
 ```json
 {
-  "executionId": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "completed",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "agent": "backend",
   "task": "Implement user authentication",
+  "state": "completed",
+  "startTime": 1737536400000,
+  "endTime": 1737536723000,
+  "duration": 323000,
   "output": "✅ Implemented JWT authentication...",
   "exitCode": 0,
-  "createdAt": "2026-01-22T10:30:00.000Z",
-  "completedAt": "2026-01-22T10:35:23.000Z"
+  "error": null,
+  "metadata": {
+    "name": "backend",
+    "description": "Backend development specialist"
+  }
 }
 ```
 
-**Status values:** `pending`, `running`, `completed`, `failed`, `timeout`
+**State values:** `pending`, `running`, `completed`, `failed`
 
 ### GET /agents
 
@@ -192,20 +197,25 @@ List recent executions with optional filtering.
 
 **Query parameters:**
 - `agent` - Filter by agent name
-- `status` - Filter by status
-- `limit` - Max results (default: 50)
+- `state` - Filter by state
+- `limit` - Max results (default: 100)
 
 **Response:**
 ```json
 {
   "executions": [
     {
-      "executionId": "...",
-      "status": "completed",
+      "id": "550e8400-e29b-41d4-a716-446655440000",
       "agent": "backend",
-      "createdAt": "..."
+      "task": "Implement user authentication",
+      "state": "completed",
+      "startTime": 1737536400000,
+      "endTime": 1737536723000,
+      "duration": 323000,
+      "exitCode": 0
     }
-  ]
+  ],
+  "count": 1
 }
 ```
 
