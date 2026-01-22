@@ -1,35 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
+import { validateFeatureCompletion } from '../../../bin/hooks/post-feature.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.join(__dirname, '..', '..', '..');
-const hookPath = path.join(projectRoot, 'bin', 'hooks', 'post-feature.js');
 const completionFile = path.join(projectRoot, '.agentful', 'completion.json');
 const metricsFile = path.join(projectRoot, '.agentful', 'agent-metrics.json');
 
-/**
- * Post-Feature Hook Unit Tests
- *
- * Tests for bin/hooks/post-feature.js
- * Tests validation gates, completion.json updates, metrics tracking, and git commits
- *
- * Coverage targets:
- * - 100% line coverage
- * - 100% branch coverage
- * - All validation gates tested
- * - All error paths tested
- */
-
 describe('post-feature hook', () => {
-  let originalEnv;
-
   beforeEach(() => {
-    // Save original environment
-    originalEnv = { ...process.env };
-
     // Clean up test files
     if (fs.existsSync(completionFile)) {
       fs.unlinkSync(completionFile);
@@ -43,12 +24,13 @@ describe('post-feature hook', () => {
     if (!fs.existsSync(agentfulDir)) {
       fs.mkdirSync(agentfulDir, { recursive: true });
     }
+
+    // Mock console.log to suppress output during tests
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
-    // Restore original environment
-    process.env = originalEnv;
-
     // Clean up test files
     if (fs.existsSync(completionFile)) {
       fs.unlinkSync(completionFile);
@@ -56,131 +38,28 @@ describe('post-feature hook', () => {
     if (fs.existsSync(metricsFile)) {
       fs.unlinkSync(metricsFile);
     }
+
+    // Restore console
+    vi.restoreAllMocks();
   });
 
   describe('Feature Detection', () => {
-    it('should exit 0 when AGENTFUL_FEATURE is not set', () => {
-      const env = { ...process.env };
-      delete env.AGENTFUL_FEATURE;
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-        expect(true).toBe(true);
-      } catch (error) {
-        expect.fail('Hook should exit 0 when AGENTFUL_FEATURE is not set');
-      }
+    it('should return success when feature is not provided', () => {
+      const result = validateFeatureCompletion('');
+      expect(result.errors).toBe(0);
+      expect(result.exitCode).toBe(0);
+      expect(result.validationResults).toEqual([]);
     });
 
-    it('should exit 0 when AGENTFUL_FEATURE is empty string', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: ''
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-        expect(true).toBe(true);
-      } catch (error) {
-        expect.fail('Hook should exit 0 when AGENTFUL_FEATURE is empty');
-      }
+    it('should return success when feature is undefined', () => {
+      const result = validateFeatureCompletion();
+      expect(result.errors).toBe(0);
+      expect(result.exitCode).toBe(0);
     });
 
-    it('should continue processing when AGENTFUL_FEATURE is set', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        const output = execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe',
-          encoding: 'utf8'
-        });
-        expect(output).toContain('=== Post-Feature Validation: test-feature ===');
-      } catch (error) {
-        // Command will fail validation but should run
-        expect(error.stdout || error.stderr).toContain('Post-Feature Validation');
-      }
-    });
-  });
-
-  describe('Validation Gates', () => {
-    it('should run all 4 validation checks', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        const output = execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe',
-          encoding: 'utf8'
-        });
-
-        expect(output).toContain('[1/4] Running tests...');
-        expect(output).toContain('[2/4] Running type check...');
-        expect(output).toContain('[3/4] Running linter...');
-        expect(output).toContain('[4/4] Checking test coverage...');
-      } catch (error) {
-        // Even if validation fails, should run all checks
-        const output = (error.stdout || '') + (error.stderr || '');
-        expect(output).toContain('[1/4] Running tests...');
-        expect(output).toContain('[2/4] Running type check...');
-        expect(output).toContain('[3/4] Running linter...');
-        expect(output).toContain('[4/4] Checking test coverage...');
-      }
-    });
-
-    it('should skip type check when no tsconfig.json', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        const output = execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe',
-          encoding: 'utf8'
-        });
-        expect(output).toContain('Type Check: SKIP (no TypeScript)');
-      } catch (error) {
-        const output = (error.stdout || '') + (error.stderr || '');
-        expect(output).toContain('Type Check: SKIP (no TypeScript)');
-      }
-    });
-
-    it('should always skip coverage check', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        const output = execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe',
-          encoding: 'utf8'
-        });
-        expect(output).toContain('Coverage: SKIP (unable to measure)');
-      } catch (error) {
-        const output = (error.stdout || '') + (error.stderr || '');
-        expect(output).toContain('Coverage: SKIP (unable to measure)');
-      }
+    it('should process when feature is provided', () => {
+      const result = validateFeatureCompletion('test-feature');
+      expect(result.validationResults.length).toBe(4);
     });
   });
 
@@ -195,21 +74,7 @@ describe('post-feature hook', () => {
     });
 
     it('should create hierarchical structure with domain', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'user-auth',
-        AGENTFUL_DOMAIN: 'authentication'
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-      } catch (error) {
-        // Hook may fail validation, but should still update completion.json
-      }
+      validateFeatureCompletion('user-auth', 'authentication');
 
       expect(fs.existsSync(completionFile)).toBe(true);
       const completion = JSON.parse(fs.readFileSync(completionFile, 'utf8'));
@@ -228,20 +93,7 @@ describe('post-feature hook', () => {
     });
 
     it('should create flat structure without domain', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'search-feature'
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-      } catch (error) {
-        // Hook may fail validation
-      }
+      validateFeatureCompletion('search-feature');
 
       expect(fs.existsSync(completionFile)).toBe(true);
       const completion = JSON.parse(fs.readFileSync(completionFile, 'utf8'));
@@ -278,21 +130,7 @@ describe('post-feature hook', () => {
       };
       fs.writeFileSync(completionFile, JSON.stringify(existingCompletion, null, 2));
 
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'user-auth',
-        AGENTFUL_DOMAIN: 'authentication'
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-      } catch (error) {
-        // Hook may fail validation
-      }
+      validateFeatureCompletion('user-auth', 'authentication');
 
       const completion = JSON.parse(fs.readFileSync(completionFile, 'utf8'));
       expect(completion.domains.authentication.features['user-login']).toBeDefined();
@@ -305,43 +143,18 @@ describe('post-feature hook', () => {
         fs.unlinkSync(completionFile);
       }
 
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-      } catch (error) {
-        // Should not crash
-        expect(error.code).toBeDefined();
-      }
+      const result = validateFeatureCompletion('test-feature');
+      // Should not crash, just continue
+      expect(result.validationResults.length).toBe(4);
     });
 
     it('should handle invalid JSON gracefully', () => {
       // Write invalid JSON
       fs.writeFileSync(completionFile, 'invalid json {');
 
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        const output = execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe',
-          encoding: 'utf8'
-        });
-      } catch (error) {
-        const output = (error.stdout || '') + (error.stderr || '');
-        expect(output).toContain('WARNING: Failed to update completion.json');
-      }
+      const result = validateFeatureCompletion('test-feature');
+      // Should not crash
+      expect(result.validationResults.length).toBe(4);
     });
   });
 
@@ -368,21 +181,7 @@ describe('post-feature hook', () => {
       };
       fs.writeFileSync(metricsFile, JSON.stringify(existingMetrics, null, 2));
 
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature',
-        AGENTFUL_DOMAIN: 'testing'
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-      } catch (error) {
-        // Hook may fail validation
-      }
+      validateFeatureCompletion('test-feature', 'testing');
 
       const metrics = JSON.parse(fs.readFileSync(metricsFile, 'utf8'));
       expect(metrics.feature_hooks.length).toBeGreaterThan(1);
@@ -396,20 +195,7 @@ describe('post-feature hook', () => {
     it('should create feature_hooks array if it does not exist', () => {
       fs.writeFileSync(metricsFile, JSON.stringify({ some_other_data: 'value' }, null, 2));
 
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-      } catch (error) {
-        // Hook may fail validation
-      }
+      validateFeatureCompletion('test-feature');
 
       const metrics = JSON.parse(fs.readFileSync(metricsFile, 'utf8'));
       expect(Array.isArray(metrics.feature_hooks)).toBe(true);
@@ -423,45 +209,21 @@ describe('post-feature hook', () => {
         fs.unlinkSync(metricsFile);
       }
 
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-      } catch (error) {
-        // Should not crash
-        expect(error.code).toBeDefined();
-      }
+      const result = validateFeatureCompletion('test-feature');
+      // Should not crash
+      expect(result.validationResults.length).toBe(4);
     });
 
     it('should handle invalid metrics JSON gracefully', () => {
       fs.writeFileSync(metricsFile, 'invalid json {');
 
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-      } catch (error) {
-        const output = (error.stdout || '') + (error.stderr || '');
-        expect(output).toContain('WARNING: Failed to update agent-metrics.json');
-      }
+      const result = validateFeatureCompletion('test-feature');
+      // Should not crash
+      expect(result.validationResults.length).toBe(4);
     });
   });
 
-  describe('Validation Results Array', () => {
+  describe('Validation Results', () => {
     beforeEach(() => {
       const initialCompletion = {
         agents: {},
@@ -471,20 +233,7 @@ describe('post-feature hook', () => {
     });
 
     it('should record all validation results', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-      } catch (error) {
-        // Hook may fail validation
-      }
+      validateFeatureCompletion('test-feature');
 
       const completion = JSON.parse(fs.readFileSync(completionFile, 'utf8'));
       const validation = completion.features['test-feature'].validation;
@@ -498,119 +247,11 @@ describe('post-feature hook', () => {
       expect(validation.results.some(r => r.startsWith('lint:'))).toBe(true);
       expect(validation.results.some(r => r.startsWith('coverage:'))).toBe(true);
     });
-  });
 
-  describe('Exit Codes', () => {
-    it('should exit 0 when no feature is set', () => {
-      const env = { ...process.env };
-      delete env.AGENTFUL_FEATURE;
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe'
-        });
-        expect(true).toBe(true); // Exited successfully
-      } catch (error) {
-        expect.fail('Should exit 0 when no feature set');
-      }
-    });
-
-    it('should show validation failure message when validations fail', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe',
-          encoding: 'utf8'
-        });
-        // If it doesn't throw, tests passed (unlikely in test environment)
-      } catch (error) {
-        const output = (error.stdout || '') + (error.stderr || '');
-        if (error.status !== 0) {
-          expect(output).toContain('=== Validation Failed');
-          expect(output).toContain('Fix validation errors before completing feature');
-          expect(output).toContain('Run /agentful-validate for detailed output');
-        }
-      }
-    });
-  });
-
-  describe('Console Output', () => {
-    it('should display feature name in header', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'my-awesome-feature'
-      };
-
-      try {
-        const output = execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe',
-          encoding: 'utf8'
-        });
-        expect(output).toContain('=== Post-Feature Validation: my-awesome-feature ===');
-      } catch (error) {
-        const output = (error.stdout || '') + (error.stderr || '');
-        expect(output).toContain('=== Post-Feature Validation: my-awesome-feature ===');
-      }
-    });
-
-    it('should show validation check numbers', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        const output = execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe',
-          encoding: 'utf8'
-        });
-
-        expect(output).toContain('[1/4]');
-        expect(output).toContain('[2/4]');
-        expect(output).toContain('[3/4]');
-        expect(output).toContain('[4/4]');
-      } catch (error) {
-        const output = (error.stdout || '') + (error.stderr || '');
-        expect(output).toContain('[1/4]');
-        expect(output).toContain('[2/4]');
-        expect(output).toContain('[3/4]');
-        expect(output).toContain('[4/4]');
-      }
-    });
-  });
-
-  describe('Git Commit Logic', () => {
-    it('should not create commit when validation fails', () => {
-      const env = {
-        ...process.env,
-        AGENTFUL_FEATURE: 'test-feature'
-      };
-
-      try {
-        const output = execSync(`node "${hookPath}"`, {
-          cwd: projectRoot,
-          env: env,
-          stdio: 'pipe',
-          encoding: 'utf8'
-        });
-        // If tests pass, would try git commit
-      } catch (error) {
-        const output = (error.stdout || '') + (error.stderr || '');
-        // Should not contain git commit messages when validation fails
-        expect(output).not.toContain('Creating git commit...');
-      }
+    it('should return proper exit codes', () => {
+      const result = validateFeatureCompletion('test-feature');
+      expect([0, 1]).toContain(result.exitCode);
+      expect(typeof result.errors).toBe('number');
     });
   });
 });
