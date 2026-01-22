@@ -45,6 +45,7 @@ export default defineConfig({
     // Timeouts
     testTimeout: 10000,
     hookTimeout: 10000,
+    teardownTimeout: 5000,
 
     // Reporters
     reporters: ['verbose'],
@@ -55,14 +56,14 @@ export default defineConfig({
       '@test': path.resolve(__dirname, './test')
     },
 
-    // Isolation
+    // Isolation - use single fork in CI to avoid resource issues
     isolate: true,
 
-    // Pool options
+    // Pool options - single fork mode for CI stability
     pool: 'forks',
     poolOptions: {
       forks: {
-        singleFork: false
+        singleFork: true
       }
     }
   },

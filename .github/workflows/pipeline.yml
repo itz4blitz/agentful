@@ -91,14 +91,10 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
     needs: detect-changes
-    # TODO: Re-enable once CI test hanging is resolved
-    # Tests run fine locally (<500ms) but hang in CI after 3+ minutes
-    # Issue persists even after:
-    # - Refactoring hook tests to remove execSync
-    # - Mocking execSync in post-feature tests
-    # - Disabling coverage
-    # Need to investigate CI-specific issue separately
-    if: false
+    if: |
+      needs.detect-changes.outputs.lib == 'true' ||
+      needs.detect-changes.outputs.bin == 'true' ||
+      needs.detect-changes.outputs.tests == 'true'
 
     steps:
       - name: Checkout code
