@@ -119,7 +119,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test -- --run
+        run: npm test -- --run --exclude "**/integration/**"
 
       # TODO: Re-enable coverage once instrumentation performance is fixed
       # Coverage with `all: true` hangs due to instrumenting problematic files

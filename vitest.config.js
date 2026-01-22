@@ -56,14 +56,14 @@ export default defineConfig({
       '@test': path.resolve(__dirname, './test')
     },
 
-    // Isolation - use single fork in CI to avoid resource issues
+    // Isolation
     isolate: true,
 
-    // Pool options - single fork mode for CI stability
-    pool: 'forks',
+    // Pool options - use threads instead of forks
+    pool: 'threads',
     poolOptions: {
-      forks: {
-        singleFork: true
+      threads: {
+        singleThread: false
       }
     }
   },
