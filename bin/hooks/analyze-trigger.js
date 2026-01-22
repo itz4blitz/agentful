@@ -4,56 +4,66 @@
 
 import path from 'path';
 
-const FILE = process.env.FILE || '';
+/**
+ * Check if a file change should trigger an /agentful-analyze suggestion
+ * @param {string} filepath - The file path to check
+ * @returns {string|null} - Suggestion message or null if no suggestion needed
+ */
+export function checkAnalyzeTrigger(filepath) {
+  // Exit silently if no file specified
+  if (!filepath) {
+    return null;
+  }
 
-// Exit silently if no file specified
-if (!FILE) {
-  process.exit(0);
+  // Normalize the file path to get just the filename
+  const filename = path.basename(filepath);
+
+  // Check for key files that should trigger analysis suggestions
+  switch (filename) {
+    case 'package.json':
+      // Only trigger for root package.json, not node_modules
+      if (filepath.includes('node_modules')) {
+        return null;
+      }
+      return 'Dependencies changed in package.json. Consider running /agentful-analyze to update architecture understanding.';
+
+    case 'architecture.json':
+      return 'Architecture configuration updated. Run /agentful-analyze to refresh tech stack analysis.';
+
+    case 'tsconfig.json':
+    case 'jsconfig.json':
+      return 'TypeScript/JavaScript configuration changed. Consider running /agentful-analyze to update build settings.';
+
+    case '.env.example':
+    case '.env.sample':
+      return 'Environment template changed. Consider running /agentful-analyze to update configuration understanding.';
+
+    case 'docker-compose.yml':
+    case 'Dockerfile':
+      return 'Docker configuration changed. Consider running /agentful-analyze to update deployment setup.';
+
+    default:
+      // Check for build config files with patterns
+      if (filename.startsWith('vite.config.') ||
+          filename.startsWith('webpack.config.') ||
+          filename.startsWith('rollup.config.') ||
+          filename.startsWith('next.config.')) {
+        return 'Build configuration changed. Consider running /agentful-analyze to update bundler settings.';
+      }
+
+      // No suggestion needed for other files
+      return null;
+  }
 }
 
-// Normalize the file path to get just the filename
-const filename = path.basename(FILE);
-const filepath = FILE;
+// CLI entrypoint
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const FILE = process.env.FILE || '';
+  const message = checkAnalyzeTrigger(FILE);
 
-// Check for key files that should trigger analysis suggestions
-switch (filename) {
-  case 'package.json':
-    // Only trigger for root package.json, not node_modules
-    if (filepath.includes('node_modules')) {
-      process.exit(0);
-    }
-    console.log('Dependencies changed in package.json. Consider running /agentful-analyze to update architecture understanding.');
-    process.exit(0);
+  if (message) {
+    console.log(message);
+  }
 
-  case 'architecture.json':
-    console.log('Architecture configuration updated. Run /agentful-analyze to refresh tech stack analysis.');
-    process.exit(0);
-
-  case 'tsconfig.json':
-  case 'jsconfig.json':
-    console.log('TypeScript/JavaScript configuration changed. Consider running /agentful-analyze to update build settings.');
-    process.exit(0);
-
-  case '.env.example':
-  case '.env.sample':
-    console.log('Environment template changed. Consider running /agentful-analyze to update configuration understanding.');
-    process.exit(0);
-
-  case 'docker-compose.yml':
-  case 'Dockerfile':
-    console.log('Docker configuration changed. Consider running /agentful-analyze to update deployment setup.');
-    process.exit(0);
-
-  default:
-    // Check for build config files with patterns
-    if (filename.startsWith('vite.config.') ||
-        filename.startsWith('webpack.config.') ||
-        filename.startsWith('rollup.config.') ||
-        filename.startsWith('next.config.')) {
-      console.log('Build configuration changed. Consider running /agentful-analyze to update bundler settings.');
-      process.exit(0);
-    }
-
-    // No suggestion needed for other files
-    process.exit(0);
+  process.exit(0);
 }
