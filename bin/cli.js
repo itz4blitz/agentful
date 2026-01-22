@@ -38,6 +38,17 @@ import {
   listAvailableAgents
 } from '../lib/ci/index.js';
 import { startServerFromCLI } from '../lib/server/index.js';
+import {
+  addRemote,
+  removeRemote,
+  listRemotes,
+  executeRemoteAgent,
+  getRemoteExecutionStatus,
+  listRemoteExecutions,
+  listRemoteAgents,
+  checkRemoteHealth,
+  pollExecution
+} from '../lib/remote/client.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -90,6 +101,7 @@ function showHelp() {
   console.log(`  ${colors.green}pipeline${colors.reset}     Run and manage pipeline workflows`);
   console.log(`  ${colors.green}ci${colors.reset}           Generate prompts for claude-code-action`);
   console.log(`  ${colors.green}serve${colors.reset}        Start remote execution server`);
+  console.log(`  ${colors.green}remote${colors.reset}       Configure and execute agents on remote servers`);
   console.log(`  ${colors.green}help${colors.reset}         Show this help message`);
   console.log(`  ${colors.green}--version${colors.reset}    Show version`);
   console.log('');
@@ -128,6 +140,12 @@ function showHelp() {
   console.log('');
   console.log(`  ${colors.dim}# Start server with HMAC authentication${colors.reset}`);
   console.log(`  ${colors.bright}agentful serve --auth=hmac --secret=your-secret-key --https --cert=cert.pem --key=key.pem${colors.reset}`);
+  console.log('');
+  console.log(`  ${colors.dim}# Configure remote server${colors.reset}`);
+  console.log(`  ${colors.bright}agentful remote add prod http://my-server:3737${colors.reset}`);
+  console.log('');
+  console.log(`  ${colors.dim}# Execute agent on remote${colors.reset}`);
+  console.log(`  ${colors.bright}agentful remote exec backend "Fix memory leak" --remote=prod${colors.reset}`);
   console.log('');
   console.log('AFTER INIT:');
   console.log(`  1. ${colors.bright}Run claude${colors.reset} to start Claude Code`);
@@ -691,6 +709,294 @@ async function pipeline(args) {
 }
 
 /**
+ * Remote command - configure and execute agents on remote servers
+ * @param {string[]} args - Command arguments
+ */
+async function remote(args) {
+  const subcommand = args[0];
+  const flags = parseFlags(args);
+
+  switch (subcommand) {
+  case 'add': {
+    const name = args[1];
+    const url = args[2];
+
+    if (!name || !url) {
+      log(colors.red, 'Usage: agentful remote add <name> <url> [--auth=<mode>] [--secret=<key>]');
+      console.log('');
+      log(colors.dim, 'Examples:');
+      log(colors.dim, '  agentful remote add prod http://server:3737');
+      log(colors.dim, '  agentful remote add prod https://server:3737 --auth=hmac --secret=xxx');
+      process.exit(1);
+    }
+
+    try {
+      addRemote(name, url, {
+        auth: flags.auth || 'tailscale',
+        secret: flags.secret,
+      });
+
+      log(colors.green, `✓ Remote "${name}" added`);
+      console.log('');
+      log(colors.dim, `URL: ${url}`);
+      log(colors.dim, `Auth: ${flags.auth || 'tailscale'}`);
+      console.log('');
+      log(colors.dim, 'Test connection:');
+      log(colors.dim, `  agentful remote health ${name}`);
+    } catch (error) {
+      log(colors.red, `Failed to add remote: ${error.message}`);
+      process.exit(1);
+    }
+    break;
+  }
+
+  case 'remove':
+  case 'rm': {
+    const name = args[1];
+
+    if (!name) {
+      log(colors.red, 'Usage: agentful remote remove <name>');
+      process.exit(1);
+    }
+
+    try {
+      removeRemote(name);
+      log(colors.green, `✓ Remote "${name}" removed`);
+    } catch (error) {
+      log(colors.red, `Failed to remove remote: ${error.message}`);
+      process.exit(1);
+    }
+    break;
+  }
+
+  case 'list':
+  case 'ls': {
+    const remotes = listRemotes();
+    const names = Object.keys(remotes);
+
+    if (names.length === 0) {
+      log(colors.dim, 'No remotes configured');
+      console.log('');
+      log(colors.dim, 'Add a remote:');
+      log(colors.dim, '  agentful remote add prod http://server:3737');
+      process.exit(0);
+    }
+
+    console.log('');
+    log(colors.bright, 'Configured Remotes:');
+    console.log('');
+
+    for (const name of names) {
+      const config = remotes[name];
+      log(colors.cyan, `${name}`);
+      log(colors.dim, `  URL:  ${config.url}`);
+      log(colors.dim, `  Auth: ${config.auth}`);
+      console.log('');
+    }
+    break;
+  }
+
+  case 'exec':
+  case 'execute': {
+    const agent = args[1];
+    const task = args[2];
+    const remoteName = flags.remote || 'default';
+
+    if (!agent || !task) {
+      log(colors.red, 'Usage: agentful remote exec <agent> <task> [--remote=<name>] [--follow]');
+      console.log('');
+      log(colors.dim, 'Examples:');
+      log(colors.dim, '  agentful remote exec backend "Fix memory leak"');
+      log(colors.dim, '  agentful remote exec reviewer "Review PR #123" --remote=prod --follow');
+      process.exit(1);
+    }
+
+    try {
+      log(colors.dim, `Triggering ${agent} on ${remoteName}...`);
+
+      const result = await executeRemoteAgent(remoteName, agent, task, {
+        timeout: flags.timeout ? parseInt(flags.timeout) : undefined,
+      });
+
+      console.log('');
+      log(colors.green, '✓ Execution started');
+      log(colors.dim, `ID: ${result.executionId}`);
+      console.log('');
+
+      if (flags.follow) {
+        log(colors.dim, 'Polling for completion...');
+        console.log('');
+
+        await pollExecution(remoteName, result.executionId, {
+          interval: flags.interval ? parseInt(flags.interval) : 5000,
+          onUpdate: (status) => {
+            log(colors.dim, `[${status.state}] ${status.agent}: ${Math.floor((Date.now() - status.startTime) / 1000)}s`);
+          },
+        });
+
+        const final = await getRemoteExecutionStatus(remoteName, result.executionId);
+
+        console.log('');
+        if (final.state === 'completed') {
+          log(colors.green, '✓ Execution completed');
+          console.log('');
+          log(colors.bright, 'Output:');
+          console.log(final.output);
+        } else {
+          log(colors.red, '✗ Execution failed');
+          console.log('');
+          log(colors.bright, 'Error:');
+          console.log(final.error || 'Unknown error');
+          process.exit(1);
+        }
+      } else {
+        log(colors.dim, 'Check status:');
+        log(colors.dim, `  agentful remote status ${result.executionId} --remote=${remoteName}`);
+      }
+    } catch (error) {
+      log(colors.red, `Execution failed: ${error.message}`);
+      process.exit(1);
+    }
+    break;
+  }
+
+  case 'status': {
+    const executionId = args[1];
+    const remoteName = flags.remote || 'default';
+
+    if (!executionId) {
+      log(colors.red, 'Usage: agentful remote status <execution-id> [--remote=<name>]');
+      process.exit(1);
+    }
+
+    try {
+      const status = await getRemoteExecutionStatus(remoteName, executionId);
+
+      console.log('');
+      log(colors.bright, 'Execution Status:');
+      console.log('');
+      log(colors.dim, `ID:       ${status.id}`);
+      log(colors.dim, `Agent:    ${status.agent}`);
+      log(colors.dim, `Task:     ${status.task}`);
+      log(colors.dim, `State:    ${status.state}`);
+      log(colors.dim, `Duration: ${Math.floor(status.duration / 1000)}s`);
+
+      if (status.exitCode !== null) {
+        log(colors.dim, `Exit:     ${status.exitCode}`);
+      }
+
+      if (status.output) {
+        console.log('');
+        log(colors.bright, 'Output:');
+        console.log(status.output);
+      }
+
+      if (status.error) {
+        console.log('');
+        log(colors.red, 'Error:');
+        console.log(status.error);
+      }
+    } catch (error) {
+      log(colors.red, `Failed to get status: ${error.message}`);
+      process.exit(1);
+    }
+    break;
+  }
+
+  case 'agents': {
+    const remoteName = flags.remote || 'default';
+
+    try {
+      const result = await listRemoteAgents(remoteName);
+
+      console.log('');
+      log(colors.bright, `Available Agents on ${remoteName}:`);
+      console.log('');
+
+      for (const agent of result.agents) {
+        log(colors.cyan, `  ${agent}`);
+      }
+
+      console.log('');
+      log(colors.dim, `Total: ${result.count} agents`);
+    } catch (error) {
+      log(colors.red, `Failed to list agents: ${error.message}`);
+      process.exit(1);
+    }
+    break;
+  }
+
+  case 'executions': {
+    const remoteName = flags.remote || 'default';
+
+    try {
+      const result = await listRemoteExecutions(remoteName, {
+        agent: flags.agent,
+        state: flags.state,
+        limit: flags.limit ? parseInt(flags.limit) : undefined,
+      });
+
+      console.log('');
+      log(colors.bright, `Recent Executions on ${remoteName}:`);
+      console.log('');
+
+      if (result.executions.length === 0) {
+        log(colors.dim, 'No executions found');
+        process.exit(0);
+      }
+
+      for (const exec of result.executions) {
+        const duration = Math.floor(exec.duration / 1000);
+        log(colors.cyan, `${exec.id.substring(0, 8)} ${exec.agent}`);
+        log(colors.dim, `  State: ${exec.state} (${duration}s)`);
+        log(colors.dim, `  Task:  ${exec.task.substring(0, 60)}${exec.task.length > 60 ? '...' : ''}`);
+        console.log('');
+      }
+
+      log(colors.dim, `Total: ${result.count} executions`);
+    } catch (error) {
+      log(colors.red, `Failed to list executions: ${error.message}`);
+      process.exit(1);
+    }
+    break;
+  }
+
+  case 'health': {
+    const remoteName = args[1] || flags.remote || 'default';
+
+    try {
+      const health = await checkRemoteHealth(remoteName);
+
+      console.log('');
+      log(colors.green, `✓ ${remoteName} is healthy`);
+      console.log('');
+      log(colors.dim, `Status:  ${health.status}`);
+      log(colors.dim, `Uptime:  ${Math.floor(health.uptime / 3600)}h`);
+      log(colors.dim, `Mode:    ${health.mode}`);
+    } catch (error) {
+      log(colors.red, `Health check failed: ${error.message}`);
+      process.exit(1);
+    }
+    break;
+  }
+
+  default:
+    log(colors.red, `Unknown subcommand: ${subcommand}`);
+    console.log('');
+    log(colors.dim, 'Available subcommands:');
+    log(colors.dim, '  add        - Add a remote server');
+    log(colors.dim, '  remove     - Remove a remote server');
+    log(colors.dim, '  list       - List configured remotes');
+    log(colors.dim, '  exec       - Execute an agent on a remote');
+    log(colors.dim, '  status     - Check execution status');
+    log(colors.dim, '  agents     - List available agents');
+    log(colors.dim, '  executions - List recent executions');
+    log(colors.dim, '  health     - Check server health');
+    process.exit(1);
+  }
+}
+
+/**
  * Serve command - Start remote execution server
  */
 async function serve(args) {
@@ -929,6 +1235,10 @@ async function main() {
 
   case 'serve':
     await serve(args.slice(1));
+    break;
+
+  case 'remote':
+    await remote(args.slice(1));
     break;
 
   case 'help':

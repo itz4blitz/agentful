@@ -437,6 +437,193 @@ Default timeout is 10 minutes. Increase with `timeout` parameter:
 }
 ```
 
+## Client Usage
+
+Once your server is running, use the `agentful remote` CLI to trigger executions from anywhere.
+
+### Configure Remote
+
+```bash
+# Add a remote server
+agentful remote add prod http://my-server:3737
+
+# With HMAC authentication
+agentful remote add prod https://my-server:3737 --auth=hmac --secret=$SECRET
+
+# List configured remotes
+agentful remote list
+```
+
+### Execute Agents
+
+```bash
+# Trigger execution
+agentful remote exec backend "Fix memory leak" --remote=prod
+
+# With live output (polls until complete)
+agentful remote exec reviewer "Review PR #123" --remote=prod --follow
+
+# Check status
+agentful remote status abc123 --remote=prod
+
+# List available agents
+agentful remote agents --remote=prod
+
+# List recent executions
+agentful remote executions --remote=prod --state=completed --limit=10
+```
+
+## Scheduled Execution (Cron)
+
+Run agents on a schedule using cron or systemd timers.
+
+### Cron Examples
+
+```bash
+# Edit crontab
+crontab -e
+
+# Run nightly validation at 2 AM
+0 2 * * * agentful remote exec reviewer "Run nightly validation" --remote=prod
+
+# Security audit every Sunday at 3 AM
+0 3 * * 0 agentful remote exec reviewer "Security audit" --remote=prod
+
+# Daily backup at midnight
+0 0 * * * agentful remote exec backend "Backup database" --remote=prod
+
+# Hourly health check
+0 * * * * agentful remote health prod || echo "Server down!" | mail -s "Alert" admin@example.com
+```
+
+### Systemd Timer
+
+For more control, use systemd timers:
+
+```bash
+# /etc/systemd/system/agentful-nightly.service
+[Unit]
+Description=Agentful Nightly Validation
+
+[Service]
+Type=oneshot
+User=ubuntu
+ExecStart=/usr/bin/agentful remote exec reviewer "Run nightly validation" --remote=prod --follow
+```
+
+```bash
+# /etc/systemd/system/agentful-nightly.timer
+[Unit]
+Description=Run Agentful Nightly Validation
+
+[Timer]
+OnCalendar=daily
+OnCalendar=02:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+```bash
+# Enable and start timer
+sudo systemctl daemon-reload
+sudo systemctl enable agentful-nightly.timer
+sudo systemctl start agentful-nightly.timer
+
+# Check timer status
+sudo systemctl list-timers agentful-nightly.timer
+```
+
+## CI/CD Integration
+
+Trigger remote agents from CI/CD pipelines.
+
+### GitHub Actions
+
+```yaml
+name: Code Review
+on: [pull_request]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger agentful reviewer
+        run: |
+          npm install -g @itz4blitz/agentful
+
+          agentful remote add ci ${{ secrets.AGENTFUL_URL }} \
+            --auth=hmac \
+            --secret=${{ secrets.AGENTFUL_SECRET }}
+
+          agentful remote exec reviewer "Review PR #${{ github.event.pull_request.number }}" \
+            --remote=ci \
+            --follow
+```
+
+### GitLab CI
+
+```yaml
+code_review:
+  stage: test
+  script:
+    - npm install -g @itz4blitz/agentful
+    - agentful remote add ci $AGENTFUL_URL --auth=hmac --secret=$AGENTFUL_SECRET
+    - agentful remote exec reviewer "Review MR !$CI_MERGE_REQUEST_IID" --remote=ci --follow
+  only:
+    - merge_requests
+```
+
+### curl (No Dependencies)
+
+```bash
+#!/bin/bash
+# trigger-agent.sh
+
+SERVER="https://my-server:3737"
+SECRET="your-hmac-secret"
+AGENT="$1"
+TASK="$2"
+
+# Generate HMAC signature
+TIMESTAMP=$(date +%s000)
+BODY='{"agent":"'$AGENT'","task":"'$TASK'"}'
+SIGNATURE=$(echo -n "${TIMESTAMP}${BODY}" | openssl dgst -sha256 -hmac "$SECRET" | cut -d' ' -f2)
+
+# Trigger execution
+RESPONSE=$(curl -s -X POST "$SERVER/trigger" \
+  -H "Content-Type: application/json" \
+  -H "X-Agentful-Signature: $SIGNATURE" \
+  -H "X-Agentful-Timestamp: $TIMESTAMP" \
+  -d "$BODY")
+
+EXEC_ID=$(echo "$RESPONSE" | jq -r '.executionId')
+
+echo "Execution started: $EXEC_ID"
+
+# Poll for completion
+while true; do
+  sleep 5
+
+  STATUS=$(curl -s "$SERVER/status/$EXEC_ID" \
+    -H "X-Agentful-Signature: $(echo -n "${TIMESTAMP}" | openssl dgst -sha256 -hmac "$SECRET" | cut -d' ' -f2)" \
+    -H "X-Agentful-Timestamp: $TIMESTAMP")
+
+  STATE=$(echo "$STATUS" | jq -r '.state')
+
+  if [ "$STATE" = "completed" ]; then
+    echo "✓ Execution completed"
+    echo "$STATUS" | jq -r '.output'
+    exit 0
+  elif [ "$STATE" = "failed" ]; then
+    echo "✗ Execution failed"
+    echo "$STATUS" | jq -r '.error'
+    exit 1
+  fi
+done
+```
+
 ## Next Steps
 
 - [CI/CD Integration](/ci-integration) - Use agentful in GitHub Actions, GitLab CI

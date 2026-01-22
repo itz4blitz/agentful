@@ -19,9 +19,28 @@ function runCommand(command, description) {
   }
 }
 
-// Check 1: Run tests
-console.log('[1/4] Running tests...');
-const testResult = runCommand('npm test -- --run 2>&1 | tail -5', 'tests');
+/**
+ * Validate feature completion with automated checks
+ * @param {string} feature - Feature name
+ * @param {string} domain - Domain name (optional)
+ * @returns {object} - { errors, validationResults, exitCode }
+ */
+export function validateFeatureCompletion(feature, domain = '') {
+  // Exit successfully if no feature specified
+  if (!feature) {
+    return { errors: 0, validationResults: [], exitCode: 0 };
+  }
+
+  const TIMESTAMP = new Date().toISOString();
+  let errors = 0;
+  const validationResults = [];
+
+  console.log(`=== Post-Feature Validation: ${feature} ===`);
+  console.log('');
+
+  // Check 1: Run tests
+  console.log('[1/4] Running tests...');
+  const testResult = runCommand('npm test -- --run 2>&1 | tail -5', 'tests');
 if (testResult.success) {
   console.log('  Tests: PASS');
   validationResults.push('tests:pass');

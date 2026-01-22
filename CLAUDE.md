@@ -43,7 +43,6 @@ claude --dangerously-skip-permissions
 | `/agentful-decide` | Answer pending decisions blocking work |
 | `/agentful-validate` | Run all quality checks manually |
 | `/agentful-product` | Analyze and improve product specification |
-| `/agentful-serve` | Start secure remote execution server |
 | `/agents` | List all available specialized agents |
 
 ## When to Use What
@@ -70,7 +69,7 @@ claude --dangerously-skip-permissions
 → Edit `.claude/product/index.md`, then run `/agentful-start` (picks up changes automatically)
 
 **Need remote execution?**
-→ Run `/agentful-serve` to start an HTTP API server with Tailscale, HMAC, or SSH tunnel authentication
+→ Run `agentful serve` on a VPS, then use `agentful remote` CLI to trigger agents from anywhere
 
 ## File Structure
 
