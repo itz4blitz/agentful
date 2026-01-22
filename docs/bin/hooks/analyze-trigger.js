@@ -24,25 +24,30 @@ switch (filename) {
     }
     console.log('Dependencies changed in package.json. Consider running /agentful-analyze to update architecture understanding.');
     process.exit(0);
+    break;
 
   case 'architecture.json':
     console.log('Architecture configuration updated. Run /agentful-analyze to refresh tech stack analysis.');
     process.exit(0);
+    break;
 
   case 'tsconfig.json':
   case 'jsconfig.json':
     console.log('TypeScript/JavaScript configuration changed. Consider running /agentful-analyze to update build settings.');
     process.exit(0);
+    break;
 
   case '.env.example':
   case '.env.sample':
     console.log('Environment template changed. Consider running /agentful-analyze to update configuration understanding.');
     process.exit(0);
+    break;
 
   case 'docker-compose.yml':
   case 'Dockerfile':
     console.log('Docker configuration changed. Consider running /agentful-analyze to update deployment setup.');
     process.exit(0);
+    break;
 
   default:
     // Check for build config files with patterns

@@ -197,7 +197,7 @@ export default async function handler(req, res) {
     if (configSize > MAX_CONFIG_SIZE) {
       return res.status(400).json({
         error: 'Configuration too large',
-        message: `Config size ${configSize} bytes exceeds maximum of ${MAX_CONFIG_SIZE} bytes`,
+        message: `Config size ${configSize} bytes exceeds maximum of ${MAX_CONFIG_SIZE} bytes`
       });
     }
 
@@ -206,7 +206,7 @@ export default async function handler(req, res) {
     if (!validation.valid) {
       return res.status(400).json({
         error: 'Invalid configuration',
-        message: validation.error,
+        message: validation.error
       });
     }
 
@@ -221,7 +221,7 @@ export default async function handler(req, res) {
       created_at: new Date().toISOString(),
       ip_hash: ipHash,
       views: 0,
-      size_bytes: configSize,
+      size_bytes: configSize
     };
 
     // Save to file system
@@ -236,7 +236,7 @@ export default async function handler(req, res) {
       id,
       url: `${baseUrl}/c/${id}`,
       installCommand: `npx @itz4blitz/agentful init --config=${id}`,
-      fullCommand: `npx @itz4blitz/agentful init --config=${baseUrl}/c/${id}`,
+      fullCommand: `npx @itz4blitz/agentful init --config=${baseUrl}/c/${id}`
     };
 
     return res.status(201).json(response);
@@ -244,7 +244,7 @@ export default async function handler(req, res) {
     console.error('Error saving config:', error);
     return res.status(500).json({
       error: 'Internal Server Error',
-      message: 'Failed to save configuration',
+      message: 'Failed to save configuration'
     });
   }
 }
