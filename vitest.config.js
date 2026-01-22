@@ -59,11 +59,11 @@ export default defineConfig({
     // Isolation
     isolate: true,
 
-    // Pool options - use threads instead of forks
-    pool: 'threads',
+    // Pool options - use forks for process.chdir() support
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        singleThread: false
+      forks: {
+        singleFork: false
       }
     }
   },
