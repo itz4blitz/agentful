@@ -11,15 +11,69 @@ description: Install and initialize agentful in your project.
 - Node.js 22+
 - A project directory
 
-## Install
+## Installation Options
+
+### Option 1: Web Configurator (Recommended)
+
+Use the interactive web configurator to customize your installation:
+
+**[agentful.app](https://agentful.app)**
+
+1. Choose a preset or build custom configuration
+2. Select agents, skills, hooks, and quality gates
+3. Generate installation command
+4. Copy and run in your project
+
+See the [Web Configurator Guide](/getting-started/configurator) for detailed instructions.
+
+### Option 2: Default Installation (CLI)
+
+Install with all components (recommended for most projects):
 
 ```bash
-cd your-project
+# Default installation - All components (recommended)
 npx @itz4blitz/agentful init
+
+# Minimal installation - Backend-only (2 agents, for simple projects)
+npx @itz4blitz/agentful init --preset=minimal
+
+# View installation options
+npx @itz4blitz/agentful presets
 ```
 
-This analyzes your project, detects your tech stack, and creates:
-- `.claude/` - 7 agents, 5 commands, skills
+Tech stack is auto-detected on first run - no need to specify during installation.
+
+See the [Installation Options Guide](/getting-started/presets) for details.
+
+### Option 3: Custom Configuration (CLI)
+
+Build a custom configuration with specific components:
+
+```bash
+npx @itz4blitz/agentful init \
+  --agents=orchestrator,backend,frontend,tester \
+  --skills=validation,testing \
+  --hooks=health-check \
+  --gates=types,tests,coverage
+```
+
+**Available flags**:
+- `--preset=<name>` - Use a preset configuration
+- `--agents=<list>` - Comma-separated agent names
+- `--skills=<list>` - Comma-separated skill names
+- `--hooks=<list>` - Comma-separated hook identifiers
+- `--gates=<list>` - Comma-separated quality gate names
+
+### Option 4: Shareable Configuration
+
+Use a shared configuration from the web configurator:
+
+```bash
+npx @itz4blitz/agentful init --config=https://agentful.app/c/abc12345
+```
+
+This installs:
+- `.claude/` - Agents, commands, skills
 - `.agentful/` - Runtime state (gitignored)
 - `.claude/product/` - Product specification structure
 - `CLAUDE.md` - Project instructions
@@ -74,14 +128,14 @@ ls -la .claude/product/
 cat .claude/product/index.md
 ```
 
-## Init Options
+## Additional Options
 
 ### Bare Init
 
 Skip template files if you already have your spec:
 
 ```bash
-npx @itz4blitz/agentful init --bare
+npx @itz4blitz/agentful init --bare --preset=minimal
 ```
 
 ### Skip Smart Analysis
@@ -100,13 +154,28 @@ Generate domain subdirectories for complex projects:
 npx @itz4blitz/agentful init --generate-domains
 ```
 
+### Override Components
+
+Customize the default installation with specific selections:
+
+```bash
+# Start with minimal, add frontend
+npx @itz4blitz/agentful init \
+  --preset=minimal \
+  --agents=orchestrator,backend,frontend
+
+# Start with default, customize skills
+npx @itz4blitz/agentful init \
+  --skills=product-tracking,validation,testing,deployment
+```
+
 ### Global Install
 
 For frequent use:
 
 ```bash
 npm install -g @itz4blitz/agentful
-agentful init
+agentful init --preset=minimal
 ```
 
 Note: `npx` always uses the latest version.
@@ -183,6 +252,22 @@ rm -rf .claude .agentful CLAUDE.md
 
 <div>
 
+### Web Configurator
+Customize your installation visually
+[Configurator Guide](/getting-started/configurator)
+
+</div>
+
+<div>
+
+### Installation Options
+Learn about default vs minimal installation
+[Installation Options Guide](/getting-started/presets)
+
+</div>
+
+<div>
+
 ### Quick Start
 Learn the basics in 5 minutes
 [Quick Start Guide](/getting-started/quick-start)
@@ -191,9 +276,9 @@ Learn the basics in 5 minutes
 
 <div>
 
-### First Project
-Build a complete project
-[First Project Guide](/getting-started/first-project)
+### Migration
+Switch between presets
+[Migration Guide](/getting-started/migration)
 
 </div>
 

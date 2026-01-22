@@ -12,6 +12,13 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { initProject, isInitialized } from '../lib/init.js';
+import {
+  getPreset,
+  listPresets,
+  parseArrayFlag,
+  mergePresetWithFlags,
+  validateConfiguration
+} from '../lib/presets.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,13 +60,35 @@ function showBanner() {
 function showHelp() {
   showBanner();
   console.log('USAGE:');
-  console.log(`  ${colors.bright}agentful${colors.reset} ${colors.green}<command>${colors.reset}`);
+  console.log(`  ${colors.bright}agentful${colors.reset} ${colors.green}<command>${colors.reset} ${colors.dim}[options]${colors.reset}`);
   console.log('');
   console.log('COMMANDS:');
-  console.log(`  ${colors.green}init${colors.reset}         Initialize agentful (copy templates)`);
+  console.log(`  ${colors.green}init${colors.reset}         Install agentful (all components by default)`);
   console.log(`  ${colors.green}status${colors.reset}       Show agentful status and generated files`);
+  console.log(`  ${colors.green}presets${colors.reset}      Show installation options`);
   console.log(`  ${colors.green}help${colors.reset}         Show this help message`);
   console.log(`  ${colors.green}--version${colors.reset}    Show version`);
+  console.log('');
+  console.log('INIT OPTIONS (optional):');
+  console.log(`  ${colors.yellow}--preset=minimal${colors.reset}       Minimal setup (orchestrator + backend only)`);
+  console.log(`  ${colors.yellow}--config=<url|id>${colors.reset}       Use a shareable configuration`);
+  console.log(`  ${colors.yellow}--agents=<list>${colors.reset}         Custom agents (comma-separated)`);
+  console.log(`  ${colors.yellow}--skills=<list>${colors.reset}         Custom skills (comma-separated)`);
+  console.log(`  ${colors.yellow}--hooks=<list>${colors.reset}          Custom hooks (comma-separated)`);
+  console.log(`  ${colors.yellow}--gates=<list>${colors.reset}          Custom quality gates (comma-separated)`);
+  console.log('');
+  console.log('EXAMPLES:');
+  console.log(`  ${colors.dim}# Install agentful (all components - recommended)${colors.reset}`);
+  console.log(`  ${colors.bright}agentful init${colors.reset}`);
+  console.log('');
+  console.log(`  ${colors.dim}# Minimal setup (for simple scripts/CLIs)${colors.reset}`);
+  console.log(`  ${colors.bright}agentful init --preset=minimal${colors.reset}`);
+  console.log('');
+  console.log(`  ${colors.dim}# Custom configuration${colors.reset}`);
+  console.log(`  ${colors.bright}agentful init --agents=orchestrator,backend --skills=validation${colors.reset}`);
+  console.log('');
+  console.log(`  ${colors.dim}# From shareable config URL${colors.reset}`);
+  console.log(`  ${colors.bright}agentful init --config=https://agentful.app/c/abc12345${colors.reset}`);
   console.log('');
   console.log('AFTER INIT:');
   console.log(`  1. ${colors.bright}Run claude${colors.reset} to start Claude Code`);
@@ -81,6 +110,58 @@ function showVersion() {
   console.log(`agentful v${VERSION}`);
 }
 
+function showPresets() {
+  showBanner();
+  log(colors.bright, 'Agentful Installation Options:');
+  console.log('');
+
+  log(colors.cyan, 'DEFAULT (Recommended)');
+  log(colors.dim, '  Install all components - agentful works best with everything enabled');
+  log(colors.dim, '  Command: agentful init');
+  log(colors.dim, '  Includes: 8 agents, 6 skills, all hooks, all gates');
+  console.log('');
+
+  log(colors.cyan, 'MINIMAL');
+  log(colors.dim, '  Minimal setup for simple scripts/CLIs');
+  log(colors.dim, '  Command: agentful init --preset=minimal');
+  log(colors.dim, '  Includes: 2 agents (orchestrator, backend), 1 skill (validation)');
+  console.log('');
+
+  log(colors.cyan, 'CUSTOM');
+  log(colors.dim, '  Specify exactly what you want');
+  log(colors.dim, '  Command: agentful init --agents=x,y,z --skills=a,b');
+  log(colors.dim, '  Includes: Your choice of agents, skills, hooks, gates');
+  console.log('');
+
+  log(colors.bright, 'Philosophy:');
+  log(colors.dim, '  - Tech stack is auto-detected (TypeScript, Python, etc.)');
+  log(colors.dim, '  - Default to power - get everything, remove what you don\'t need');
+  log(colors.dim, '  - One product: "agentful" - not multiple flavors');
+  console.log('');
+}
+
+/**
+ * Parse CLI flags from arguments
+ * @param {string[]} args - CLI arguments
+ * @returns {Object} Parsed flags
+ */
+function parseFlags(args) {
+  const flags = {};
+
+  for (const arg of args) {
+    if (arg.startsWith('--')) {
+      const [key, value] = arg.slice(2).split('=');
+      if (value) {
+        flags[key] = value;
+      } else {
+        flags[key] = true;
+      }
+    }
+  }
+
+  return flags;
+}
+
 function checkGitignore() {
   const gitignorePath = path.join(process.cwd(), '.gitignore');
   let content = '';
@@ -97,11 +178,134 @@ function checkGitignore() {
   }
 }
 
-async function init() {
+/**
+ * Fetch configuration from shareable URL or ID
+ * @param {string} configParam - URL or ID
+ * @returns {Promise<Object|null>}
+ */
+async function fetchShareableConfig(configParam) {
+  try {
+    // Determine if it's a full URL or just an ID
+    let apiUrl;
+    if (configParam.startsWith('http://') || configParam.startsWith('https://')) {
+      // Extract ID from URL
+      const match = configParam.match(/\/c\/([a-f0-9]{8})$/i);
+      if (!match) {
+        throw new Error('Invalid config URL format. Expected: https://agentful.app/c/{id}');
+      }
+      const id = match[1];
+      apiUrl = `https://agentful.app/api/get-config/${id}`;
+    } else if (/^[a-f0-9]{8}$/i.test(configParam)) {
+      // It's just the ID
+      apiUrl = `https://agentful.app/api/get-config/${configParam}`;
+    } else {
+      throw new Error('Invalid config parameter. Provide either a full URL or an 8-character ID.');
+    }
+
+    log(colors.dim, `Fetching configuration from ${apiUrl}...`);
+
+    const response = await fetch(apiUrl);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Configuration not found. The config may have expired or the ID is invalid.');
+      }
+      if (response.status === 410) {
+        throw new Error('Configuration has expired (1 year TTL).');
+      }
+      throw new Error(`Failed to fetch config: HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.config;
+  } catch (error) {
+    log(colors.red, `Error fetching shareable config: ${error.message}`);
+    return null;
+  }
+}
+
+async function init(args) {
   showBanner();
 
   const targetDir = process.cwd();
   const claudeDir = path.join(targetDir, '.claude');
+
+  // Parse flags
+  const flags = parseFlags(args);
+
+  // Build configuration from preset and/or flags
+  let config = null;
+
+  // Check for shareable config first
+  if (flags.config) {
+    config = await fetchShareableConfig(flags.config);
+    if (!config) {
+      log(colors.red, 'Failed to load shareable configuration.');
+      process.exit(1);
+    }
+    log(colors.green, 'Loaded shareable configuration successfully!');
+    console.log('');
+  } else {
+    // Default to "default" preset if no flags provided
+    let presetConfig = null;
+    const hasCustomFlags = flags.agents || flags.skills || flags.hooks || flags.gates;
+
+    if (flags.preset) {
+      // User explicitly specified a preset
+      presetConfig = getPreset(flags.preset);
+      if (!presetConfig) {
+        log(colors.red, `Unknown preset: ${flags.preset}`);
+        console.log('');
+        log(colors.dim, 'Available presets:');
+        listPresets().forEach(p => log(colors.dim, `  - ${p.name}`));
+        console.log('');
+        log(colors.dim, 'Run: agentful presets');
+        process.exit(1);
+      }
+      log(colors.dim, `Using preset: ${flags.preset}`);
+    } else if (!hasCustomFlags) {
+      // No preset and no custom flags = use default preset
+      presetConfig = getPreset('default');
+      log(colors.dim, 'Installing agentful (all components)');
+    }
+
+    // Parse individual flags
+    const flagConfig = {
+      agents: flags.agents ? parseArrayFlag(flags.agents) : null,
+      skills: flags.skills ? parseArrayFlag(flags.skills) : null,
+      hooks: flags.hooks ? parseArrayFlag(flags.hooks) : null,
+      gates: flags.gates ? parseArrayFlag(flags.gates) : null
+    };
+
+    // Merge preset with flags (flags override preset)
+    if (presetConfig) {
+      config = mergePresetWithFlags(presetConfig, flagConfig);
+    } else {
+      // Custom configuration with no preset
+      config = {
+        agents: flagConfig.agents || ['orchestrator'],
+        skills: flagConfig.skills || [],
+        hooks: flagConfig.hooks || [],
+        gates: flagConfig.gates || []
+      };
+    }
+
+    // Validate configuration
+    const validation = validateConfiguration(config);
+    if (!validation.valid) {
+      log(colors.yellow, 'Configuration warnings:');
+      validation.errors.forEach(err => log(colors.yellow, `  - ${err}`));
+      console.log('');
+    }
+
+    // Show what will be installed
+    log(colors.dim, 'Configuration:');
+    log(colors.dim, `  Agents: ${config.agents.join(', ')}`);
+    log(colors.dim, `  Skills: ${config.skills.join(', ') || 'none'}`);
+    log(colors.dim, `  Hooks: ${config.hooks.join(', ') || 'none'}`);
+    log(colors.dim, `  Gates: ${config.gates.join(', ') || 'none'}`);
+    console.log('');
+  }
 
   // Check if already initialized
   if (await isInitialized(targetDir)) {
@@ -134,9 +338,9 @@ async function init() {
   }
 
   // Initialize using lib/init.js
-  log(colors.dim, 'Copying templates...');
+  log(colors.dim, config ? 'Installing selected components...' : 'Copying templates...');
   try {
-    const result = await initProject(targetDir);
+    const result = await initProject(targetDir, config);
 
     console.log('');
     log(colors.green, 'Initialized agentful successfully!');
@@ -159,13 +363,19 @@ async function init() {
   log(colors.bright, 'Next Steps:');
   console.log('');
   log(colors.cyan, '  1. Run: claude');
-  log(colors.cyan, '  2. Type: /agentful-generate');
+  if (config && config.agents.length <= 3) {
+    log(colors.cyan, '  2. Start building (agents are pre-selected)');
+  } else {
+    log(colors.cyan, '  2. Type: /agentful-generate');
+  }
   console.log('');
-  log(colors.dim, 'This will analyze your codebase and generate:');
-  log(colors.dim, '  - Specialized agents for your tech stack');
-  log(colors.dim, '  - Domain-specific agents (auth, billing, etc.)');
-  log(colors.dim, '  - Skills for frameworks you use');
-  console.log('');
+  if (!config) {
+    log(colors.dim, 'This will analyze your codebase and generate:');
+    log(colors.dim, '  - Specialized agents for your tech stack');
+    log(colors.dim, '  - Domain-specific agents (auth, billing, etc.)');
+    log(colors.dim, '  - Skills for frameworks you use');
+    console.log('');
+  }
   log(colors.dim, 'Optional: Edit CLAUDE.md and .claude/product/index.md first to customize.');
   console.log('');
 }
@@ -259,11 +469,15 @@ async function main() {
 
   switch (command) {
   case 'init':
-    await init();
+    await init(args.slice(1));
     break;
 
   case 'status':
     showStatus();
+    break;
+
+  case 'presets':
+    showPresets();
     break;
 
   case 'help':

@@ -1,0 +1,97 @@
+# Agent Architecture Flow - Examples
+
+This file demonstrates the AgentArchitectureFlow component in various configurations.
+
+## Interactive Version (Default)
+
+Full interactivity with zoom, pan, drag, and click functionality.
+
+```tsx
+import { AgentArchitectureFlow } from './AgentArchitectureFlow'
+
+<AgentArchitectureFlow />
+```
+
+<AgentArchitectureFlow />
+
+---
+
+## Static Version
+
+Non-interactive version for documentation purposes.
+
+```tsx
+import { AgentArchitectureFlowStatic } from './AgentArchitectureFlow'
+
+<AgentArchitectureFlowStatic height="500px" />
+```
+
+<AgentArchitectureFlowStatic height="500px" />
+
+---
+
+## Custom Configuration
+
+```tsx
+<AgentArchitectureFlow
+  interactive={true}
+  showControls={true}
+  initialZoom={0.6}
+  height="700px"
+/>
+```
+
+<AgentArchitectureFlow
+  interactive={true}
+  showControls={true}
+  initialZoom={0.6}
+  height="700px"
+/>
+
+---
+
+## Compact Version
+
+Smaller height for embedding in tight spaces.
+
+```tsx
+<AgentArchitectureFlow height="400px" initialZoom={0.6} />
+```
+
+<AgentArchitectureFlow height="400px" initialZoom={0.6} />
+
+---
+
+## Features
+
+- **Interactive Nodes**: Click any agent to view detailed information
+- **Hexagonal Layout**: 7 specialist agents arranged around central orchestrator
+- **Bidirectional Edges**: Animated connections showing delegation flow
+- **Tooltips**: Rich tooltips with agent skills and descriptions
+- **Zoom & Pan**: Full viewport controls for exploration
+- **Mini-map**: Bottom-right navigation helper
+- **Accessible**: ARIA labels and keyboard navigation support
+- **Responsive**: Adapts to container size
+- **Glassmorphism**: Modern blur effects and emerald green theme
+- **Animations**: Pulse effect on orchestrator, hover effects on all nodes
+
+## Usage in MDX
+
+```mdx
+import { AgentArchitectureFlow } from '@/components/visualizations'
+
+# Your Page Title
+
+<AgentArchitectureFlow />
+```
+
+## Agent Details
+
+Each agent node displays:
+- Icon and name
+- Color-coded connections
+- Skills and capabilities (on click)
+- Animated hover effects
+- Glassmorphism styling
+
+The central **Orchestrator** coordinates all specialist agents through bidirectional communication channels.

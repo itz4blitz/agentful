@@ -1,0 +1,110 @@
+# Continuous Validation Pipeline
+#
+# Runs on every commit to validate quality gates
+# Fast feedback loop (5-10 minutes)
+# Parallel execution for speed
+
+name: continuous-validation
+version: 1.0
+description: Fast quality gate validation on every commit
+
+triggers:
+  - type: push
+    branches:
+      - main
+      - develop
+  - type: pull_request
+    branches:
+      - main
+
+env:
+  CI: true
+  NODE_ENV: test
+
+concurrency:
+  maxConcurrentJobs: 5
+  cancelInProgress: true # Cancel old runs when new commit pushed
+
+timeout: 600000 # 10 minute timeout
+
+jobs:
+  # Parallel validation jobs
+  - id: type-check
+    name: TypeScript Type Check
+    agent: reviewer
+    task: Run TypeScript compiler to check for type errors
+    timeout: 180000 # 3 minutes
+    execution:
+      method: subprocess
+    setup:
+      - name: Install dependencies
+        command: npm ci --prefer-offline
+
+  - id: lint-check
+    name: ESLint Check
+    agent: reviewer
+    task: Run ESLint to check code style and quality
+    timeout: 120000 # 2 minutes
+    setup:
+      - name: Install dependencies
+        command: npm ci --prefer-offline
+
+  - id: unit-tests
+    name: Run Unit Tests
+    agent: tester
+    task: Run all unit tests with coverage
+    timeout: 300000 # 5 minutes
+    setup:
+      - name: Install dependencies
+        command: npm ci --prefer-offline
+      - name: Build if needed
+        command: npm run build --if-present
+
+  - id: security-scan
+    name: Security Vulnerability Scan
+    agent: reviewer
+    task: Scan dependencies for known vulnerabilities
+    timeout: 180000 # 3 minutes
+    continueOnError: true # Don't block on security findings
+    setup:
+      - name: Install dependencies
+        command: npm ci --prefer-offline
+
+  # Aggregation job (depends on all parallel jobs)
+  - id: aggregate-results
+    name: Aggregate Validation Results
+    agent: orchestrator
+    dependsOn:
+      - type-check
+      - lint-check
+      - unit-tests
+      - security-scan
+    task: |
+      Aggregate all validation results
+      Generate summary report
+      Update quality gate status in .agentful/completion.json
+    timeout: 60000 # 1 minute
+
+  # Auto-fix job (only runs if validation fails)
+  - id: auto-fix
+    name: Auto-fix Issues
+    agent: fixer
+    dependsOn: aggregate-results
+    when: "aggregate-results.output.hasErrors == true"
+    task: |
+      Automatically fix common issues:
+      - ESLint auto-fixable violations
+      - Import sorting
+      - Formatting issues
+      Create commit with fixes if successful
+    timeout: 300000 # 5 minutes
+    continueOnError: true
+
+  # Re-run validation after fixes
+  - id: revalidate
+    name: Re-validate After Fixes
+    agent: reviewer
+    dependsOn: auto-fix
+    when: "auto-fix.status == 'completed'"
+    task: Run validation again to ensure fixes resolved issues
+    timeout: 300000 # 5 minutes

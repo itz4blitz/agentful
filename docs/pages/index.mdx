@@ -1,73 +1,60 @@
 ---
-title: agentful - Human-in-the-Loop Development with Claude Code
-description: Claude Code configuration that adds specialized agents and quality gates to your development workflow.
+title: agentful - Autonomous Development Agents for Claude Code
+description: AI agents that build your product while you sleep. Configure and install in minutes.
 ---
 
-<div className="text-center">
-  <img src="/assets/agentful.jpeg" alt="agentful Logo" width="300" />
+import { ConfigWizard } from '../components/configurator/ConfigWizard'
+
+<div style={{
+  textAlign: 'center',
+  marginBottom: '3rem',
+  padding: '3rem 1rem',
+  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
+  borderRadius: '1rem',
+  border: '1px solid rgba(16, 185, 129, 0.2)',
+}}>
+
+  <h1 style={{
+    fontSize: '3rem',
+    fontWeight: '700',
+    marginBottom: '1rem',
+    background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+  }}>
+    agentful
+  </h1>
+
+  <p style={{
+    fontSize: '1.5rem',
+    color: 'var(--vocs-color_textAccent)',
+    fontWeight: '500',
+    maxWidth: '48rem',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  }}>
+    AI agents that build your product while you sleep
+  </p>
 </div>
 
-# agentful
+---
 
-Claude Code configuration that adds specialized agents, quality gates, and structured workflows to your project.
+## Configure Your Installation
 
-**[Quick Start Guide →](/getting-started/quick-start)**
+Use this interactive configurator to customize your agentful installation. Choose from presets or build a custom configuration tailored to your project's needs.
+
+<ConfigWizard />
 
 ---
 
-## What It Does
-
-agentful extends Claude Code with:
-
-1. **Specialized agents** - Backend, frontend, testing, review, orchestration
-2. **Quality gates** - Type checking, linting, test coverage, dead code detection
-3. **Product tracking** - Feature status, completion percentage, blocking decisions
-4. **Smart analysis** - Tech stack detection, pattern recognition, domain discovery
-
-It's a `.claude/` directory structure with agents, commands, and skills that Claude Code loads.
-
----
-
-## How It Works
-
-### Agent Architecture
-
-Claude Code runs with different instruction sets depending on which agent you invoke:
-
-- `@orchestrator` - Coordinates work, never writes code
-- `@architect` - Analyzes tech stack, generates domain agents
-- `@backend` - Server-side logic, APIs, databases
-- `@frontend` - UI components, state management, client code
-- `@tester` - Test generation and execution
-- `@reviewer` - Quality validation, security checks
-- `@fixer` - Automated remediation of failures
-
-Each agent has explicit scope boundaries and responsibilities.
-
-### Workflow
-
-```
-1. Define product spec (.claude/product/)
-2. Run /agentful-start
-3. Orchestrator identifies next task
-4. Domain agents implement
-5. Tester writes tests
-6. Reviewer validates (types, lint, tests, coverage)
-7. Fixer remediates failures
-8. Repeat until complete
-```
-
-Human checkpoints pause for architectural decisions, library selection, security configurations.
-
----
-
-## Installation
+## Quick Installation
 
 **Prerequisites:**
 - [Claude Code](https://code.anthropic.com)
 - Node.js 22+
 
-**Initialize in your project:**
+**Install in your project:**
 
 ```bash
 npx @itz4blitz/agentful init
@@ -80,255 +67,112 @@ This creates:
 
 ---
 
-## Quick Start
+## What is agentful?
 
-### 1. Define Product
+**agentful** extends Claude Code with specialized agents and structured workflows for autonomous development:
 
-**New projects:**
+- **Specialized Agents** - Backend, frontend, testing, review, orchestration
+- **Quality Gates** - Type checking, linting, test coverage, security scanning
+- **Product Tracking** - Feature status, completion percentage, blocking decisions
+- **Tech Stack Detection** - Automatically detects and adapts to your stack
 
-```bash
-claude
-/agentful-product
-```
-
-Answer guided questions. Creates structured `.claude/product/` hierarchy.
-
-**Existing codebases:**
-
-```bash
-claude
-/agentful-product
-```
-
-Reverse-engineers spec from your code.
-
-**Manual:**
-
-Edit `.claude/product/index.md`:
-
-```markdown
-## Overview
-Task management for distributed teams
-
-## Tech Stack
-- Next.js 14 + TypeScript
-- Prisma + PostgreSQL
-- Vitest + Playwright
-
-## Features
-1. Authentication (CRITICAL)
-2. Project management (HIGH)
-3. Task assignment (MEDIUM)
-```
-
-### 2. Generate Agents
-
-```bash
-/agentful-generate
-```
-
-Analyzes your codebase and generates:
-- Domain-specific agents based on your business logic
-- Tech stack skills for framework patterns
-- Pattern-matched instructions from your actual code
-
-### 3. Start Development
-
-```bash
-/agentful-start
-```
-
-Orchestrator begins implementation with quality gates.
-
-### 4. Monitor Progress
-
-```bash
-/agentful-status
-```
-
-Shows completion percentage, current task, quality gate status, pending decisions.
+[Learn more about how it works →](/getting-started/overview)
 
 ---
 
-## Commands
+## After Installation
 
-| Command | Purpose |
-|---------|---------|
-| `/agentful` | Natural language conversation |
-| `/agentful-product` | Create or analyze product spec |
-| `/agentful-generate` | Analyze codebase, generate agents and skills |
-| `/agentful-start` | Begin structured development |
-| `/agentful-status` | View progress and quality gates |
-| `/agentful-validate` | Run quality checks manually |
-| `/agentful-decide` | Answer blocking decisions |
+Once agentful is installed:
 
----
+1. **Define your product**: Edit `.claude/product/index.md` to describe what you're building
+2. **Start Claude Code**: Run `claude` in your project directory
+3. **Begin development**: Type `/agentful-start` to start structured development
+4. **Check progress**: Use `/agentful-status` to see completion percentage
 
-## Quality Gates
-
-All implementations validated against 6 core automated quality gates:
-
-- **Type checking** - TypeScript, Flow, Python types, etc.
-- **Linting** - ESLint, Biome, Ruff, etc.
-- **Tests** - All suites must pass
-- **Coverage** - Minimum 80%
-- **Dead code** - Unused exports, files, dependencies
-- **Security** - Basic security validation
-
-Gates adapt to your stack. The framework detects available tools and runs appropriate checks.
+For more details, see the [Quick Start Guide](/getting-started/quick-start).
 
 ---
 
-## Project Structure
+## Explore Interactive Visualizations
 
-```
-your-project/
-├── CLAUDE.md               # Project context
-├── .claude/                # Framework (version control)
-│   ├── agents/
-│   │   ├── orchestrator.md
-│   │   ├── architect.md
-│   │   ├── backend.md
-│   │   ├── frontend.md
-│   │   ├── tester.md
-│   │   ├── reviewer.md
-│   │   ├── fixer.md
-│   │   └── ephemeral/      # Generated agents (gitignored)
-│   ├── commands/
-│   │   ├── agentful.md
-│   │   ├── agentful-product.md
-│   │   ├── agentful-generate.md
-│   │   ├── agentful-start.md
-│   │   ├── agentful-status.md
-│   │   ├── agentful-decide.md
-│   │   └── agentful-validate.md
-│   ├── skills/             # Tech stack skills
-│   │   ├── conversation/
-│   │   ├── product-planning/
-│   │   ├── product-tracking/
-│   │   └── validation/
-│   ├── product/            # Product specification
-│   │   ├── index.md        # Project overview
-│   │   ├── domains/        # Business domains
-│   │   │   └── auth/
-│   │   │       ├── index.md
-│   │   │       └── features/
-│   │   └── README.md
-│   └── settings.json
-└── .agentful/              # Runtime state (gitignored)
-    ├── state.json
-    ├── completion.json
-    ├── decisions.json
-    ├── architecture.json
-    └── last-validation.json
-```
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+  gap: '1rem',
+  marginTop: '1.5rem',
+  marginBottom: '2rem',
+}}>
+  <a href="/visualizations/agent-architecture" style={{
+    display: 'block',
+    padding: '1.25rem',
+    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
+    borderRadius: '0.75rem',
+    border: '1px solid rgba(16, 185, 129, 0.2)',
+    textDecoration: 'none',
+    transition: 'all 0.2s',
+  }}>
+    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎯</div>
+    <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#10b981', marginBottom: '0.25rem' }}>Agent Architecture</div>
+    <div style={{ fontSize: '0.85rem', color: 'var(--vocs-color_text2)' }}>See how agents communicate</div>
+  </a>
 
-**Version control:** `.claude/`, `CLAUDE.md`
+  <a href="/visualizations/product-structure" style={{
+    display: 'block',
+    padding: '1.25rem',
+    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
+    borderRadius: '0.75rem',
+    border: '1px solid rgba(59, 130, 246, 0.2)',
+    textDecoration: 'none',
+    transition: 'all 0.2s',
+  }}>
+    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📊</div>
+    <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#3b82f6', marginBottom: '0.25rem' }}>Product Structure</div>
+    <div style={{ fontSize: '0.85rem', color: 'var(--vocs-color_text2)' }}>Track features & progress</div>
+  </a>
 
-**Gitignore:** `.agentful/`, `.claude/agents/ephemeral/`
+  <a href="/visualizations/workflow-pipeline" style={{
+    display: 'block',
+    padding: '1.25rem',
+    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
+    borderRadius: '0.75rem',
+    border: '1px solid rgba(139, 92, 246, 0.2)',
+    textDecoration: 'none',
+    transition: 'all 0.2s',
+  }}>
+    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚙️</div>
+    <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#8b5cf6', marginBottom: '0.25rem' }}>Workflow Pipeline</div>
+    <div style={{ fontSize: '0.85rem', color: 'var(--vocs-color_text2)' }}>Monitor development flow</div>
+  </a>
 
----
+  <a href="/visualizations/quality-gates" style={{
+    display: 'block',
+    padding: '1.25rem',
+    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
+    borderRadius: '0.75rem',
+    border: '1px solid rgba(245, 158, 11, 0.2)',
+    textDecoration: 'none',
+    transition: 'all 0.2s',
+  }}>
+    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔍</div>
+    <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#f59e0b', marginBottom: '0.25rem' }}>Quality Gates</div>
+    <div style={{ fontSize: '0.85rem', color: 'var(--vocs-color_text2)' }}>Ensure code quality</div>
+  </a>
+</div>
 
-## Technology Support
-
-Detects and adapts to:
-
-- **Languages:** TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, Elixir
-- **Frontend:** React, Vue, Angular, Svelte, Next.js, Astro, SolidJS
-- **Backend:** Express, Fastify, NestJS, Hono, Next.js API Routes
-- **Databases:** PostgreSQL, MySQL, SQLite, MongoDB
-- **ORMs:** Prisma, Drizzle, TypeORM, Mongoose
-- **Testing:** Jest, Vitest, Playwright, Cypress, Pytest, JUnit
-
----
-
-## New vs Existing Projects
-
-### New Projects (No Code)
-
-1. Architect prompts for tech stack
-2. Generates template agents from best practices
-3. Implements first feature
-4. Re-analyzes actual code
-5. Updates agents with your specific patterns
-6. Continues with refined agents
-
-### Existing Projects (With Code)
-
-1. Architect samples codebase
-2. Detects patterns, conventions, structure
-3. Generates agents matching your exact style
-4. Begins implementation
+[Explore all visualizations →](/visualizations/)
 
 ---
 
-## Extended Sessions
+## Advanced Installation Options
 
-Use [Ralph Wiggum plugin](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum) for uninterrupted development:
+For custom installations, see the [Installation Guide](/getting-started/installation) to configure:
 
-```bash
-claude
-/plugin install ralph-wiggum@anthropics
-/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
-```
-
-Runs until complete, quality gates pass, or human decision required.
-
----
-
-## What It's Not
-
-- Not fully autonomous - requires human decisions
-- Not a testing framework - generates tests, needs infrastructure
-- Not a deployment system - development focused
-- Not a replacement for developers - accelerates implementation
-
-Works best with clear product specs and timely decisions.
-
----
-
-## Common Workflows
-
-### New Project
-
-```bash
-npx @itz4blitz/agentful init
-claude
-/agentful-product          # Interactive spec
-/agentful-generate         # Generate agents
-/agentful-start            # Begin development
-/agentful-status           # Check progress
-/agentful-decide           # Answer decisions
-```
-
-### Existing Codebase
-
-```bash
-npx @itz4blitz/agentful init
-claude
-/agentful-product          # Reverse-engineer spec
-/agentful-generate         # Generate from code
-/agentful-start            # Continue development
-```
-
-### Ad-hoc Questions
-
-```bash
-claude
-/agentful "Should I use REST or GraphQL?"
-```
-
----
-
-## Documentation
-
-- **[Installation](/getting-started/installation)** - Setup details
-- **[Quick Start](/getting-started/quick-start)** - Five-minute guide
-- **[First Project](/getting-started/first-project)** - Tutorial
-- **[Agents](/agents)** - Agent system details
-- **[Commands](/commands)** - Command reference
-- **[Skills](/skills)** - Portable expertise
-- **[Custom Agents](/agents/custom-agents)** - Create specialized agents
+- **Presets** - Minimal, full-stack, backend-only configurations
+- **Agents** - Choose which specialized agents to install
+- **Skills** - Add portable expertise modules
+- **Hooks** - Session start commands and health checks
+- **Quality Gates** - Configure automated validation rules
+- **Tech Stack** - Explicitly specify your technology stack
 
 ---
 
@@ -338,7 +182,3 @@ claude
 - **Documentation**: [agentful.app](https://agentful.app)
 - **Issues**: [github.com/itz4blitz/agentful/issues](https://github.com/itz4blitz/agentful/issues)
 - **Community**: [Discord](https://discord.gg/SMDvJXUe)
-
----
-
-Built on [Claude Code](https://code.anthropic.com) by Anthropic.

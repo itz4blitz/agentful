@@ -1,0 +1,207 @@
+# Product Structure Visualizer
+
+Interactive hierarchical visualization showing product → domains → features → subtasks structure with completion tracking.
+
+## Basic Usage
+
+```tsx
+import { ProductStructureVisualizer } from '@/components/visualizations'
+
+// Interactive version with all controls
+<ProductStructureVisualizer />
+```
+
+## Live Demo - Interactive
+
+<ProductStructureVisualizer />
+
+## Expanded by Default
+
+<ProductStructureVisualizer expandedByDefault={true} />
+
+## Custom Height
+
+<ProductStructureVisualizer height="900px" />
+
+## Static Version (No Interaction)
+
+<ProductStructureVisualizerStatic />
+
+## Custom Data
+
+```tsx
+import { ProductStructureVisualizer, type ProductStructure } from '@/components/visualizations'
+
+const customData: ProductStructure = {
+  product: {
+    id: 'my-product',
+    name: 'My Product',
+    completion: 45,
+    description: 'A custom product structure'
+  },
+  domains: [
+    {
+      id: 'domain-1',
+      name: 'Core Features',
+      completion: 60,
+      features: [
+        {
+          id: 'feature-1',
+          name: 'User Authentication',
+          completion: 100,
+          priority: 'CRITICAL',
+          status: 'complete',
+          subtasks: [
+            { id: 'sub-1', name: 'Login flow', completion: 100, status: 'complete' },
+            { id: 'sub-2', name: 'Password reset', completion: 100, status: 'complete' }
+          ]
+        },
+        {
+          id: 'feature-2',
+          name: 'Dashboard',
+          completion: 40,
+          priority: 'HIGH',
+          status: 'in-progress',
+          subtasks: [
+            { id: 'sub-3', name: 'Layout design', completion: 80, status: 'in-progress' },
+            { id: 'sub-4', name: 'Data widgets', completion: 0, status: 'pending' }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+<ProductStructureVisualizer data={customData} />
+```
+
+## Features
+
+### Hierarchical Structure
+- **Product** (top level) - Overall completion tracking
+- **Domains** (second level) - Logical groupings of features
+- **Features** (third level) - Specific functionality with priority and status
+- **Subtasks** (fourth level) - Granular implementation tasks
+
+### Interactive Controls
+- **Expand/Collapse** - Click domains and features to show/hide children
+- **Search** - Filter nodes by name
+- **Status Filter** - Show only Complete/In Progress/Pending items
+- **Priority Filter** - Show only Critical/High/Medium/Low features
+- **Details Modal** - Click any node to see full details
+
+### Status Tracking
+- **Complete** (100%) - Green indicator
+- **In Progress** (1-99%) - Yellow indicator with pulse animation
+- **Pending** (0%) - Gray indicator
+
+### Priority Levels
+- **CRITICAL** - Red badge
+- **HIGH** - Orange badge
+- **MEDIUM** - Blue badge
+- **LOW** - Gray badge
+
+### Visual Features
+- Progress bars on all nodes
+- Color-coded connections based on priority/status
+- Animated edges for in-progress items
+- Glassmorphism design with backdrop blur
+- Hover effects with glow
+- Smooth expand/collapse animations
+- Mini-map for navigation
+- Zoom and pan controls
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `data` | `ProductStructure` | Sample data | Product structure to visualize |
+| `interactive` | `boolean` | `true` | Enable user interactions |
+| `showControls` | `boolean` | `true` | Show zoom/pan controls |
+| `initialZoom` | `number` | `0.6` | Initial zoom level (0.3-1.5) |
+| `height` | `string` | `"700px"` | Container height |
+| `expandedByDefault` | `boolean` | `false` | Expand all nodes initially |
+
+## TypeScript Types
+
+```typescript
+interface ProductStructure {
+  product: {
+    id: string
+    name: string
+    completion: number
+    description?: string
+  }
+  domains: Array<{
+    id: string
+    name: string
+    completion: number
+    description?: string
+    features: Array<{
+      id: string
+      name: string
+      completion: number
+      priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'
+      status: 'complete' | 'in-progress' | 'pending'
+      description?: string
+      dependencies?: string[]
+      subtasks: Array<{
+        id: string
+        name: string
+        completion: number
+        status: 'complete' | 'in-progress' | 'pending'
+      }>
+    }>
+  }>
+}
+```
+
+## Accessibility
+
+- Full keyboard navigation support
+- ARIA labels on all interactive elements
+- Focus indicators for keyboard users
+- Screen reader announcements for expand/collapse
+- Semantic HTML structure
+- ESC key to close modal
+- Tab navigation through filters and controls
+
+## Use Cases
+
+- **Product Planning** - Visualize complete product structure
+- **Progress Tracking** - Monitor completion at all levels
+- **Dependency Management** - Understand feature relationships
+- **Priority Planning** - See critical vs low priority work
+- **Team Communication** - Share hierarchical progress view
+- **Status Reporting** - Quick overview of what's done/in-progress/pending
+
+## Layout Algorithm
+
+Uses a custom hierarchical tree layout:
+- Top-to-bottom structure
+- Automatic horizontal spacing (280px between siblings)
+- Automatic vertical spacing (140px between levels)
+- Subtree centering (parent centered over children)
+- Respects expand/collapse state
+- Recalculates on filter changes
+
+## Performance
+
+- Efficient re-renders using React hooks
+- Memoized layout calculations
+- CSS-based animations (no JavaScript animation)
+- Lazy loading of detail modals
+- Optimized node rendering
+
+## Browser Support
+
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+Requires support for:
+- CSS `backdrop-filter`
+- CSS custom properties
+- ES6+ JavaScript
+- React 18+

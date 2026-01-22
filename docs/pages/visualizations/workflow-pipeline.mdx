@@ -1,0 +1,214 @@
+# Development Workflow Pipeline
+
+An interactive visualization showing the complete development pipeline from product specification to deployment.
+
+## Overview
+
+The Development Workflow Pipeline demonstrates how agentful manages the entire software development lifecycle through six distinct stages, with automated quality gates and decision points ensuring high-quality output at every step.
+
+## Interactive Example
+
+Click any stage to see detailed breakdown with sub-steps and progress metrics. Use the controls to zoom and pan.
+
+import { DevelopmentWorkflowPipeline } from '../../components/visualizations/DevelopmentWorkflowPipeline.tsx'
+
+<div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+  <DevelopmentWorkflowPipeline
+    currentStage="implement"
+    completedStages={['spec']}
+    failedStages={[]}
+    interactive={false}
+    showControls={false}
+    animatedFlow={true}
+    orientation="horizontal"
+    height="600px"
+  />
+</div>
+
+## Pipeline Stages
+
+### 1. Product Specification 📋
+The **Product Analyzer** agent evaluates your product specification for completeness, clarity, and feasibility. It identifies gaps, ambiguities, and calculates a readiness score before development begins.
+
+**Key Activities:**
+- Parse and analyze `.claude/product/index.md`
+- Detect missing requirements or unclear acceptance criteria
+- Calculate product readiness score (0-100%)
+- Generate recommendations for improvement
+
+### 2. Implementation ⚙️
+The **Architect**, **Backend**, and **Frontend** agents collaborate to build your application based on the specification.
+
+**Key Activities:**
+- Architect detects tech stack and designs system architecture
+- Backend implements APIs, database schemas, and business logic
+- Frontend builds UI components, pages, and client-side interactions
+- All agents follow established patterns and conventions
+
+### 3. Testing 🧪
+The **Tester** agent writes comprehensive tests covering all code paths and user scenarios.
+
+**Key Activities:**
+- Write unit tests for individual functions and components
+- Write integration tests for API endpoints and workflows
+- Write E2E tests for critical user journeys
+- Achieve minimum 80% code coverage
+
+### 4. Quality Gates 🔍
+The **Reviewer** agent runs automated quality checks. If any check fails, the **Fixer** agent automatically attempts remediation.
+
+**Six Core Quality Gates:**
+1. **Type Checking** - No TypeScript/Flow errors
+2. **Linting** - Code follows style guide (ESLint/Prettier)
+3. **Tests** - All tests passing
+4. **Coverage** - Minimum 80% code coverage
+5. **Security** - No vulnerable dependencies
+6. **Dead Code** - No unused exports or files
+
+**Decision Point:** All checks pass?
+- **Yes** → Proceed to Review
+- **No** → Auto-fix loop (Fixer agent resolves issues)
+
+### 5. Final Review ✅
+The **Reviewer** agent performs final validation before deployment, including manual checks and documentation review.
+
+**Key Activities:**
+- Review code quality and architecture decisions
+- Verify acceptance criteria met
+- Check documentation completeness
+- Validate production readiness
+
+**Decision Point:** Approved?
+- **Yes** → Proceed to Deploy
+- **No** → Return to Implementation
+
+### 6. Deploy 🚀
+The **Orchestrator** agent coordinates deployment to staging and production environments.
+
+**Key Activities:**
+- Build production optimized bundle
+- Deploy to staging environment
+- Run smoke tests
+- Deploy to production
+- Monitor for issues
+
+## Key Features
+
+### Automated Fixer Loop
+When quality gates fail, the **Fixer** agent automatically attempts to resolve issues:
+- Fix type errors by adding proper type annotations
+- Resolve linting issues (formatting, unused variables)
+- Fix failing tests or add missing test cases
+- Update dependencies to resolve security vulnerabilities
+- Remove dead code and unused exports
+
+The fixer loop is visualized as a **red dashed edge** from the Quality Gates decision point back to Implementation.
+
+### Human-in-the-Loop Checkpoints
+While agentful automates most of the development pipeline, it includes strategic human checkpoints:
+- **Product Specification:** Review and approve before development
+- **Quality Gates:** Review failures that fixer cannot resolve
+- **Final Review:** Approve before deployment
+- **Deploy Decision:** Confirm production deployment
+
+### Real-time Progress Tracking
+Each stage shows:
+- **Status badge:** Complete (✓), In Progress (⟳), Pending (○), Failed (✕)
+- **Progress bar:** Visual percentage complete
+- **Time spent:** Duration agent worked on this stage
+- **Sub-steps:** Detailed breakdown of activities
+
+## Examples
+
+### Quality Gate Failure
+
+Here's what happens when quality gates fail:
+
+<div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+  <DevelopmentWorkflowPipeline
+    currentStage="quality"
+    completedStages={['spec', 'implement', 'test']}
+    failedStages={['quality']}
+    height="600px"
+  />
+</div>
+
+Notice the **failed status** (red ✕) on Quality Gates. The Fixer agent will automatically loop back to Implementation to resolve issues.
+
+### Successful Deployment
+
+Here's a complete successful pipeline run:
+
+<div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+  <DevelopmentWorkflowPipeline
+    currentStage="deploy"
+    completedStages={['spec', 'implement', 'test', 'quality', 'review']}
+    height="600px"
+  />
+</div>
+
+All stages show **complete status** (green ✓), and the pipeline is ready for production deployment.
+
+### Vertical Orientation
+
+For narrow layouts, use vertical orientation:
+
+<div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+  <DevelopmentWorkflowPipeline
+    currentStage="test"
+    completedStages={['spec', 'implement']}
+    orientation="vertical"
+    height="1000px"
+  />
+</div>
+
+## Integration with agentful
+
+The pipeline visualization reflects the actual state tracked in `.agentful/state.json`:
+
+```json
+{
+  "currentPhase": "implementation",
+  "currentStage": "implement",
+  "progress": {
+    "spec": 100,
+    "implement": 65,
+    "test": 0,
+    "quality": 0,
+    "review": 0,
+    "deploy": 0
+  },
+  "lastValidation": {
+    "status": "pending",
+    "gates": {}
+  }
+}
+```
+
+Run `/agentful-status` to see your current pipeline progress in the CLI.
+
+## Keyboard Shortcuts
+
+- **Tab** - Navigate between stages
+- **Enter / Space** - Open stage details modal
+- **Escape** - Close modal
+- **+** - Zoom in
+- **-** - Zoom out
+- **0** - Reset zoom
+- **Arrow keys** - Pan view
+
+## Accessibility
+
+The pipeline visualization is fully accessible:
+- All stages have ARIA labels describing status and progress
+- Keyboard navigation for all interactive elements
+- Screen reader announcements for state changes
+- High contrast colors and borders
+- Focus indicators on all clickable elements
+
+## Next Steps
+
+- **[Getting Started](/getting-started/quick-start)** - Start building with agentful
+- **[Installation](/getting-started/installation)** - Install agentful in your project
+- **[Overview](/getting-started/overview)** - Learn about agentful's architecture
+

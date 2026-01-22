@@ -1,0 +1,140 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Primary gradient - Emerald to Cyan -->
+    <linearGradient id="gradient-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+
+    <!-- Secondary gradient - Cyan to Purple -->
+    <linearGradient id="gradient-secondary" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#8b5cf6" />
+    </linearGradient>
+
+    <!-- Radial gradient for center node -->
+    <radialGradient id="gradient-radial">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.5" />
+    </radialGradient>
+
+    <!-- Enhanced glow filter for hero -->
+    <filter id="glow-hero" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Outer glow -->
+    <filter id="outer-glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Connection lines - representing agent collaboration -->
+  <g opacity="0.7">
+    <!-- Center to top-right -->
+    <line class="connection-line" x1="60" y1="60" x2="93" y2="36" stroke="url(#gradient-primary)" stroke-width="3" stroke-linecap="round" />
+    <!-- Center to right -->
+    <line class="connection-line" x1="60" y1="60" x2="99" y2="60" stroke="url(#gradient-primary)" stroke-width="3" stroke-linecap="round" />
+    <!-- Center to bottom-right -->
+    <line class="connection-line" x1="60" y1="60" x2="93" y2="84" stroke="url(#gradient-primary)" stroke-width="3" stroke-linecap="round" />
+    <!-- Center to top-left -->
+    <line class="connection-line" x1="60" y1="60" x2="27" y2="36" stroke="url(#gradient-secondary)" stroke-width="3" stroke-linecap="round" />
+    <!-- Center to left -->
+    <line class="connection-line" x1="60" y1="60" x2="21" y2="60" stroke="url(#gradient-secondary)" stroke-width="3" stroke-linecap="round" />
+    <!-- Center to bottom-left -->
+    <line class="connection-line" x1="60" y1="60" x2="27" y2="84" stroke="url(#gradient-secondary)" stroke-width="3" stroke-linecap="round" />
+  </g>
+
+  <!-- Agent nodes -->
+  <g filter="url(#outer-glow)">
+    <!-- Center node (orchestrator) - larger -->
+    <circle class="agent-node agent-node-center" cx="60" cy="60" r="13.5" fill="url(#gradient-radial)" stroke="url(#gradient-primary)" stroke-width="4" filter="url(#glow-hero)" />
+
+    <!-- Outer nodes (agents) -->
+    <!-- Top-right -->
+    <circle class="agent-node" cx="93" cy="36" r="9" fill="#0f172a" stroke="url(#gradient-primary)" stroke-width="4" />
+    <!-- Right -->
+    <circle class="agent-node" cx="99" cy="60" r="9" fill="#0f172a" stroke="url(#gradient-primary)" stroke-width="4" />
+    <!-- Bottom-right -->
+    <circle class="agent-node" cx="93" cy="84" r="9" fill="#0f172a" stroke="url(#gradient-primary)" stroke-width="4" />
+    <!-- Top-left -->
+    <circle class="agent-node" cx="27" cy="36" r="9" fill="#0f172a" stroke="url(#gradient-secondary)" stroke-width="4" />
+    <!-- Left -->
+    <circle class="agent-node" cx="21" cy="60" r="9" fill="#0f172a" stroke="url(#gradient-secondary)" stroke-width="4" />
+    <!-- Bottom-left -->
+    <circle class="agent-node" cx="27" cy="84" r="9" fill="#0f172a" stroke="url(#gradient-secondary)" stroke-width="4" />
+  </g>
+
+  <!-- Inner sparkle details -->
+  <g opacity="0.9">
+    <!-- Center sparkle -->
+    <circle cx="60" cy="60" r="4.5" fill="#ffffff" opacity="0.95" />
+    <!-- Small accent dots -->
+    <circle cx="93" cy="36" r="2.4" fill="#10b981" />
+    <circle cx="99" cy="60" r="2.4" fill="#06b6d4" />
+    <circle cx="93" cy="84" r="2.4" fill="#10b981" />
+    <circle cx="27" cy="36" r="2.4" fill="#8b5cf6" />
+    <circle cx="21" cy="60" r="2.4" fill="#06b6d4" />
+    <circle cx="27" cy="84" r="2.4" fill="#8b5cf6" />
+  </g>
+
+  <!-- Animation styles -->
+  <style>
+    @keyframes data-flow {
+      0%, 100% {
+        stroke-dashoffset: 100;
+        opacity: 0.5;
+      }
+      50% {
+        stroke-dashoffset: 0;
+        opacity: 0.9;
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .connection-line {
+        stroke-dasharray: 50;
+        animation: data-flow 3s ease-in-out infinite;
+      }
+
+      .connection-line:nth-child(1) { animation-delay: 0s; }
+      .connection-line:nth-child(2) { animation-delay: 0.5s; }
+      .connection-line:nth-child(3) { animation-delay: 1s; }
+      .connection-line:nth-child(4) { animation-delay: 1.5s; }
+      .connection-line:nth-child(5) { animation-delay: 2s; }
+      .connection-line:nth-child(6) { animation-delay: 2.5s; }
+    }
+
+    .agent-node {
+      transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      cursor: pointer;
+    }
+
+    .agent-node:hover {
+      transform: scale(1.15);
+      filter: drop-shadow(0 0 16px #10b981);
+    }
+
+    .agent-node-center:hover {
+      filter: url(#glow-hero) drop-shadow(0 0 24px #10b981);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .connection-line, .agent-node {
+        animation: none !important;
+      }
+      .agent-node:hover {
+        transform: scale(1.1);
+        transition: none;
+      }
+    }
+  </style>
+</svg>

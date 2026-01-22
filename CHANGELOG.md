@@ -1,5 +1,40 @@
 # [Unreleased]
 
+## Changed
+
+### 🎯 Simplified Preset System
+- **BREAKING**: Removed confusing tech-stack-specific presets
+  - ❌ Removed: `fullstack-typescript`, `fullstack-javascript`, `fullstack-python`, `enterprise`
+  - ✅ Kept: `default` (all components) and `minimal` (orchestrator + backend)
+- **NEW**: Default behavior installs all components (no flags needed)
+  - `npx @itz4blitz/agentful init` → installs everything (recommended)
+  - Tech stack is auto-detected on first run, irrelevant to installation
+- **IMPROVED**: Clearer messaging and philosophy
+  - "One product: agentful" - not multiple flavors
+  - "Default to power" - give users everything, let them remove what they don't need
+  - Tech-agnostic approach - works with any stack
+
+### Updated Documentation
+- Simplified README.md installation section
+- Updated help text and examples in CLI
+- Updated `agentful presets` command output
+- Added philosophy section explaining the simplification
+
+### Examples
+```bash
+# Install agentful (all components - recommended)
+npx @itz4blitz/agentful init
+
+# Minimal setup (for simple scripts/CLIs)
+npx @itz4blitz/agentful init --preset=minimal
+
+# Custom configuration
+npx @itz4blitz/agentful init --agents=orchestrator,backend --skills=validation
+
+# View installation options
+npx @itz4blitz/agentful presets
+```
+
 ## [0.5.0] - 2026-01-20
 
 ### Added

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentful Logo Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #f1f5f9;
+      min-height: 100vh;
+      padding: 3rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.25rem;
+      color: #94a3b8;
+      margin-bottom: 4rem;
+    }
+
+    .section {
+      margin-bottom: 4rem;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #10b981;
+      margin-bottom: 1.5rem;
+    }
+
+    .logo-showcase {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-items: flex-start;
+    }
+
+    .logo-card {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 1rem;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .logo-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+                  0 4px 6px -2px rgba(0, 0, 0, 0.05),
+                  0 0 20px rgba(16, 185, 129, 0.2);
+    }
+
+    .logo-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 120px;
+      margin-bottom: 1rem;
+    }
+
+    .logo-label {
+      font-size: 0.875rem;
+      color: #cbd5e1;
+      text-align: center;
+    }
+
+    .grid-demo {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .demo-bg-dark {
+      background: #0f172a;
+      padding: 2rem;
+      border-radius: 0.75rem;
+      text-align: center;
+    }
+
+    .demo-bg-light {
+      background: #1e293b;
+      padding: 2rem;
+      border-radius: 0.75rem;
+      text-align: center;
+    }
+
+    .demo-bg-gradient {
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      padding: 2rem;
+      border-radius: 0.75rem;
+      text-align: center;
+    }
+
+    .size-variants {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 1rem;
+    }
+
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: #06b6d4;
+    }
+
+    .feature-list {
+      list-style: none;
+      margin-top: 1rem;
+    }
+
+    .feature-list li {
+      padding: 0.5rem 0;
+      color: #cbd5e1;
+    }
+
+    .feature-list li::before {
+      content: "✓";
+      color: #10b981;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>agentful Logo Showcase</h1>
+    <p class="subtitle">Badass custom SVG logo for dark themes</p>
+
+    <!-- Main Variants -->
+    <div class="section">
+      <h2 class="section-title">Logo Variants</h2>
+      <div class="logo-showcase">
+        <div class="logo-card">
+          <div class="logo-wrapper">
+            <img src="/logo.svg" alt="Agentful Logo" width="176" height="32">
+          </div>
+          <p class="logo-label">Full Logo (176×32)</p>
+        </div>
+
+        <div class="logo-card">
+          <div class="logo-wrapper">
+            <img src="/logo-icon.svg" alt="Agentful Icon" width="48" height="48">
+          </div>
+          <p class="logo-label">Icon Only (48×48)</p>
+        </div>
+
+        <div class="logo-card">
+          <div class="logo-wrapper">
+            <img src="/logo-hero.svg" alt="Agentful Hero" width="120" height="120">
+          </div>
+          <p class="logo-label">Hero Version (120×120)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Different Backgrounds -->
+    <div class="section">
+      <h2 class="section-title">Logo on Different Backgrounds</h2>
+      <div class="grid-demo">
+        <div class="demo-bg-dark">
+          <img src="/logo.svg" alt="Agentful Logo" width="176" height="32">
+          <p style="margin-top: 1rem; color: #94a3b8; font-size: 0.875rem;">Dark Navy</p>
+        </div>
+
+        <div class="demo-bg-light">
+          <img src="/logo.svg" alt="Agentful Logo" width="176" height="32">
+          <p style="margin-top: 1rem; color: #94a3b8; font-size: 0.875rem;">Slate</p>
+        </div>
+
+        <div class="demo-bg-gradient">
+          <img src="/logo.svg" alt="Agentful Logo" width="176" height="32" style="filter: brightness(0) invert(1);">
+          <p style="margin-top: 1rem; color: #0f172a; font-size: 0.875rem;">Gradient (Inverted)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Size Variants -->
+    <div class="section">
+      <h2 class="section-title">Scalable Size Variants</h2>
+      <div class="size-variants">
+        <img src="/logo-icon.svg" alt="Small" width="16" height="16">
+        <img src="/logo-icon.svg" alt="Medium" width="24" height="24">
+        <img src="/logo-icon.svg" alt="Large" width="32" height="32">
+        <img src="/logo-icon.svg" alt="XL" width="48" height="48">
+        <img src="/logo-icon.svg" alt="2XL" width="64" height="64">
+        <img src="/logo-icon.svg" alt="3XL" width="96" height="96">
+      </div>
+      <p style="margin-top: 1rem; color: #94a3b8; text-align: center;">
+        Perfect clarity at any size (16px → 96px)
+      </p>
+    </div>
+
+    <!-- Design Features -->
+    <div class="section">
+      <h2 class="section-title">Design Features</h2>
+      <div style="background: rgba(30, 41, 59, 0.5); padding: 2rem; border-radius: 1rem;">
+        <ul class="feature-list">
+          <li>Connected network of nodes representing collaborative AI agents</li>
+          <li>Center node (orchestrator) with enhanced radial glow effect</li>
+          <li>6 outer nodes representing specialized agents (frontend, backend, etc.)</li>
+          <li>Gradient colors: Emerald (#10b981) to Cyan (#06b6d4) to Purple (#8b5cf6)</li>
+          <li>Smooth hover animations with pulse and glow effects</li>
+          <li>SVG format for perfect scaling and small file size (~3-4KB)</li>
+          <li>Optimized for dark themes with subtle transparency</li>
+          <li>Modern, tech-forward aesthetic conveying intelligence and collaboration</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Usage Code -->
+    <div class="section">
+      <h2 class="section-title">Usage Examples</h2>
+      <div style="background: rgba(30, 41, 59, 0.5); padding: 2rem; border-radius: 1rem;">
+        <p style="color: #cbd5e1; margin-bottom: 1rem;"><strong>HTML:</strong></p>
+        <code style="display: block; padding: 1rem; margin-bottom: 2rem;">
+          &lt;img src="/logo.svg" alt="Agentful" width="176" height="32"&gt;
+        </code>
+
+        <p style="color: #cbd5e1; margin-bottom: 1rem;"><strong>Vocs Config:</strong></p>
+        <code style="display: block; padding: 1rem; margin-bottom: 2rem;">
+          logoUrl: '/logo.svg',<br>
+          iconUrl: '/logo-icon.svg'
+        </code>
+
+        <p style="color: #cbd5e1; margin-bottom: 1rem;"><strong>React Component:</strong></p>
+        <code style="display: block; padding: 1rem;">
+          import { Logo } from '@/docs/components/Logo'<br>
+          &lt;Logo size={32} animate={true} /&gt;
+        </code>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

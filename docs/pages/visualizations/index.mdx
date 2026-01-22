@@ -1,0 +1,295 @@
+---
+title: Interactive Visualizations
+description: Beautiful, interactive visualizations of agentful's architecture, workflows, and quality gates
+---
+
+<div style={{
+  textAlign: 'center',
+  marginBottom: '3rem',
+  padding: '3rem 1rem',
+  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
+  borderRadius: '1rem',
+  border: '1px solid rgba(16, 185, 129, 0.2)',
+}}>
+  <h1 style={{
+    fontSize: '2.5rem',
+    fontWeight: '700',
+    marginBottom: '1rem',
+    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+  }}>
+    Interactive Visualizations
+  </h1>
+
+  <p style={{
+    fontSize: '1.25rem',
+    color: 'var(--vocs-color_textAccent)',
+    maxWidth: '48rem',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    lineHeight: '1.8',
+  }}>
+    Explore agentful's architecture, workflows, and quality systems through beautiful, interactive visualizations built with React Flow.
+  </p>
+</div>
+
+## Overview
+
+agentful provides four powerful visualizations that help you understand and monitor your autonomous development process. Each visualization is fully interactive, accessible, and designed to provide real-time insights into your project's progress.
+
+---
+
+## Available Visualizations
+
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+  gap: '1.5rem',
+  marginTop: '2rem',
+  marginBottom: '3rem',
+}}>
+  <a href="/visualizations/agent-architecture" style={{
+    display: 'block',
+    padding: '1.5rem',
+    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
+    borderRadius: '1rem',
+    border: '1px solid rgba(16, 185, 129, 0.2)',
+    textDecoration: 'none',
+    transition: 'all 0.2s',
+    cursor: 'pointer',
+  }}>
+    <div style={{
+      fontSize: '2.5rem',
+      marginBottom: '0.5rem',
+    }}>🎯</div>
+    <h3 style={{
+      fontSize: '1.25rem',
+      fontWeight: '600',
+      marginBottom: '0.5rem',
+      color: '#10b981',
+    }}>Agent Architecture</h3>
+    <p style={{
+      fontSize: '0.95rem',
+      color: 'var(--vocs-color_text2)',
+      lineHeight: '1.6',
+      margin: 0,
+    }}>
+      Explore the agent communication network, see how orchestrator delegates work to specialized agents, and understand the flow of information through your development system.
+    </p>
+  </a>
+
+  <a href="/visualizations/product-structure" style={{
+    display: 'block',
+    padding: '1.5rem',
+    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
+    borderRadius: '1rem',
+    border: '1px solid rgba(59, 130, 246, 0.2)',
+    textDecoration: 'none',
+    transition: 'all 0.2s',
+    cursor: 'pointer',
+  }}>
+    <div style={{
+      fontSize: '2.5rem',
+      marginBottom: '0.5rem',
+    }}>📊</div>
+    <h3 style={{
+      fontSize: '1.25rem',
+      fontWeight: '600',
+      marginBottom: '0.5rem',
+      color: '#3b82f6',
+    }}>Product Structure</h3>
+    <p style={{
+      fontSize: '0.95rem',
+      color: 'var(--vocs-color_text2)',
+      lineHeight: '1.6',
+      margin: 0,
+    }}>
+      Visualize your hierarchical product specification with domains, features, and subtasks. Track completion percentages, priorities, and dependencies in real-time.
+    </p>
+  </a>
+
+  <a href="/visualizations/workflow-pipeline" style={{
+    display: 'block',
+    padding: '1.5rem',
+    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
+    borderRadius: '1rem',
+    border: '1px solid rgba(139, 92, 246, 0.2)',
+    textDecoration: 'none',
+    transition: 'all 0.2s',
+    cursor: 'pointer',
+  }}>
+    <div style={{
+      fontSize: '2.5rem',
+      marginBottom: '0.5rem',
+    }}>⚙️</div>
+    <h3 style={{
+      fontSize: '1.25rem',
+      fontWeight: '600',
+      marginBottom: '0.5rem',
+      color: '#8b5cf6',
+    }}>Workflow Pipeline</h3>
+    <p style={{
+      fontSize: '0.95rem',
+      color: 'var(--vocs-color_text2)',
+      lineHeight: '1.6',
+      margin: 0,
+    }}>
+      Follow the complete development pipeline from specification to deployment. See decision points, automated fixer loops, and quality gate validations.
+    </p>
+  </a>
+
+  <a href="/visualizations/quality-gates" style={{
+    display: 'block',
+    padding: '1.5rem',
+    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
+    borderRadius: '1rem',
+    border: '1px solid rgba(245, 158, 11, 0.2)',
+    textDecoration: 'none',
+    transition: 'all 0.2s',
+    cursor: 'pointer',
+  }}>
+    <div style={{
+      fontSize: '2.5rem',
+      marginBottom: '0.5rem',
+    }}>🔍</div>
+    <h3 style={{
+      fontSize: '1.25rem',
+      fontWeight: '600',
+      marginBottom: '0.5rem',
+      color: '#f59e0b',
+    }}>Quality Gates</h3>
+    <p style={{
+      fontSize: '0.95rem',
+      color: 'var(--vocs-color_text2)',
+      lineHeight: '1.6',
+      margin: 0,
+    }}>
+      Monitor the six automated quality gates that ensure production-ready code: type checking, linting, tests, coverage, security, and dead code detection.
+    </p>
+  </a>
+</div>
+
+---
+
+## Key Features
+
+All visualizations share these powerful capabilities:
+
+### 🎨 Beautiful Design
+- Glassmorphism styling with subtle gradients
+- Emerald green theme matching agentful branding
+- Smooth animations and transitions
+- High contrast for readability
+
+### 🖱️ Fully Interactive
+- Click nodes to see detailed information
+- Drag to pan, scroll to zoom
+- Expand/collapse hierarchical structures
+- Real-time progress updates
+
+### ⌨️ Keyboard Navigation
+- Tab through interactive elements
+- Arrow keys for panning
+- +/- for zoom control
+- Enter/Space to interact
+
+### ♿ Accessible
+- ARIA labels for screen readers
+- Keyboard-only navigation support
+- Focus indicators on all elements
+- Semantic HTML structure
+
+### 📱 Responsive
+- Adapts to any screen size
+- Touch-friendly on mobile
+- Optimized for tablets
+- Desktop-first features
+
+---
+
+## Integration with agentful
+
+These visualizations are not just documentation - they reflect the actual state of your agentful project:
+
+**Agent Architecture** → Reads `.agentful/architecture.json` to show your custom agent system
+
+**Product Structure** → Parses `.claude/product/` to visualize your product specification
+
+**Workflow Pipeline** → Reads `.agentful/state.json` to show current development phase
+
+**Quality Gates** → Displays data from `.agentful/last-validation.json`
+
+Run `/agentful-status` in Claude Code to generate the state files these visualizations consume.
+
+---
+
+## Usage Examples
+
+### In Documentation Sites
+
+Import and use any visualization in your MDX documentation:
+
+```mdx
+import { AgentArchitectureFlow } from '../components/visualizations/AgentArchitectureFlow'
+
+<AgentArchitectureFlow />
+```
+
+### In React Applications
+
+Use as regular React components:
+
+```tsx
+import { QualityGateDashboard } from './components/visualizations/QualityGateDashboard'
+
+function App() {
+  return (
+    <div>
+      <h1>Quality Status</h1>
+      <QualityGateDashboard
+        gates={myGates}
+        showOverallScore={true}
+      />
+    </div>
+  )
+}
+```
+
+### In CLI Output
+
+Generate static SVG exports for terminal display:
+
+```bash
+# Generate visualization snapshot
+/agentful-status --export-svg=architecture.svg
+```
+
+---
+
+## Technology Stack
+
+All visualizations are built with:
+
+- **[React Flow](https://reactflow.dev/)** - Powerful graph visualization library
+- **[React](https://react.dev/)** - UI component framework
+- **[TypeScript](https://www.typescriptlang.org/)** - Type-safe development
+- **CSS-in-JS** - Scoped, dynamic styling
+
+---
+
+## Next Steps
+
+Explore each visualization to learn more:
+
+1. **[Agent Architecture](/visualizations/agent-architecture)** - Understand the agent system
+2. **[Product Structure](/visualizations/product-structure)** - Track your features
+3. **[Workflow Pipeline](/visualizations/workflow-pipeline)** - Monitor development progress
+4. **[Quality Gates](/visualizations/quality-gates)** - Ensure code quality
+
+Or jump straight into using agentful:
+
+- **[Quick Start](/getting-started/quick-start)** - Get started in 60 seconds
+- **[Configuration](/getting-started/configuration)** - Customize your setup
+- **[Commands](/commands)** - Learn the CLI commands

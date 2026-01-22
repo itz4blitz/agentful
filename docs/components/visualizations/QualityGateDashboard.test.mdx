@@ -1,0 +1,505 @@
+---
+title: Quality Gate Dashboard - Visual Tests
+description: Visual testing and verification for the Quality Gate Dashboard component
+---
+
+# Quality Gate Dashboard - Visual Tests
+
+This page contains visual tests for the Quality Gate Dashboard component to verify all features work correctly.
+
+## Test 1: All Gates Passing
+
+Expected: 100% score, all green, glow effects
+
+```tsx
+import { QualityGateDashboard } from './QualityGateDashboard'
+
+<QualityGateDashboard />
+```
+
+**Verification Checklist:**
+- [ ] Overall score shows 6/6 passing
+- [ ] Circular progress shows 100% in green
+- [ ] All 6 gate cards visible
+- [ ] All status badges show green checkmarks
+- [ ] Cards have subtle green glow
+- [ ] Hover increases glow intensity
+- [ ] Click expands card details
+
+---
+
+## Test 2: Single Gate Failing
+
+Expected: 83% score, one red card with shake animation
+
+```tsx
+import { QualityGateDashboard, QualityGate } from './QualityGateDashboard'
+
+const gates: QualityGate[] = [
+  {
+    id: 'types',
+    name: 'Type Checking',
+    icon: '📘',
+    color: '#3b82f6',
+    status: 'pass',
+    metric: { value: 0, unit: 'errors' },
+    description: 'No type errors in codebase',
+    lastChecked: new Date(),
+  },
+  {
+    id: 'lint',
+    name: 'Linting',
+    icon: '✨',
+    color: '#8b5cf6',
+    status: 'fail',
+    metric: { value: 12, unit: 'violations' },
+    description: 'Code follows style guide',
+    details: 'Found 12 ESLint violations in src/components',
+    lastChecked: new Date(),
+  },
+  {
+    id: 'tests',
+    name: 'Tests',
+    icon: '🧪',
+    color: '#f59e0b',
+    status: 'pass',
+    metric: { value: 24, total: 24, unit: 'passing' },
+    description: 'All tests passing',
+    lastChecked: new Date(),
+  },
+  {
+    id: 'coverage',
+    name: 'Coverage',
+    icon: '📊',
+    color: '#14b8a6',
+    status: 'pass',
+    metric: { value: 87, unit: '%' },
+    description: 'Minimum 80% coverage required',
+    lastChecked: new Date(),
+  },
+  {
+    id: 'security',
+    name: 'Security',
+    icon: '🔒',
+    color: '#ef4444',
+    status: 'pass',
+    metric: { value: 0, unit: 'vulnerabilities' },
+    description: 'No known vulnerabilities',
+    lastChecked: new Date(),
+  },
+  {
+    id: 'deadcode',
+    name: 'Dead Code',
+    icon: '🗑️',
+    color: '#6b7280',
+    status: 'pass',
+    metric: { value: 0, unit: 'unused exports' },
+    description: 'No unused code detected',
+    lastChecked: new Date(),
+  },
+]
+
+<QualityGateDashboard gates={gates} />
+```
+
+**Verification Checklist:**
+- [ ] Overall score shows 5/6 passing (83%)
+- [ ] Circular progress shows 83% in amber
+- [ ] Linting card has red border
+- [ ] Linting card shows red X badge
+- [ ] Linting card has shake animation
+- [ ] Other cards have green checkmarks
+- [ ] Click Linting card shows details
+
+---
+
+## Test 3: Coverage Below Threshold
+
+Expected: Coverage gate fails with red glow
+
+```tsx
+const lowCoverageGates: QualityGate[] = [
+  // ... other passing gates
+  {
+    id: 'coverage',
+    name: 'Coverage',
+    icon: '📊',
+    color: '#14b8a6',
+    status: 'fail',
+    metric: { value: 65, unit: '%' },
+    description: 'Minimum 80% coverage required',
+    details: 'Coverage at 65%, below required 80%',
+    lastChecked: new Date(),
+  },
+  // ... other gates
+]
+
+<QualityGateDashboard gates={lowCoverageGates} />
+```
+
+**Verification Checklist:**
+- [ ] Coverage shows 65% in red
+- [ ] Circular progress fills to 65%
+- [ ] Coverage card has red border
+- [ ] Status badge shows X
+- [ ] Overall score is 83% amber
+
+---
+
+## Test 4: Multiple Gates Failing
+
+Expected: Red overall score, multiple shake animations
+
+```tsx
+const multipleFailures: QualityGate[] = [
+  {
+    id: 'types',
+    name: 'Type Checking',
+    icon: '📘',
+    color: '#3b82f6',
+    status: 'fail',
+    metric: { value: 47, unit: 'errors' },
+    description: 'No type errors in codebase',
+    lastChecked: new Date(),
+  },
+  {
+    id: 'lint',
+    name: 'Linting',
+    icon: '✨',
+    color: '#8b5cf6',
+    status: 'pass',
+    metric: { value: 0, unit: 'violations' },
+    description: 'Code follows style guide',
+    lastChecked: new Date(),
+  },
+  {
+    id: 'tests',
+    name: 'Tests',
+    icon: '🧪',
+    color: '#f59e0b',
+    status: 'fail',
+    metric: { value: 18, total: 24, unit: 'passing' },
+    description: 'All tests passing',
+    lastChecked: new Date(),
+  },
+  {
+    id: 'coverage',
+    name: 'Coverage',
+    icon: '📊',
+    color: '#14b8a6',
+    status: 'fail',
+    metric: { value: 42, unit: '%' },
+    description: 'Minimum 80% coverage required',
+    lastChecked: new Date(),
+  },
+  {
+    id: 'security',
+    name: 'Security',
+    icon: '🔒',
+    color: '#ef4444',
+    status: 'pass',
+    metric: { value: 0, unit: 'vulnerabilities' },
+    description: 'No known vulnerabilities',
+    lastChecked: new Date(),
+  },
+  {
+    id: 'deadcode',
+    name: 'Dead Code',
+    icon: '🗑️',
+    color: '#6b7280',
+    status: 'pass',
+    metric: { value: 0, unit: 'unused exports' },
+    description: 'No unused code detected',
+    lastChecked: new Date(),
+  },
+]
+
+<QualityGateDashboard gates={multipleFailures} />
+```
+
+**Verification Checklist:**
+- [ ] Overall score shows 3/6 passing (50%)
+- [ ] Circular progress shows 50% in red
+- [ ] Three cards have red borders
+- [ ] Three cards shake on mount
+- [ ] Red X badges visible
+
+---
+
+## Test 5: Compact Mode
+
+Expected: Smaller cards, tighter spacing
+
+```tsx
+<QualityGateDashboard compact />
+```
+
+**Verification Checklist:**
+- [ ] Cards are smaller than default
+- [ ] Font sizes reduced
+- [ ] Padding reduced
+- [ ] Grid gap smaller
+- [ ] Icons smaller (32px instead of 48px)
+- [ ] Still readable and functional
+
+---
+
+## Test 6: Without Overall Score
+
+Expected: No summary card at top
+
+```tsx
+<QualityGateDashboard showOverallScore={false} />
+```
+
+**Verification Checklist:**
+- [ ] No large card at top
+- [ ] Only 6 gate cards visible
+- [ ] Grid starts immediately
+- [ ] Layout looks balanced
+
+---
+
+## Test 7: Non-Interactive
+
+Expected: No hover effects, no click expansion
+
+```tsx
+<QualityGateDashboard interactive={false} />
+```
+
+**Verification Checklist:**
+- [ ] Cursor is default (not pointer)
+- [ ] Hover doesn't lift cards
+- [ ] Click doesn't expand details
+- [ ] "View details" link not visible
+- [ ] Cards not focusable
+
+---
+
+## Test 8: Responsive Layout
+
+Test at different screen sizes:
+
+```tsx
+<QualityGateDashboard />
+```
+
+**Desktop (>1024px):**
+- [ ] 3 columns of cards
+- [ ] Overall score card spans full width
+- [ ] Cards have adequate spacing
+- [ ] Readable font sizes
+
+**Tablet (768px - 1024px):**
+- [ ] 2 columns of cards
+- [ ] Overall score spans full width
+- [ ] Cards maintain readability
+- [ ] Touch targets adequate (44x44px)
+
+**Mobile (<768px):**
+- [ ] 1 column (stacked)
+- [ ] Overall score full width
+- [ ] Cards full width
+- [ ] Text remains readable
+- [ ] Touch-friendly sizing
+
+---
+
+## Test 9: Circular Progress Animation
+
+Focus on coverage gate:
+
+```tsx
+const animatedCoverage: QualityGate[] = [
+  {
+    id: 'coverage',
+    name: 'Coverage',
+    icon: '📊',
+    color: '#14b8a6',
+    status: 'pass',
+    metric: { value: 87, unit: '%' },
+    description: 'Minimum 80% coverage required',
+    lastChecked: new Date(),
+  },
+]
+
+<QualityGateDashboard gates={animatedCoverage} showOverallScore={false} />
+```
+
+**Verification Checklist:**
+- [ ] Circle animates on mount (0 to 87%)
+- [ ] Animation smooth (0.5s ease-out)
+- [ ] Number updates during animation
+- [ ] Stroke has rounded caps
+- [ ] Color matches gate color
+- [ ] Background circle visible
+- [ ] Text centered in circle
+
+---
+
+## Test 10: Accessibility
+
+```tsx
+<QualityGateDashboard />
+```
+
+**Keyboard Navigation:**
+- [ ] Tab focuses on cards
+- [ ] Enter/Space expands details
+- [ ] Focus indicator visible
+- [ ] Logical tab order
+
+**Screen Reader:**
+- [ ] Dashboard has region label
+- [ ] Cards have article labels
+- [ ] Status badges announced
+- [ ] Progress values readable
+- [ ] Timestamps formatted
+
+**ARIA:**
+- [ ] All interactive elements labeled
+- [ ] Roles set correctly
+- [ ] Live regions for updates (if applicable)
+
+---
+
+## Test 11: Timestamp Formatting
+
+```tsx
+const gates: QualityGate[] = [
+  {
+    id: 'types',
+    name: 'Type Checking',
+    icon: '📘',
+    color: '#3b82f6',
+    status: 'pass',
+    metric: { value: 0, unit: 'errors' },
+    description: 'No type errors in codebase',
+    lastChecked: new Date(Date.now() - 5000), // 5s ago
+  },
+  {
+    id: 'lint',
+    name: 'Linting',
+    icon: '✨',
+    color: '#8b5cf6',
+    status: 'pass',
+    metric: { value: 0, unit: 'violations' },
+    description: 'Code follows style guide',
+    lastChecked: new Date(Date.now() - 120000), // 2m ago
+  },
+  {
+    id: 'tests',
+    name: 'Tests',
+    icon: '🧪',
+    color: '#f59e0b',
+    status: 'pass',
+    metric: { value: 24, total: 24, unit: 'passing' },
+    description: 'All tests passing',
+    lastChecked: new Date(Date.now() - 7200000), // 2h ago
+  },
+  // ... more with different times
+]
+```
+
+**Verification Checklist:**
+- [ ] "just now" for <60s
+- [ ] "Xm ago" for minutes
+- [ ] "Xh ago" for hours
+- [ ] "Xd ago" for days
+- [ ] Timestamps update correctly
+
+---
+
+## Test 12: Custom Gate Colors
+
+```tsx
+const customGates: QualityGate[] = [
+  {
+    id: 'types',
+    name: 'Custom Check',
+    icon: '🎨',
+    color: '#ec4899', // Pink
+    status: 'pass',
+    metric: { value: 100, unit: 'score' },
+    description: 'Custom quality metric',
+    lastChecked: new Date(),
+  },
+]
+
+<QualityGateDashboard gates={customGates} showOverallScore={false} />
+```
+
+**Verification Checklist:**
+- [ ] Border uses custom color
+- [ ] Icon has custom color glow
+- [ ] Metric number in custom color
+- [ ] Hover glow in custom color
+- [ ] Status badge in green (not custom)
+
+---
+
+## Performance Tests
+
+### Test 13: Rapid State Changes
+
+Simulate rapid updates:
+
+```tsx
+import { useState, useEffect } from 'react'
+
+function RapidUpdateTest() {
+  const [coverage, setCoverage] = useState(50)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCoverage((c) => (c >= 100 ? 50 : c + 5))
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
+
+  const gates: QualityGate[] = [{
+    id: 'coverage',
+    name: 'Coverage',
+    icon: '📊',
+    color: '#14b8a6',
+    status: coverage >= 80 ? 'pass' : 'fail',
+    metric: { value: coverage, unit: '%' },
+    description: 'Minimum 80% coverage required',
+    lastChecked: new Date(),
+  }]
+
+  return <QualityGateDashboard gates={gates} showOverallScore={false} />
+}
+```
+
+**Verification Checklist:**
+- [ ] Animations smooth at 60fps
+- [ ] No layout thrashing
+- [ ] Status transitions clean
+- [ ] No memory leaks
+
+---
+
+## Browser Testing
+
+Test in all major browsers:
+
+- [ ] **Chrome/Edge**: Full support
+- [ ] **Firefox**: Full support
+- [ ] **Safari**: Backdrop blur works (with -webkit-)
+- [ ] **Mobile Safari**: Touch events work
+- [ ] **Mobile Chrome**: Performance good
+
+---
+
+## Summary
+
+All tests passing indicates:
+- Component renders correctly
+- Animations smooth and performant
+- Interactive features working
+- Accessibility complete
+- Responsive across devices
+- Browser compatible
+- Production ready

@@ -1,0 +1,180 @@
+# Feature Development Pipeline
+#
+# Orchestrates end-to-end feature implementation:
+# 1. Analyze requirements
+# 2. Backend implementation (parallel with frontend)
+# 3. Frontend implementation
+# 4. Tests
+# 5. Review and validation
+#
+# Estimated duration: 15-25 minutes
+
+name: feature-development
+version: 1.0
+description: Complete feature implementation with validation
+
+# Trigger configuration
+triggers:
+  - type: manual
+  - type: webhook
+    filters:
+      event_type: feature_request
+
+# Environment variables
+env:
+  NODE_ENV: development
+  FEATURE_BRANCH: ${{ github.head_ref }}
+
+# Concurrency settings
+concurrency:
+  maxConcurrentJobs: 3
+  cancelInProgress: false
+
+# Default timeout (30 minutes)
+timeout: 1800000
+
+jobs:
+  # Job 1: Analyze feature requirements
+  - id: analyze-requirements
+    name: Analyze Feature Requirements
+    agent: product-analyzer
+    task: |
+      Analyze the feature specification from .claude/product/index.md
+      Extract technical requirements and dependencies
+      Identify potential blockers
+    timeout: 300000 # 5 minutes
+    retry:
+      maxAttempts: 1
+      backoff: fixed
+      delayMs: 2000
+
+  # Job 2: Design architecture (depends on analysis)
+  - id: design-architecture
+    name: Design Feature Architecture
+    agent: architect
+    dependsOn: analyze-requirements
+    task: |
+      Design the architecture for implementing {{feature_name}}
+      Based on analysis from previous job
+      Output architectural decisions and patterns to use
+    inputs:
+      feature_spec: ${{ analyze-requirements.output.specification }}
+    timeout: 600000 # 10 minutes
+    retry:
+      maxAttempts: 1
+
+  # Job 3: Implement backend (parallel with frontend)
+  - id: implement-backend
+    name: Implement Backend Logic
+    agent: backend
+    dependsOn: design-architecture
+    task: |
+      Implement backend services for {{feature_name}}
+      Follow architecture from design phase
+      Include:
+      - API endpoints
+      - Service layer logic
+      - Repository pattern
+      - Input validation
+      - Error handling
+    timeout: 1200000 # 20 minutes
+    retry:
+      maxAttempts: 2
+      backoff: exponential
+      delayMs: 3000
+
+  # Job 4: Implement frontend (parallel with backend)
+  - id: implement-frontend
+    name: Implement Frontend UI
+    agent: frontend
+    dependsOn: design-architecture
+    task: |
+      Implement frontend components for {{feature_name}}
+      Follow architecture from design phase
+      Include:
+      - Components
+      - State management
+      - API integration
+      - Form validation
+      - Loading states
+    timeout: 1200000 # 20 minutes
+    retry:
+      maxAttempts: 2
+      backoff: exponential
+      delayMs: 3000
+
+  # Job 5: Write tests (depends on both backend and frontend)
+  - id: write-tests
+    name: Write Test Coverage
+    agent: tester
+    dependsOn:
+      - implement-backend
+      - implement-frontend
+    task: |
+      Write comprehensive tests for {{feature_name}}
+      Include:
+      - Unit tests for services
+      - Integration tests for APIs
+      - Component tests for UI
+      - E2E test scenarios
+      Target: 80% code coverage minimum
+    timeout: 900000 # 15 minutes
+    retry:
+      maxAttempts: 2
+
+  # Job 6: Quality review (depends on tests)
+  - id: quality-review
+    name: Run Quality Gates
+    agent: reviewer
+    dependsOn: write-tests
+    task: |
+      Run all quality gates for {{feature_name}}
+      Check:
+      - Type safety (no TypeScript errors)
+      - Linting (code style compliance)
+      - Test coverage (minimum 80%)
+      - Security vulnerabilities
+      - Dead code detection
+    timeout: 600000 # 10 minutes
+    continueOnError: false
+
+  # Job 7: Fix issues if quality review fails
+  - id: fix-issues
+    name: Fix Quality Issues
+    agent: fixer
+    dependsOn: quality-review
+    when: "quality-review.status == 'failed'"
+    task: |
+      Fix issues found in quality review
+      Address:
+      - Type errors
+      - Linting violations
+      - Test failures
+      - Coverage gaps
+    timeout: 900000 # 15 minutes
+    retry:
+      maxAttempts: 2
+
+  # Job 8: Final validation (runs after fixes or if no issues)
+  - id: final-validation
+    name: Final Validation
+    agent: reviewer
+    dependsOn:
+      - quality-review
+      - fix-issues
+    task: |
+      Run final validation to ensure all quality gates pass
+      Generate completion report
+    timeout: 300000 # 5 minutes
+    continueOnError: false
+
+  # Job 9: Update completion tracking
+  - id: update-completion
+    name: Update Completion Status
+    agent: orchestrator
+    dependsOn: final-validation
+    task: |
+      Update .agentful/completion.json with feature completion
+      Mark feature as 100% complete
+      Update quality gate status
+    timeout: 60000 # 1 minute

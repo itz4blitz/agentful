@@ -13,13 +13,78 @@ agentful is a production-ready Claude Code configuration that provides structure
 
 **Production Quality**: Enterprise-grade testing (370 tests), 98.26% code coverage, comprehensive error handling, and lifecycle hooks for validation and metrics.
 
+## Web Configurator
+
+Configure your agentful installation with an interactive web interface:
+
+**[agentful.app/configure](https://agentful.app/configure)**
+
+- Visual component selection
+- 5 optimized presets
+- Custom configurations
+- Shareable setup URLs
+- No CLI required
+
+See the [Web Configurator Guide](https://agentful.app/getting-started/configurator) for details.
+
 ## Installation
+
+### Default Installation (Recommended)
+
+Install agentful with all components - works with any tech stack:
 
 ```bash
 npx @itz4blitz/agentful init
 ```
 
-This command creates the necessary directory structure and configuration files in your project.
+This installs:
+- **8 agents**: orchestrator, architect, backend, frontend, tester, reviewer, fixer, product-analyzer
+- **6 skills**: product-tracking, validation, testing, conversation, product-planning, deployment
+- **Hooks**: health-check (configurable)
+- **Quality gates**: types, tests, coverage, lint, security, dead-code
+
+**Tech stack is auto-detected** on first run (TypeScript, Python, React, etc.) - no need to specify.
+
+### Minimal Installation
+
+For simple scripts/CLIs that only need backend code:
+
+```bash
+npx @itz4blitz/agentful init --preset=minimal
+```
+
+This installs only:
+- **2 agents**: orchestrator, backend
+- **1 skill**: validation
+
+### Custom Installation
+
+Specify exactly what you want:
+
+```bash
+# Custom agents and skills
+npx @itz4blitz/agentful init --agents=orchestrator,backend,frontend --skills=validation,testing
+
+# View installation options
+npx @itz4blitz/agentful presets
+```
+
+### Shareable Configurations
+
+Use a configuration from [agentful.app/configure](https://agentful.app/configure):
+
+```bash
+npx @itz4blitz/agentful init --config=https://agentful.app/c/abc12345
+```
+
+**Available Flags:**
+- `--preset=<name>` - Use a preset configuration
+- `--agents=<list>` - Comma-separated list of agents (orchestrator, backend, frontend, tester, reviewer, fixer, architect, product-analyzer)
+- `--skills=<list>` - Comma-separated list of skills (validation, testing, product-tracking, conversation, product-planning, deployment)
+- `--hooks=<list>` - Comma-separated list of hooks (health-check, typescript-validation, notifications, format-on-save)
+- `--gates=<list>` - Comma-separated list of quality gates (types, tests, coverage, lint, security, dead-code)
+
+Flags override preset values when both are specified.
 
 ### Updating
 

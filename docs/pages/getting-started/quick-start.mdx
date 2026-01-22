@@ -7,15 +7,35 @@ description: Get started with agentful in 5 minutes.
 
 Build your project in 5 minutes.
 
-## Step 1: Initialize
+## Step 1: Install agentful
+
+### Option A: Web Configurator (Recommended)
+
+Visit **[agentful.app](https://agentful.app)** to:
+- Visual configuration builder
+- Customize agents, skills, and hooks
+- Generate installation command
+- Share configuration with team
+
+Then copy and run the generated command.
+
+### Option B: Default Installation (Fast)
+
+Install with all components (recommended for most projects):
 
 ```bash
+# Default installation - All components
 npx @itz4blitz/agentful init
+
+# Minimal installation - Backend-only (for simple scripts/APIs)
+npx @itz4blitz/agentful init --preset=minimal
 ```
 
-agentful analyzes your project and creates `.claude/product/index.md`.
+**Tech stack is auto-detected** on first run - no need to specify during installation.
 
-For complex projects with multiple business domains, you can organize into domain subdirectories.
+See the [Installation Options Guide](/getting-started/presets) for details.
+
+agentful creates `.claude/product/index.md` for your product specification.
 
 ## Step 2: Define Your Product
 
@@ -272,6 +292,22 @@ Let Fixer work. agentful auto-fixes most issues. If stuck, run `/agentful-valida
 
 <div>
 
+### Web Configurator
+Visually customize your installation
+[Configurator Guide](/getting-started/configurator)
+
+</div>
+
+<div>
+
+### Installation Options
+Learn about default vs minimal installation
+[Installation Options Guide](/getting-started/presets)
+
+</div>
+
+<div>
+
 ### Build Your First Project
 Create a complete project
 [First Project Guide](/getting-started/first-project)
@@ -280,9 +316,9 @@ Create a complete project
 
 <div>
 
-### Configuration
-Customize agentful
-[Configuration Guide](/getting-started/configuration)
+### Migration
+Switch between presets
+[Migration Guide](/getting-started/migration)
 
 </div>
 

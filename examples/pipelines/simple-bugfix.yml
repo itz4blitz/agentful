@@ -1,0 +1,87 @@
+# Simple Bugfix Pipeline
+#
+# Fast, sequential bug fixing workflow
+# Estimated duration: 5-8 minutes
+
+name: simple-bugfix
+version: 1.0
+description: Quick bug fix with validation
+
+triggers:
+  - type: manual
+
+env:
+  NODE_ENV: development
+
+concurrency:
+  maxConcurrentJobs: 1 # Sequential execution
+
+timeout: 600000 # 10 minute timeout
+
+jobs:
+  # Job 1: Analyze the bug
+  - id: analyze-bug
+    name: Analyze Bug Report
+    agent: architect
+    task: |
+      Analyze the bug report from the issue tracker
+      Identify root cause and affected components
+      Determine fix strategy
+    timeout: 180000 # 3 minutes
+    inputs:
+      issue_number: ${{ context.issue_number }}
+      description: ${{ context.description }}
+
+  # Job 2: Implement fix
+  - id: implement-fix
+    name: Implement Bug Fix
+    agent: fixer
+    dependsOn: analyze-bug
+    task: |
+      Fix the bug based on analysis
+      Follow the recommended fix strategy
+      Ensure minimal changes to reduce risk
+    timeout: 300000 # 5 minutes
+    retry:
+      maxAttempts: 2
+      backoff: fixed
+      delayMs: 2000
+
+  # Job 3: Write regression test
+  - id: write-test
+    name: Write Regression Test
+    agent: tester
+    dependsOn: implement-fix
+    task: |
+      Write a regression test for this bug
+      Ensure the bug is caught if reintroduced
+      Verify the test fails without the fix
+    timeout: 180000 # 3 minutes
+
+  # Job 4: Validate fix
+  - id: validate-fix
+    name: Validate Bug Fix
+    agent: reviewer
+    dependsOn:
+      - implement-fix
+      - write-test
+    task: |
+      Validate the bug fix:
+      - All tests pass (including new regression test)
+      - No type errors introduced
+      - Code follows style guidelines
+      - No unintended side effects
+    timeout: 180000 # 3 minutes
+    continueOnError: false
+
+  # Job 5: Update issue tracker
+  - id: update-tracker
+    name: Update Issue Tracker
+    agent: orchestrator
+    dependsOn: validate-fix
+    task: |
+      Update issue tracker with fix details
+      Link to commit/PR
+      Add "fixed" label
+    timeout: 60000 # 1 minute
+    continueOnError: true # Don't fail if tracker update fails

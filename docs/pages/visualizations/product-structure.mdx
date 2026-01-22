@@ -1,0 +1,574 @@
+---
+title: Product Structure Visualization
+description: Hierarchical visualization of your product specification with domains, features, and subtasks
+---
+
+import { ProductStructureVisualizer } from '../../components/visualizations/ProductStructureVisualizer.tsx'
+
+# Product Structure Visualization
+
+An interactive hierarchical tree showing your product specification organized by domains, features, and subtasks with real-time progress tracking.
+
+## Overview
+
+The Product Structure visualization transforms your flat or hierarchical product specification into a beautiful, navigable tree that makes it easy to:
+- Understand product scope and organization
+- Track completion percentages at every level
+- Identify high-priority features
+- See dependencies between features
+- Monitor progress in real-time
+
+---
+
+## Interactive Demo
+
+Click any node to expand/collapse its children. Hover to see detailed information.
+
+<div style={{ marginTop: '2rem', marginBottom: '3rem', minHeight: '600px' }}>
+  <ProductStructureVisualizer expandedByDefault={true} interactive={false} />
+</div>
+
+---
+
+## Hierarchy Levels
+
+### 📦 Product Level (Top)
+
+The root node representing your entire product.
+
+**Shows:**
+- Product name
+- Overall completion percentage
+- Total number of domains
+- Product description
+
+**Example:**
+```
+┌─────────────────────┐
+│   E-commerce SaaS   │
+│       65% ✓         │
+│    3 domains        │
+└─────────────────────┘
+```
+
+---
+
+### 🗂️ Domain Level
+
+Major functional areas or modules of your product.
+
+**Shows:**
+- Domain name
+- Domain completion percentage
+- Number of features in domain
+- Domain description
+
+**Color coding:**
+- **Blue (#3b82f6)** - Standard domain
+- Progress bar fills based on average feature completion
+
+**Example:**
+```
+┌─────────────────────┐
+│  User Management    │
+│       80% ✓         │
+│    5 features       │
+└─────────────────────┘
+```
+
+**Typical domains:**
+- User Management
+- Payment Processing
+- Product Catalog
+- Order Management
+- Analytics & Reporting
+
+---
+
+### ✨ Feature Level
+
+Individual features within a domain, prioritized by importance.
+
+**Shows:**
+- Feature name
+- Feature completion percentage
+- Priority badge (CRITICAL, HIGH, MEDIUM, LOW)
+- Status indicator
+- Number of subtasks
+- Dependencies on other features
+
+**Priority colors:**
+- **Red (#ef4444)** - CRITICAL
+- **Orange (#f59e0b)** - HIGH
+- **Blue (#3b82f6)** - MEDIUM
+- **Gray (#6b7280)** - LOW
+
+**Status indicators:**
+- ✓ **Complete** - 100% done
+- ⟳ **In Progress** - 1-99% done
+- ○ **Pending** - 0% done
+
+**Example:**
+```
+┌─────────────────────────┐
+│  User Authentication    │
+│         45% ⟳           │
+│  🔴 CRITICAL            │
+│  3 subtasks             │
+│  Depends: Database      │
+└─────────────────────────┘
+```
+
+---
+
+### 📝 Subtask Level (Bottom)
+
+Individual work items within a feature.
+
+**Shows:**
+- Subtask name
+- Subtask completion percentage
+- Status indicator
+
+**Example:**
+```
+┌─────────────────────┐
+│  Password Reset     │
+│       100% ✓        │
+└─────────────────────┘
+```
+
+---
+
+## Visual Indicators
+
+### Completion Percentage
+
+Each node displays a progress bar and percentage:
+
+```
+┌─────────────────────┐
+│   Feature Name      │
+│   [███████░░░] 75%  │
+└─────────────────────┘
+```
+
+- **Green bar** - Progress indicator
+- **Percentage** - Exact completion
+- **Checkmark (✓)** - When 100% complete
+
+### Priority Badges
+
+Features show priority with color-coded badges:
+
+- 🔴 **CRITICAL** - Blocking other work, must be done ASAP
+- 🟠 **HIGH** - Important but not blocking
+- 🔵 **MEDIUM** - Standard priority
+- ⚪ **LOW** - Nice to have, can defer
+
+### Status Icons
+
+- ✓ **Complete** - All work finished
+- ⟳ **In Progress** - Currently being worked on
+- ○ **Pending** - Not started yet
+
+### Expand/Collapse
+
+Click nodes to expand or collapse children:
+- **▼** - Expanded (showing children)
+- **▶** - Collapsed (children hidden)
+
+---
+
+## Example Product Structure
+
+Here's how a typical e-commerce SaaS product is organized:
+
+```
+📦 E-commerce SaaS Platform (65%)
+├─ 🗂️ User Management (80%)
+│  ├─ ✨ User Authentication (100%) 🔴 CRITICAL
+│  │  ├─ 📝 Email/Password Login (100%) ✓
+│  │  ├─ 📝 OAuth Integration (100%) ✓
+│  │  └─ 📝 Password Reset (100%) ✓
+│  ├─ ✨ User Profiles (75%) 🟠 HIGH
+│  │  ├─ 📝 Profile CRUD (100%) ✓
+│  │  ├─ 📝 Avatar Upload (50%) ⟳
+│  │  └─ 📝 Settings Page (0%) ○
+│  └─ ✨ Role-based Access (60%) 🔵 MEDIUM
+│     ├─ 📝 Admin Panel (100%) ✓
+│     └─ 📝 Permissions System (20%) ⟳
+├─ 🗂️ Product Catalog (50%)
+│  ├─ ✨ Product CRUD (80%) 🔴 CRITICAL
+│  ├─ ✨ Categories (40%) 🟠 HIGH
+│  └─ ✨ Search & Filters (30%) 🔵 MEDIUM
+└─ 🗂️ Payment Processing (40%)
+   ├─ ✨ Stripe Integration (60%) 🔴 CRITICAL
+   ├─ ✨ Shopping Cart (50%) 🟠 HIGH
+   └─ ✨ Order History (10%) ⚪ LOW
+```
+
+---
+
+## Features
+
+### Filtering by Priority
+
+Focus on what matters most by filtering features:
+
+```typescript
+<ProductStructureVisualizer
+  filterPriority="CRITICAL"
+/>
+```
+
+Shows only CRITICAL features and their parent domains.
+
+### Filtering by Status
+
+See only active work:
+
+```typescript
+<ProductStructureVisualizer
+  filterStatus="in-progress"
+/>
+```
+
+Shows only features currently being worked on.
+
+### Expand/Collapse All
+
+Quickly navigate large product trees:
+
+- **Expand All** - Show complete hierarchy
+- **Collapse All** - Show only domains
+- **Expand to Level** - Show specific depth (e.g., features but not subtasks)
+
+### Dependency Visualization
+
+Features can depend on other features:
+
+```typescript
+{
+  name: "Shopping Cart",
+  dependencies: ["user-auth", "product-catalog"]
+}
+```
+
+Dependencies are shown:
+- As dotted lines connecting features
+- In tooltip when hovering
+- With warning if dependency incomplete
+
+---
+
+## Integration with agentful
+
+### Flat Product Structure
+
+Simplest approach - all features in one file:
+
+**File:** `.claude/product/index.md`
+
+```markdown
+# E-commerce SaaS Platform
+
+## User Authentication
+Priority: CRITICAL
+Status: Complete
+Completion: 100%
+
+Users can register, login, and reset passwords.
+
+### Subtasks
+- [x] Email/Password Login
+- [x] OAuth Integration (Google, GitHub)
+- [x] Password Reset Flow
+
+## Product CRUD
+Priority: CRITICAL
+Status: In Progress
+Completion: 60%
+Dependencies: User Authentication
+
+Admins can create, read, update, and delete products.
+
+### Subtasks
+- [x] Create Product API
+- [x] List Products API
+- [ ] Update Product API
+- [ ] Delete Product API
+```
+
+### Hierarchical Product Structure
+
+For larger projects, organize by domains:
+
+**Structure:**
+```
+.claude/product/
+├─ index.md              # Product overview
+├─ domains/
+│  ├─ user-management/
+│  │  ├─ index.md        # Domain overview
+│  │  ├─ auth.md         # Authentication feature
+│  │  └─ profiles.md     # User profiles feature
+│  ├─ product-catalog/
+│  │  ├─ index.md
+│  │  ├─ products.md
+│  │  └─ categories.md
+│  └─ payments/
+│     ├─ index.md
+│     └─ stripe.md
+```
+
+**Domain Index:** `.claude/product/domains/user-management/index.md`
+
+```markdown
+# User Management Domain
+
+Handles all user-related functionality including authentication, profiles, and permissions.
+
+Completion: 80%
+```
+
+**Feature File:** `.claude/product/domains/user-management/auth.md`
+
+```markdown
+# User Authentication
+
+Priority: CRITICAL
+Status: Complete
+Completion: 100%
+
+## Description
+Users can register, login, logout, and reset passwords securely.
+
+## Acceptance Criteria
+- [ ] Email/password registration
+- [ ] OAuth login (Google, GitHub)
+- [ ] Password reset via email
+- [ ] Session management
+- [ ] JWT token refresh
+
+## Subtasks
+- [x] Email/Password Login
+- [x] OAuth Integration
+- [x] Password Reset
+- [x] Session Management
+```
+
+### Auto-detection
+
+agentful automatically detects your product structure:
+
+```bash
+# Run in Claude Code
+/agentful-start
+```
+
+Output:
+```
+✓ Detected flat product structure (.claude/product/index.md)
+✓ Found 12 features across 1 file
+✓ Overall completion: 65%
+```
+
+Or for hierarchical:
+```
+✓ Detected hierarchical product structure
+✓ Found 3 domains with 12 features
+✓ Overall completion: 65%
+```
+
+---
+
+## Keyboard Shortcuts
+
+- **Tab** - Navigate between nodes
+- **Enter / Space** - Expand/collapse node
+- **Arrow keys** - Pan view
+- **+** - Zoom in
+- **-** - Zoom out
+- **0** - Reset zoom
+- **E** - Expand all
+- **C** - Collapse all
+- **F** - Focus on selected node
+
+---
+
+## Accessibility
+
+The product structure visualization is fully accessible:
+
+- **ARIA tree role** for semantic hierarchy
+- **ARIA expanded/collapsed** attributes on nodes
+- **Keyboard navigation** through entire tree
+- **Screen reader announcements** for completion and status
+- **High contrast** colors and borders
+- **Focus indicators** on all nodes
+
+---
+
+## TypeScript Types
+
+```typescript
+// Node levels
+type NodeLevel = 'product' | 'domain' | 'feature' | 'subtask'
+
+// Status
+type NodeStatus = 'complete' | 'in-progress' | 'pending'
+
+// Priority
+type Priority = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'
+
+// Subtask
+interface Subtask {
+  id: string
+  name: string
+  completion: number
+  status: NodeStatus
+}
+
+// Feature
+interface Feature {
+  id: string
+  name: string
+  completion: number
+  priority: Priority
+  status: NodeStatus
+  subtasks: Subtask[]
+  description?: string
+  dependencies?: string[]
+}
+
+// Domain
+interface Domain {
+  id: string
+  name: string
+  completion: number
+  features: Feature[]
+  description?: string
+}
+
+// Product
+interface Product {
+  id: string
+  name: string
+  completion: number
+  description?: string
+}
+
+// Full structure
+interface ProductStructure {
+  product: Product
+  domains: Domain[]
+}
+```
+
+---
+
+## Usage Examples
+
+### Basic Usage
+
+```tsx
+import { ProductStructureVisualizer } from './visualizations/ProductStructureVisualizer'
+
+function App() {
+  return <ProductStructureVisualizer />
+}
+```
+
+### With Custom Data
+
+```tsx
+import { ProductStructureVisualizer } from './visualizations/ProductStructureVisualizer'
+
+const myProduct = {
+  product: {
+    id: 'my-saas',
+    name: 'My SaaS Platform',
+    completion: 45,
+  },
+  domains: [
+    {
+      id: 'auth',
+      name: 'Authentication',
+      completion: 80,
+      features: [
+        {
+          id: 'login',
+          name: 'User Login',
+          completion: 100,
+          priority: 'CRITICAL',
+          status: 'complete',
+          subtasks: [],
+        },
+      ],
+    },
+  ],
+}
+
+function App() {
+  return (
+    <ProductStructureVisualizer
+      data={myProduct}
+      filterPriority="HIGH"
+      initiallyExpanded={true}
+    />
+  )
+}
+```
+
+---
+
+## Best Practices
+
+### Organizing Features
+
+**Do:**
+- Group related features into logical domains
+- Use clear, descriptive feature names
+- Set realistic priorities
+- Update completion percentages regularly
+- Document dependencies
+
+**Don't:**
+- Create too many tiny features (combine related work)
+- Skip priority settings (everything can't be CRITICAL)
+- Forget to update status and completion
+- Create circular dependencies
+
+### Priority Guidelines
+
+**CRITICAL:**
+- Blocking other features
+- Core functionality
+- Security issues
+- Data loss prevention
+
+**HIGH:**
+- Important features
+- User-facing improvements
+- Performance optimizations
+
+**MEDIUM:**
+- Standard features
+- Internal improvements
+- Documentation
+
+**LOW:**
+- Nice-to-haves
+- Future enhancements
+- Experimental features
+
+---
+
+## Next Steps
+
+- **[Workflow Pipeline](/visualizations/workflow-pipeline)** - See development process
+- **[Quality Gates](/visualizations/quality-gates)** - Monitor code quality
+- **[Agent Architecture](/visualizations/agent-architecture)** - Understand agent system
+- **[Product Planning](/commands/agentful-product)** - Create product specs
+- **[Quick Start](/getting-started/quick-start)** - Start building

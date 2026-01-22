@@ -1,0 +1,191 @@
+# Production Deployment Pipeline
+#
+# Safe, staged deployment with validation gates
+# Includes pre-deployment checks, deployment, and post-deployment validation
+# Estimated duration: 10-15 minutes
+
+name: deploy-production
+version: 1.0
+description: Production deployment with safety checks
+
+triggers:
+  - type: manual # Only manual deploys to production
+  - type: webhook
+    filters:
+      event_type: deploy_production
+      environment: production
+
+env:
+  NODE_ENV: production
+  DEPLOY_ENV: production
+
+concurrency:
+  maxConcurrentJobs: 2
+  cancelInProgress: false # Never cancel production deployments
+
+timeout: 1800000 # 30 minute timeout
+
+jobs:
+  # Pre-deployment validation
+  - id: pre-deploy-validation
+    name: Pre-deployment Validation
+    agent: reviewer
+    task: |
+      Run comprehensive pre-deployment checks:
+      - All tests passing
+      - No type errors
+      - Security vulnerabilities checked
+      - Coverage meets threshold
+      - No uncommitted changes
+      - Version bumped correctly
+    timeout: 600000 # 10 minutes
+    continueOnError: false # Block deployment if validation fails
+
+  # Build production assets
+  - id: build-production
+    name: Build Production Assets
+    agent: orchestrator
+    dependsOn: pre-deploy-validation
+    task: |
+      Build optimized production assets
+      Run production build command
+      Verify build output
+    timeout: 600000 # 10 minutes
+    setup:
+      - name: Install dependencies
+        command: npm ci --production=false
+      - name: Build
+        command: npm run build
+
+  # Database migration (if needed)
+  - id: database-migration
+    name: Run Database Migrations
+    agent: backend
+    dependsOn: pre-deploy-validation
+    when: "context.runMigrations == true"
+    task: |
+      Run database migrations safely
+      - Backup database first
+      - Run migrations
+      - Verify migration success
+      - Test rollback capability
+    timeout: 600000 # 10 minutes
+    continueOnError: false
+
+  # Deploy to staging first
+  - id: deploy-staging
+    name: Deploy to Staging
+    agent: orchestrator
+    dependsOn:
+      - build-production
+      - database-migration
+    task: |
+      Deploy to staging environment for final validation
+      Use deployment tool (Vercel, AWS, etc.)
+      Wait for deployment to complete
+    timeout: 600000 # 10 minutes
+    inputs:
+      environment: staging
+      vercel_token: ${{ secrets.VERCEL_TOKEN }}
+
+  # Run smoke tests on staging
+  - id: staging-smoke-tests
+    name: Staging Smoke Tests
+    agent: tester
+    dependsOn: deploy-staging
+    task: |
+      Run smoke tests on staging deployment:
+      - Health check endpoints
+      - Critical user flows
+      - API connectivity
+      - Database connectivity
+    timeout: 300000 # 5 minutes
+    continueOnError: false
+
+  # Manual approval gate (implemented via decision system)
+  - id: manual-approval
+    name: Manual Approval Required
+    agent: orchestrator
+    dependsOn: staging-smoke-tests
+    task: |
+      Request manual approval for production deployment
+      Add decision to .agentful/decisions.json
+      Wait for approval (blocks pipeline)
+    timeout: 3600000 # 60 minutes (long timeout for approval)
+
+  # Deploy to production
+  - id: deploy-production
+    name: Deploy to Production
+    agent: orchestrator
+    dependsOn: manual-approval
+    task: |
+      Deploy to production environment
+      - Blue/green deployment if supported
+      - Gradual rollout (10%, 50%, 100%)
+      - Monitor error rates during rollout
+    timeout: 900000 # 15 minutes
+    inputs:
+      environment: production
+      vercel_token: ${{ secrets.VERCEL_TOKEN }}
+      rollout_strategy: gradual
+    continueOnError: false
+
+  # Post-deployment validation
+  - id: post-deploy-validation
+    name: Post-deployment Validation
+    agent: tester
+    dependsOn: deploy-production
+    task: |
+      Validate production deployment:
+      - Health check passes
+      - Critical flows working
+      - No spike in error rates
+      - Performance within acceptable range
+    timeout: 300000 # 5 minutes
+    retry:
+      maxAttempts: 2
+      delayMs: 30000
+
+  # Notify success
+  - id: notify-success
+    name: Notify Deployment Success
+    agent: orchestrator
+    dependsOn: post-deploy-validation
+    task: |
+      Send deployment success notifications:
+      - Slack/Discord notification
+      - Update deployment tracking
+      - Tag release in git
+    timeout: 60000 # 1 minute
+    continueOnError: true # Don't fail pipeline if notification fails
+
+  # Rollback on failure (conditional)
+  - id: rollback
+    name: Rollback Deployment
+    agent: orchestrator
+    dependsOn: deploy-production
+    when: "post-deploy-validation.status == 'failed'"
+    task: |
+      Rollback production deployment:
+      - Revert to previous version
+      - Restore database if needed
+      - Clear caches
+      - Verify rollback successful
+    timeout: 600000 # 10 minutes
+    inputs:
+      environment: production
+      vercel_token: ${{ secrets.VERCEL_TOKEN }}
+
+  # Notify failure
+  - id: notify-failure
+    name: Notify Deployment Failure
+    agent: orchestrator
+    dependsOn: rollback
+    when: "rollback.status == 'completed'"
+    task: |
+      Send deployment failure notifications:
+      - Alert on-call engineer
+      - Post to incident channel
+      - Create incident ticket
+    timeout: 60000 # 1 minute
+    continueOnError: true

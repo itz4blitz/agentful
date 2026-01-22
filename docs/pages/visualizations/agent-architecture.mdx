@@ -1,0 +1,442 @@
+---
+title: Agent Architecture Visualization
+description: Interactive visualization of agentful's agent communication network and orchestration system
+---
+
+import { AgentArchitectureFlow } from '../../components/visualizations/AgentArchitectureFlow.tsx'
+
+# Agent Architecture Visualization
+
+An interactive network diagram showing how agentful's agents communicate, delegate work, and coordinate development tasks.
+
+## Overview
+
+The Agent Architecture visualization reveals the heart of agentful's autonomous development system: a central **orchestrator** that intelligently delegates work to eight specialized agents, each with unique skills and responsibilities.
+
+This visualization helps you understand:
+- How agents communicate with each other
+- Which agent handles which types of tasks
+- The flow of information through the system
+- Dependencies between different development phases
+
+---
+
+## Interactive Demo
+
+Hover over any agent to see details. Click an agent to view its skills and responsibilities.
+
+<div style={{ marginTop: '2rem', marginBottom: '3rem' }}>
+  <AgentArchitectureFlow interactive={false} showControls={false} />
+</div>
+
+---
+
+## The Eight Core Agents
+
+### 🎯 Orchestrator (Center)
+
+**Role:** Central coordinator that manages all other agents
+
+**Responsibilities:**
+- Analyzes product specification and breaks down features
+- Delegates tasks to appropriate specialized agents
+- Tracks progress across all development phases
+- Makes high-level decisions about workflow
+- Manages human-in-the-loop checkpoints
+
+**When it works:** Throughout entire development lifecycle
+
+**Delegates to:** All agents based on current phase and task type
+
+---
+
+### 📊 Product Analyzer
+
+**Role:** Analyzes product specifications for completeness and clarity
+
+**Responsibilities:**
+- Parse `.claude/product/index.md` and domain specifications
+- Detect ambiguities, gaps, and unclear requirements
+- Calculate product readiness score (0-100%)
+- Generate recommendations for improvement
+- Identify missing acceptance criteria
+
+**Skills:**
+- Requirements analysis
+- Gap detection
+- Readiness scoring
+
+**When it works:** Before development begins, and when requirements change
+
+**Reports to:** Orchestrator
+
+---
+
+### 🏗️ Architect
+
+**Role:** Designs system architecture and tech stack
+
+**Responsibilities:**
+- Auto-detect tech stack from package.json, imports, and file structure
+- Design system architecture and component boundaries
+- Generate domain-specific agents for detected patterns
+- Establish coding conventions and patterns
+- Make technology recommendations
+
+**Skills:**
+- Tech stack detection
+- Agent generation
+- Pattern analysis
+
+**When it works:** At project start and when new domains are added
+
+**Reports to:** Orchestrator
+
+---
+
+### ⚙️ Backend
+
+**Role:** Implements server-side logic and APIs
+
+**Responsibilities:**
+- Build REST/GraphQL APIs
+- Design and implement database schemas
+- Implement authentication and authorization
+- Create background jobs and workers
+- Handle file uploads and processing
+
+**Skills:**
+- API development
+- Database design
+- Authentication
+
+**When it works:** During implementation phase for backend features
+
+**Reports to:** Orchestrator
+
+---
+
+### 🎨 Frontend
+
+**Role:** Builds UI components and pages
+
+**Responsibilities:**
+- Create reusable UI components
+- Implement pages and views
+- Manage client-side state
+- Handle forms and validation
+- Implement responsive design
+- Optimize performance (code splitting, lazy loading)
+
+**Skills:**
+- Component development
+- State management
+- Styling
+
+**When it works:** During implementation phase for frontend features
+
+**Reports to:** Orchestrator
+
+---
+
+### 🧪 Tester
+
+**Role:** Writes comprehensive tests
+
+**Responsibilities:**
+- Write unit tests for functions and components
+- Write integration tests for APIs and workflows
+- Write E2E tests for critical user journeys
+- Achieve minimum 80% code coverage
+- Test edge cases and error scenarios
+
+**Skills:**
+- Unit tests
+- Integration tests
+- E2E tests
+
+**When it works:** After implementation, before quality gates
+
+**Reports to:** Orchestrator
+
+---
+
+### 🔍 Reviewer
+
+**Role:** Validates code quality and runs automated checks
+
+**Responsibilities:**
+- Run six automated quality gates
+- Review code for patterns and best practices
+- Check documentation completeness
+- Validate production readiness
+- Generate validation reports
+
+**Skills:**
+- Quality checks
+- Dead code detection
+- Production readiness
+
+**Quality Gates:**
+1. Type checking (TypeScript/Flow)
+2. Linting (ESLint/Prettier)
+3. Tests (all passing)
+4. Coverage (minimum 80%)
+5. Security (no vulnerabilities)
+6. Dead code (no unused exports)
+
+**When it works:** Before review and deployment phases
+
+**Reports to:** Orchestrator
+
+---
+
+### 🔧 Fixer
+
+**Role:** Automatically remediates validation failures
+
+**Responsibilities:**
+- Fix type errors by adding annotations
+- Resolve linting issues (formatting, unused vars)
+- Fix failing tests or add missing test cases
+- Update vulnerable dependencies
+- Remove dead code and unused exports
+
+**Skills:**
+- Auto-remediation
+- Test fixes
+- Type error resolution
+
+**When it works:** When quality gates fail
+
+**Reports to:** Orchestrator (receives failures from Reviewer)
+
+---
+
+## Communication Patterns
+
+### Delegation Flow
+
+The orchestrator uses a hub-and-spoke pattern:
+
+```
+Orchestrator → Product Analyzer → Analyze spec
+            → Architect → Design system
+            → Backend → Implement APIs
+            → Frontend → Build UI
+            → Tester → Write tests
+            → Reviewer → Validate quality
+            → Fixer → Fix issues
+```
+
+### Information Flow
+
+Agents share information through structured data files:
+
+- **`.agentful/state.json`** - Current phase, progress, blocking issues
+- **`.agentful/architecture.json`** - Detected tech stack, generated agents
+- **`.agentful/completion.json`** - Feature completion percentages
+- **`.agentful/decisions.json`** - Pending and resolved decisions
+- **`.agentful/last-validation.json`** - Quality gate results
+
+### Feedback Loops
+
+**Auto-fix Loop:**
+```
+Reviewer (fails) → Orchestrator → Fixer → Implementation → Reviewer (retry)
+```
+
+**Human Checkpoint:**
+```
+Orchestrator → Decision needed → Pause → Human input → Resume
+```
+
+---
+
+## Customization
+
+### Domain-Specific Agents
+
+The **Architect** agent can generate custom agents for your tech stack:
+
+```typescript
+// Example: E-commerce domain agent
+{
+  name: "ecommerce-specialist",
+  role: "Implements shopping cart, checkout, payment integration",
+  skills: ["Stripe API", "Cart state", "Order processing"],
+  triggers: ["payment", "checkout", "cart", "order"]
+}
+```
+
+These appear as additional nodes connected to the orchestrator.
+
+### Agent Configuration
+
+Customize agent behavior in `.claude/agents/`:
+
+```markdown
+# Modify backend agent
+You are the Backend Agent with additional expertise in:
+- AWS Lambda deployment
+- DynamoDB data modeling
+- EventBridge event-driven patterns
+```
+
+---
+
+## Keyboard Shortcuts
+
+- **Tab** - Navigate between agents
+- **Enter / Space** - Open agent details
+- **Escape** - Close details panel
+- **+** - Zoom in
+- **-** - Zoom out
+- **0** - Reset zoom
+- **Arrow keys** - Pan view
+
+---
+
+## Integration with agentful
+
+### View Current Agent Activity
+
+```bash
+# Start Claude Code
+claude
+
+# Check which agent is working
+/agentful-status
+```
+
+Output shows:
+```
+Current Phase: Implementation
+Active Agent: backend
+Progress: 65%
+Working on: User authentication API
+```
+
+### View Agent Architecture
+
+```bash
+# Generate architecture.json
+/agentful-analyze
+
+# View in visualization (web)
+open docs/pages/visualizations/agent-architecture.mdx
+```
+
+### Monitor Agent Communication
+
+Check `.agentful/state.json` to see orchestrator's current delegation:
+
+```json
+{
+  "currentPhase": "implementation",
+  "activeAgent": "backend",
+  "task": "user-auth-api",
+  "delegatedAt": "2024-01-21T10:30:00Z",
+  "progress": 65
+}
+```
+
+---
+
+## Best Practices
+
+### When to Use Which Agent
+
+**Use Product Analyzer when:**
+- Starting a new project
+- Requirements are unclear
+- Spec needs validation
+
+**Use Architect when:**
+- Tech stack changes
+- New domain added
+- Architecture needs redesign
+
+**Use Backend when:**
+- Building APIs
+- Designing database schemas
+- Implementing authentication
+
+**Use Frontend when:**
+- Creating UI components
+- Building pages
+- Managing state
+
+**Use Tester when:**
+- After implementation
+- Adding test coverage
+- Testing edge cases
+
+**Use Reviewer when:**
+- Before deployment
+- Quality validation needed
+- Checking production readiness
+
+**Use Fixer when:**
+- Quality gates fail
+- Auto-remediation possible
+- Quick fixes needed
+
+---
+
+## Accessibility
+
+The agent architecture visualization is fully accessible:
+
+- **ARIA labels** on all nodes describing agent role and status
+- **Keyboard navigation** for all interactive elements
+- **Screen reader announcements** when hovering or selecting agents
+- **High contrast** colors and borders for visibility
+- **Focus indicators** on all clickable nodes
+
+---
+
+## TypeScript Types
+
+```typescript
+// Agent metadata
+interface AgentDetails {
+  icon: string
+  name: string
+  description: string
+  skills: string[]
+  color: string
+}
+
+// Available agents
+type AgentId =
+  | 'orchestrator'
+  | 'product-analyzer'
+  | 'architect'
+  | 'backend'
+  | 'frontend'
+  | 'tester'
+  | 'reviewer'
+  | 'fixer'
+
+// Node data
+interface AgentNodeData {
+  id: AgentId
+  label: string
+  icon: string
+  description: string
+  skills: string[]
+  color: string
+  isCenter?: boolean
+}
+```
+
+---
+
+## Next Steps
+
+- **[Product Structure](/visualizations/product-structure)** - Track feature progress
+- **[Workflow Pipeline](/visualizations/workflow-pipeline)** - Monitor development phases
+- **[Quality Gates](/visualizations/quality-gates)** - Validate code quality
+- **[Agent Reference](/agents)** - Detailed agent documentation
+- **[Commands](/commands)** - Learn CLI commands

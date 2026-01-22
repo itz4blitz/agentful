@@ -1,0 +1,636 @@
+---
+title: Migration Guide - agentful
+description: Migrate between presets and customize your agentful configuration.
+---
+
+# Migration Guide
+
+This guide covers migrating between agentful configurations, adding/removing components, and updating your installation.
+
+## Overview
+
+agentful supports three migration scenarios:
+
+1. **Switching Configurations** - Move between default, minimal, or custom setups
+2. **Adding Components** - Expand your configuration with new agents, skills, or hooks
+3. **Removing Components** - Simplify by removing unused features
+
+All migrations use the `/agentful-update` command, which intelligently merges changes while preserving your customizations.
+
+## The Update Command
+
+The `/agentful-update` command is your primary migration tool:
+
+```bash
+claude
+/agentful-update
+```
+
+**What it does**:
+1. Fetches latest templates from your agentful version
+2. Performs 3-way merge (your changes + new templates + base)
+3. Creates automatic backups in `.claude/backups/`
+4. Preserves customizations to agent files
+5. Reports conflicts for manual resolution
+
+**When to use**:
+- Switching between configurations (default, minimal, custom)
+- Adding new components
+- Updating to latest agentful version
+- Fixing corrupted configuration
+
+**Never use**:
+- `npx @itz4blitz/agentful init` after initial installation (overwrites everything)
+
+## Switching Between Configurations
+
+### From Minimal to Default
+
+**Scenario**: You started with a minimal backend API and now need full capabilities.
+
+**Before** (Minimal):
+- 2 agents (orchestrator, backend)
+- 1 skill (validation)
+- 0 hooks
+- 2 quality gates (types, tests)
+
+**After** (Default):
+- 8 agents (orchestrator, architect, backend, frontend, tester, reviewer, fixer, product-analyzer)
+- 6 skills (product-tracking, validation, testing, conversation, product-planning, deployment)
+- Hooks (health-check, configurable)
+- 6 quality gates (types, tests, coverage, lint, security, dead-code)
+
+**Migration**:
+```bash
+claude
+/agentful-update
+```
+
+**What happens**:
+1. Adds 6 new agents (architect, frontend, tester, reviewer, fixer, product-analyzer)
+2. Adds 5 new skills (product-tracking, testing, conversation, product-planning, deployment)
+3. Adds lifecycle hooks to `.claude/settings.json`
+4. Enables 4 additional quality gates (coverage, lint, security, dead-code)
+5. Preserves any customizations to orchestrator and backend agents
+
+**Expected output**:
+```
+Updating agentful configuration...
+✓ Backed up to .claude/backups/2026-01-21-123456/
+✓ Added agents: architect, frontend, tester, reviewer, fixer, product-analyzer
+✓ Added skills: product-tracking, testing, conversation, product-planning, deployment
+✓ Updated settings.json with lifecycle hooks
+✓ Preserved customizations in orchestrator.md, backend.md
+✓ Migration complete
+```
+
+---
+
+### From Default to Minimal
+
+**Scenario**: You want to simplify to a minimal configuration.
+
+**Migration**:
+```bash
+claude
+/agentful-update --preset=minimal
+```
+
+**Warning**: This removes components. Confirm before proceeding.
+
+**What happens**:
+1. Removes 6 agents (keeps orchestrator, backend only)
+2. Removes 5 skills (keeps validation only)
+3. Removes all lifecycle hooks
+4. Disables 4 quality gates (keeps types, tests only)
+5. Moves removed files to `.claude/backups/`
+
+**Recommendation**: Consider custom configuration instead:
+```bash
+/agentful-update \
+  --agents=orchestrator,backend,tester \
+  --skills=validation,testing
+```
+
+This keeps tester agent for quality assurance.
+
+---
+
+## Adding Components
+
+### Adding a Single Agent
+
+**Scenario**: Add the `tester` agent to minimal preset.
+
+**Command**:
+```bash
+/agentful-update --agents=orchestrator,backend,tester
+```
+
+**Manual alternative**:
+1. Copy `tester.md` from agentful template to `.claude/agents/`
+2. Verify it references your project's testing framework
+
+### Adding Multiple Agents
+
+**Scenario**: Add frontend and tester to backend-only setup.
+
+**Command**:
+```bash
+/agentful-update --agents=orchestrator,backend,frontend,tester
+```
+
+### Adding Skills
+
+**Scenario**: Add product-tracking skill to monitor progress.
+
+**Command**:
+```bash
+/agentful-update --skills=validation,product-tracking
+```
+
+**What happens**:
+1. Copies `.claude/skills/product-tracking/` directory
+2. Agents can now use `@product-tracking` skill
+
+### Adding Lifecycle Hooks
+
+**Scenario**: Add health check on session start.
+
+**Command**:
+```bash
+/agentful-update --hooks=health-check
+```
+
+**What happens**:
+1. Updates `.claude/settings.json`:
+```json
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node bin/hooks/health-check.js",
+          "timeout": 5,
+          "description": "Quick agentful health check"
+        }
+      ]
+    }
+  ]
+}
+```
+2. Copies `bin/hooks/health-check.js` to your project
+
+### Adding Quality Gates
+
+**Scenario**: Enable security scanning.
+
+**Command**:
+```bash
+/agentful-update --gates=types,tests,coverage,lint,security
+```
+
+**What happens**:
+1. Updates validation skill to check for vulnerabilities
+2. Reviewer agent now scans dependencies
+3. Blocks feature completion if vulnerabilities found
+
+---
+
+## Removing Components
+
+### Removing an Agent
+
+**Manual approach** (safest):
+```bash
+# Remove agent file
+rm .claude/agents/product-analyzer.md
+
+# Verify no references
+grep -r "product-analyzer" .claude/
+```
+
+**Update command approach**:
+```bash
+# Specify agents to keep (omit ones to remove)
+/agentful-update --agents=orchestrator,backend,frontend,tester,reviewer,fixer
+```
+
+This removes all agents not in the list.
+
+### Removing a Skill
+
+**Manual approach**:
+```bash
+# Remove skill directory
+rm -rf .claude/skills/deployment/
+
+# Check for usage
+grep -r "@deployment" .claude/agents/
+```
+
+### Removing Lifecycle Hooks
+
+**Edit `.claude/settings.json`** directly:
+
+Remove the hook from the appropriate event section:
+
+```json
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        // Remove this hook
+        // {
+        //   "type": "command",
+        //   "command": "npx prettier --write \"$FILE\" 2>/dev/null || true",
+        //   "description": "Auto-format files on save"
+        // }
+      ]
+    }
+  ]
+}
+```
+
+### Removing Quality Gates
+
+**Update validation skill** in `.claude/skills/validation/rules.md`:
+
+Comment out or remove gates you don't need:
+
+```markdown
+## Quality Gates
+
+- Type checking
+- Tests
+- Coverage
+- Lint
+<!-- Disabled for performance
+- Security
+- Dead code
+-->
+```
+
+---
+
+## Updating to Latest Version
+
+### Update agentful Package
+
+```bash
+# Check current version
+cat package.json | grep agentful
+
+# Update to latest
+npm install @itz4blitz/agentful@latest
+```
+
+### Update Configuration
+
+After updating the package:
+
+```bash
+claude
+/agentful-update
+```
+
+This syncs your configuration with the latest templates.
+
+**What gets updated**:
+- Agent definitions (core agents only, custom agents preserved)
+- Skill modules (new features added)
+- Command scripts (bug fixes, improvements)
+- Settings templates (new lifecycle hooks)
+
+**What's preserved**:
+- Your customizations to core agents
+- Custom agents in `.claude/agents/`
+- Product specification in `.claude/product/`
+- Runtime state in `.agentful/`
+
+---
+
+## Handling Conflicts
+
+When migrations cause conflicts, `/agentful-update` reports them:
+
+```
+⚠ Conflicts detected:
+  - .claude/agents/backend.md (modified by you and upstream)
+  - .claude/settings.json (hook collision)
+
+Options:
+  1. Keep your version
+  2. Use upstream version
+  3. Merge manually
+```
+
+### Manual Merge Process
+
+1. **View diff**:
+```bash
+diff .claude/agents/backend.md .claude/backups/latest/backend.md
+```
+
+2. **Choose merge strategy**:
+   - Keep yours: `cp .claude/backups/latest/backend.md.yours .claude/agents/backend.md`
+   - Use upstream: Do nothing (already applied)
+   - Manual merge: Edit `.claude/agents/backend.md` by hand
+
+3. **Verify**:
+```bash
+claude
+# Test that agent works correctly
+```
+
+---
+
+## Custom Configuration
+
+Build a completely custom configuration:
+
+```bash
+/agentful-update \
+  --agents=orchestrator,backend,frontend,tester \
+  --skills=validation,testing,product-tracking \
+  --hooks=health-check,typescript-validation \
+  --gates=types,tests,coverage,lint
+```
+
+This applies exactly what you specify, regardless of default or minimal presets.
+
+**Use cases**:
+- Unique project requirements
+- Fine-tuned component selection
+- Experimental configurations
+- Performance optimization
+
+---
+
+## Backward Compatibility
+
+### Will old configurations still work?
+
+Yes. agentful maintains backward compatibility across minor versions.
+
+**Guaranteed compatible**:
+- `1.0.0` → `1.x.x` (minor updates)
+- Agent file formats
+- Command interfaces
+- State file schemas
+
+**May require migration**:
+- `1.x.x` → `2.0.0` (major version)
+- Breaking changes announced in release notes
+- Migration guide provided
+
+### What if I don't update?
+
+Your installation continues working with your current agentful version. Updates are optional but recommended for:
+- Bug fixes
+- New features
+- Security patches
+- Performance improvements
+
+---
+
+## Rollback
+
+### Rollback to Previous Configuration
+
+If an update causes issues:
+
+**Option 1: Restore from backup**
+```bash
+# List backups
+ls -la .claude/backups/
+
+# Restore from backup
+cp -r .claude/backups/2026-01-21-123456/* .claude/
+```
+
+**Option 2: Revert via git**
+```bash
+git checkout .claude/
+git checkout .agentful/
+```
+
+**Option 3: Reinstall**
+```bash
+# Remove current
+rm -rf .claude/
+
+# Reinstall (default or minimal)
+npx @itz4blitz/agentful init
+# Or
+npx @itz4blitz/agentful init --preset=minimal
+```
+
+### Rollback to Previous agentful Version
+
+```bash
+# Check current version
+npm list @itz4blitz/agentful
+
+# Install specific version
+npm install @itz4blitz/agentful@1.0.0
+
+# Update configuration to match
+claude
+/agentful-update
+```
+
+---
+
+## Best Practices
+
+### Before Migration
+
+1. **Commit your work**:
+```bash
+git add .
+git commit -m "Pre-migration checkpoint"
+```
+
+2. **Verify current state**:
+```bash
+cat .agentful/state.json
+# Ensure no active work
+```
+
+3. **Backup manually** (optional):
+```bash
+cp -r .claude .claude.backup-$(date +%s)
+```
+
+### During Migration
+
+1. **Review changes**:
+```bash
+# After /agentful-update, review what changed
+git diff .claude/
+```
+
+2. **Test immediately**:
+```bash
+# Run a simple command to verify
+/agentful-status
+```
+
+3. **Check for conflicts**:
+```bash
+# Look for conflict markers
+grep -r "<<<<<<" .claude/
+```
+
+### After Migration
+
+1. **Validate setup**:
+```bash
+# Run health check
+/agentful-validate
+```
+
+2. **Update product spec if needed**:
+```bash
+# If tech stack changed, update
+vim .claude/product/index.md
+```
+
+3. **Document changes**:
+```bash
+git add .claude/
+git commit -m "Update agentful configuration"
+```
+
+---
+
+## Troubleshooting
+
+### Update command not found
+
+**Problem**: `/agentful-update` doesn't exist
+
+**Solution**:
+1. Verify agentful version: `npm list @itz4blitz/agentful`
+2. Update package: `npm install @itz4blitz/agentful@latest`
+3. Check command exists: `ls .claude/commands/agentful-update.md`
+
+### Backups not created
+
+**Problem**: No backups in `.claude/backups/`
+
+**Solution**:
+1. Manually backup: `cp -r .claude .claude.backup`
+2. Check disk space: `df -h`
+3. Verify permissions: `ls -la .claude/`
+
+### Conflicts every time
+
+**Problem**: Every update causes merge conflicts
+
+**Solution**:
+1. Stop modifying core agent files directly
+2. Use custom agents instead: create `.claude/agents/my-custom-backend.md`
+3. Or accept upstream changes and reapply customizations
+
+### Migration broke my setup
+
+**Problem**: Agents don't work after migration
+
+**Solution**:
+1. Restore from backup: `cp -r .claude/backups/latest/* .claude/`
+2. Check `.agentful/state.json` for corruption
+3. Validate with: `/agentful-validate`
+4. If unsure, fresh install: `rm -rf .claude && npx @itz4blitz/agentful init --preset=<name>`
+
+---
+
+## FAQ
+
+### Can I migrate without losing my work?
+
+Yes. `/agentful-update` preserves your customizations and runtime state. Product specifications in `.claude/product/` are never touched.
+
+### How often should I update?
+
+When new agentful versions are released or when you need new features. No required schedule.
+
+### What if I customized core agents?
+
+`/agentful-update` attempts a 3-way merge. You may need to manually resolve conflicts.
+
+### Can I undo a migration?
+
+Yes, restore from `.claude/backups/` or use git to revert changes.
+
+### Do I need to restart Claude after migration?
+
+Yes, restart to load updated configuration:
+```bash
+# Exit Claude, then restart
+claude
+```
+
+### Will migration affect my source code?
+
+No. Migrations only change `.claude/` configuration, never your source code.
+
+### Can I migrate between different tech stacks?
+
+Yes, but you'll need to manually convert your source code (e.g., JavaScript to TypeScript).
+
+---
+
+## Next Steps
+
+<div className="grid gap-4 md:grid-cols-2 mt-8">
+
+<div>
+
+### Installation Options
+Learn about default vs minimal installation
+[Installation Options Guide](/getting-started/presets)
+
+</div>
+
+<div>
+
+### Configuration
+Customize your setup
+[Configuration Guide](/getting-started/configuration)
+
+</div>
+
+</div>
+
+---
+
+## Quick Reference
+
+**Primary Command**:
+```bash
+/agentful-update --preset=<name>
+```
+
+**Custom Configuration**:
+```bash
+/agentful-update \
+  --agents=<list> \
+  --skills=<list> \
+  --hooks=<list> \
+  --gates=<list>
+```
+
+**Rollback**:
+```bash
+cp -r .claude/backups/latest/* .claude/
+```
+
+**Clean Install**:
+```bash
+rm -rf .claude
+npx @itz4blitz/agentful init
+```

@@ -35,6 +35,9 @@ docs/.vocs/
 docs/.vocs/dist/
 docs/dist/
 
+# Shareable configs (user-generated)
+docs/.configs/
+
 # Test coverage
 coverage/
 
