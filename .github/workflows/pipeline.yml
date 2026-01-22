@@ -1,0 +1,391 @@
+name: Intelligent CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  release:
+    types: [published]
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  # ============================================================================
+  # STAGE 1: DETECT CHANGES
+  # ============================================================================
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      lib: ${{ steps.filter.outputs.lib }}
+      bin: ${{ steps.filter.outputs.bin }}
+      tests: ${{ steps.filter.outputs.tests }}
+      docs: ${{ steps.filter.outputs.docs }}
+      template: ${{ steps.filter.outputs.template }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            lib:
+              - 'lib/**/*.js'
+              - 'package.json'
+              - 'package-lock.json'
+            bin:
+              - 'bin/**/*.js'
+              - 'bin/hooks/**/*.js'
+            tests:
+              - 'test/**/*.js'
+              - 'vitest.config.js'
+            docs:
+              - 'docs/**'
+              - 'vocs.config.ts'
+            template:
+              - 'template/**'
+
+  # ============================================================================
+  # STAGE 2: VALIDATION - Test only what changed
+  # ============================================================================
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.lib == 'true' ||
+      needs.detect-changes.outputs.bin == 'true' ||
+      needs.detect-changes.outputs.tests == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.lib == 'true' ||
+      needs.detect-changes.outputs.bin == 'true' ||
+      needs.detect-changes.outputs.tests == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')
+          echo "Coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 80" | bc -l) )); then
+            echo "❌ Coverage below 80% threshold"
+            exit 1
+          fi
+          echo "✅ Coverage meets 80% threshold"
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: false
+
+  validate-docs:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.docs == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build documentation
+        run: npm run docs:build
+
+      - name: Verify build artifacts
+        run: |
+          test -d docs/dist || (echo "❌ Build failed: dist directory not found" && exit 1)
+          test -f docs/dist/index.html || (echo "❌ Build failed: index.html not found" && exit 1)
+          echo "✅ Docs build successful"
+
+      - name: Upload docs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-build
+          path: docs/dist/
+          retention-days: 1
+
+  validate-templates:
+    name: Validate Templates
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.template == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate agent templates
+        run: npm run test -- test/validation/agents.validation.test.js
+
+      - name: Validate command templates
+        run: npm run test -- test/validation/commands.lint.test.js
+
+  # ============================================================================
+  # STAGE 3: SECURITY AUDIT
+  # ============================================================================
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: |
+      needs.detect-changes.outputs.lib == 'true' ||
+      needs.detect-changes.outputs.bin == 'true'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run npm audit
+        run: npm audit --audit-level high
+        continue-on-error: true
+
+      - name: Check for known vulnerabilities
+        run: |
+          # Check if there are any high/critical vulnerabilities
+          AUDIT_OUTPUT=$(npm audit --json)
+          HIGH_VULNS=$(echo $AUDIT_OUTPUT | jq '.metadata.vulnerabilities.high // 0')
+          CRITICAL_VULNS=$(echo $AUDIT_OUTPUT | jq '.metadata.vulnerabilities.critical // 0')
+
+          if [ "$HIGH_VULNS" -gt 0 ] || [ "$CRITICAL_VULNS" -gt 0 ]; then
+            echo "⚠️ Found $HIGH_VULNS high and $CRITICAL_VULNS critical vulnerabilities"
+            echo "Review with: npm audit"
+          else
+            echo "✅ No high or critical vulnerabilities found"
+          fi
+
+  # ============================================================================
+  # STAGE 4: DEPLOYMENT (main branch only)
+  # ============================================================================
+  deploy-docs:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: [detect-changes, validate-docs]
+    if: |
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'push' &&
+      needs.detect-changes.outputs.docs == 'true'
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download docs artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-build
+          path: docs/dist
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Verify deployment
+        run: |
+          echo "✅ Documentation deployed to ${{ steps.deployment.outputs.page_url }}"
+
+  publish-npm:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    needs: [lint, test, security-audit]
+    if: |
+      github.event_name == 'release' &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled')
+
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify npm package
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+          # Wait for npm registry to update
+          sleep 30
+
+          # Verify package is published
+          NPM_VERSION=$(npm view $PACKAGE_NAME version)
+
+          if [ "$NPM_VERSION" = "$PACKAGE_VERSION" ]; then
+            echo "✅ Package $PACKAGE_NAME@$PACKAGE_VERSION published successfully"
+          else
+            echo "⚠️ Published version mismatch: expected $PACKAGE_VERSION, got $NPM_VERSION"
+          fi
+
+  # ============================================================================
+  # STAGE 5: POST-DEPLOYMENT VALIDATION
+  # ============================================================================
+  validate-deployment:
+    name: Validate Deployment
+    runs-on: ubuntu-latest
+    needs: [publish-npm]
+    if: |
+      always() &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled') &&
+      github.event_name == 'release'
+
+    steps:
+      - name: Test npm package installation
+        run: |
+          PACKAGE_NAME=$(echo ${{ github.repository }} | cut -d'/' -f2)
+
+          # Try installing the package
+          npm install -g @itz4blitz/$PACKAGE_NAME
+
+          # Verify CLI is available
+          which agentful || (echo "❌ CLI not found in PATH" && exit 1)
+
+          # Test CLI command
+          agentful --version || (echo "❌ CLI version check failed" && exit 1)
+
+          echo "✅ Package installation and CLI verification successful"
+
+      - name: Deployment summary
+        run: |
+          echo "📊 Deployment Summary"
+          echo "===================="
+          echo "Package: ✅ Published to npm"
+          echo "Docs:    ${{ needs.deploy-docs.result == 'success' && '✅ Deployed' || '⏭️ Skipped' }}"
+          echo ""
+          echo "📦 npm: https://www.npmjs.com/package/@itz4blitz/agentful"
+          echo "📚 Docs: https://agentful.app"
