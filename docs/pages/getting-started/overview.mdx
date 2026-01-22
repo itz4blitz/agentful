@@ -53,11 +53,13 @@ Each agent knows when to delegate to others and when a task is outside their sco
 
 ## Architecture Diagram
 
-The orchestrator coordinates all specialist agents, delegating work based on the task at hand. Click any agent to see its responsibilities.
+The orchestrator coordinates all specialist agents, delegating work based on the task at hand.
 
+{/* TODO: Add AgentArchitectureFlow component
 <div style={{ marginTop: '2rem', marginBottom: '3rem' }}>
   <AgentArchitectureFlow interactive={false} showControls={false} />
 </div>
+*/}
 
 ---
 
@@ -93,8 +95,9 @@ Run `/agentful-generate` to analyze your codebase and generate:
 
 ### 3. Start Structured Development
 
-Run `/agentful-start` to begin the automated development workflow:
+Run `/agentful-start` to begin the automated development workflow.
 
+{/* TODO: Add DevelopmentWorkflowPipeline component
 <div style={{ marginTop: '2rem', marginBottom: '3rem' }}>
   <DevelopmentWorkflowPipeline
     currentStage="implement"
@@ -107,6 +110,7 @@ Run `/agentful-start` to begin the automated development workflow:
     height="600px"
   />
 </div>
+*/}
 
 The workflow follows these stages:
 1. **Product Specification** - Analyze requirements for completeness
@@ -131,11 +135,13 @@ You remain in control while Claude handles implementation details.
 
 ## Quality Gates
 
-All implementations are validated against six automated quality gates before deployment:
+All implementations are validated against six automated quality gates before deployment.
 
+{/* TODO: Add QualityGateDashboard component
 <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
   <QualityGateDashboard showOverallScore={true} interactive={true} />
 </div>
+*/}
 
 Every feature must pass all six gates:
 
