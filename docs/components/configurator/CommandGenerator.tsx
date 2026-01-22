@@ -11,7 +11,7 @@ type ShareState = 'idle' | 'loading' | 'success' | 'error'
 const fullConfig = {
   agents: ['orchestrator', 'architect', 'backend', 'frontend', 'tester', 'reviewer', 'fixer', 'product-analyzer'],
   skills: ['product-tracking', 'validation', 'conversation', 'product-planning', 'testing', 'deployment'],
-  hooks: ['health-check', 'typescript-validation', 'notifications', 'format-on-save'],
+  hooks: ['health-check', 'block-random-docs', 'typescript-validation', 'notifications', 'format-on-save'],
   gates: ['types', 'tests', 'coverage', 'lint', 'security', 'dead-code'],
 }
 
@@ -127,7 +127,7 @@ export const CommandGenerator: React.FC<CommandGeneratorProps> = ({ config }) =>
             <h3 style={{
               fontSize: '1rem',
               fontWeight: '600',
-              color: 'var(--vocs-color_text)',
+              color: '#000000',
             }}>
               {isFullInstall ? 'Installation Command' : 'Custom Installation Command'}
             </h3>
@@ -140,9 +140,9 @@ export const CommandGenerator: React.FC<CommandGeneratorProps> = ({ config }) =>
                   background: shareState === 'success' ? '#10b981' : 'var(--vocs-color_background)',
                   border: '1px solid var(--vocs-color_border)',
                   borderRadius: '0.375rem',
-                  color: shareState === 'success' ? 'white' : 'var(--vocs-color_text)',
+                  color: shareState === 'success' ? '#000000' : 'var(--vocs-color_text)',
                   fontSize: '0.8125rem',
-                  fontWeight: '500',
+                  fontWeight: '600',
                   cursor: shareState === 'loading' ? 'wait' : 'pointer',
                   transition: 'all 0.2s',
                   opacity: shareState === 'loading' ? 0.7 : 1,
@@ -157,9 +157,9 @@ export const CommandGenerator: React.FC<CommandGeneratorProps> = ({ config }) =>
                   background: copied ? '#10b981' : 'var(--vocs-color_background)',
                   border: '1px solid var(--vocs-color_border)',
                   borderRadius: '0.375rem',
-                  color: copied ? 'white' : 'var(--vocs-color_text)',
+                  color: copied ? '#000000' : 'var(--vocs-color_text)',
                   fontSize: '0.8125rem',
-                  fontWeight: '500',
+                  fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                 }}
@@ -171,7 +171,7 @@ export const CommandGenerator: React.FC<CommandGeneratorProps> = ({ config }) =>
           {isFullInstall && (
             <div style={{
               fontSize: '0.875rem',
-              color: 'var(--vocs-color_textAccent)',
+              color: '#000000',
             }}>
               Complete setup with all agents, skills, and automation
             </div>
@@ -180,17 +180,17 @@ export const CommandGenerator: React.FC<CommandGeneratorProps> = ({ config }) =>
 
         <div style={{
           padding: '1rem',
-          background: 'var(--vocs-color_codeBackground)',
+          background: '#1e293b',
           fontFamily: 'var(--vocs-font_mono)',
           fontSize: '0.875rem',
-          lineHeight: '1.6',
+          lineHeight: '1.7',
           overflowX: 'auto',
+          borderRadius: '0.375rem',
         }}>
           <pre style={{
             margin: 0,
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-            color: 'var(--vocs-color_codeText)',
+            whiteSpace: 'pre',
+            color: '#cbd5e1',
           }}>
             {command}
           </pre>

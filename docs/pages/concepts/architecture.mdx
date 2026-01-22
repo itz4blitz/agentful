@@ -3,23 +3,20 @@ title: Agent Architecture
 description: Visual guide to agentful's agent coordination system and how specialists collaborate.
 ---
 
-import { AgentArchitectureFlow } from '../../components/visualizations'
-
 # Agent Architecture
 
 agentful's architecture centers around a **hub-and-spoke model** where the Orchestrator coordinates all specialist agents. Each agent has clear boundaries, knows when to delegate, and communicates status back to the Orchestrator.
 
----
-
-## Interactive Architecture Diagram
-
-Explore how agents work together. Click any agent to view its skills and responsibilities.
-
-<div style={{ margin: '3rem 0' }}>
-  <AgentArchitectureFlow height="650px" />
+<div style={{
+  margin: '3rem auto',
+  maxWidth: '800px',
+  padding: '2rem',
+  background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%)',
+  borderRadius: '1rem',
+  border: '1px solid rgba(16, 185, 129, 0.2)'
+}}>
+  <img src="/architecture-diagram.svg" alt="Agent Architecture - Hub and spoke model showing orchestrator delegating to specialized agents" style={{ width: '100%', height: 'auto' }} />
 </div>
-
----
 
 ## Core Principles
 

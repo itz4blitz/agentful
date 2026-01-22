@@ -2,7 +2,7 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
   title: 'agentful',
-  description: 'Autonomous AI development framework that transforms product specs into working code. Choose your stack, select your agents, and start building in 60 seconds.',
+  description: 'An agent toolkit for development, automation, and CI',
 
   logoUrl: '/logo.svg',
   iconUrl: '/logo-icon.svg',
@@ -69,6 +69,13 @@ export default defineConfig({
         ],
       },
       {
+        text: 'Deployment',
+        items: [
+          { text: 'CI/CD Integration', link: '/ci-integration' },
+          { text: 'Remote Execution', link: '/remote-execution' },
+        ],
+      },
+      {
         text: 'Brand',
         items: [
           { text: 'Logo Usage', link: '/brand/logo' },
@@ -107,6 +114,12 @@ export default defineConfig({
       {
         rel: 'stylesheet',
         href: '/custom.css',
+      },
+    ],
+    script: [
+      {
+        src: '/animate-favicon.js',
+        async: true,
       },
     ],
   },

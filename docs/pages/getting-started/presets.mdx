@@ -19,7 +19,7 @@ npx @itz4blitz/agentful init
 
 - **8 agents**: orchestrator, architect, backend, frontend, tester, reviewer, fixer, product-analyzer
 - **6 skills**: product-tracking, validation, testing, conversation, product-planning, deployment
-- **Hooks**: health-check (configurable)
+- **Hooks**: health-check, block-random-docs (both configurable)
 - **Quality gates**: types, tests, coverage, lint, security, dead-code
 
 **Philosophy**:
@@ -109,6 +109,7 @@ npx @itz4blitz/agentful init \
 
 **Hooks**:
 - `health-check` - Session start validation
+- `block-random-docs` - Prevents random markdown file creation (enabled by default)
 - `typescript-validation` - Type checks after file changes
 - `notifications` - Desktop alerts
 - `format-on-save` - Auto-format files

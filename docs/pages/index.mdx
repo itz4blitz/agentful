@@ -14,39 +14,51 @@ import { ConfigWizard } from '../components/configurator/ConfigWizard'
   border: '1px solid rgba(16, 185, 129, 0.2)',
 }}>
 
-  <h1 style={{
-    fontSize: '3rem',
-    fontWeight: '700',
-    marginBottom: '1rem',
-    background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    backgroundClip: 'text',
+  <div style={{
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '1.25rem',
+    marginBottom: '1.5rem',
   }}>
-    agentful
-  </h1>
+    <img
+      src="/logo-icon.svg"
+      alt="agentful"
+      style={{
+        width: '88px',
+        height: '88px',
+        marginBottom: '-10px',
+      }}
+    />
+    <div style={{
+      fontSize: '3.5rem',
+      fontWeight: '700',
+      margin: 0,
+      lineHeight: 1.2,
+      background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
+    }}>agentful</div>
+  </div>
 
   <p style={{
     fontSize: '1.5rem',
-    color: 'var(--vocs-color_textAccent)',
+    color: '#cbd5e1',
     fontWeight: '500',
     maxWidth: '48rem',
     marginLeft: 'auto',
     marginRight: 'auto',
   }}>
-    AI agents that build your product while you sleep
+    An agent toolkit for development, automation, and CI
   </p>
 </div>
-
----
 
 ## Configure Your Installation
 
 Use this interactive configurator to customize your agentful installation. Choose from presets or build a custom configuration tailored to your project's needs.
 
 <ConfigWizard />
-
----
 
 ## Quick Installation
 
@@ -65,8 +77,6 @@ This creates:
 - `.agentful/` - Runtime state (gitignored)
 - `.claude/product/` - Product specification structure
 
----
-
 ## What is agentful?
 
 **agentful** extends Claude Code with specialized agents and structured workflows for autonomous development:
@@ -77,8 +87,6 @@ This creates:
 - **Tech Stack Detection** - Automatically detects and adapts to your stack
 
 [Learn more about how it works →](/getting-started/overview)
-
----
 
 ## After Installation
 
@@ -91,78 +99,6 @@ Once agentful is installed:
 
 For more details, see the [Quick Start Guide](/getting-started/quick-start).
 
----
-
-## Explore Interactive Visualizations
-
-<div style={{
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-  gap: '1rem',
-  marginTop: '1.5rem',
-  marginBottom: '2rem',
-}}>
-  <a href="/visualizations/agent-architecture" style={{
-    display: 'block',
-    padding: '1.25rem',
-    background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
-    borderRadius: '0.75rem',
-    border: '1px solid rgba(16, 185, 129, 0.2)',
-    textDecoration: 'none',
-    transition: 'all 0.2s',
-  }}>
-    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎯</div>
-    <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#10b981', marginBottom: '0.25rem' }}>Agent Architecture</div>
-    <div style={{ fontSize: '0.85rem', color: 'var(--vocs-color_text2)' }}>See how agents communicate</div>
-  </a>
-
-  <a href="/visualizations/product-structure" style={{
-    display: 'block',
-    padding: '1.25rem',
-    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%)',
-    borderRadius: '0.75rem',
-    border: '1px solid rgba(59, 130, 246, 0.2)',
-    textDecoration: 'none',
-    transition: 'all 0.2s',
-  }}>
-    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📊</div>
-    <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#3b82f6', marginBottom: '0.25rem' }}>Product Structure</div>
-    <div style={{ fontSize: '0.85rem', color: 'var(--vocs-color_text2)' }}>Track features & progress</div>
-  </a>
-
-  <a href="/visualizations/workflow-pipeline" style={{
-    display: 'block',
-    padding: '1.25rem',
-    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)',
-    borderRadius: '0.75rem',
-    border: '1px solid rgba(139, 92, 246, 0.2)',
-    textDecoration: 'none',
-    transition: 'all 0.2s',
-  }}>
-    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚙️</div>
-    <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#8b5cf6', marginBottom: '0.25rem' }}>Workflow Pipeline</div>
-    <div style={{ fontSize: '0.85rem', color: 'var(--vocs-color_text2)' }}>Monitor development flow</div>
-  </a>
-
-  <a href="/visualizations/quality-gates" style={{
-    display: 'block',
-    padding: '1.25rem',
-    background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)',
-    borderRadius: '0.75rem',
-    border: '1px solid rgba(245, 158, 11, 0.2)',
-    textDecoration: 'none',
-    transition: 'all 0.2s',
-  }}>
-    <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🔍</div>
-    <div style={{ fontSize: '0.95rem', fontWeight: '600', color: '#f59e0b', marginBottom: '0.25rem' }}>Quality Gates</div>
-    <div style={{ fontSize: '0.85rem', color: 'var(--vocs-color_text2)' }}>Ensure code quality</div>
-  </a>
-</div>
-
-[Explore all visualizations →](/visualizations/)
-
----
-
 ## Advanced Installation Options
 
 For custom installations, see the [Installation Guide](/getting-started/installation) to configure:
@@ -173,8 +109,6 @@ For custom installations, see the [Installation Guide](/getting-started/installa
 - **Hooks** - Session start commands and health checks
 - **Quality Gates** - Configure automated validation rules
 - **Tech Stack** - Explicitly specify your technology stack
-
----
 
 ## Resources
 

@@ -261,6 +261,37 @@ User configuration is stored in `.claude/` (version controlled):
 | `/agentful-decide` | Answer pending decisions |
 | `/agentful-update` | Smart update mechanism - fetches latest templates and gracefully migrates changes |
 
+## CI/CD Integration
+
+Run agentful agents in GitHub Actions, GitLab CI, Jenkins, or Bitbucket Pipelines.
+
+```bash
+# Generate workflow files for your CI platform
+agentful ci --generate-workflow
+
+# Or use the interactive command
+agentful ci
+```
+
+See `examples/` for sample workflow configurations ([GitHub Actions](examples/github-actions.yml), [GitLab CI](examples/gitlab-ci.yml), [Jenkins](examples/jenkins.groovy)).
+
+## Remote Execution
+
+Run agentful agents on remote servers via secure HTTP API.
+
+```bash
+# Start server with Tailscale (most secure, recommended)
+agentful serve
+
+# Start server with HMAC authentication and HTTPS
+agentful serve --auth=hmac --secret=$SECRET --https --cert=cert.pem --key=key.pem
+
+# Start server for local SSH tunnel access
+agentful serve --auth=none
+```
+
+Three authentication modes: **Tailscale** (WireGuard encryption), **HMAC** (signature-based with replay protection), **SSH tunnel** (localhost-only). See `examples/server-deployment.sh` for complete deployment examples including Oracle Cloud Free Tier, Let's Encrypt SSL, and systemd service configuration.
+
 ## Technology Support
 
 agentful detects and adapts to your technology stack automatically:
@@ -281,6 +312,12 @@ agentful detects and adapts to your technology stack automatically:
 ## Documentation
 
 Full documentation: [agentful.app](https://agentful.app)
+
+Key guides:
+- [CI/CD Integration](https://agentful.app/ci-integration) - Deploy agents to production
+- [Quick Start](https://agentful.app/getting-started/quick-start) - Get started in 5 minutes
+- [Agent Architecture](https://agentful.app/concepts/architecture) - How agents work
+- [Commands Reference](https://agentful.app/commands) - All available commands
 
 ## Project Structure
 

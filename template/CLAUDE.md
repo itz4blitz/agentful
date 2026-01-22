@@ -43,6 +43,7 @@ claude --dangerously-skip-permissions
 | `/agentful-decide` | Answer pending decisions blocking work |
 | `/agentful-validate` | Run all quality checks manually |
 | `/agentful-product` | Analyze and improve product specification |
+| `/agentful-serve` | Start secure remote execution server |
 | `/agents` | List all available specialized agents |
 
 ## When to Use What
@@ -67,6 +68,9 @@ claude --dangerously-skip-permissions
 
 **Want to add features?**
 → Edit `.claude/product/index.md`, then run `/agentful-start` (picks up changes automatically)
+
+**Need remote execution?**
+→ Run `/agentful-serve` to start an HTTP API server with Tailscale, HMAC, or SSH tunnel authentication
 
 ## File Structure
 
@@ -133,6 +137,50 @@ The `reviewer` agent runs these checks automatically. The `fixer` agent resolves
 **GitHub**: [github.com/itz4blitz/agentful](https://github.com/itz4blitz/agentful)
 **Issues**: Report bugs or request features on GitHub Issues
 **Version**: Check `package.json` for your agentful version
+
+---
+
+## Configuration
+
+### Documentation Hook
+
+By default, agentful blocks creation of random markdown files to keep your codebase clean.
+
+**Always allowed**:
+- ✅ `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `LICENSE.md`
+- ✅ `.claude/agents/*.md` - Agent definitions
+- ✅ `.claude/skills/*/SKILL.md` - Skill documentation
+- ✅ `.claude/product/**/*.md` - Product specifications
+
+**Allowed only if parent directory exists**:
+- 📁 `docs/*.md`, `docs/pages/*.mdx` - Requires `docs/` directory
+- 📁 `documentation/*.md` - Requires `documentation/` directory
+- 📁 `wiki/*.md` - Requires `wiki/` directory
+- 📁 `guides/*.md` - Requires `guides/` directory
+
+This prevents accidental creation of `docs/pages/foo.mdx` when you don't have a docs site.
+
+**To disable the hook**:
+
+Option 1: Set environment variable (temporary):
+```bash
+export AGENTFUL_ALLOW_RANDOM_DOCS=true
+claude
+```
+
+Option 2: Remove from `.claude/settings.json` (permanent):
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      // Remove or comment out the block-random-docs hook
+    ]
+  }
+}
+```
+
+Option 3: Customize allowed patterns:
+Edit `bin/hooks/block-random-docs.js` and modify the `ALLOWED_PATTERNS` array.
 
 ---
 

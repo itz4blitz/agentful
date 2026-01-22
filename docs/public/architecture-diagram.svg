@@ -1,0 +1,109 @@
+<svg width="800" height="600" viewBox="0 0 800 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad-orchestrator" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="grad-analyzer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="grad-architect" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="grad-backend" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+    <linearGradient id="grad-frontend" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="grad-tester" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+    <linearGradient id="grad-reviewer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14b8a6"/>
+      <stop offset="100%" stop-color="#0d9488"/>
+    </linearGradient>
+    <linearGradient id="grad-fixer" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#64748b" />
+    </marker>
+  </defs>
+
+  <!-- Connections from Orchestrator to agents -->
+  <line x1="400" y1="300" x2="250" y2="150" stroke="#64748b" stroke-width="2" opacity="0.3" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="300" x2="550" y2="150" stroke="#64748b" stroke-width="2" opacity="0.3" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="300" x2="200" y2="300" stroke="#64748b" stroke-width="2" opacity="0.3" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="300" x2="600" y2="300" stroke="#64748b" stroke-width="2" opacity="0.3" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="300" x2="250" y2="450" stroke="#64748b" stroke-width="2" opacity="0.3" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="300" x2="550" y2="450" stroke="#64748b" stroke-width="2" opacity="0.3" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="300" x2="325" y2="475" stroke="#64748b" stroke-width="2" opacity="0.3" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="300" x2="475" y2="475" stroke="#64748b" stroke-width="2" opacity="0.3" marker-end="url(#arrowhead)"/>
+
+  <!-- Center: Orchestrator -->
+  <circle cx="400" cy="300" r="70" fill="url(#grad-orchestrator)" filter="drop-shadow(0 4px 12px rgba(16, 185, 129, 0.4))"/>
+  <text x="400" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="32" text-anchor="middle" fill="white">🎯</text>
+  <text x="400" y="315" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" text-anchor="middle" fill="white">Orchestrator</text>
+
+  <!-- Top Left: Product Analyzer -->
+  <circle cx="250" cy="150" r="50" fill="url(#grad-analyzer)" filter="drop-shadow(0 2px 8px rgba(59, 130, 246, 0.3))"/>
+  <text x="250" y="145" font-family="system-ui, -apple-system, sans-serif" font-size="24" text-anchor="middle" fill="white">📊</text>
+  <text x="250" y="165" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="white">Product</text>
+  <text x="250" y="177" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="white">Analyzer</text>
+
+  <!-- Top Right: Architect -->
+  <circle cx="550" cy="150" r="50" fill="url(#grad-architect)" filter="drop-shadow(0 2px 8px rgba(139, 92, 246, 0.3))"/>
+  <text x="550" y="145" font-family="system-ui, -apple-system, sans-serif" font-size="24" text-anchor="middle" fill="white">🏗️</text>
+  <text x="550" y="165" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="white">Architect</text>
+
+  <!-- Middle Left: Backend -->
+  <circle cx="200" cy="300" r="50" fill="url(#grad-backend)" filter="drop-shadow(0 2px 8px rgba(6, 182, 212, 0.3))"/>
+  <text x="200" y="295" font-family="system-ui, -apple-system, sans-serif" font-size="24" text-anchor="middle" fill="white">⚙️</text>
+  <text x="200" y="315" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="white">Backend</text>
+
+  <!-- Middle Right: Frontend -->
+  <circle cx="600" cy="300" r="50" fill="url(#grad-frontend)" filter="drop-shadow(0 2px 8px rgba(245, 158, 11, 0.3))"/>
+  <text x="600" y="295" font-family="system-ui, -apple-system, sans-serif" font-size="24" text-anchor="middle" fill="white">🎨</text>
+  <text x="600" y="315" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="white">Frontend</text>
+
+  <!-- Bottom Left: Tester -->
+  <circle cx="250" cy="450" r="50" fill="url(#grad-tester)" filter="drop-shadow(0 2px 8px rgba(236, 72, 153, 0.3))"/>
+  <text x="250" y="445" font-family="system-ui, -apple-system, sans-serif" font-size="24" text-anchor="middle" fill="white">🧪</text>
+  <text x="250" y="465" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="white">Tester</text>
+
+  <!-- Bottom Right: Reviewer -->
+  <circle cx="550" cy="450" r="50" fill="url(#grad-reviewer)" filter="drop-shadow(0 2px 8px rgba(20, 184, 166, 0.3))"/>
+  <text x="550" y="445" font-family="system-ui, -apple-system, sans-serif" font-size="24" text-anchor="middle" fill="white">🔍</text>
+  <text x="550" y="465" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="600" text-anchor="middle" fill="white">Reviewer</text>
+
+  <!-- Bottom Left 2: Fixer -->
+  <circle cx="325" cy="475" r="45" fill="url(#grad-fixer)" filter="drop-shadow(0 2px 8px rgba(239, 68, 68, 0.3))"/>
+  <text x="325" y="470" font-family="system-ui, -apple-system, sans-serif" font-size="22" text-anchor="middle" fill="white">🔧</text>
+  <text x="325" y="487" font-family="system-ui, -apple-system, sans-serif" font-size="10" font-weight="600" text-anchor="middle" fill="white">Fixer</text>
+
+  <!-- Bottom Right 2: Additional agent placeholder -->
+  <circle cx="475" cy="475" r="45" fill="url(#grad-orchestrator)" opacity="0.5" stroke="#10b981" stroke-width="2" stroke-dasharray="4,4" fill="none"/>
+  <text x="475" y="475" font-family="system-ui, -apple-system, sans-serif" font-size="18" text-anchor="middle" fill="#64748b">+</text>
+  <text x="475" y="492" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="500" text-anchor="middle" fill="#64748b">Custom</text>
+
+  <!-- Labels for delegation -->
+  <text x="400" y="40" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" text-anchor="middle" fill="#e2e8f0">Hub-and-Spoke Architecture</text>
+  <text x="400" y="65" font-family="system-ui, -apple-system, sans-serif" font-size="13" text-anchor="middle" fill="#94a3b8">Orchestrator delegates to specialized agents</text>
+
+  <!-- Legend -->
+  <g transform="translate(50, 540)">
+    <line x1="0" y1="0" x2="30" y2="0" stroke="#64748b" stroke-width="2" opacity="0.3" marker-end="url(#arrowhead)"/>
+    <text x="40" y="5" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#94a3b8">Delegation</text>
+
+    <circle cx="140" cy="0" r="6" stroke="#10b981" stroke-width="2" stroke-dasharray="2,2" fill="none"/>
+    <text x="155" y="5" font-family="system-ui, -apple-system, sans-serif" font-size="11" fill="#94a3b8">Custom agent slot</text>
+  </g>
+</svg>

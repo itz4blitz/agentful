@@ -16,7 +16,7 @@ export interface ConfigState {
 const fullConfig: ConfigState = {
   agents: ['orchestrator', 'architect', 'backend', 'frontend', 'tester', 'reviewer', 'fixer', 'product-analyzer'],
   skills: ['product-tracking', 'validation', 'conversation', 'product-planning', 'testing', 'deployment'],
-  hooks: ['health-check', 'typescript-validation', 'notifications', 'format-on-save'],
+  hooks: ['health-check', 'block-random-docs', 'typescript-validation', 'notifications', 'format-on-save'],
   gates: ['types', 'tests', 'coverage', 'lint', 'security', 'dead-code'],
 }
 
@@ -43,79 +43,84 @@ export const ConfigWizard: React.FC = () => {
     <div className="config-wizard" style={{ maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
-        <h2 style={{
-          marginBottom: '0.75rem',
-          fontSize: '2rem',
-          fontWeight: '700',
-          color: 'var(--vocs-color_text)'
-        }}>
-          Install agentful for Claude Code
-        </h2>
-        <p style={{
-          color: 'var(--vocs-color_textAccent)',
-          fontSize: '1.125rem',
-          marginBottom: '2rem',
-          lineHeight: '1.6'
-        }}>
-          Autonomous development agents that build your product.
-          <br />
-          Tech stack is auto-detected on initialization.
-        </p>
 
-        {/* Quick Start Buttons */}
+        {/* Tab-style Buttons */}
         <div style={{
           display: 'flex',
-          gap: '1rem',
+          gap: '0.5rem',
           justifyContent: 'center',
-          marginBottom: '1rem',
+          marginBottom: '1.5rem',
           flexWrap: 'wrap',
         }}>
           <button
             onClick={resetToFull}
             style={{
-              padding: '1.25rem 2.5rem',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: 'white',
-              border: 'none',
+              padding: '1rem 2rem',
+              background: !isCustomizing ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'transparent',
+              color: !isCustomizing ? '#000000' : '#cbd5e1',
+              border: !isCustomizing ? 'none' : '2px solid rgba(16, 185, 129, 0.3)',
               borderRadius: '0.75rem',
               fontSize: '1.125rem',
-              fontWeight: '700',
+              fontWeight: !isCustomizing ? '700' : '600',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              boxShadow: !isCustomizing ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
+              opacity: !isCustomizing ? 1 : 0.6,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-2px)'
-              e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)'
+              if (!isCustomizing) {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)'
+              } else {
+                e.currentTarget.style.opacity = '1'
+                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.6)'
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
+              if (!isCustomizing) {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
+              } else {
+                e.currentTarget.style.opacity = '0.6'
+                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)'
+              }
             }}
           >
             ✨ Install agentful
           </button>
 
           <button
-            onClick={() => setIsCustomizing(!isCustomizing)}
+            onClick={() => setIsCustomizing(true)}
             style={{
-              padding: '1.25rem 2.5rem',
-              background: 'transparent',
-              color: 'var(--vocs-color_text)',
-              border: '2px solid var(--vocs-color_border)',
+              padding: '1rem 2rem',
+              background: isCustomizing ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'transparent',
+              color: isCustomizing ? '#000000' : '#cbd5e1',
+              border: isCustomizing ? 'none' : '2px solid rgba(16, 185, 129, 0.3)',
               borderRadius: '0.75rem',
               fontSize: '1.125rem',
-              fontWeight: '600',
+              fontWeight: isCustomizing ? '700' : '600',
               cursor: 'pointer',
               transition: 'all 0.2s',
+              boxShadow: isCustomizing ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
+              opacity: isCustomizing ? 1 : 0.6,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#10b981'
-              e.currentTarget.style.transform = 'translateY(-2px)'
+              if (isCustomizing) {
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)'
+              } else {
+                e.currentTarget.style.opacity = '1'
+                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.6)'
+              }
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'var(--vocs-color_border)'
-              e.currentTarget.style.transform = 'translateY(0)'
+              if (isCustomizing) {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
+              } else {
+                e.currentTarget.style.opacity = '0.6'
+                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)'
+              }
             }}
           >
             ⚙️ Customize Installation

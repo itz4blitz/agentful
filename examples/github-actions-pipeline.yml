@@ -1,0 +1,487 @@
+# GitHub Actions Example - Agentful with claude-code-action
+#
+# This example shows how to use agentful agents with anthropics/claude-code-action
+# for automated code review, testing, and implementation in GitHub Actions.
+#
+# How it works:
+# 1. agentful generates prompts from your agent definitions (.claude/agents/*.md)
+# 2. claude-code-action executes those prompts using your Claude subscription
+# 3. Results are captured and can trigger PR comments, commits, etc.
+#
+# Use Cases:
+# 1. Auto-review PRs with the reviewer agent
+# 2. Run backend agent on API changes
+# 3. Run frontend agent on UI changes
+# 4. Auto-fix issues with the fixer agent
+#
+# Setup Instructions:
+# 1. Copy this file to .github/workflows/agentful.yml
+# 2. Add ANTHROPIC_API_KEY to repository secrets
+# 3. Configure triggers based on your needs
+# 4. Customize agent tasks for your workflow
+
+name: Agentful CI with Claude Code
+
+# Trigger configuration
+on:
+  # Run on pull requests to main branch
+  pull_request:
+    branches:
+      - main
+    # Trigger on specific file changes
+    paths:
+      - 'src/**'
+      - 'lib/**'
+      - 'test/**'
+
+  # Run on pushes to feature branches
+  push:
+    branches:
+      - 'feature/**'
+      - 'fix/**'
+
+  # Allow manual workflow dispatch
+  workflow_dispatch:
+    inputs:
+      agent:
+        description: 'Agent to run (backend, frontend, reviewer, fixer)'
+        required: true
+        default: 'reviewer'
+      task:
+        description: 'Task description for the agent'
+        required: false
+        default: 'Review code changes'
+
+  # Run on schedule (daily at 2 AM UTC)
+  schedule:
+    - cron: '0 2 * * *'
+
+# Environment variables available to all jobs
+env:
+  NODE_ENV: production
+  AGENTFUL_VERSION: '1.0.0'
+
+# Concurrency control - cancel in-progress runs on new push
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Job 1: Detect Changes
+  # Determines which agents to run based on file changes
+  detect-changes:
+    name: Detect File Changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend_changed: ${{ steps.filter.outputs.backend }}
+      frontend_changed: ${{ steps.filter.outputs.frontend }}
+      tests_changed: ${{ steps.filter.outputs.tests }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check changed files
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'src/api/**'
+              - 'src/services/**'
+              - 'src/repositories/**'
+              - 'lib/backend/**'
+            frontend:
+              - 'src/components/**'
+              - 'src/pages/**'
+              - 'src/styles/**'
+              - 'lib/frontend/**'
+            tests:
+              - 'test/**'
+              - '**/*.test.js'
+              - '**/*.spec.js'
+
+  # Job 2: Backend Agent
+  # Runs when backend code changes are detected
+  backend-agent:
+    name: Backend Agent - API Implementation
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend_changed == 'true'
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for better context
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install agentful
+        run: npm install -g @itz4blitz/agentful
+
+      - name: Generate prompt for backend agent
+        id: generate-prompt
+        run: |
+          # Generate prompt using agentful ci command
+          PROMPT=$(npx agentful ci backend "Review and improve backend code changes in this PR. Focus on:
+            - API endpoint implementation
+            - Service layer logic
+            - Repository patterns
+            - Input validation
+            - Error handling
+            - Security concerns
+            - Database queries optimization
+            - Transaction handling")
+
+          # Output prompt for next step (escaped for multiline)
+          {
+            echo 'prompt<<AGENTFUL_PROMPT_EOF'
+            echo "$PROMPT"
+            echo 'AGENTFUL_PROMPT_EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Run backend agent with Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: ${{ steps.generate-prompt.outputs.prompt }}
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: 'claude-sonnet-4'
+          max-tokens: 16000
+
+      - name: Upload agent output
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-agent-output
+          path: |
+            .agentful/
+            agentful-output.json
+          retention-days: 7
+
+  # Job 3: Frontend Agent
+  # Runs when frontend code changes are detected
+  frontend-agent:
+    name: Frontend Agent - UI Implementation
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: needs.detect-changes.outputs.frontend_changed == 'true'
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install agentful
+        run: npm install -g @itz4blitz/agentful
+
+      - name: Generate prompt for frontend agent
+        id: generate-prompt
+        run: |
+          PROMPT=$(npx agentful ci frontend "Review and improve frontend code changes. Focus on:
+            - Component implementation
+            - State management
+            - API integration
+            - Form validation
+            - Loading states
+            - Error boundaries
+            - Accessibility (a11y)
+            - Performance optimization
+            - Responsive design")
+
+          {
+            echo 'prompt<<AGENTFUL_PROMPT_EOF'
+            echo "$PROMPT"
+            echo 'AGENTFUL_PROMPT_EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Run frontend agent with Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: ${{ steps.generate-prompt.outputs.prompt }}
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: 'claude-sonnet-4'
+          max-tokens: 16000
+
+      - name: Upload agent output
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-agent-output
+          path: |
+            .agentful/
+            agentful-output.json
+          retention-days: 7
+
+  # Job 4: Code Review Agent
+  # Runs on all PRs to review code quality
+  review-agent:
+    name: Reviewer Agent - Code Quality
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install agentful
+        run: npm install -g @itz4blitz/agentful
+
+      - name: Generate prompt for reviewer agent
+        id: generate-prompt
+        run: |
+          PROMPT=$(npx agentful ci reviewer "Review this pull request for quality. Check:
+            - Type safety (no TypeScript errors)
+            - Code style compliance (linting)
+            - Test coverage (minimum 80%)
+            - Security vulnerabilities
+            - Performance issues
+            - Best practices
+            - Dead code detection
+            - Documentation completeness")
+
+          {
+            echo 'prompt<<AGENTFUL_PROMPT_EOF'
+            echo "$PROMPT"
+            echo 'AGENTFUL_PROMPT_EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Run reviewer agent with Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: ${{ steps.generate-prompt.outputs.prompt }}
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: 'claude-sonnet-4'
+          max-tokens: 16000
+
+      - name: Upload review report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: review-report
+          path: |
+            .agentful/last-validation.json
+            agentful-output.json
+          retention-days: 30
+
+      - name: Comment PR with review
+        uses: actions/github-script@v7
+        if: always() && hashFiles('.agentful/last-validation.json') != ''
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Check if validation file exists
+            if (!fs.existsSync('.agentful/last-validation.json')) {
+              console.log('No validation report found, skipping PR comment');
+              return;
+            }
+
+            const validation = JSON.parse(
+              fs.readFileSync('.agentful/last-validation.json', 'utf8')
+            );
+
+            const passed = validation.gates.filter(g => g.passed).length;
+            const total = validation.gates.length;
+            const status = passed === total ? '✅ Passed' : '⚠️ Failed';
+
+            const comment = `## Agentful Code Review ${status}
+
+            **Quality Gates:** ${passed}/${total} passed
+
+            ${validation.gates.map(gate =>
+              `- ${gate.passed ? '✅' : '❌'} ${gate.name}: ${gate.message}`
+            ).join('\n')}
+
+            ${validation.summary || ''}
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Job 5: Auto-fix Issues
+  # Runs if review agent finds fixable issues
+  fixer-agent:
+    name: Fixer Agent - Auto-fix Issues
+    runs-on: ubuntu-latest
+    needs: review-agent
+    if: failure() && github.event_name == 'pull_request'
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install agentful
+        run: npm install -g @itz4blitz/agentful
+
+      - name: Generate prompt for fixer agent
+        id: generate-prompt
+        run: |
+          PROMPT=$(npx agentful ci fixer "Fix issues found in code review. Address:
+            - Type errors
+            - Linting violations
+            - Test failures
+            - Coverage gaps
+            - Security vulnerabilities
+            - Performance issues
+            - Dead code removal")
+
+          {
+            echo 'prompt<<AGENTFUL_PROMPT_EOF'
+            echo "$PROMPT"
+            echo 'AGENTFUL_PROMPT_EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Run fixer agent with Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: ${{ steps.generate-prompt.outputs.prompt }}
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: 'claude-sonnet-4'
+          max-tokens: 16000
+
+      - name: Commit fixes
+        run: |
+          git config user.name "agentful-bot"
+          git config user.email "agentful-bot@users.noreply.github.com"
+          git add .
+          git commit -m "fix: auto-fix issues found by agentful reviewer" || echo "No changes to commit"
+          git push origin HEAD:${{ github.head_ref }}
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🤖 Agentful fixer agent has automatically fixed some issues. Please review the changes.'
+            });
+
+  # Job 6: Manual Agent Execution
+  # Runs only on manual workflow dispatch
+  manual-agent:
+    name: Manual Agent Execution
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install agentful
+        run: npm install -g @itz4blitz/agentful
+
+      - name: Generate prompt for agent
+        id: generate-prompt
+        run: |
+          PROMPT=$(npx agentful ci "${{ github.event.inputs.agent }}" "${{ github.event.inputs.task }}")
+
+          {
+            echo 'prompt<<AGENTFUL_PROMPT_EOF'
+            echo "$PROMPT"
+            echo 'AGENTFUL_PROMPT_EOF'
+          } >> $GITHUB_OUTPUT
+
+      - name: Run agent with Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          prompt: ${{ steps.generate-prompt.outputs.prompt }}
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: 'claude-sonnet-4'
+          max-tokens: 16000
+
+      - name: Upload output
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: manual-agent-output
+          path: |
+            .agentful/
+            agentful-output.json
+          retention-days: 7
+
+# Pattern Overview:
+#
+# agentful CI integration uses two steps:
+#   1. Generate prompt: npx agentful ci <agent-name> "<task>"
+#   2. Execute with: anthropics/claude-code-action@v1
+#
+# Benefits:
+# - Use your existing Claude Code subscription (or API key)
+# - Agents defined in .claude/agents/*.md are loaded automatically
+# - CI context (PR, branch, files) injected into prompts
+# - Standard GitHub Actions permissions and artifact handling

@@ -15,11 +15,13 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write",
         "hooks": [
           {
             "type": "command",
-            "command": "if [ \"$FILE\" = \"*.md\" ] && grep -q 'Deployment Guide\\|Publishing Guide\\|Setup Guide' \"$FILE\" 2>/dev/null; then echo \"WARNING: Similar documentation may exist. Check for: docs/pages/deployment.mdx, PUBLISHING.md\"; fi"
+            "command": "node bin/hooks/block-random-docs.js",
+            "timeout": 3,
+            "description": "Block random markdown file creation (disable with AGENTFUL_ALLOW_RANDOM_DOCS=true)"
           }
         ]
       }

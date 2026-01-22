@@ -1,0 +1,383 @@
+---
+title: CI/CD Integration
+description: Run agentful agents in GitHub Actions and GitLab CI/CD
+---
+
+# CI/CD Integration
+
+Integrate agentful's specialized agents into your CI/CD pipelines for automated code review, testing, and implementation.
+
+## Supported Platforms
+
+### GitHub Actions ✅ Fully Supported
+
+Uses the official `anthropics/claude-code-action` for seamless integration.
+
+**Features:**
+- Native Claude Code integration
+- PR comments and code changes
+- Automatic agent detection from `.claude/agents/`
+- Supports Anthropic API, AWS Bedrock, Google Vertex AI
+
+[View GitHub Actions Example](https://github.com/itz4blitz/agentful/blob/main/examples/github-actions-pipeline.yml)
+
+### GitLab CI/CD ✅ Fully Supported
+
+Native integration via `@claude` mentions in issues and merge requests.
+
+**Features:**
+- Comment `@claude` to trigger AI actions
+- Reads agent definitions from `.claude/agents/`
+- Creates merge requests with changes
+- Project-aware context
+
+[View GitLab CI/CD Example](https://github.com/itz4blitz/agentful/blob/main/examples/gitlab-ci-cd.yml)
+
+### Other CI Platforms
+
+For Jenkins, Bitbucket Pipelines, CircleCI, and other platforms, use the [Remote Execution API](/remote-execution) to run agents on a dedicated server.
+
+## GitHub Actions Setup
+
+### Quick Start
+
+1. **Install agentful in your project:**
+   ```bash
+   npx @itz4blitz/agentful init
+   ```
+
+2. **Add API key to repository secrets:**
+   - Navigate to: Settings → Secrets and variables → Actions
+   - Add secret: `ANTHROPIC_API_KEY`
+   - Value: Your Anthropic API key
+
+3. **Create workflow file** (`.github/workflows/agentful.yml`):
+   ```yaml
+   name: Agentful CI
+
+   on:
+     pull_request:
+       branches: [main]
+
+   jobs:
+     review:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v4
+
+         - name: Review with agentful
+           uses: anthropics/claude-code-action@v1
+           with:
+             api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+             agent: reviewer
+             task: |
+               Review this PR for:
+               - Code quality and best practices
+               - Test coverage (minimum 80%)
+               - Security vulnerabilities
+               - Type safety
+   ```
+
+### Example Workflows
+
+**Backend changes detection:**
+```yaml
+backend:
+  runs-on: ubuntu-latest
+  if: contains(github.event.pull_request.changed_files, 'src/api/') ||
+      contains(github.event.pull_request.changed_files, 'src/services/')
+  steps:
+    - uses: actions/checkout@v4
+    - uses: anthropics/claude-code-action@v1
+      with:
+        api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+        agent: backend
+        task: Review API and service layer changes
+```
+
+**Auto-fix with fixer agent:**
+```yaml
+fix-issues:
+  runs-on: ubuntu-latest
+  if: failure()
+  steps:
+    - uses: actions/checkout@v4
+    - uses: anthropics/claude-code-action@v1
+      with:
+        api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+        agent: fixer
+        task: Fix validation failures and test errors
+```
+
+[See complete GitHub Actions example →](https://github.com/itz4blitz/agentful/blob/main/examples/github-actions-pipeline.yml)
+
+## GitLab CI/CD Setup
+
+### Quick Start
+
+1. **Install agentful in your project:**
+   ```bash
+   npx @itz4blitz/agentful init
+   ```
+
+2. **Add API key to GitLab CI/CD variables:**
+   - Navigate to: Settings → CI/CD → Variables
+   - Add variable: `ANTHROPIC_API_KEY`
+   - Mark as: Protected, Masked
+   - Value: Your Anthropic API key
+
+3. **Create pipeline file** (`.gitlab-ci.yml`):
+   ```yaml
+   stages:
+     - ai
+
+   claude:code:
+     stage: ai
+     image: node:24-alpine
+     rules:
+       - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+     before_script:
+       - curl -fsSL https://claude.ai/install.sh | sh
+     script:
+       - claude -p "Review this MR using the reviewer agent"
+   ```
+
+4. **Use @claude mentions:**
+   - In issues: `@claude implement this feature using the backend agent`
+   - In MRs: `@claude review this code with the reviewer agent`
+   - In threads: `@claude fix this error with the fixer agent`
+
+### How @claude Mentions Work
+
+When you comment `@claude` in a GitLab issue or merge request:
+
+1. **Context gathering**: Claude reads the issue/MR description, comments, and related code
+2. **Agent selection**: Uses the agent you specify (or `orchestrator` if none specified)
+3. **Code generation**: Generates changes based on agent specialization
+4. **MR creation**: Creates a merge request with the changes for review
+
+**Example mentions:**
+
+```
+@claude implement user authentication using the backend agent
+
+@claude add login form UI with the frontend agent
+
+@claude write tests for the auth service with the tester agent
+
+@claude review this code for security issues with the reviewer agent
+```
+
+### Advanced Configuration
+
+**Trigger specific agents on file changes:**
+```yaml
+backend:agent:
+  stage: ai
+  image: node:24-alpine
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - src/api/**/*
+        - src/services/**/*
+  before_script:
+    - curl -fsSL https://claude.ai/install.sh | sh
+  script:
+    - claude -p "Use the backend agent to review API changes"
+```
+
+**Configure with CLAUDE.md:**
+
+Create a `CLAUDE.md` file in your repository root to guide Claude's behavior:
+
+```markdown
+# Project Guidelines for Claude Code
+
+## Code Style
+- Use TypeScript strict mode
+- Follow Airbnb style guide
+- Maximum line length: 100 characters
+
+## Review Criteria
+- All functions must have JSDoc comments
+- Minimum 80% test coverage required
+- No console.log in production code
+
+## Agent Preferences
+- backend: Use repository pattern, avoid direct DB access
+- frontend: Use React hooks, avoid class components
+- tester: Use Vitest, prefer integration over unit tests
+```
+
+[See complete GitLab CI/CD example →](https://github.com/itz4blitz/agentful/blob/main/examples/gitlab-ci-cd.yml)
+
+## Available Agents
+
+agentful provides specialized agents for different development tasks:
+
+| Agent | Purpose | Use Cases |
+|-------|---------|-----------|
+| **backend** | APIs, services, database | Implement REST endpoints, database migrations, service logic |
+| **frontend** | UI components, state, styling | Build React/Vue components, forms, responsive layouts |
+| **tester** | Tests, coverage | Write unit/integration/E2E tests, ensure 80% coverage |
+| **reviewer** | Code quality, security | Review PRs, detect dead code, security vulnerabilities |
+| **fixer** | Auto-fix issues | Fix linting errors, type errors, test failures |
+| **orchestrator** | Multi-agent coordination | Complex features requiring multiple specialists |
+
+These agents are defined in `.claude/agents/` and automatically customized to your tech stack.
+
+## Best Practices
+
+### 1. Start with Reviewer Agent
+
+Always run the reviewer agent first to catch issues early:
+
+```yaml
+# GitHub Actions
+- uses: anthropics/claude-code-action@v1
+  with:
+    agent: reviewer
+    task: Review code quality and security
+```
+
+```yaml
+# GitLab CI/CD
+script:
+  - claude -p "Review this MR with the reviewer agent"
+```
+
+### 2. Use Specific Agents for Changes
+
+Trigger the right agent based on what changed:
+
+- Backend files → `backend` agent
+- Frontend files → `frontend` agent
+- Test files → `tester` agent
+- After failures → `fixer` agent
+
+### 3. Set Clear Task Descriptions
+
+Be specific about what you want the agent to do:
+
+**Good:**
+```
+Review API authentication for:
+- JWT token validation
+- Password hashing (bcrypt)
+- Rate limiting
+- SQL injection prevention
+```
+
+**Bad:**
+```
+Review the code
+```
+
+### 4. Use CLAUDE.md for Project Guidelines
+
+Create a `CLAUDE.md` file to define:
+- Code style preferences
+- Review criteria
+- Testing requirements
+- Project-specific conventions
+
+### 5. Monitor API Usage
+
+Track your Anthropic API usage in the [Anthropic Console](https://console.anthropic.com) to:
+- Monitor costs
+- Set usage limits
+- Review API logs
+- Rotate API keys
+
+## Cloud Provider Support
+
+agentful supports multiple AI providers:
+
+### Anthropic API (Default)
+```yaml
+env:
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+```
+
+### AWS Bedrock
+```yaml
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_REGION: us-east-1
+```
+
+### Google Vertex AI
+```yaml
+env:
+  GOOGLE_APPLICATION_CREDENTIALS: /path/to/service-account.json
+  GOOGLE_CLOUD_PROJECT: your-project-id
+```
+
+## Troubleshooting
+
+### "Agent not found" error
+
+Ensure agentful is initialized:
+```bash
+npx @itz4blitz/agentful init
+```
+
+Check that `.claude/agents/` directory exists with agent files.
+
+### API rate limits
+
+Anthropic API has rate limits:
+- Monitor usage in Anthropic Console
+- Implement exponential backoff for retries
+- Consider caching or batching requests
+
+### Execution timeouts
+
+Increase timeout for long-running tasks:
+
+```yaml
+# GitHub Actions
+timeout-minutes: 15
+
+# GitLab CI/CD
+timeout: 15m
+```
+
+### @claude mention not triggering (GitLab)
+
+Check:
+1. ANTHROPIC_API_KEY is set in CI/CD variables
+2. Variable is marked as "Masked" and "Protected"
+3. Claude Code CLI is installed in `before_script`
+4. Pipeline rules match your trigger conditions
+
+## Security Considerations
+
+### API Key Protection
+
+- Always use repository secrets/variables, never commit keys
+- Mark keys as "Masked" and "Protected" in GitLab
+- Rotate keys regularly
+- Use separate keys for staging/production
+
+### Agent Sandboxing
+
+Agents run with the same permissions as your CI runner:
+- Use restricted service accounts
+- Limit file system access
+- Review agent output before merging
+- Monitor for unexpected changes
+
+### Rate Limiting
+
+Implement rate limiting to prevent abuse:
+- Set concurrency limits in CI config
+- Use workflow conditions to skip unnecessary runs
+- Cache results when possible
+
+## Next Steps
+
+- [Remote Execution](/remote-execution) - Run agents on dedicated servers
+- [Commands](/commands) - Learn agentful slash commands
+- [Agents](/agents) - Understand agent specializations

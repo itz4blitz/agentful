@@ -9,6 +9,7 @@ interface HookConfiguratorProps {
 
 const hooks = [
   { id: 'health-check', name: 'Health Check', description: 'Verify project dependencies and build status' },
+  { id: 'block-random-docs', name: 'Block Random Docs', description: 'Prevent creation of random markdown files (enabled by default)' },
   { id: 'typescript-validation', name: 'TypeScript Validation', description: 'Run tsc --noEmit before sessions' },
   { id: 'notifications', name: 'Notifications', description: 'Desktop notifications for build and test events' },
   { id: 'format-on-save', name: 'Format on Save', description: 'Auto-format code before saving changes' },
