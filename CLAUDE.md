@@ -43,39 +43,8 @@ claude --dangerously-skip-permissions
 | `/agentful-decide` | Answer pending decisions blocking work |
 | `/agentful-validate` | Run all quality checks manually |
 | `/agentful-product` | Analyze and improve product specification |
+| `/agentful-serve` | Start secure remote execution server |
 | `/agents` | List all available specialized agents |
-
-## Pipeline Commands (CI/CD Integration)
-
-agentful includes pipeline orchestration for running agents in CI/CD:
-
-```bash
-# Deploy to CI platform
-agentful deploy --to github-actions --pipeline .agentful/pipelines/feature-dev.yml
-
-# Run pipeline locally
-agentful pipeline run --pipeline .agentful/pipelines/feature-dev.yml
-
-# Check status
-agentful pipeline status --run-id abc123
-
-# List all runs
-agentful pipeline list
-
-# Cancel a running pipeline
-agentful pipeline cancel --run-id abc123
-
-# Resume interrupted pipeline
-agentful pipeline resume --run-id abc123
-
-# Validate pipeline definition
-agentful pipeline validate --pipeline .agentful/pipelines/feature-dev.yml
-
-# Quick agent execution
-agentful trigger backend "Implement user authentication"
-```
-
-See example pipelines in `examples/pipelines/` for templates.
 
 ## When to Use What
 
@@ -99,6 +68,9 @@ See example pipelines in `examples/pipelines/` for templates.
 
 **Want to add features?**
 → Edit `.claude/product/index.md`, then run `/agentful-start` (picks up changes automatically)
+
+**Need remote execution?**
+→ Run `/agentful-serve` to start an HTTP API server with Tailscale, HMAC, or SSH tunnel authentication
 
 ## File Structure
 
@@ -168,53 +140,47 @@ The `reviewer` agent runs these checks automatically. The `fixer` agent resolves
 
 ---
 
-## Development Guidelines
+## Configuration
 
-### Agent/Skill Separation
+### Documentation Hook
 
-**Agents** focus on ROLE (what they do, scope, boundaries):
-- Minimal, concise definitions
-- Clear delegation rules
-- Reference skills for detailed patterns
+By default, agentful blocks creation of random markdown files to keep your codebase clean.
 
-**Skills** contain KNOWLEDGE (how to do things):
-- Detailed code examples
-- Best practices and anti-patterns
-- Implementation patterns
-
-When generating agents via `/agentful-generate`, templates automatically:
-- Create role-focused agent definitions
-- Reference companion skills for patterns
-- Keep agents "just enough" - not massive
-
-### Performance: Always Parallelize
-
-The codebase uses `Promise.all()` wherever possible:
-- **Agent generation** (`lib/core/generator.js:78`) - All agents generated in parallel
-- **Directory scanning** (`lib/core/analyzer.js:173`) - Subdirectories scanned in parallel
-- **Validation gates** - Multiple checks run concurrently
-
-When adding new features, always prefer parallel execution over serial loops.
-
-### Documentation Rules
-
-**Blocked by hook** (`bin/hooks/block-random-docs.js`):
-- ❌ Random markdown files in project root
-- ❌ Documentation in `lib/`, `src/`, `test/`
-- ❌ Ad-hoc "summary", "guide", "notes" files
-
-**Allowed locations**:
-- ✅ `docs/pages/*.mdx` - User-facing Vocs docs
-- ✅ `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md` - Root project docs
+**Always allowed**:
+- ✅ `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `LICENSE.md`
 - ✅ `.claude/agents/*.md` - Agent definitions
 - ✅ `.claude/skills/*/SKILL.md` - Skill documentation
 - ✅ `.claude/product/**/*.md` - Product specifications
 
-**Instead of creating random docs**:
-1. Update `CLAUDE.md` for developer instructions
-2. Update skills for implementation patterns
-3. Update `docs/pages/*.mdx` for user docs
-4. Update agents for role definitions
+**Allowed only if parent directory exists**:
+- 📁 `docs/*.md`, `docs/pages/*.mdx` - Requires `docs/` directory
+- 📁 `documentation/*.md` - Requires `documentation/` directory
+- 📁 `wiki/*.md` - Requires `wiki/` directory
+- 📁 `guides/*.md` - Requires `guides/` directory
+
+This prevents accidental creation of `docs/pages/foo.mdx` when you don't have a docs site.
+
+**To disable the hook**:
+
+Option 1: Set environment variable (temporary):
+```bash
+export AGENTFUL_ALLOW_RANDOM_DOCS=true
+claude
+```
+
+Option 2: Remove from `.claude/settings.json` (permanent):
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      // Remove or comment out the block-random-docs hook
+    ]
+  }
+}
+```
+
+Option 3: Customize allowed patterns:
+Edit `bin/hooks/block-random-docs.js` and modify the `ALLOWED_PATTERNS` array.
 
 ---
 

@@ -103,7 +103,7 @@ describe('CLI', () => {
       const content = fs.readFileSync(cliPath, 'utf-8');
 
       expect(content).toContain("case 'init':");
-      expect(content).toContain('await init()');
+      expect(content).toContain('await init(');
     });
 
     it('should handle status command', () => {

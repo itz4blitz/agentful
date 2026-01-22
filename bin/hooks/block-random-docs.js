@@ -20,8 +20,8 @@
  * - Any ad-hoc "summary", "guide", "notes" files
  */
 
-const path = require('path');
-const fs = require('fs');
+import path from 'path';
+import fs from 'fs';
 
 // Get file path from environment (set by Claude Code hooks)
 const filePath = process.env.FILE || '';
