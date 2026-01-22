@@ -113,7 +113,7 @@ When writing tests, reference `.claude/skills/testing/SKILL.md` for:
 
 For comprehensive test coverage, track progress with TodoWrite:
 
-```
+```javascript
 TodoWrite([
   { content: "Analyze code to identify test requirements", status: "in_progress", activeForm: "Analyzing test requirements" },
   { content: "Write unit tests (target 70% of test suite)", status: "pending", activeForm: "Writing unit tests" },

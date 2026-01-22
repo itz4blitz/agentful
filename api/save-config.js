@@ -100,8 +100,8 @@ function sanitizeConfig(config) {
   const sanitizeString = (str) => {
     if (typeof str !== 'string') return str;
     return str.replace(/<script[^>]*>.*?<\/script>/gi, '')
-              .replace(/javascript:/gi, '')
-              .replace(/on\w+\s*=/gi, '');
+      .replace(/javascript:/gi, '')
+      .replace(/on\w+\s*=/gi, '');
   };
 
   // Recursively sanitize all string values
@@ -135,7 +135,7 @@ async function saveConfig(id, config, metadata) {
   const configData = {
     id,
     config,
-    metadata,
+    metadata
   };
 
   const filePath = path.join(CONFIGS_DIR, `${id}.json`);
@@ -177,7 +177,7 @@ export default async function handler(req, res) {
       return res.status(429).json({
         error: 'Too Many Requests',
         message: 'Rate limit exceeded. Maximum 10 configurations per hour.',
-        resetAt: rateLimit.resetAt,
+        resetAt: rateLimit.resetAt
       });
     }
 

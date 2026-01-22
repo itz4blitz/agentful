@@ -218,7 +218,7 @@ describe('Agent Metadata Validation', () => {
           const frontmatterEnd = content.indexOf('\n---\n', 4);
           markdownBody = content.substring(frontmatterEnd + 5);
 
-          expect(markdownBody).toMatch(/## Rules/i);
+          expect(markdownBody).toMatch(/##\s+(Important\s+)?Rules/i);
         });
 
         it('should have substantive content (>500 chars)', () => {

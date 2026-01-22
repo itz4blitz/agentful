@@ -66,7 +66,7 @@ export default async function handler(req, res) {
     if (!id || !/^[a-f0-9]{8}$/i.test(id)) {
       return res.status(400).json({
         error: 'Invalid configuration ID',
-        message: 'ID must be an 8-character hexadecimal string',
+        message: 'ID must be an 8-character hexadecimal string'
       });
     }
 
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
     if (!configData) {
       return res.status(404).json({
         error: 'Configuration not found',
-        message: `No configuration found with ID: ${id}`,
+        message: `No configuration found with ID: ${id}`
       });
     }
 
@@ -84,7 +84,7 @@ export default async function handler(req, res) {
     if (isExpired(configData.metadata.created_at)) {
       return res.status(410).json({
         error: 'Configuration expired',
-        message: 'This configuration has expired (1 year TTL)',
+        message: 'This configuration has expired (1 year TTL)'
       });
     }
 
@@ -99,8 +99,8 @@ export default async function handler(req, res) {
       config: configData.config,
       metadata: {
         created_at: configData.metadata.created_at,
-        views: configData.metadata.views + 1, // Include incremented count
-      },
+        views: configData.metadata.views + 1 // Include incremented count
+      }
     };
 
     // Cache for 1 hour
@@ -111,7 +111,7 @@ export default async function handler(req, res) {
     console.error('Error retrieving config:', error);
     return res.status(500).json({
       error: 'Internal Server Error',
-      message: 'Failed to retrieve configuration',
+      message: 'Failed to retrieve configuration'
     });
   }
 }
