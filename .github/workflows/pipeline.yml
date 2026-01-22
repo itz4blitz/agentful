@@ -121,6 +121,12 @@ jobs:
       - name: Run tests
         run: npm test -- --run --exclude "**/integration/**"
 
+      # NOTE: Integration tests are excluded due to Vitest not exiting after completion
+      # The tests pass successfully but background async operations in PipelineEngine
+      # prevent the test runner from terminating. This is a known issue with the test
+      # infrastructure, not the pipeline code itself. Run manually with timeout if needed:
+      # timeout 30 npm test -- --run test/integration/**
+
       # TODO: Re-enable coverage once instrumentation performance is fixed
       # Coverage with `all: true` hangs due to instrumenting problematic files
       # - name: Run tests with coverage

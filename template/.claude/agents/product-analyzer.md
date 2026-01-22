@@ -328,92 +328,59 @@ function topologicalSort(features) {
 
 ## Tech Stack Compatibility Matrix
 
-Load and check tech stack compatibility:
+Use your LLM knowledge to check tech stack compatibility:
+
+**You should detect incompatibilities based on your knowledge of frameworks and libraries:**
 
 ```javascript
-// Read compatibility matrix
-const compatibilityMatrix = JSON.parse(Read(".claude/data/tech-compatibility.json"));
-
 function checkStackCompatibility(techStack) {
   const issues = [];
 
-  // Check ORM + Database compatibility
+  // Use your knowledge to check ORM + Database compatibility
   if (techStack.orm && techStack.database) {
-    const ormConfig = compatibilityMatrix.compatibility.orm[techStack.orm.toLowerCase()];
-    if (ormConfig) {
-      const dbNormalized = techStack.database.toLowerCase();
+    // Examples of incompatibilities you know about:
+    // - Prisma doesn't support MongoDB for relational features
+    // - Mongoose only works with MongoDB
+    // - Drizzle only supports relational databases
+    // - TypeORM supports both relational and MongoDB
+    // - SQLAlchemy is Python-only, Hibernate is Java-only
+    // - Entity Framework is .NET-only, Diesel is Rust-only
 
-      if (ormConfig.incompatible_databases.some(db => dbNormalized.includes(db))) {
-        issues.push({
-          type: "blocking",
-          category: "feasibility",
-          issue: `${techStack.orm} is incompatible with ${techStack.database}`,
-          recommendation: {
-            action: "Change ORM or Database to compatible pair",
-            options: [
-              `Keep ${techStack.database}, use compatible ORM: ${getCompatibleORM(techStack.database)}`,
-              `Keep ${techStack.orm}, use compatible database: ${ormConfig.compatible_databases.join(", ")}`,
-              "Specify your own compatible combination"
-            ],
-            rationale: ormConfig.notes
-          }
-        });
-      }
-    }
+    // Check and add blocking issues if incompatible
   }
 
-  // Check Auth + Backend compatibility
+  // Use your knowledge to check Auth + Backend compatibility
   if (techStack.auth && techStack.backend) {
-    const authConfig = compatibilityMatrix.compatibility.auth[techStack.auth.toLowerCase()];
-    if (authConfig && authConfig.incompatible_backends) {
-      const backendNormalized = techStack.backend.toLowerCase();
+    // Examples of incompatibilities you know about:
+    // - NextAuth only works with Next.js
+    // - Devise only works with Ruby on Rails
+    // - Spring Security only works with Spring
+    // - JWT, Lucia, Passport.js are framework-agnostic
 
-      if (authConfig.incompatible_backends.some(be => backendNormalized.includes(be))) {
-        issues.push({
-          type: "blocking",
-          category: "feasibility",
-          issue: `${techStack.auth} is incompatible with ${techStack.backend}`,
-          recommendation: {
-            action: "Change auth method to one compatible with backend",
-            options: [
-              "JWT (framework agnostic, requires implementation)",
-              "Lucia (works with all backends)",
-              "Specify your own auth approach"
-            ],
-            rationale: authConfig.notes
-          }
-        });
-      }
-    }
+    // Check and add blocking issues if incompatible
   }
 
-  // Check Real-time + Backend compatibility
+  // Check Real-time + Deployment compatibility
   const realTimeFeatures = detectRealTimeFeatures(features);
   if (realTimeFeatures.length > 0 && techStack.backend) {
-    const backendNormalized = techStack.backend.toLowerCase();
+    // Examples you know about:
+    // - Socket.io requires persistent connections (incompatible with serverless)
+    // - Server-Sent Events work with serverless
+    // - WebSockets require long-running servers
 
-    if (backendNormalized.includes("nextjs") && !techStack.realtime) {
-      issues.push({
-        type: "warning",
-        category: "feasibility",
-        issue: "Real-time features detected but no real-time capability specified",
-        affected_features: realTimeFeatures,
-        recommendation: {
-          action: "Add real-time capability to tech stack",
-          options: [
-            "Server-Sent Events (works with Next.js serverless)",
-            "Deploy to long-running server + Socket.io",
-            "Remove real-time requirements from features"
-          ],
-          rationale: "Next.js serverless has limitations with persistent connections"
-        }
-      });
-    }
+    // Add warnings for potential deployment issues
   }
 
   return issues;
 }
 ```
+
+**Common incompatibilities to check:**
+- **ORM/ODM mismatch**: Prisma + MongoDB, Mongoose + PostgreSQL, Drizzle + MongoDB
+- **Auth framework lock-in**: NextAuth + Express, Spring Security + Flask
+- **Real-time + Serverless**: Socket.io + Vercel/Lambda, WebSockets + serverless
+- **Language-specific tools**: SQLAlchemy in Node.js project, Prisma in Python project
+- **Conflicting paradigms**: Blocking ORM + async framework, Django ORM + async views
 
 ## Quality Dimensions
 

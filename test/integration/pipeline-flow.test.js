@@ -12,7 +12,7 @@ import { tmpdir } from 'os';
  * Tests full pipeline flows with real components
  */
 
-describe('Pipeline Integration', () => {
+describe.sequential('Pipeline Integration', () => {
   let testDir;
   let engine;
   let executor;
@@ -60,9 +60,23 @@ describe('Pipeline Integration', () => {
   });
 
   afterEach(async () => {
+    // Clean up engine state to prevent hanging
+    if (engine) {
+      // Use the cleanup method to clear all pending timers and state
+      await engine.cleanup();
+      engine = null;
+    }
+
     if (testDir) {
       await fs.rm(testDir, { recursive: true, force: true });
+      testDir = null;
     }
+  });
+
+  afterAll(async () => {
+    // Final cleanup - clear any remaining vitest mocks/timers
+    vi.clearAllTimers();
+    vi.restoreAllMocks();
   });
 
   describe('Single Job Pipeline', () => {

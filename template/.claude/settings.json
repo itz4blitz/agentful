@@ -1,5 +1,8 @@
 {
   "includeCoAuthoredBy": false,
+  "env": {
+    "ENABLE_TOOL_SEARCH": "true"
+  },
   "hooks": {
     "SessionStart": [
       {
