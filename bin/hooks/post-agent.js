@@ -21,6 +21,12 @@ export function trackAgentMetrics({ agentName, feature = '', domain = '', timest
     return { success: true };
   }
 
+  // Ensure .agentful directory exists
+  const metricsDir = METRICS_FILE.substring(0, METRICS_FILE.lastIndexOf('/'));
+  if (!fs.existsSync(metricsDir)) {
+    fs.mkdirSync(metricsDir, { recursive: true });
+  }
+
   // Create metrics file if it doesn't exist
   if (!fs.existsSync(METRICS_FILE)) {
     const initialMetrics = {

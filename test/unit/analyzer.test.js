@@ -7,11 +7,20 @@ import os from 'os';
 
 describe('CodebaseAnalyzer', () => {
   let testProjectRoot;
-  const testOutputPath = 'test-architecture.json';
+  const testOutputPath = '.agentful/architecture.json';
 
   beforeEach(async () => {
     // Create temporary directory for each test
     testProjectRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'analyzer-test-'));
+
+    // Create some test files so directory isn't empty
+    await fs.writeFile(path.join(testProjectRoot, 'package.json'), JSON.stringify({
+      name: 'test-project',
+      version: '1.0.0',
+      dependencies: {}
+    }));
+    await fs.writeFile(path.join(testProjectRoot, 'index.js'), '// Test file\nconsole.log("test");\n');
+    await fs.writeFile(path.join(testProjectRoot, 'app.js'), 'export default function app() {}\n');
   });
 
   afterEach(async () => {

@@ -53,7 +53,11 @@ describe('schemas', () => {
 
   it('should have architecture schema', () => {
     expect(schemas.architecture).toBeDefined();
-    expect(schemas.architecture.required).toContain('project_type');
+    expect(schemas.architecture.required).toContain('version');
+    expect(schemas.architecture.required).toContain('analyzedAt');
+    expect(schemas.architecture.required).toContain('projectRoot');
+    expect(schemas.architecture.required).toContain('fileCount');
+    expect(schemas.architecture.required).toContain('confidence');
   });
 
   it('should have product schema', () => {
@@ -343,21 +347,24 @@ describe('validateArchitecture', () => {
   it('should validate architecture.json structure', () => {
     const filePath = path.join(testDir, 'architecture.json');
     const data = {
-      project_type: 'web-app',
-      technologies: {
-        frontend: 'React',
-        backend: 'Node.js',
-        database: 'PostgreSQL'
-      },
-      patterns: ['MVC', 'Repository Pattern'],
-      lastUpdated: new Date().toISOString()
+      version: '1.0.0',
+      analyzedAt: new Date().toISOString(),
+      projectRoot: '/test/project',
+      fileCount: 10,
+      confidence: 85,
+      languages: [],
+      frameworks: [],
+      patterns: {},
+      conventions: {},
+      recommendations: []
     };
     fs.writeFileSync(filePath, JSON.stringify(data));
 
     const result = validateArchitecture(filePath);
 
     expect(result.valid).toBe(true);
-    expect(result.content.project_type).toBe('web-app');
+    expect(result.content.version).toBe('1.0.0');
+    expect(result.content.confidence).toBe(85);
   });
 });
 

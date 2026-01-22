@@ -255,20 +255,24 @@ describe('Validation Library', () => {
     it('should validate architecture.json structure', () => {
       const filePath = path.join(testDir, 'architecture.json');
       const validArchitecture = {
-        project_type: 'web-app',
-        technologies: {
-          frontend: 'React',
-          backend: 'Node.js'
-        },
-        patterns: ['MVC', 'REST'],
-        lastUpdated: new Date().toISOString()
+        version: '1.0.0',
+        analyzedAt: new Date().toISOString(),
+        projectRoot: '/test/project',
+        fileCount: 10,
+        confidence: 85,
+        languages: [],
+        frameworks: [],
+        patterns: {},
+        conventions: {},
+        recommendations: []
       };
       fs.writeFileSync(filePath, JSON.stringify(validArchitecture));
 
       const result = validateArchitecture(filePath);
 
       expect(result.valid).toBe(true);
-      expect(result.content.project_type).toBe('web-app');
+      expect(result.content.version).toBe('1.0.0');
+      expect(result.content.confidence).toBe(85);
     });
   });
 
