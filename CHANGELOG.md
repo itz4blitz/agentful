@@ -1,3 +1,16 @@
+# [1.0.0](https://github.com/itz4blitz/agentful/compare/v0.5.1...v1.0.0) (2026-01-23)
+
+
+### Documentation
+
+* comprehensive audit and fix of all documentation inaccuracies ([ffea5b8](https://github.com/itz4blitz/agentful/commit/ffea5b8bb2a6bc426f2219d488b51ce451bf507f))
+
+
+### BREAKING CHANGES
+
+* State file schemas updated to match documented behavior.
+Existing .agentful/ directories will need reinitialization.
+
 ## [0.5.1](https://github.com/itz4blitz/agentful/compare/v0.5.0...v0.5.1) (2026-01-23)
 
 
