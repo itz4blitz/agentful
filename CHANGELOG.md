@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/itz4blitz/agentful/compare/v1.0.0...v1.0.1) (2026-01-23)
+
+
+### Bug Fixes
+
+* **server:** critical usability improvements for remote execution ([bb77a78](https://github.com/itz4blitz/agentful/commit/bb77a7845da6bd885498ff0f9a68d1d82b21e60c))
+
 # [1.0.0](https://github.com/itz4blitz/agentful/compare/v0.5.1...v1.0.0) (2026-01-23)
 
 
