@@ -4,20 +4,20 @@ A carrot on a stick for Claude Code
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://badge.fury.io/js/%40itz4blitz%2Fagentful.svg)](https://www.npmjs.com/package/@itz4blitz/agentful)
-[![Tests](https://img.shields.io/badge/tests-370%20passing-brightgreen)](https://github.com/itz4blitz/agentful)
-[![Coverage](https://img.shields.io/badge/coverage-98.26%25-brightgreen)](https://github.com/itz4blitz/agentful)
+[![Tests](https://img.shields.io/badge/tests-921%20passing-brightgreen)](https://github.com/itz4blitz/agentful)
+[![CI Status](https://github.com/itz4blitz/agentful/actions/workflows/pipeline.yml/badge.svg)](https://github.com/itz4blitz/agentful/actions)
 
 ## Overview
 
 agentful is a production-ready Claude Code configuration that provides structured development through specialized AI agents. It coordinates multiple agents to implement features, write tests, and validate code quality according to a defined product specification, with human checkpoints for key decisions.
 
-**Production Quality**: Enterprise-grade testing (370 tests), 98.26% code coverage, comprehensive error handling, and lifecycle hooks for validation and metrics.
+**Production Quality**: Enterprise-grade testing (921 tests passing), comprehensive error handling, and lifecycle hooks for validation and metrics.
 
 ## Web Configurator
 
 Configure your agentful installation with an interactive web interface:
 
-**[agentful.app/configure](https://agentful.app/configure)**
+**[itz4blitz.github.io/agentful/getting-started/configurator](https://itz4blitz.github.io/agentful/getting-started/configurator)**
 
 - Visual component selection
 - 5 optimized presets
@@ -25,7 +25,7 @@ Configure your agentful installation with an interactive web interface:
 - Shareable setup URLs
 - No CLI required
 
-See the [Web Configurator Guide](https://agentful.app/getting-started/configurator) for details.
+See the [Web Configurator Guide](https://itz4blitz.github.io/agentful/getting-started/configurator) for details.
 
 ## Installation
 
@@ -71,10 +71,10 @@ npx @itz4blitz/agentful presets
 
 ### Shareable Configurations
 
-Use a configuration from [agentful.app/configure](https://agentful.app/configure):
+Use a configuration from the web configurator:
 
 ```bash
-npx @itz4blitz/agentful init --config=https://agentful.app/c/abc12345
+npx @itz4blitz/agentful init --config=<shareable-url>
 ```
 
 **Available Flags:**
@@ -273,7 +273,7 @@ agentful ci --generate-workflow
 agentful ci
 ```
 
-See `examples/` for sample workflow configurations ([GitHub Actions](examples/github-actions.yml), [GitLab CI](examples/gitlab-ci.yml), [Jenkins](examples/jenkins.groovy)).
+See `examples/` for sample workflow configurations ([GitHub Actions](examples/github-actions-pipeline.yml), [GitLab CI](examples/gitlab-ci-cd.yml)).
 
 ## Remote Execution
 
@@ -290,7 +290,7 @@ agentful serve --auth=hmac --secret=$SECRET --https --cert=cert.pem --key=key.pe
 agentful serve --auth=none
 ```
 
-Three authentication modes: **Tailscale** (WireGuard encryption), **HMAC** (signature-based with replay protection), **SSH tunnel** (localhost-only). See `examples/server-deployment.sh` for complete deployment examples including Oracle Cloud Free Tier, Let's Encrypt SSL, and systemd service configuration.
+Three authentication modes: **Tailscale** (WireGuard encryption), **HMAC** (signature-based with replay protection), **SSH tunnel** (localhost-only).
 
 ## Technology Support
 
@@ -311,13 +311,13 @@ agentful detects and adapts to your technology stack automatically:
 
 ## Documentation
 
-Full documentation: [agentful.app](https://agentful.app)
+Full documentation: [itz4blitz.github.io/agentful](https://itz4blitz.github.io/agentful)
 
 Key guides:
-- [CI/CD Integration](https://agentful.app/ci-integration) - Deploy agents to production
-- [Quick Start](https://agentful.app/getting-started/quick-start) - Get started in 5 minutes
-- [Agent Architecture](https://agentful.app/concepts/architecture) - How agents work
-- [Commands Reference](https://agentful.app/commands) - All available commands
+- [Getting Started](https://itz4blitz.github.io/agentful/getting-started) - Quick start guide
+- [Installation](https://itz4blitz.github.io/agentful/getting-started/installation) - Installation options and presets
+- [Commands](https://itz4blitz.github.io/agentful/commands) - All available slash commands
+- [Agents](https://itz4blitz.github.io/agentful/agents) - Specialized agent documentation
 
 ## Project Structure
 
@@ -350,5 +350,5 @@ MIT
 
 - GitHub: [github.com/itz4blitz/agentful](https://github.com/itz4blitz/agentful)
 - Issues: [github.com/itz4blitz/agentful/issues](https://github.com/itz4blitz/agentful/issues)
-- Documentation: [agentful.app](https://agentful.app)
-- NPM: [npmjs.com/@itz4blitz/agentful](https://www.npmjs.com/package/@itz4blitz/agentful)
+- Documentation: [itz4blitz.github.io/agentful](https://itz4blitz.github.io/agentful)
+- NPM: [npmjs.com/package/@itz4blitz/agentful](https://www.npmjs.com/package/@itz4blitz/agentful)
