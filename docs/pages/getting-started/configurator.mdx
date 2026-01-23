@@ -1,0 +1,373 @@
+---
+title: Web Configurator - agentful
+description: Configure your agentful installation with an interactive web interface.
+---
+
+# Web Configurator
+
+The agentful web configurator provides an interactive interface to customize your installation. Choose from presets or create a custom configuration tailored to your project needs.
+
+## Why Use the Configurator?
+
+- **Visual Selection**: See what agents, skills, and hooks you're adding
+- **Preset Quick-Start**: Begin with battle-tested configurations
+- **Customization**: Fine-tune any preset to your exact needs
+- **Shareable Configs**: Generate URLs to share configurations with your team
+- **No CLI Required**: Configure entirely in your browser
+
+## Access the Configurator
+
+Visit [agentful.app](https://agentful.app)
+
+Or run:
+```bash
+npx @itz4blitz/agentful configure
+```
+
+This opens the configurator in your default browser.
+
+## Step-by-Step Guide
+
+### 1. Choose Your Starting Point
+
+**Option A: Start with Default**
+
+Select the default installation with all components:
+
+- **Default** - All components included (recommended for most projects)
+- **Minimal** - Lightweight backend-only setup (for simple scripts/APIs)
+
+[Screenshot: Installation options showing default and minimal configurations]
+
+**Option B: Start from Scratch**
+
+Click "Custom Configuration" to build your own from the ground up.
+
+**Tech stack is auto-detected** on first run - no need to select during configuration.
+
+### 2. Review Components
+
+The configurator shows three main sections:
+
+#### Agents
+
+Select which specialized agents to include:
+
+- **orchestrator** (required) - Coordinates all work
+- **architect** - Analyzes codebase, generates specialized agents
+- **backend** - Implements APIs, database schemas
+- **frontend** - Builds UI components, pages
+- **tester** - Writes tests, validates coverage
+- **reviewer** - Checks quality gates
+- **fixer** - Auto-fixes validation failures
+- **product-analyzer** - Analyzes product specifications
+
+[Screenshot: Agent selection checklist with descriptions and toggle switches]
+
+#### Skills
+
+Skills provide reusable capabilities:
+
+- **validation** - Quality gate checking
+- **testing** - Test execution and reporting
+- **product-tracking** - Progress calculation
+- **conversation** - Intent classification
+- **product-planning** - Specification guidance
+- **deployment** - Deployment automation
+
+[Screenshot: Skills selection with descriptions]
+
+#### Lifecycle Hooks
+
+Hooks run at specific events:
+
+- **health-check** - Validates agentful setup on session start
+- **typescript-validation** - Type checks after file changes
+- **notifications** - Desktop alerts for file updates
+- **format-on-save** - Auto-formats files with Prettier
+
+[Screenshot: Hooks selection with event triggers shown]
+
+#### Quality Gates
+
+Gates validate code before completion:
+
+- **types** - TypeScript/Flow type checking
+- **tests** - All tests must pass
+- **coverage** - Minimum 80% code coverage
+- **lint** - Code style validation
+- **security** - Dependency vulnerability scanning
+- **dead-code** - Unused code detection
+
+[Screenshot: Quality gates selection with pass/fail indicators]
+
+### 3. Customize Your Selection
+
+Start with default or minimal, then:
+
+1. **Add Components**: Toggle on additional agents, skills, or hooks
+2. **Remove Components**: Toggle off components you don't need
+3. **Review Summary**: See total agents, skills, hooks, and gates
+
+[Screenshot: Configuration summary panel showing counts and selected components]
+
+### 4. Generate Installation Command
+
+Once satisfied with your configuration, click **"Generate Command"**.
+
+The configurator displays your custom installation command:
+
+```bash
+npx @itz4blitz/agentful init \
+  --agents=orchestrator,backend,frontend,tester \
+  --skills=validation,testing \
+  --hooks=health-check \
+  --gates=types,tests,coverage
+```
+
+[Screenshot: Generated command with copy button]
+
+### 5. Share Your Configuration
+
+Click **"Share Configuration"** to generate a shareable URL:
+
+```
+https://agentful.app?preset=custom&agents=orchestrator,backend,frontend&skills=validation&hooks=health-check
+```
+
+Anyone with this URL sees your exact configuration and can:
+- Copy the installation command
+- Modify and re-share
+- Install directly
+
+[Screenshot: Share modal with URL and social sharing buttons]
+
+## Installing from a Shared Configuration
+
+When you receive a configuration URL:
+
+1. Open the URL in your browser
+2. Review the configuration
+3. Click "Generate Command"
+4. Copy and run the command in your project
+
+Example:
+```bash
+# From shared config URL
+npx @itz4blitz/agentful init --config=https://agentful.app/c/abc12345
+
+# Or with custom overrides
+npx @itz4blitz/agentful init \
+  --config=https://agentful.app/c/abc12345 \
+  --hooks=health-check,notifications
+```
+
+## Installation Options
+
+### Default Installation (Recommended)
+
+**Best for**: Most projects - full-stack applications, production apps, team environments
+
+**Includes**:
+- 8 agents (orchestrator, architect, backend, frontend, tester, reviewer, fixer, product-analyzer)
+- 6 skills (product-tracking, validation, testing, conversation, product-planning, deployment)
+- Hooks (health-check, configurable)
+- 6 quality gates (types, tests, coverage, lint, security, dead-code)
+
+**Tech stack**: Auto-detected on first run
+
+**When to use**:
+- Full-stack applications
+- Production applications
+- Team environments
+- Projects requiring comprehensive quality gates
+
+### Minimal Installation
+
+**Best for**: Simple backend APIs, microservices, scripts, CLI tools
+
+**Includes**:
+- 2 agents (orchestrator, backend)
+- 1 skill (validation)
+- 0 hooks
+- 2 quality gates (types, tests)
+
+**Tech stack**: Auto-detected on first run
+
+**When to use**:
+- Backend-only projects
+- API development
+- Simple scripts
+- Prototyping
+- Learning agentful
+
+## Customizing After Installation
+
+Your configuration isn't locked in. You can modify it after installation:
+
+### Add Components Later
+
+Edit `.claude/settings.json` to add agents:
+
+```json
+{
+  "agents": ["orchestrator", "backend", "frontend", "tester"]
+}
+```
+
+Then manually copy agent files from the agentful template.
+
+### Remove Components
+
+Simply delete the agent/skill files you don't need:
+
+```bash
+rm .claude/agents/product-analyzer.md
+rm -rf .claude/skills/deployment/
+```
+
+### Switch Configurations
+
+Use `/agentful-update` to change your configuration:
+
+```bash
+claude
+/agentful-update --preset=minimal
+# Or customize components
+/agentful-update --agents=orchestrator,backend,frontend --skills=validation,testing
+```
+
+## Troubleshooting
+
+### Configuration URL not loading
+
+**Problem**: Shared configuration URL doesn't work
+
+**Solution**:
+1. Check URL is complete (starts with `https://agentful.app?`)
+2. Try copying the installation command directly
+3. Manually specify flags: `--agents=...` `--skills=...`
+
+### Generated command too long
+
+**Problem**: Installation command exceeds terminal limits
+
+**Solution**:
+```bash
+# Save to file
+echo 'npx @itz4blitz/agentful init \
+  --agents=orchestrator,backend,frontend,tester,reviewer,fixer \
+  --skills=validation,testing,product-tracking \
+  --hooks=health-check,typescript-validation' > install.sh
+
+# Run
+bash install.sh
+```
+
+### Need to specify tech stack
+
+**Problem**: Want to specify tech stack during installation
+
+**Solution**:
+Tech stack is auto-detected on first run. If you need to override:
+1. Install agentful
+2. Specify tech stack in `.claude/product/index.md`
+3. Let architect analyze on first run
+4. The system adapts to your actual stack automatically
+
+### Want to preview changes
+
+**Problem**: Unsure what a configuration will install
+
+**Solution**:
+1. Use `--dry-run` flag:
+```bash
+npx @itz4blitz/agentful init --dry-run
+```
+2. Reviews what would be installed without making changes
+
+## FAQ
+
+### Can I customize the default installation?
+
+Yes, you can add or remove specific components using CLI flags or custom configuration.
+
+### Does the configurator work offline?
+
+No, it requires an internet connection. Use CLI flags for offline installation:
+
+```bash
+npx @itz4blitz/agentful init --agents=orchestrator,backend --skills=validation
+```
+
+### Can I save configurations for later?
+
+Yes, via shareable URLs. Bookmark or save the configuration URL to reuse later.
+
+### What happens if I omit required components?
+
+The orchestrator agent is always added automatically. Other dependencies are validated and you'll see warnings.
+
+### Can I preview files before installation?
+
+Not currently. Use `--dry-run` to see what will be installed:
+
+```bash
+npx @itz4blitz/agentful init --preset=minimal --dry-run
+```
+
+### How do I update my configuration?
+
+Use `/agentful-update` command after installation:
+
+```bash
+claude
+/agentful-update
+```
+
+This performs a smart merge preserving your customizations. You can also change configurations:
+
+```bash
+/agentful-update --preset=minimal
+/agentful-update --agents=orchestrator,backend,frontend
+```
+
+## Next Steps
+
+<div className="grid gap-4 md:grid-cols-2 mt-8">
+
+<div>
+
+### Installation Options
+Learn about default vs minimal installation
+[Installation Options Guide](/getting-started/presets)
+
+</div>
+
+<div>
+
+### Installation
+Install agentful with your configuration
+[Installation Guide](/getting-started/installation)
+
+</div>
+
+</div>
+
+---
+
+## Quick Reference
+
+**Configurator URL**: [agentful.app](https://agentful.app)
+
+**Key Features**:
+- Visual component selection
+- Default and minimal installations
+- Shareable configurations
+- Custom component selection
+- No CLI required
+
+**After Configuration**:
+1. Copy generated command
+2. Run in your project directory
+3. Start Claude and begin development

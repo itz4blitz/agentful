@@ -2,7 +2,10 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
   title: 'agentful',
-  description: 'Human-in-the-loop development kit for Claude Code. Structured development with specialized agents where Claude implements and you decide.',
+  description: 'An agent toolkit for development, automation, and CI',
+
+  logoUrl: '/logo.svg',
+  iconUrl: '/logo-icon.svg',
 
   editLink: {
     pattern: 'https://github.com/itz4blitz/agentful/edit/main/docs/:path',
@@ -13,10 +16,12 @@ export default defineConfig({
       {
         text: 'Getting Started',
         items: [
-          { text: 'Introduction', link: '/' },
-          { text: 'Installation', link: '/getting-started/installation' },
+          { text: 'Configure & Install', link: '/' },
+          { text: 'Overview', link: '/getting-started/overview' },
           { text: 'Quick Start', link: '/getting-started/quick-start' },
           { text: 'Your First Project', link: '/getting-started/first-project' },
+          { text: 'Presets', link: '/getting-started/presets' },
+          { text: 'Migration Guide', link: '/getting-started/migration' },
           { text: 'Configuration', link: '/getting-started/configuration' },
         ],
       },
@@ -27,6 +32,13 @@ export default defineConfig({
           { text: 'Conversation', link: '/skills/conversation' },
           { text: 'Product Tracking', link: '/skills/product-tracking' },
           { text: 'Validation', link: '/skills/validation' },
+        ],
+      },
+      {
+        text: 'Concepts',
+        items: [
+          { text: 'Agent Architecture', link: '/concepts/architecture' },
+          { text: 'Background Agent Patterns', link: '/concepts/background-agents' },
         ],
       },
       {
@@ -54,8 +66,19 @@ export default defineConfig({
           { text: '/agentful-decide', link: '/commands/agentful-decide' },
           { text: '/agentful-validate', link: '/commands/agentful-validate' },
           { text: '/agentful-analyze', link: '/commands/agentful-analyze' },
-          { text: '/agentful-agents', link: '/commands/agentful-agents' },
-          { text: '/agentful-skills', link: '/commands/agentful-skills' },
+        ],
+      },
+      {
+        text: 'Deployment',
+        items: [
+          { text: 'CI/CD Integration', link: '/ci-integration' },
+          { text: 'Remote Execution', link: '/remote-execution' },
+        ],
+      },
+      {
+        text: 'Brand',
+        items: [
+          { text: 'Logo Usage', link: '/brand/logo' },
         ],
       },
     ],
@@ -68,6 +91,36 @@ export default defineConfig({
   ],
 
   theme: {
-    accentColor: '#10b981',
+    accentColor: {
+      light: '#10b981',
+      dark: '#10b981',
+    },
+    colorScheme: 'dark',
+  },
+
+  socials: [
+    {
+      icon: 'github',
+      link: 'https://github.com/itz4blitz/agentful',
+    },
+    {
+      icon: 'discord',
+      link: 'https://discord.gg/SMDvJXUe',
+    },
+  ],
+
+  head: {
+    link: [
+      {
+        rel: 'stylesheet',
+        href: '/custom.css',
+      },
+    ],
+    script: [
+      {
+        src: '/animate-favicon.js',
+        async: true,
+      },
+    ],
   },
 })

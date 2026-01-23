@@ -34,17 +34,50 @@ npm install
 node bin/cli.js --help
 ```
 
+### Working with .claude/ Directory
+
+Agentful uses a two-layer protection system for the `.claude/` configuration:
+
+**`template/.claude/`** - Source of truth
+- Clean templates distributed via npm
+- Version controlled in git
+- **Edit these files** when making changes to agents, commands, or skills
+- Never modified by agentful itself
+
+**`.claude/`** - Working directory
+- Gitignored for testing/development
+- Auto-restored by post-merge hook if corrupted
+- Safe for experimenting without affecting templates
+
+**Development workflow**:
+```bash
+# 1. Make changes to templates (source of truth)
+vim template/.claude/agents/my-agent.md
+
+# 2. Sync to working directory for testing
+cp -r template/.claude/ .claude/
+
+# 3. Test your changes
+node bin/cli.js --help
+```
+
+**Protection mechanism**:
+- `.git/hooks/post-merge` automatically restores `.claude/` after git operations
+- Prevents accidental deletion during merges/pulls
+- See [CLAUDE_PROTECTION.md](CLAUDE_PROTECTION.md) for full details
+
 ## 📁 Project Structure
 
 ```
 agentful/
-├── .claude/              # agentful configuration (the actual product)
+├── template/.claude/    # Source templates (version controlled, distributed via npm)
 │   ├── agents/          # Specialist agents
 │   ├── commands/        # Slash commands
 │   ├── skills/          # Domain skills
 │   └── settings.json    # Hooks and permissions
+├── .claude/             # Working directory (gitignored, for testing)
 ├── bin/                 # CLI tool
-├── template/            # Template files for new projects
+├── template/            # Other template files for new projects
 ├── docs/                # Documentation site
 └── README.md            # Main readme
 ```

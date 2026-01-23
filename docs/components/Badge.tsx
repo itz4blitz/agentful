@@ -1,22 +1,82 @@
 import React from 'react'
 
 interface BadgeProps {
-  variant?: 'default' | 'secondary' | 'outline' | 'destructive'
+  variant?: 'default' | 'secondary' | 'outline' | 'destructive' | 'success' | 'info' | 'warning'
   children: React.ReactNode
 }
 
 export const Badge: React.FC<BadgeProps> = ({ variant = 'default', children }) => {
-  const baseStyles = 'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
-
-  const variantStyles = {
-    default: 'bg-primary text-primary-foreground hover:bg-primary/80',
-    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-    outline: 'text-foreground border border-input hover:bg-accent hover:text-accent-foreground',
-    destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/80',
+  const getVariantStyles = () => {
+    switch (variant) {
+      case 'success':
+        return {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          border: 'none',
+        }
+      case 'info':
+        return {
+          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+          color: 'white',
+          border: 'none',
+        }
+      case 'warning':
+        return {
+          background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+          color: 'white',
+          border: 'none',
+        }
+      case 'destructive':
+        return {
+          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+          color: 'white',
+          border: 'none',
+        }
+      case 'outline':
+        return {
+          background: 'transparent',
+          color: '#10b981',
+          border: '1px solid #10b981',
+        }
+      case 'secondary':
+        return {
+          background: 'rgba(30, 41, 59, 0.8)',
+          color: '#cbd5e1',
+          border: '1px solid rgba(148, 163, 184, 0.2)',
+        }
+      default:
+        return {
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white',
+          border: 'none',
+        }
+    }
   }
 
   return (
-    <span className={`${baseStyles} ${variantStyles[variant]}`}>
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        padding: '0.25rem 0.75rem',
+        fontSize: '0.75rem',
+        fontWeight: '600',
+        borderRadius: '9999px',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        transition: 'all 0.15s ease',
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+        ...getVariantStyles(),
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-1px)'
+        e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)'
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)'
+        e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)'
+      }}
+    >
       {children}
     </span>
   )

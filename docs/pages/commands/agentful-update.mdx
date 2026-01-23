@@ -1,0 +1,706 @@
+# /agentful-update
+
+Smart update mechanism that safely updates your `.claude/` configuration to the latest agentful version while preserving your customizations.
+
+## Overview
+
+`/agentful-update` is the **only authorized way** to update your `.claude/` files after initial installation. It uses intelligent 3-way merge analysis to gracefully migrate updates while keeping your customizations intact.
+
+**Important**: Never re-run `npx @itz4blitz/agentful init` for updates, and never manually modify `.claude/` files. Use this command instead.
+
+## Usage
+
+### Basic Update
+
+```bash
+# Check for and apply updates
+/agentful-update
+```
+
+This will:
+1. Check if a newer version is available
+2. Create a timestamped backup
+3. Perform 3-way merge analysis
+4. Apply updates while preserving customizations
+5. Validate the updated configuration
+6. Offer rollback if validation fails
+
+### Update with Force (Replace Everything)
+
+```bash
+# Discard customizations and use latest templates
+/agentful-update --force
+```
+
+Use with caution - this replaces all `.claude/` files with fresh templates, losing any customizations you made.
+
+### Interactive Update
+
+```bash
+# Prompt for each conflicting file
+/agentful-update --interactive
+```
+
+Gives you control over each file with conflicts, letting you choose whether to keep your version, use the new template, or merge manually.
+
+### Conservative Update
+
+```bash
+# Only update unchanged files (default behavior)
+/agentful-update --conservative
+```
+
+Preserves all customizations and only updates files you haven't modified.
+
+## What It Does
+
+### 1. Pre-flight Checks
+
+Before making any changes, the command verifies:
+
+- agentful is initialized (`.agentful/state.json` exists)
+- `.claude/` directory exists and is not corrupted
+- You're in a git repository (required for safety)
+- No uncommitted changes in `.claude/` directory
+
+If any check fails, you'll get clear instructions on how to fix it.
+
+### 2. Creates Backup
+
+```bash
+.claude.backup-2026-01-21T10-30-45-123Z/
+```
+
+A complete backup of your current `.claude/` directory is created with a timestamp. This allows easy rollback if anything goes wrong.
+
+### 3. Three-Way Merge Analysis
+
+The command performs intelligent analysis comparing:
+
+- **Your current `.claude/` files** (with your customizations)
+- **Old template version** (what you originally installed)
+- **New template version** (latest available)
+
+This identifies:
+- New files in the latest template
+- Files you've customized
+- Files updated in the template
+- Conflicts (both you and template modified the same file)
+
+### 4. Smart Migration
+
+Files are updated based on their category:
+
+**New Files**: Copied directly from the new template - these are new features or improvements.
+
+**Unchanged Files**: Updated to latest version since you haven't customized them.
+
+**User-Customized Files**:
+- **Commands** (`agentful-*.md`): Usually safe to replace unless you added custom logic
+- **Agents**: Preserves your personality/style while merging new capabilities
+- **Skills**: Usually safe to replace with latest version
+- **settings.json**: Carefully merges while preserving your hooks and customizations
+
+**Conflicts**: The update sub-agent analyzes each conflict and either:
+- Intelligently merges both changes
+- Asks you to choose between versions
+- Creates a side-by-side comparison for manual review
+
+### 5. Validation
+
+After migration, automatic validation ensures:
+
+- `settings.json` is valid JSON
+- All agent files have required frontmatter
+- Command files are properly formatted
+- No critical files were corrupted
+
+If validation fails, you're offered an automatic rollback.
+
+### 6. Rollback Capability
+
+If something goes wrong or you're not happy with the update:
+
+```bash
+# Remove updated .claude/
+rm -rf .claude/
+
+# Restore from backup
+cp -r .claude.backup-<timestamp> .claude/
+
+# Verify restoration
+/agentful-status
+```
+
+## When to Use
+
+### After Initial Installation
+
+Once you've run `npx @itz4blitz/agentful init`, use this command for all future updates:
+
+```bash
+# Initial setup
+npx @itz4blitz/agentful init
+
+# Later updates (NOT init again!)
+/agentful-update
+```
+
+### Regular Update Schedule
+
+Check for updates:
+- **Monthly** for active projects
+- **Before major feature work** to get latest improvements
+- **After reporting bugs** - fixes might be available
+- **When you see release notes** for new features you want
+
+### Before Starting New Features
+
+```bash
+# Update to latest
+/agentful-update
+
+# Verify everything works
+/agentful-status
+
+# Begin development
+/agentful-start
+```
+
+### After Breaking Changes
+
+When agentful announces breaking changes in a major version:
+
+```bash
+# Update with interactive mode
+/agentful-update --interactive
+
+# Review each change carefully
+# The update agent will guide you through migrations
+```
+
+## Update Strategies
+
+### Default (Conservative)
+
+```bash
+/agentful-update
+```
+
+- Preserves all your customizations
+- Only updates files you haven't modified
+- Safest option for most users
+- **Best for**: Regular updates when you've customized agents or settings
+
+### Force Mode
+
+```bash
+/agentful-update --force
+```
+
+- Replaces everything with fresh templates
+- Discards all customizations
+- Creates backup before replacing
+- **Best for**: Starting fresh or undoing problematic customizations
+- **Warning**: You'll lose custom agents, modified commands, and personalized settings
+
+### Interactive Mode
+
+```bash
+/agentful-update --interactive
+```
+
+- Prompts you for each conflicting file
+- Shows diff between your version and new template
+- Lets you choose: keep yours, use new, or merge manually
+- **Best for**: Important updates where you want full control
+- **Takes longer**: Requires decision for each conflict
+
+## Common Scenarios
+
+### Scenario: You Customized Agent Personalities
+
+```bash
+/agentful-update
+```
+
+**What happens**: Update preserves your agent personalities while merging new capabilities and bug fixes.
+
+**Example**: You gave your frontend agent a friendly, educational personality. The update keeps that personality but adds new React 19 skills.
+
+### Scenario: You Added Custom Commands
+
+```bash
+/agentful-update
+```
+
+**What happens**: Your custom commands (like `/project-specific-task`) remain intact while core agentful commands are updated.
+
+**Your custom commands**: `.claude/commands/my-custom-*.md` - Preserved
+**Core commands**: `.claude/commands/agentful-*.md` - Updated
+
+### Scenario: You Modified settings.json Hooks
+
+```bash
+/agentful-update
+```
+
+**What happens**: Your hooks configuration is preserved while new settings are merged in.
+
+**Example**: You added a custom `PostToolUse` hook. The update keeps your hook and adds any new default settings.
+
+### Scenario: Template Has Breaking Changes
+
+```bash
+/agentful-update --interactive
+```
+
+**What happens**: Update sub-agent creates a migration guide and asks for your confirmation before making breaking changes.
+
+**Example**: agentful 2.0 changes agent file format. Interactive mode guides you through updating your customized agents to the new format.
+
+### Scenario: You Want Fresh Start
+
+```bash
+/agentful-update --force
+```
+
+**What happens**: Everything is replaced with clean templates. Your backup remains available for reference.
+
+**Use when**: You've made changes you want to discard, or you want to see what "stock" agentful looks like again.
+
+## Output Examples
+
+### Successful Update
+
+```
+🔍 Checking for updates...
+📥 Updating from 0.5.0 to 0.6.2...
+✅ Latest version installed
+
+📦 Creating backup...
+✅ Backup created: .claude.backup-2026-01-21T10-30-45-123Z
+
+🔍 Analyzing changes...
+📊 Analysis complete:
+  - 3 new files in template
+  - 5 files with potential conflicts
+  - 24 files unchanged
+
+🤖 Launching update agent...
+
+[Update agent working...]
+
+✅ Update complete!
+
+🔍 Running validation...
+  ✅ settings.json is valid
+  ✅ All agents valid
+
+✅ Update successful!
+
+Backup preserved at: .claude.backup-2026-01-21T10-30-45-123Z
+
+Next steps:
+1. Review changes: git diff .claude/
+2. Test commands: /agentful-start
+3. If everything works, commit: git add .claude/ && git commit -m "Update agentful to 0.6.2"
+```
+
+### Already Up to Date
+
+```
+🔍 Checking for updates...
+✅ Already on latest version (0.6.2)
+
+Would you like to re-sync your .claude/ with the current templates?
+This will preserve your customizations but update base files.
+
+Reply 'yes' to continue, or 'no' to cancel.
+```
+
+### Update with Conflicts
+
+```
+🔍 Analyzing changes...
+📊 Analysis complete:
+  - 2 new files in template
+  - 8 files with potential conflicts
+  - 22 files unchanged
+
+🤖 Launching update agent...
+
+Conflicts detected:
+  .claude/agents/orchestrator.md
+    - You: Added custom planning steps
+    - Template: Updated decision-making logic
+    → Merging both changes
+
+  .claude/settings.json
+    - You: Added PostToolUse hook
+    - Template: Added new default hooks
+    → Preserving your hooks, adding new ones
+
+  .claude/commands/agentful-start.md
+    - You: No changes
+    - Template: Major improvements
+    → Using new template version
+
+✅ 8 conflicts resolved automatically
+```
+
+### Failed Update (with Rollback)
+
+```
+🔍 Running validation...
+  ❌ settings.json is invalid!
+
+  Error: Unexpected token in JSON at position 142
+
+  Restoring from backup...
+✅ Rolled back to previous version
+
+The update failed validation. Your original .claude/ has been restored.
+
+Backup available at: .claude.backup-2026-01-21T10-30-45-123Z
+
+Please report this issue: https://github.com/itz4blitz/agentful/issues
+```
+
+## Rollback Instructions
+
+If you need to manually rollback after an update:
+
+### Immediate Rollback (Right After Update)
+
+```bash
+# Remove updated .claude/
+rm -rf .claude/
+
+# Restore from the backup just created
+cp -r .claude.backup-2026-01-21T10-30-45-123Z .claude/
+
+# Verify
+/agentful-status
+```
+
+### Rollback to Earlier Backup
+
+```bash
+# List available backups
+ls -la | grep .claude.backup
+
+# Choose the backup you want
+# Example: .claude.backup-2026-01-20T15-22-10-456Z
+
+# Remove current .claude/
+rm -rf .claude/
+
+# Restore chosen backup
+cp -r .claude.backup-2026-01-20T15-22-10-456Z .claude/
+
+# Verify
+/agentful-status
+```
+
+### Rollback Using Git
+
+If you committed before updating:
+
+```bash
+# See recent commits
+git log --oneline .claude/
+
+# Restore .claude/ to previous commit
+git checkout <commit-hash> -- .claude/
+
+# Or restore to last commit
+git restore .claude/
+```
+
+### Clean Up Old Backups
+
+```bash
+# List backups with sizes
+du -sh .claude.backup-*
+
+# Remove old backups (keep last 3)
+ls -t .claude.backup-* | tail -n +4 | xargs rm -rf
+
+# Or remove all backups
+rm -rf .claude.backup-*
+```
+
+## Troubleshooting
+
+### Issue: "agentful not initialized"
+
+**Error message:**
+```
+❌ agentful not initialized!
+
+Run: npx @itz4blitz/agentful init
+
+Cannot update before initialization.
+```
+
+**Solution:**
+```bash
+# If this is your first time, initialize
+npx @itz4blitz/agentful init
+
+# If you had it initialized but lost .agentful/
+# Restore from git or recreate
+mkdir -p .agentful
+echo '{}' > .agentful/state.json
+/agentful-update
+```
+
+### Issue: "Not in a git repository"
+
+**Error message:**
+```
+⚠️  Not in a git repository!
+
+For safety, agentful-update requires git to track changes.
+```
+
+**Solution:**
+```bash
+# Initialize git
+git init
+git add .
+git commit -m "Initial commit"
+
+# Now update
+/agentful-update
+```
+
+### Issue: "Uncommitted changes in .claude/"
+
+**Error message:**
+```
+⚠️  Uncommitted changes in .claude/
+
+Please commit or stash your .claude/ changes before updating
+```
+
+**Solution:**
+```bash
+# Option 1: Commit your changes
+git add .claude/
+git commit -m "Save .claude/ customizations"
+
+# Option 2: Stash changes
+git stash push .claude/
+
+# Then update
+/agentful-update
+
+# If you stashed, restore after update
+git stash pop
+```
+
+### Issue: Update Fails Validation
+
+**What you see:**
+```
+❌ settings.json is invalid!
+Restoring from backup...
+```
+
+**What happened**: The merge created invalid configuration
+
+**Solution:**
+1. The automatic rollback already restored your working version
+2. Report the issue: https://github.com/itz4blitz/agentful/issues
+3. Include the error message and your agentful version
+4. Try again with `--conservative` or `--interactive` mode
+
+### Issue: Lost Customizations After --force
+
+**Problem**: You ran `--force` and lost custom agents/settings
+
+**Solution:**
+```bash
+# Restore from backup
+rm -rf .claude/
+cp -r .claude.backup-<timestamp> .claude/
+
+# Next time, use default mode (no --force)
+/agentful-update
+```
+
+### Issue: Merge Conflicts Too Complex
+
+**Problem**: Interactive mode showing too many conflicts to manually resolve
+
+**Solution:**
+```bash
+# Option 1: Use conservative mode
+/agentful-update --conservative
+
+# Option 2: Start fresh and re-apply customizations
+cp -r .claude/ .claude.my-customizations/
+/agentful-update --force
+# Then manually copy back your customizations from .claude.my-customizations/
+
+# Option 3: Skip this update
+# Stay on current version until you have time to handle conflicts
+```
+
+## Version Compatibility
+
+agentful follows [semantic versioning](https://semver.org/):
+
+### Patch Updates (0.5.0 → 0.5.1)
+
+**What changes**: Bug fixes, documentation, minor improvements
+
+**Safe to update**: Yes, always safe
+
+**Recommended approach**: Default mode
+```bash
+/agentful-update
+```
+
+### Minor Updates (0.5.0 → 0.6.0)
+
+**What changes**: New features, new commands, new agents
+
+**Safe to update**: Yes, backward compatible
+
+**Recommended approach**: Default mode
+```bash
+/agentful-update
+```
+
+**Review**: Check release notes for new features you can start using
+
+### Major Updates (0.x.0 → 1.0.0)
+
+**What changes**: Breaking changes, architecture changes, API changes
+
+**Safe to update**: Requires careful review
+
+**Recommended approach**: Interactive mode
+```bash
+/agentful-update --interactive
+```
+
+**Review required**:
+1. Read migration guide in release notes
+2. Review each conflict carefully
+3. Test thoroughly after update
+4. Keep backup until you've verified everything works
+
+## Best Practices
+
+### Before Updating
+
+1. **Commit your work**
+   ```bash
+   git add .
+   git commit -m "Save work before agentful update"
+   ```
+
+2. **Check what you've customized**
+   ```bash
+   git diff origin/main .claude/
+   ```
+
+3. **Read release notes**
+   - Check GitHub releases
+   - Look for breaking changes
+   - Note new features
+
+### During Update
+
+1. **Use appropriate mode**
+   - Normal updates: Default mode
+   - Major versions: Interactive mode
+   - Want fresh start: Force mode
+
+2. **Review the analysis**
+   - Note which files will change
+   - Understand conflicts before proceeding
+   - Ask questions if unclear
+
+3. **Don't skip validation**
+   - Let the validation run
+   - If it fails, investigate why
+   - Don't force-override validation errors
+
+### After Update
+
+1. **Review changes**
+   ```bash
+   git diff .claude/
+   ```
+
+2. **Test critical functionality**
+   ```bash
+   /agentful-status
+   /agentful-start
+   ```
+
+3. **Commit if successful**
+   ```bash
+   git add .claude/
+   git commit -m "Update agentful to 0.6.2"
+   ```
+
+4. **Clean up backups eventually**
+   ```bash
+   # After you've verified everything works for a few days
+   rm -rf .claude.backup-*
+   ```
+
+## Integration with Workflows
+
+### Monthly Update Routine
+
+```bash
+# First of the month
+/agentful-update
+
+# Review and test
+git diff .claude/
+/agentful-start
+
+# Commit if good
+git add .claude/
+git commit -m "Monthly agentful update"
+```
+
+### Before Starting New Project Phase
+
+```bash
+# Get latest features
+/agentful-update
+
+# Regenerate agents with new capabilities
+/agentful-generate
+
+# Start fresh work
+/agentful-start
+```
+
+### After Bug Reports
+
+```bash
+# Check for fix
+/agentful-update
+
+# If fixed, verify
+/agentful-start
+
+# Report if still broken
+```
+
+## See Also
+
+- [Installation Guide](/getting-started/installation) - Initial setup with `npx @itz4blitz/agentful init`
+- [/agentful-status](/commands/agentful-status) - Verify update succeeded
+- [/agentful-generate](/commands/agentful-generate) - Regenerate agents after update
+- [/agentful-start](/commands/agentful-start) - Test updated configuration

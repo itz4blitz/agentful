@@ -1,290 +1,888 @@
-# agentful Architecture
+# agentful: Technical Architecture
 
-This document explains the file organization and separation of concerns in agentful.
+**Version:** 2.0
+**Date:** January 2026
+**Status:** Design Phase
 
-## Directory Structure
+---
+
+## Executive Summary
+
+agentful is transforming from a Claude Code development assistant into **the industry-standard open-source framework for AI agent orchestration** - the "Playwright of AI agents."
+
+### Vision
+
+Enable any development team to generate custom AI agents tailored to their exact codebase, then orchestrate those agents in long-running pipelines for code review, testing, deployment, and feature development.
+
+### Core Value Proposition
+
+1. **Custom Agent Generation**: Analyze codebases and generate agents that understand YOUR patterns, not generic best practices
+2. **Pipeline Orchestration**: Run agents in async workflows (5-30 minutes) with dependencies, parallelization, and error recovery
+3. **Multi-Platform**: Works with Claude Code, GitHub Actions, GitLab CI, Aider, OpenCode, Gemini CLI, and more
+4. **100% Open Source**: MIT licensed, sponsored by companies that benefit (Anthropic, Google, GitHub)
+
+---
+
+## System Architecture
+
+### High-Level Components
 
 ```
-your-project/
-├── .claude/                # User-customizable configuration (VERSION CONTROL THIS)
-│   ├── agents/             # Agent definitions
-│   │   ├── orchestrator.md
-│   │   ├── backend.md
-│   │   ├── frontend.md
-│   │   ├── tester.md
-│   │   ├── reviewer.md
-│   │   ├── fixer.md
-│   │   ├── architect.md
-│   │   ├── product-analyzer.md
-│   │   └── ephemeral/      # One-off temporary agents (GITIGNORED)
-│   │       └── *.md        # Created on-demand, deleted after use
-│   ├── commands/           # Slash commands
-│   │   ├── agentful.md
-│   │   ├── agentful-product.md
-│   │   ├── agentful-start.md
-│   │   ├── agentful-status.md
-│   │   ├── agentful-decide.md
-│   │   └── agentful-validate.md
-│   ├── product/            # Product specifications (USER EDITABLE)
-│   │   ├── index.md        # Main product spec
-│   │   ├── product-analysis.json  # Readiness analysis (GENERATED)
-│   │   └── domains/        # Optional hierarchical structure
-│   │       └── {domain}/
-│   │           ├── index.md
-│   │           └── features/
-│   │               └── {feature}.md
-│   ├── skills/             # Reusable skill modules
-│   │   ├── product-tracking/
-│   │   ├── validation/
-│   │   └── conversation/
-│   └── settings.json       # Project-level configuration
-│
-└── .agentful/              # Runtime state (GITIGNORED, MANAGED BY NPM PACKAGE)
-    ├── state.json          # Current work state
-    ├── completion.json     # Feature completion tracking
-    ├── decisions.json      # Pending/resolved decisions
-    ├── architecture.json   # Detected tech stack
-    ├── last-validation.json       # Latest validation results
-    └── conversation-history.json  # Session tracking
+┌─────────────────────────────────────────────────────────────┐
+│                    agentful Framework                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────────┐         ┌───────────────────┐         │
+│  │  Codebase        │────────>│  Agent Generator  │         │
+│  │  Analyzer        │         │                   │         │
+│  │                  │         │  Custom Agents    │         │
+│  │  - Pattern Det.  │         │  Per Codebase     │         │
+│  │  - Tech Stack    │         └───────────────────┘         │
+│  │  - Conventions   │                  │                    │
+│  └──────────────────┘                  │                    │
+│           │                            ▼                    │
+│           │                  ┌────────────────────┐         │
+│           └─────────────────>│  Pipeline          │         │
+│                              │  Orchestrator      │         │
+│                              │                    │         │
+│                              │  - Dependency DAG  │         │
+│                              │  - Parallel Exec   │         │
+│                              │  - State Persist   │         │
+│                              └────────────────────┘         │
+│                                       │                     │
+│                                       ▼                     │
+│                      ┌────────────────────────────┐         │
+│                      │   Platform Adapters        │         │
+│                      │                            │         │
+│                      │  - GitHub Actions          │         │
+│                      │  - GitLab CI               │         │
+│                      │  - Claude Code             │         │
+│                      │  - Aider / OpenCode        │         │
+│                      └────────────────────────────┘         │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## File Separation Principles
+---
 
-### `.claude/` - User Configuration (Version Controlled)
+## Component 1: Codebase Analyzer
 
-**Purpose**: User-customizable configuration that defines how agentful behaves in your project.
+**Purpose:** Understand project structure, patterns, and conventions to generate tailored agents.
 
-**What goes here:**
-- Agent definitions (how agents should work)
-- Slash commands (what commands are available)
-- Product specifications (what to build)
-- Skills (reusable capabilities)
-- Settings (project preferences)
+### Architecture
 
-**Version control**: ✅ YES - Commit to git
-**Shared across team**: ✅ YES - All developers use same config
-**Modified by**: Human developers (you edit these files)
+**Location:** `lib/core/analyzer.ts`
 
-#### Special Case: `.claude/product/product-analysis.json`
+**Key Responsibilities:**
+- Scan codebase directory structure
+- Detect tech stack (languages, frameworks, tools)
+- Extract coding patterns (imports, components, API styles)
+- Learn conventions (naming, file organization, error handling)
+- Calculate confidence scores (0.0-1.0) for each detection
 
-This file is an **exception** to the user-editable rule:
-- **Location**: `.claude/product/product-analysis.json`
-- **Generated by**: `/agentful-product` command (product-analyzer agent)
-- **Purpose**: Stores analysis of product specification readiness
-- **Version control**: ✅ YES - Helps team track spec quality over time
-- **Modified by**: agentful (regenerated on each `/agentful-product` run)
-- **User action**: Review the analysis, update `index.md` to address issues, re-run analysis
+### Pattern Detection Strategies
 
-**Why in `.claude/` not `.agentful/`?**
-- Product analysis is configuration-like (it describes spec quality)
-- Valuable for code review (shows what requirements were validated)
-- Helps new team members understand spec completeness
-- Persists across sessions (not transient runtime state)
+```typescript
+interface PatternDetector {
+  name: string;
+  detect(files: CodeFile[]): Pattern[];
+  confidence(pattern: Pattern): number;
+}
 
-**Note for agentful repository maintainers:**
-- This file should NOT exist in the agentful npm package repository itself
-- It's only created in user projects when they run `/agentful-product`
-- The agentful repo contains templates (`.claude/product/index.md`) but not the generated analysis
+// Example detectors:
+- ImportPatternDetector    // How modules are imported
+- ComponentPatternDetector // Functional vs class components
+- APIPatternDetector       // REST vs GraphQL vs RPC
+- DatabasePatternDetector  // ORM vs raw SQL
+- TestPatternDetector      // Testing conventions
+- AuthPatternDetector      // Authentication patterns
+```
 
-#### Special Case: `.claude/agents/ephemeral/`
+### Tech Stack Detection
 
-This subdirectory is **gitignored** for temporary agents:
-- **Location**: `.claude/agents/ephemeral/*.md`
-- **Created by**: Orchestrator for one-off tasks
-- **Purpose**: Specialized agents for non-repeating work (migrations, audits, cleanups)
-- **Version control**: ❌ NO - Gitignored
-- **Lifecycle**: Created → Used → Deleted/Archived
-- **Modified by**: agentful (auto-generated and cleaned up)
+```typescript
+interface TechStackDetector {
+  detectLanguages(): Language[];     // TypeScript, Python, Go, etc.
+  detectFrameworks(): Framework[];   // Next.js, Django, etc.
+  detectTools(): Tool[];             // Prisma, Jest, etc.
+}
 
-### `.agentful/` - Runtime State (Gitignored)
+// Detection methods:
+1. package.json / requirements.txt / go.mod analysis
+2. Import statement analysis
+3. File extension patterns
+4. Configuration file presence
+5. Directory structure patterns
+```
 
-**Purpose**: Transient runtime state managed by the agentful npm package during development sessions.
+### Convention Extraction
 
-**What goes here:**
-- Current work tracking (what's being built right now)
-- Progress snapshots (how far along each feature is)
-- Pending decisions (blocking questions for the user)
-- Detected architecture (auto-analyzed tech stack)
-- Validation reports (latest test/lint results)
-- Conversation history (session tracking)
+```typescript
+interface ConventionExtractor {
+  extractNaming(): NamingConventions;
+  extractFileStructure(): FileStructure;
+  extractCodeStyle(): CodeStyle;
+}
 
-**Version control**: ❌ NO - Always gitignored
-**Shared across team**: ❌ NO - Each developer has their own state
-**Modified by**: agentful npm package (automated)
+// Examples:
+- Naming: camelCase vs snake_case, prefixes, suffixes
+- File Structure: co-location vs separation of concerns
+- Code Style: async/await vs promises, error handling patterns
+```
 
-**Why gitignored?**
-- State is specific to each developer's session
-- Changes constantly (every iteration updates state)
-- Not meaningful for code review
-- Regenerated automatically when starting new session
-- Like `node_modules/` - necessary locally, wrong to commit
+### Output Format
 
-## File Organization by Purpose
+```json
+{
+  "version": "1.0",
+  "analyzedAt": "2026-01-21T00:00:00Z",
+  "techStack": {
+    "languages": ["TypeScript"],
+    "frameworks": ["Next.js", "React"],
+    "tools": ["Prisma", "Vitest", "Tailwind"]
+  },
+  "patterns": [
+    {
+      "type": "component",
+      "style": "functional",
+      "confidence": 0.95,
+      "examples": ["src/components/Button.tsx", "..."]
+    },
+    {
+      "type": "api",
+      "style": "REST",
+      "confidence": 0.88,
+      "examples": ["api/users/route.ts", "..."]
+    }
+  ],
+  "conventions": {
+    "naming": "camelCase",
+    "fileStructure": "co-located",
+    "errorHandling": "try-catch-async"
+  }
+}
+```
 
-### Product Specification Files
+**Stored:** `.agentful/architecture.json`
 
-| File | Location | Version Control | Purpose | Modified By |
-|------|----------|----------------|---------|-------------|
-| `index.md` | `.claude/product/` | ✅ YES | Main product spec | Human |
-| `product-analysis.json` | `.claude/product/` | ✅ YES | Spec readiness score | agentful |
-| Domain specs | `.claude/product/domains/` | ✅ YES | Feature details | Human |
+---
 
-**Key Point**: Product analysis is configuration because it's a durable assessment of your requirements quality, not transient runtime state.
+## Component 2: Agent Generator
 
-### State Tracking Files
+**Purpose:** Transform codebase analysis into custom AI agents that understand the specific project.
 
-| File | Location | Version Control | Purpose | Modified By |
-|------|----------|----------------|---------|-------------|
-| `state.json` | `.agentful/` | ❌ NO | Current work | agentful |
-| `completion.json` | `.agentful/` | ❌ NO | Progress tracking | agentful |
-| `decisions.json` | `.agentful/` | ❌ NO | Pending decisions | agentful |
-| `architecture.json` | `.agentful/` | ❌ NO | Tech stack detection | agentful |
-| `last-validation.json` | `.agentful/` | ❌ NO | Test/lint results | agentful |
-| `conversation-history.json` | `.agentful/` | ❌ NO | Session tracking | agentful |
+### Architecture
 
-### Agent Definition Files
+**Location:** `lib/core/generator.ts`
 
-| File | Location | Version Control | Purpose | Modified By |
-|------|----------|----------------|---------|-------------|
-| Core agents | `.claude/agents/*.md` | ✅ YES | Core workflow agents | agentful (shipped) + Human (customized) |
-| Ephemeral agents | `.claude/agents/ephemeral/*.md` | ❌ NO | One-off task agents | agentful (temp) |
+### Agent Template System
 
-## Why This Separation Matters
+```
+templates/
+├── base/
+│   ├── agent.md.hbs          # Base agent template
+│   └── README.md             # Template documentation
+├── frameworks/
+│   ├── nextjs.md.hbs         # Next.js specialist
+│   ├── django.md.hbs         # Django specialist
+│   └── express.md.hbs        # Express specialist
+└── patterns/
+    ├── rest-api.md.hbs       # REST API patterns
+    ├── graphql.md.hbs        # GraphQL patterns
+    └── orm.md.hbs            # ORM usage patterns
+```
 
-### For Version Control
+### Template Compilation
 
-**Commit to git:**
-- `.claude/` folder (except `ephemeral/`)
-- All product specifications
-- Product analysis (shows spec evolution)
-- Custom agent modifications
-- Project settings
+```typescript
+interface AgentGenerator {
+  async generate(analysis: CodebaseAnalysis): Promise<Agent[]> {
+    // 1. Select templates based on tech stack
+    const templates = selectTemplates(analysis.techStack);
 
-**Do NOT commit:**
-- `.agentful/` folder (runtime state)
-- `.claude/agents/ephemeral/` (temporary agents)
+    // 2. Build context from analysis
+    const context = buildContext(analysis);
 
-### For Team Collaboration
+    // 3. Compile templates with context
+    const agents = await Promise.all(
+      templates.map(t => compileTemplate(t, context))
+    );
 
-**Shared across team:**
-- Product specifications (what to build)
-- Product analysis (quality assessment)
-- Agent configurations (how to build)
-- Commands and skills (team workflows)
+    // 4. Validate generated agents
+    await validateAgents(agents);
 
-**Individual to each developer:**
-- Current work state (what I'm working on now)
-- Local completion tracking (my progress)
-- My pending decisions (blocking me)
-- My session history (my conversations)
+    return agents;
+  }
+}
+```
 
-### For Upgrades
+### Template Variables
 
-When agentful framework updates:
+```handlebars
+---
+name: {{agentName}}
+description: {{description}}
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
 
-**Safe to upgrade** (npm package updates these):
-- `.agentful/*` files (regenerated fresh)
-- Core agent templates in `.claude/agents/`
+# {{agentName}} Agent
 
-**Preserved** (your customizations kept):
-- Product specifications
-- Custom agent modifications
-- Project-specific settings
-- Product analysis history
+## Your Scope
 
-## Common Scenarios
+{{#each responsibilities}}
+- {{this}}
+{{/each}}
 
-### Scenario 1: Starting Fresh on Existing Project
+## Tech Stack
 
-**What you have:**
-- Git clone of project
-- `.claude/` folder (from git)
-- No `.agentful/` folder (gitignored)
+{{#each techStack}}
+- **{{name}}**: {{version}}
+{{/each}}
 
-**What happens:**
-1. Run `/agentful-start`
-2. agentful creates fresh `.agentful/` directory
-3. Reads product spec from `.claude/product/`
-4. Reads product analysis from `.claude/product/product-analysis.json`
-5. Initializes state for your session
-6. Begins autonomous development
+## Patterns in This Codebase
 
-### Scenario 2: Analyzing Product Spec
+{{#each patterns}}
+### {{type}}
 
-**What you do:**
-1. Edit `.claude/product/index.md` (your product spec)
-2. Run `/agentful-product`
+{{#if examples}}
+Example from your code:
+\`\`\`{{language}}
+{{examples.[0]}}
+\`\`\`
+{{/if}}
 
-**What happens:**
-1. product-analyzer reads your spec
-2. Analyzes for completeness, clarity, etc.
-3. Writes results to `.claude/product/product-analysis.json`
-4. You commit both files to git
-5. Team sees your spec + its quality assessment
+{{description}}
+{{/each}}
 
-### Scenario 3: Switching Branches
+## Conventions
 
-**Branch A** (your feature branch):
-- `.claude/product/` has your new feature spec
-- `.claude/product/product-analysis.json` shows 85% readiness
-- `.agentful/state.json` says "working on auth"
+{{#each conventions}}
+- **{{name}}**: {{rule}}
+{{/each}}
+```
 
-**Switch to Branch B** (teammate's feature):
-- `.claude/product/` has different features (from git)
-- `.claude/product/product-analysis.json` different (from git)
-- `.agentful/state.json` STILL says "working on auth" (not tracked by git)
+### Generated Agent Example
 
-**Solution**: Run `/agentful-start` to reset state for new branch.
+```markdown
+---
+name: nextjs-api-specialist
+description: API route specialist for this Next.js codebase
+model: sonnet
+tools: Read, Write, Edit, Glob, Grep, Bash
+---
 
-### Scenario 4: One-Off Migration Task
+# Next.js API Specialist
 
-**What you do:**
-1. Ask orchestrator: "Migrate user data from MongoDB to PostgreSQL"
+## Your Scope
 
-**What happens:**
-1. Orchestrator recognizes one-off task
-2. Creates `.claude/agents/ephemeral/mongo-to-postgres-migration.md`
-3. Spawns ephemeral agent
-4. Agent completes migration
-5. Orchestrator deletes ephemeral agent file
-6. No git commits needed (ephemeral/ is gitignored)
+- Implement API routes in app/api/
+- Follow this project's error handling pattern: try-catch with standardized error responses
+- Use Prisma for database queries (detected in 15 files)
+- Validate inputs with Zod schemas (convention in api/users/route.ts)
 
-## Migration Notes
+## Patterns in This Codebase
 
-### If you have old references to `.agentful/product-analysis.json`:
+### API Error Handling
 
-**Wrong**:
+Example from your code:
+\`\`\`typescript
+// From api/auth/login/route.ts (lines 12-18)
+try {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+  }
+  // ...
+} catch (error) {
+  return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+}
+\`\`\`
+
+### Database Queries
+
+This project uses Prisma with async/await pattern. Always use try-catch.
+
+## Conventions
+
+- **Naming**: camelCase for variables, PascalCase for types
+- **File Structure**: One route per file in app/api/
+- **Error Responses**: Always include `{ error: string }` shape
+```
+
+### Storage
+
+```
+.agentful/
+├── agents/
+│   ├── generated/              # Auto-generated (regenerated on changes)
+│   │   ├── nextjs-api-specialist.md
+│   │   ├── react-component-specialist.md
+│   │   └── prisma-data-specialist.md
+│   └── custom/                 # User-modified (preserved on regeneration)
+│       └── my-custom-agent.md
+├── templates/                  # Local template overrides
+└── versions/                   # Version history
+```
+
+---
+
+## Component 3: Pipeline Orchestrator
+
+**Purpose:** Execute agents in long-running async workflows with dependencies, parallelization, and error recovery.
+
+### Architecture
+
+**Location:** `lib/pipeline/engine.js`
+
+### Pipeline Definition Format
+
+```yaml
+# .agentful/pipelines/code-review.yml
+name: Code Review Pipeline
+description: Comprehensive code review with security, testing, and quality checks
+
+triggers:
+  - pull_request
+  - workflow_dispatch
+
+env:
+  MAX_PARALLEL: 3
+  TIMEOUT: 1800  # 30 minutes
+
+jobs:
+  security-scan:
+    agent: security-specialist
+    timeout: 600  # 10 minutes
+    retry:
+      max_attempts: 2
+      backoff: exponential
+
+  type-check:
+    agent: typescript-specialist
+    timeout: 300
+    parallel: true
+
+  lint-check:
+    agent: style-specialist
+    timeout: 300
+    parallel: true
+
+  test-coverage:
+    agent: test-specialist
+    dependsOn: [type-check]
+    timeout: 900
+
+  review:
+    agent: review-specialist
+    dependsOn: [security-scan, lint-check, test-coverage]
+    timeout: 1200
+
+  comment:
+    agent: pr-commenter
+    dependsOn: [review]
+    timeout: 60
+    when: github.event_name == 'pull_request'
+```
+
+### Execution Flow
+
+```
+1. Parse pipeline YAML
+2. Build dependency graph (DAG)
+3. Validate (no cycles, all dependencies exist)
+4. Schedule jobs:
+   - Queue: pending jobs
+   - Running: currently executing (max: 3)
+   - Completed: finished successfully
+   - Failed: errored out
+5. Execute with strategies:
+   - Parallel: Independent jobs run concurrently
+   - Sequential: Dependent jobs wait
+   - Conditional: Skip based on when clause
+6. Persist state after each job
+7. Aggregate results
+8. Report to user
+```
+
+### State Management
+
+```json
+// .agentful/runs/<run-id>/state.json
+{
+  "runId": "feature-dev-1234567890-abc",
+  "pipeline": "code-review",
+  "status": "running",
+  "startedAt": "2026-01-21T10:00:00Z",
+  "jobs": {
+    "security-scan": {
+      "status": "completed",
+      "startedAt": "2026-01-21T10:00:00Z",
+      "completedAt": "2026-01-21T10:05:00Z",
+      "result": { "issues": 2, "severity": "medium" }
+    },
+    "type-check": {
+      "status": "running",
+      "startedAt": "2026-01-21T10:00:30Z"
+    },
+    "lint-check": {
+      "status": "queued"
+    }
+  }
+}
+```
+
+### Error Recovery
+
+```typescript
+// Resume interrupted pipeline
+const pipeline = await PipelineEngine.resume('feature-dev-1234567890-abc');
+
+// State preserved:
+// - Completed jobs: NOT re-executed (saves LLM API costs)
+// - Failed jobs: Retried based on retry policy
+// - Queued jobs: Executed when dependencies met
+// - Running jobs: Re-queued (assume crashed)
+```
+
+### Integration with GitHub Actions
+
+```yaml
+# .github/workflows/agentful.yml (auto-generated)
+name: agentful Pipeline
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup agentful
+        uses: agentful/setup@v1
+        with:
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Run Code Review Pipeline
+        run: |
+          npx agentful pipeline run \
+            --pipeline .agentful/pipelines/code-review.yml \
+            --context github-pr
+
+      - name: Comment Results
+        if: github.event_name == 'pull_request'
+        uses: agentful/comment@v1
+        with:
+          run-id: ${{ steps.run.outputs.run-id }}
+```
+
+---
+
+## Component 4: Platform Adapters
+
+**Purpose:** Enable agentful to work across multiple platforms (GitHub Actions, GitLab CI, Claude Code, Aider, etc.)
+
+### Architecture
+
+**Location:** `lib/platforms/`
+
+### Adapter Interface
+
+```typescript
+interface PlatformAdapter {
+  name: string;
+
+  // Generate platform-specific config
+  generateConfig(pipeline: Pipeline): PlatformConfig;
+
+  // Execute agents on this platform
+  executeAgent(agent: Agent, context: Context): Promise<Result>;
+
+  // Handle platform-specific events
+  handleEvent(event: PlatformEvent): void;
+}
+```
+
+### GitHub Actions Adapter
+
+**File:** `lib/platforms/github-actions.ts`
+
+```typescript
+class GitHubActionsAdapter implements PlatformAdapter {
+  generateConfig(pipeline: Pipeline): string {
+    // Convert agentful pipeline → .github/workflows/*.yml
+    return renderWorkflow(pipeline);
+  }
+
+  executeAgent(agent: Agent, context: Context): Promise<Result> {
+    // Use @agentful/github-action composite action
+    return githubAction.run(agent, context);
+  }
+}
+```
+
+### Claude Code Adapter
+
+**File:** `lib/platforms/claude-code.ts`
+
+```typescript
+class ClaudeCodeAdapter implements PlatformAdapter {
+  executeAgent(agent: Agent, context: Context): Promise<Result> {
+    // Use Task() tool for sub-agent delegation
+    return Task(agent.name, context.prompt);
+  }
+}
+```
+
+### Aider Adapter
+
+**File:** `lib/platforms/aider.ts`
+
+```typescript
+class AiderAdapter implements PlatformAdapter {
+  executeAgent(agent: Agent, context: Context): Promise<Result> {
+    // Execute via aider CLI with agent context
+    const result = await exec(`aider --message "${context.prompt}"`);
+    return parseAiderOutput(result);
+  }
+}
+```
+
+---
+
+## Data Flow
+
+### End-to-End Example: Feature Development
+
+```
+1. User: "Build authentication system"
+
+2. agentful analyze
+   - Scans codebase
+   - Detects: Next.js + Prisma + Tailwind
+   - Identifies patterns: REST APIs, server actions, form validation
+   - Output: .agentful/architecture.json
+
+3. agentful generate
+   - Reads architecture.json
+   - Selects templates: nextjs, prisma, react, api
+   - Generates custom agents:
+     * nextjs-api-specialist
+     * prisma-data-specialist
+     * react-component-specialist
+     * auth-security-specialist
+   - Output: .agentful/agents/generated/*.md
+
+4. User creates pipeline: .agentful/pipelines/auth-feature.yml
+   jobs:
+     - design (architect agent)
+     - backend (nextjs-api-specialist + prisma-data-specialist)
+     - frontend (react-component-specialist)
+     - security (auth-security-specialist)
+     - test (test-specialist)
+     - review (review-specialist)
+
+5. agentful pipeline run --pipeline auth-feature.yml
+   - Parses YAML
+   - Builds dependency graph
+   - Executes jobs (some parallel):
+     [design] → [backend + frontend] → [security + test] → [review]
+   - Each job:
+     * Loads agent from .agentful/agents/generated/
+     * Executes agent with context
+     * Saves result to .agentful/runs/<run-id>/
+   - Total time: 20-30 minutes
+   - Output: Complete auth system with tests + review
+
+6. Results
+   - Code committed to feature branch
+   - PR created with agentful review comment
+   - All quality gates passed
+```
+
+---
+
+## Technology Stack
+
+### Core Framework
+- **Language**: Node.js 22+ (JavaScript/TypeScript support)
+- **CLI**: Commander.js
+- **Config Parsing**: js-yaml
+- **Templating**: Handlebars
+- **Validation**: Zod schemas
+- **State Storage**: JSON files (atomic writes)
+
+### Agent Execution
+- **Primary**: Subprocess (`claude` CLI)
+- **Future**: HTTP API calls (Claude API, Gemini API, etc.)
+- **Context**: Temp JSON files for input/output
+
+### Platform Integration
+- **GitHub**: Composite Actions + CLI
+- **GitLab**: CLI via CI config
+- **Local**: Direct CLI execution
+
+### Distribution
+- **NPM Package**: `@itz4blitz/agentful`
+- **GitHub Action**: `agentful/run@v1`
+- **GitLab Template**: `.agentful-ci.yml`
+
+---
+
+## Deployment Architecture
+
+### Local Development
+
+```
+Developer Machine
+├── Project Code
+├── .agentful/
+│   ├── agents/generated/    # Custom agents
+│   ├── pipelines/           # Pipeline definitions
+│   └── runs/                # Execution history
+└── node_modules/@itz4blitz/agentful/
+    ├── lib/core/            # Analyzer, Generator
+    ├── lib/pipeline/        # Orchestrator
+    └── lib/platforms/       # Adapters
+```
+
+### CI/CD (GitHub Actions)
+
+```
+GitHub Actions Runner
+├── Checkout code
+├── Install agentful (npx @itz4blitz/agentful)
+├── Run pipeline (npx agentful pipeline run)
+├── Post results to PR
+└── Store artifacts
+```
+
+### Future: Hosted Service (Optional)
+
+```
+agentful.dev (Optional Managed Service)
+├── Web UI for pipeline visualization
+├── Hosted orchestration (saves CI minutes)
+├── Advanced analytics
+├── Shared agent registry
+└── Enterprise features (SSO, audit logs)
+```
+
+---
+
+## Security & Privacy
+
+### API Key Management
+- Support multiple providers (Anthropic, Google, OpenAI)
+- Environment variables (ANTHROPIC_API_KEY, etc.)
+- GitHub Secrets integration
+- Never log or persist API keys
+
+### Code Privacy
+- All processing local or in user's CI/CD
+- No code sent to agentful servers (unless user opts into hosted service)
+- Telemetry opt-in only (anonymized usage stats)
+
+### Agent Isolation
+- Agents run in subprocesses (can't access parent process)
+- Temp file cleanup after execution
+- No shared state between agents (except explicit context)
+
+---
+
+## Scalability & Performance
+
+### Codebase Analysis
+- **Strategy**: Sample-based (analyze subset of files, not all)
+- **Caching**: Cache analysis results, invalidate on file changes
+- **Incremental**: Only re-analyze changed files
+- **Target**: <30 seconds for 1000-file project
+
+### Agent Generation
+- **Strategy**: Template compilation (fast)
+- **Caching**: Only regenerate if analysis changes
+- **Target**: <5 seconds to generate 5-10 agents
+
+### Pipeline Execution
+- **Concurrency**: 3-5 parallel jobs (configurable)
+- **State Persistence**: After each job (enables resume)
+- **Target**: 5-30 minutes for typical workflows
+
+### Cost Optimization
+- **Avoid Re-execution**: State persistence means completed jobs never re-run
+- **Parallel Execution**: Finish faster (same cost, less wall time)
+- **Conditional Jobs**: Skip unnecessary work
+
+---
+
+## Testing Strategy
+
+### Unit Tests
+- Analyzer: Pattern detection accuracy (90%+ precision)
+- Generator: Template compilation correctness
+- Orchestrator: Dependency resolution, state management
+- Adapters: Platform config generation
+
+### Integration Tests
+- End-to-end pipeline execution
+- Multi-platform compatibility
+- State persistence and recovery
+- Error handling and retries
+
+### Performance Tests
+- Analysis time vs codebase size
+- Pipeline execution time vs job count
+- Memory usage during parallel execution
+
+### Compatibility Tests
+- Node.js versions (22+)
+- Operating systems (macOS, Linux, Windows)
+- CI/CD platforms (GitHub, GitLab, Jenkins)
+
+---
+
+## Monitoring & Telemetry
+
+### Metrics (Opt-In)
+
+```typescript
+interface TelemetryEvent {
+  event: 'pipeline_run' | 'agent_generated' | 'platform_used';
+  timestamp: string;
+  metadata: {
+    duration?: number;
+    techStack?: string[];
+    platform?: string;
+    modelUsed?: string;  // claude, gemini, gpt4
+    success?: boolean;
+  };
+}
+```
+
+### Privacy-Respecting
+- Anonymous user IDs (no PII)
+- No code content sent
+- Aggregate stats only
+- Easy opt-out
+
+### Purpose
+- Understand adoption (which platforms, tech stacks)
+- Prove sponsor ROI (API calls generated)
+- Improve product (which features used)
+
+---
+
+## Versioning & Compatibility
+
+### Semantic Versioning
+- **Major**: Breaking changes to CLI, config format
+- **Minor**: New features, backwards-compatible
+- **Patch**: Bug fixes
+
+### Config Format Versioning
+```yaml
+# .agentful/pipelines/example.yml
+version: "1.0"  # Explicit version
+```
+
+### Upgrade Path
 ```bash
-Read(".agentful/product-analysis.json")
+# agentful detects outdated configs
+npx agentful migrate
+
+# Migrates:
+# - Pipeline YAML (v1.0 → v2.0)
+# - Architecture JSON (old format → new format)
+# - Preserves custom agents
 ```
 
-**Correct**:
-```bash
-Read(".claude/product/product-analysis.json")
-```
+---
 
-All references to `product-analysis.json` should point to `.claude/product/`.
+## Success Metrics
 
-### If you manually created product-analysis.json in `.agentful/`:
+### Phase 1: Adoption (Months 1-6)
+- **Stars**: 2,000+ GitHub stars
+- **Projects**: 500+ weekly active projects
+- **Platforms**: Working on 3+ platforms (Claude Code, GitHub, Aider)
 
-Move it:
-```bash
-mv .agentful/product-analysis.json .claude/product/product-analysis.json
-git add .claude/product/product-analysis.json
-git commit -m "Move product analysis to user config directory"
-```
+### Phase 2: Engagement (Months 7-12)
+- **API Calls**: $50k+/month in LLM API usage driven by agentful
+- **Retention**: 50%+ monthly active users return
+- **Case Studies**: 5+ published case studies
 
-## Summary
+### Phase 3: Revenue (Months 13-18)
+- **Sponsorship**: $20-30k/month from corporate sponsors
+- **Attribution**: Prove 2-5x ROI for sponsors
+- **Community**: 1,000+ Discord members, 100+ contributors
 
-| Directory | Purpose | Version Control | Modified By | Shared Across Team |
-|-----------|---------|----------------|-------------|-------------------|
-| `.claude/agents/` | Agent definitions | ✅ YES | Human + agentful | ✅ YES |
-| `.claude/agents/ephemeral/` | Temp agents | ❌ NO | agentful | ❌ NO |
-| `.claude/commands/` | Slash commands | ✅ YES | Human + agentful | ✅ YES |
-| `.claude/product/` | Product specs | ✅ YES | Human + agentful | ✅ YES |
-| `.claude/product/product-analysis.json` | Spec analysis | ✅ YES | agentful | ✅ YES |
-| `.claude/skills/` | Reusable skills | ✅ YES | Human + agentful | ✅ YES |
-| `.claude/settings.json` | Configuration | ✅ YES | Human | ✅ YES |
-| `.agentful/` | Runtime state | ❌ NO | agentful | ❌ NO |
+---
 
-**Golden Rule**: If it's about **what to build** or **how to build it**, it goes in `.claude/`. If it's about **current progress** or **session state**, it goes in `.agentful/`.
+## Risks & Mitigation
+
+| Risk | Probability | Impact | Mitigation |
+|------|-------------|--------|------------|
+| **LLM API costs too high** | Medium | High | Aggressive caching, state persistence, cost limits |
+| **Competitors clone agentful** | High | Medium | Strong community, first-mover advantage, ongoing innovation |
+| **Sponsors don't see ROI** | Medium | Critical | Revenue attribution, transparent reporting, case studies |
+| **Adoption too slow** | Medium | High | Focus on GitHub Actions (largest distribution), OOTB presets |
+| **Tech stack detection fails** | Low | Medium | Manual overrides, confidence scores, graceful degradation |
+
+---
+
+## Roadmap
+
+### Phase 1: Core Framework (Weeks 1-8)
+- ✅ Codebase analyzer
+- ✅ Agent generator
+- ✅ Pipeline orchestrator
+- ✅ GitHub Actions adapter
+- ✅ CLI tool
+- ✅ Documentation
+
+### Phase 2: Multi-Platform (Weeks 9-16)
+- Aider adapter
+- OpenCode adapter
+- GitLab CI adapter
+- Gemini CLI adapter
+- Codex adapter
+
+### Phase 3: Growth (Weeks 17-24)
+- OOTB presets (Next.js, Django, etc.)
+- Agent marketplace
+- Advanced orchestration (complex DAGs)
+- Performance optimizations
+- Enterprise features
+
+### Phase 4: Sustainability (Months 7-12)
+- Secure sponsorships ($30k+/month)
+- Build community (Discord, docs, tutorials)
+- Annual conference
+- Certification program
+
+---
+
+## Open Questions
+
+1. **Agent Execution**: Should we support HTTP API execution (not just subprocess)?
+2. **Hosted Service**: Offer optional managed service, or pure OSS forever?
+3. **Agent Marketplace**: Allow users to share/sell custom agents?
+4. **Multi-Language**: Support non-JavaScript projects (Python, Go, Rust)?
+5. **Real-Time Collaboration**: Live progress updates in web UI?
+
+---
+
+## References
+
+- [GITHUB_ACTIONS_RESEARCH.md](./GITHUB_ACTIONS_RESEARCH.md) - GitHub Actions patterns
+- [PIPELINE_ARCHITECTURE.md](./PIPELINE_ARCHITECTURE.md) - Pipeline orchestration details
+- [SPONSORSHIP_PLAYBOOK.md](./SPONSORSHIP_PLAYBOOK.md) - Revenue strategy
+- [agentful.app/docs](https://agentful.app/docs) - Public documentation
+
+---
+
+**Last Updated:** January 21, 2026
+**Next Review:** February 2026
+**Owner:** agentful core team

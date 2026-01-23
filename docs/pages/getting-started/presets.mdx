@@ -1,0 +1,290 @@
+---
+title: Installation Options - agentful
+description: How to install and configure agentful for your project.
+---
+
+# Installation Options
+
+agentful is **tech-agnostic** - it works with any stack (TypeScript, Python, JavaScript, Go, etc.). The tech stack is auto-detected on first run, so you don't need to specify it during installation.
+
+## Default Installation (Recommended)
+
+Install agentful with all components:
+
+```bash
+npx @itz4blitz/agentful init
+```
+
+**What's Included**:
+
+- **8 agents**: orchestrator, architect, backend, frontend, tester, reviewer, fixer, product-analyzer
+- **6 skills**: product-tracking, validation, testing, conversation, product-planning, deployment
+- **Hooks**: health-check, block-random-docs (both configurable)
+- **Quality gates**: types, tests, coverage, lint, security, dead-code
+
+**Philosophy**:
+- Default to power - give you everything, remove what you don't need
+- One product: "agentful" - not multiple flavors
+- Tech stack is auto-detected - no configuration needed
+
+**When to Use**:
+- Most projects (recommended default)
+- Full-stack applications
+- Production applications
+- Team environments
+- Enterprise projects
+
+---
+
+## Minimal Installation
+
+For simple scripts, CLIs, or backend-only projects:
+
+```bash
+npx @itz4blitz/agentful init --preset=minimal
+```
+
+**What's Included**:
+
+- **2 agents**: orchestrator, backend
+- **1 skill**: validation
+- **Hooks**: none
+- **Quality gates**: types, tests
+
+**When to Use**:
+- Backend-only APIs
+- CLI tools
+- Microservices
+- Simple scripts
+- Learning agentful
+- Prototyping
+
+**Customization Example**:
+```bash
+# Add frontend agent to minimal preset
+npx @itz4blitz/agentful init \
+  --preset=minimal \
+  --agents=orchestrator,backend,frontend
+```
+
+---
+
+## Custom Installation
+
+Specify exactly which components you want:
+
+```bash
+# Custom agents and skills
+npx @itz4blitz/agentful init \
+  --agents=orchestrator,backend,frontend \
+  --skills=validation,testing
+
+# Custom with all options
+npx @itz4blitz/agentful init \
+  --agents=orchestrator,backend,tester \
+  --skills=validation,testing \
+  --hooks=health-check \
+  --gates=types,tests,coverage
+```
+
+**Available Components**:
+
+**Agents**:
+- `orchestrator` (required) - Coordinates work
+- `architect` - Analyzes codebase
+- `backend` - Implements server logic
+- `frontend` - Builds UI components
+- `tester` - Writes tests
+- `reviewer` - Validates quality
+- `fixer` - Auto-fixes issues
+- `product-analyzer` - Analyzes specifications
+
+**Skills**:
+- `validation` - Quality gate checks
+- `testing` - Test execution
+- `product-tracking` - Progress calculation
+- `conversation` - Intent classification
+- `product-planning` - Specification guidance
+- `deployment` - Deployment automation
+
+**Hooks**:
+- `health-check` - Session start validation
+- `block-random-docs` - Prevents random markdown file creation (enabled by default)
+- `typescript-validation` - Type checks after file changes
+- `notifications` - Desktop alerts
+- `format-on-save` - Auto-format files
+
+**Quality Gates**:
+- `types` - Type checking
+- `tests` - All tests must pass
+- `coverage` - 80% minimum coverage
+- `lint` - Code style validation
+- `security` - Vulnerability scanning
+- `dead-code` - Unused code detection
+
+---
+
+## Shareable Configurations
+
+Use the [web configurator](https://agentful.app/configure) to create and share custom configurations:
+
+```bash
+npx @itz4blitz/agentful init --config=https://agentful.app/c/abc12345
+```
+
+**Benefits**:
+- Visual configuration builder
+- Share setups with your team
+- Save configurations for different project types
+- Copy/paste installation commands
+
+---
+
+## Choosing the Right Option
+
+### Decision Tree
+
+```
+Do you need everything agentful offers?
+├─ Yes → Use: Default installation (npx @itz4blitz/agentful init)
+└─ No → Is this a simple backend-only project?
+    ├─ Yes → Use: Minimal preset (--preset=minimal)
+    └─ No → Use: Custom configuration (specify flags)
+```
+
+### By Project Type
+
+**Full-Stack Applications**: Default installation
+
+**API Development**: Minimal preset or custom
+
+**Enterprise Projects**: Default installation
+
+**Learning/Prototyping**: Minimal preset
+
+**Backend-Only**: Minimal preset
+
+### By Team Size
+
+**Solo Developer**: Default or minimal (depending on project complexity)
+
+**Small Team (2-5)**: Default installation
+
+**Large Team (5+)**: Default installation
+
+---
+
+## Updating Configuration
+
+Use `/agentful-update` to change your installation after setup:
+
+```bash
+claude
+/agentful-update --preset=minimal
+
+# Or add components
+/agentful-update --agents=orchestrator,backend,frontend,tester
+```
+
+This performs a smart 3-way merge:
+1. Preserves your customizations
+2. Updates to new configuration
+3. Creates backups before changes
+4. Reports conflicts for manual resolution
+
+See the [Migration Guide](/getting-started/migration) for details.
+
+---
+
+## Viewing Installation Options
+
+List all available installation options:
+
+```bash
+npx @itz4blitz/agentful presets
+```
+
+---
+
+## FAQ
+
+### Why was the preset system simplified?
+
+The old presets (`fullstack-typescript`, `fullstack-javascript`, etc.) were confusing because:
+- They implied tech stack matters for installation (it doesn't - it's auto-detected)
+- They contradicted agentful's tech-agnostic philosophy
+- They created decision paralysis ("which preset do I need?")
+
+Now there's one clear default, one minimal option, and full customization for edge cases.
+
+### Can I switch configurations after installation?
+
+Yes, use `/agentful-update` to migrate between configurations.
+
+### What if I pick the wrong option?
+
+No problem! Run `/agentful-update` to change your configuration anytime. Your customizations are preserved.
+
+### Do installation options affect my code?
+
+No, they only configure agentful agents and settings. Your source code is never modified during installation.
+
+### Which option is most popular?
+
+Default installation (all components) for most projects, minimal for backend-only APIs.
+
+### Will tech-specific presets ever return?
+
+No. agentful is tech-agnostic by design. The tech stack is auto-detected, so preset-level tech configuration is unnecessary.
+
+---
+
+## Quick Reference
+
+**Available Options**:
+- Default: All components (recommended)
+- Minimal: Backend-only (simple projects)
+- Custom: Specify exactly what you want
+
+**Default Installation**:
+```bash
+npx @itz4blitz/agentful init
+```
+
+**Minimal Installation**:
+```bash
+npx @itz4blitz/agentful init --preset=minimal
+```
+
+**Custom Installation**:
+```bash
+npx @itz4blitz/agentful init \
+  --agents=<list> \
+  --skills=<list> \
+  --hooks=<list> \
+  --gates=<list>
+```
+
+---
+
+## Next Steps
+
+<div className="grid gap-4 md:grid-cols-2 mt-8">
+
+<div>
+
+### Web Configurator
+Visually configure your installation
+[Configurator Guide](/getting-started/configurator)
+
+</div>
+
+<div>
+
+### Quick Start
+Start building with agentful
+[Quick Start Guide](/getting-started/quick-start)
+
+</div>
+
+</div>

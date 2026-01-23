@@ -1,0 +1,321 @@
+---
+title: Overview - What is agentful?
+description: Understanding the agentful architecture, workflow, and how it transforms product specs into working code.
+---
+
+# What is agentful?
+
+**agentful** is a Claude Code configuration that adds specialized agents, quality gates, and structured workflows to your development process. It transforms how you build software by providing autonomous development capabilities while keeping you in control of key decisions.
+
+**[Configure Your Installation →](/)**
+
+---
+
+## Core Capabilities
+
+agentful extends Claude Code with four key capabilities:
+
+1. **Specialized Agents** - Backend, frontend, testing, review, orchestration
+2. **Quality Gates** - Type checking, linting, test coverage, dead code detection
+3. **Product Tracking** - Feature status, completion percentage, blocking decisions
+4. **Smart Analysis** - Tech stack detection, pattern recognition, domain discovery
+
+It's a `.claude/` directory structure with agents, commands, and skills that Claude Code loads automatically.
+
+---
+
+## Agent Architecture
+
+Claude Code runs with different instruction sets depending on which agent you invoke. Each agent has explicit scope boundaries and responsibilities:
+
+### Core Agents
+
+- **`@orchestrator`** - Coordinates work, delegates to specialists, never writes code directly
+- **`@architect`** - Analyzes tech stack, generates domain-specific agents
+- **`@backend`** - Server-side logic, APIs, databases
+- **`@frontend`** - UI components, state management, client code
+- **`@tester`** - Test generation and execution
+- **`@reviewer`** - Quality validation, security checks
+- **`@fixer`** - Automated remediation of failures
+
+### Specialized Agents
+
+Beyond core agents, agentful can generate domain-specific agents based on your codebase:
+
+- **`@auth-agent`** - Authentication and authorization patterns
+- **`@payment-agent`** - Payment processing and billing
+- **`@notification-agent`** - Email, SMS, push notifications
+- **Custom agents** - Generated from your business logic
+
+Each agent knows when to delegate to others and when a task is outside their scope.
+
+---
+
+## Architecture Diagram
+
+The orchestrator coordinates all specialist agents, delegating work based on the task at hand.
+
+{/* TODO: Add AgentArchitectureFlow component
+<div style={{ marginTop: '2rem', marginBottom: '3rem' }}>
+  <AgentArchitectureFlow interactive={false} showControls={false} />
+</div>
+*/}
+
+---
+
+## Development Workflow
+
+The typical agentful workflow follows this pattern:
+
+### 1. Define Product Specification
+
+Create a structured product spec in `.claude/product/`:
+
+```markdown
+## Overview
+Task management for distributed teams
+
+## Tech Stack
+- Next.js 14 + TypeScript
+- Prisma + PostgreSQL
+- Vitest + Playwright
+
+## Features
+1. Authentication (CRITICAL)
+2. Project management (HIGH)
+3. Task assignment (MEDIUM)
+```
+
+### 2. Generate Domain Agents
+
+Run `/agentful-generate` to analyze your codebase and generate:
+- Domain-specific agents based on your business logic
+- Tech stack skills for framework patterns
+- Pattern-matched instructions from your actual code
+
+### 3. Start Structured Development
+
+Run `/agentful-start` to begin the automated development workflow.
+
+{/* TODO: Add DevelopmentWorkflowPipeline component
+<div style={{ marginTop: '2rem', marginBottom: '3rem' }}>
+  <DevelopmentWorkflowPipeline
+    currentStage="implement"
+    completedStages={['spec']}
+    failedStages={[]}
+    interactive={false}
+    showControls={false}
+    animatedFlow={true}
+    orientation="horizontal"
+    height="600px"
+  />
+</div>
+*/}
+
+The workflow follows these stages:
+1. **Product Specification** - Analyze requirements for completeness
+2. **Implementation** - Domain agents build features
+3. **Testing** - Generate comprehensive test coverage
+4. **Quality Gates** - Validate code quality (see below)
+5. **Review** - Final production readiness check
+6. **Deploy** - Ship to staging and production
+
+### 4. Human Checkpoints
+
+The system pauses for your input on:
+- Architectural decisions
+- Library selection
+- Security configurations
+- API design choices
+- Database schema changes
+
+You remain in control while Claude handles implementation details.
+
+---
+
+## Quality Gates
+
+All implementations are validated against six automated quality gates before deployment.
+
+{/* TODO: Add QualityGateDashboard component
+<div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+  <QualityGateDashboard showOverallScore={true} interactive={true} />
+</div>
+*/}
+
+Every feature must pass all six gates:
+
+- **Type Checking** - Zero TypeScript/Flow errors
+- **Linting** - Code follows style guide (ESLint, Biome, Ruff)
+- **Tests** - All test suites passing
+- **Coverage** - Minimum 80% code coverage
+- **Security** - No vulnerable dependencies
+- **Dead Code** - No unused exports or files
+
+Gates adapt to your stack. The framework detects available tools and runs appropriate checks. When gates fail, the **Fixer** agent automatically attempts remediation.
+
+---
+
+## How It Works
+
+### File Structure
+
+agentful creates a specific directory structure in your project:
+
+```
+your-project/
+├── CLAUDE.md               # Project context
+├── .claude/                # Framework (version control)
+│   ├── agents/
+│   │   ├── orchestrator.md
+│   │   ├── backend.md
+│   │   ├── frontend.md
+│   │   ├── tester.md
+│   │   └── ephemeral/      # Generated agents (gitignored)
+│   ├── commands/
+│   │   ├── agentful-start.md
+│   │   ├── agentful-status.md
+│   │   └── agentful-validate.md
+│   ├── skills/
+│   │   ├── product-tracking/
+│   │   └── validation/
+│   ├── product/            # Product specification
+│   │   ├── index.md
+│   │   └── domains/
+│   └── settings.json
+└── .agentful/              # Runtime state (gitignored)
+    ├── state.json
+    ├── completion.json
+    └── decisions.json
+```
+
+**Version Control**: `.claude/` and `CLAUDE.md`
+**Gitignore**: `.agentful/` and `.claude/agents/ephemeral/`
+
+### Tech Stack Detection
+
+agentful automatically detects and adapts to your technology stack:
+
+- **Languages**: TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, Elixir
+- **Frontend**: React, Vue, Angular, Svelte, Next.js, Astro, SolidJS
+- **Backend**: Express, Fastify, NestJS, Hono, Next.js API Routes
+- **Databases**: PostgreSQL, MySQL, SQLite, MongoDB
+- **ORMs**: Prisma, Drizzle, TypeORM, Mongoose
+- **Testing**: Jest, Vitest, Playwright, Cypress, Pytest, JUnit
+
+The system generates appropriate patterns and validations based on what it detects.
+
+---
+
+## New vs Existing Projects
+
+### New Projects (No Code Yet)
+
+1. Architect prompts for tech stack choices
+2. Generates template agents from best practices
+3. Implements first feature
+4. Re-analyzes actual code
+5. Updates agents with your specific patterns
+6. Continues with refined agents
+
+The system learns from your actual code and refines its approach.
+
+### Existing Projects (With Code)
+
+1. Architect samples your codebase
+2. Detects patterns, conventions, and structure
+3. Generates agents matching your exact style
+4. Begins implementation following existing patterns
+
+agentful adapts to your existing code rather than imposing new patterns.
+
+---
+
+## Extended Development Sessions
+
+Use the [Ralph Wiggum plugin](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum) for uninterrupted development:
+
+```bash
+claude
+/plugin install ralph-wiggum@anthropics
+/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+```
+
+This runs until:
+- Feature is complete
+- All quality gates pass
+- Human decision is required
+
+---
+
+## What agentful Is Not
+
+Important limitations to understand:
+
+- **Not fully autonomous** - Requires human decisions on architecture and design
+- **Not a testing framework** - Generates tests but needs infrastructure
+- **Not a deployment system** - Focused on development, not operations
+- **Not a replacement for developers** - Accelerates implementation, not strategy
+
+Works best with:
+- Clear product specifications
+- Timely human decisions
+- Existing project structure (or willingness to define one)
+
+---
+
+## Common Workflows
+
+### New Project from Scratch
+
+```bash
+npx @itz4blitz/agentful init
+claude
+/agentful-product          # Interactive spec creation
+/agentful-generate         # Generate agents
+/agentful-start            # Begin development
+/agentful-status           # Check progress
+/agentful-decide           # Answer blocking decisions
+```
+
+### Existing Codebase
+
+```bash
+npx @itz4blitz/agentful init
+claude
+/agentful-product          # Reverse-engineer spec
+/agentful-generate         # Generate from existing code
+/agentful-start            # Continue development
+```
+
+### Ad-hoc Questions
+
+```bash
+claude
+/agentful "Should I use REST or GraphQL for this API?"
+```
+
+---
+
+## Next Steps
+
+Now that you understand how agentful works:
+
+1. **[Configure Your Installation](/)** - Use the interactive configurator
+2. **[Quick Start Guide](/getting-started/quick-start)** - Get up and running in 5 minutes
+3. **[Your First Project](/getting-started/first-project)** - Step-by-step tutorial
+4. **[Agent Details](/agents)** - Deep dive into each agent
+5. **[Command Reference](/commands)** - All available commands
+
+---
+
+## Resources
+
+- **GitHub**: [github.com/itz4blitz/agentful](https://github.com/itz4blitz/agentful)
+- **Documentation**: [agentful.app](https://agentful.app)
+- **Issues**: [github.com/itz4blitz/agentful/issues](https://github.com/itz4blitz/agentful/issues)
+- **Community**: [Discord](https://discord.gg/SMDvJXUe)
+
+---
+
+Built on [Claude Code](https://code.anthropic.com) by Anthropic.

@@ -1,0 +1,9 @@
+{
+  "name": "Custom Config",
+  "memoryLimitMB": 3072,
+  "cpuThresholdPercent": 200,
+  "checkIntervalMs": 5000,
+  "gracePeriodChecks": 4,
+  "maxCpuTimeSeconds": 600,
+  "enforceLimits": true
+}

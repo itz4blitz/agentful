@@ -155,12 +155,12 @@ Recommended hook configuration in `.claude/settings.json`:
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "command": "bin/hooks/analyze-trigger.sh \"$TOOL_INPUT\""
+        "command": "node bin/hooks/analyze-trigger.js \"$TOOL_INPUT\""
       }
     ],
     "SessionStart": [
       {
-        "command": "bin/hooks/health-check.sh"
+        "command": "node bin/hooks/health-check.js"
       }
     ]
   }

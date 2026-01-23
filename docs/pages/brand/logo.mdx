@@ -1,0 +1,151 @@
+# Logo Usage
+
+The agentful logo represents autonomous AI agents working together in harmony. The design features a network of connected nodes symbolizing collaboration and intelligent orchestration.
+
+## Design Concept
+
+- **Center Node**: Represents the orchestrator agent with enhanced glow
+- **Outer Nodes**: Represent specialized agents (frontend, backend, tester, etc.)
+- **Connection Lines**: Symbolize collaboration and communication between agents
+- **Color Gradient**: Emerald (#10b981) to Cyan (#06b6d4) to Purple (#8b5cf6)
+
+## Logo Variants
+
+### Full Logo (with text)
+
+Used in the navigation bar and main branding contexts.
+
+<div style={{
+  padding: '48px',
+  background: 'rgba(30, 41, 59, 0.5)',
+  borderRadius: '12px',
+  display: 'inline-block',
+  marginTop: '16px'
+}}>
+  <img src="/logo.svg" alt="Agentful Logo" width={176} height={32} />
+</div>
+
+```html
+<img src="/logo.svg" alt="Agentful Logo" width="176" height="32" />
+```
+
+### Icon Only
+
+Used for compact spaces like mobile navigation, favicons, or social media avatars.
+
+<div style={{
+  padding: '48px',
+  background: 'rgba(30, 41, 59, 0.5)',
+  borderRadius: '12px',
+  display: 'inline-block',
+  marginTop: '16px'
+}}>
+  <img src="/logo-icon.svg" alt="Agentful Icon" width={32} height={32} />
+</div>
+
+```html
+<img src="/logo-icon.svg" alt="Agentful Icon" width="32" height="32" />
+```
+
+### Hero Version
+
+Large format for landing pages, presentations, or hero sections.
+
+<div style={{
+  padding: '48px',
+  background: 'rgba(30, 41, 59, 0.5)',
+  borderRadius: '12px',
+  display: 'inline-block',
+  marginTop: '16px'
+}}>
+  <img src="/logo-hero.svg" alt="Agentful Hero Logo" width={120} height={120} />
+</div>
+
+```html
+<img src="/logo-hero.svg" alt="Agentful Hero Logo" width="120" height="120" />
+```
+
+## React Component
+
+For more advanced use cases, you can use the React component with custom props:
+
+```tsx
+import { Logo, LogoIcon, LogoHero } from '@/docs/components/Logo'
+
+// Full logo with text
+<Logo size={32} animate={true} />
+
+// Icon only
+<LogoIcon size={24} animate={true} />
+
+// Large hero version
+<LogoHero animate={true} />
+
+// Custom sizes
+<Logo size={48} showText={true} animate={false} />
+```
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `size` | `number` | `32` | Height of the logo in pixels |
+| `className` | `string` | `''` | Additional CSS classes |
+| `showText` | `boolean` | `true` | Show/hide the "agentful" text |
+| `animate` | `boolean` | `true` | Enable/disable hover animations |
+
+## Animation Effects
+
+On hover, the logo features subtle animations:
+
+- **Pulse glow**: Center node pulses with emerald glow
+- **Node scaling**: All nodes slightly scale and pulse
+- **Connection opacity**: Connection lines become more visible
+- **Text gradient**: Text gradient shifts smoothly
+
+These animations enhance the sense of "aliveness" and represent the autonomous nature of the agents.
+
+## Color Palette
+
+The logo uses agentful's brand colors optimized for dark themes:
+
+- **Primary**: Emerald Green `#10b981`
+- **Secondary**: Cyan `#06b6d4`
+- **Accent**: Purple `#8b5cf6`
+- **Background**: Dark Navy `#0f172a`, `#1e293b`
+
+## Usage Guidelines
+
+### Do's ✅
+
+- Use on dark backgrounds for optimal visibility
+- Maintain adequate spacing around the logo
+- Use provided SVG files for crisp rendering at any size
+- Keep the aspect ratio when scaling
+- Use the icon-only variant for small spaces (under 40px)
+
+### Don'ts ❌
+
+- Don't change the colors or gradients
+- Don't rotate or distort the logo
+- Don't place on light backgrounds without adjustment
+- Don't add effects or shadows (already included)
+- Don't recreate the logo from scratch
+
+## Technical Details
+
+- **Format**: SVG (scalable vector graphics)
+- **Viewbox**: 40x40 (icon), 176x32 (full), 120x120 (hero)
+- **File size**: ~3-4KB optimized
+- **Browser support**: All modern browsers
+- **Accessibility**: Includes proper alt text and ARIA labels
+
+## Download Assets
+
+All logo variants are available in the `/docs/public/` directory:
+
+- `/logo.svg` - Full logo with text (176x32)
+- `/logo-icon.svg` - Icon only (32x32)
+- `/logo-hero.svg` - Large hero version (120x120)
+
+For other formats or sizes, please contact the design team or export from the SVG source.

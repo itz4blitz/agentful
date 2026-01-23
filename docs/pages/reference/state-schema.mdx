@@ -1,0 +1,355 @@
+# State Schema Reference
+
+This document describes the structure of `.agentful/state.json`, the core state file used by agentful.
+
+## Overview
+
+The `state.json` file tracks the current execution state of agentful, including:
+- Current task and phase
+- Execution mode and permissions
+- Agent delegation tracking
+- Iteration count and history
+
+## Schema
+
+### Complete Example
+
+```json
+{
+  "version": "1.0",
+  "current_task": "authentication/login",
+  "current_phase": "implementing",
+  "iterations": 5,
+  "last_updated": "2026-01-20T10:30:00.000Z",
+  "blocked_on": [],
+  "execution_mode": "interactive",
+  "permissions": {
+    "write_code": true,
+    "run_tests": true,
+    "modify_database": false,
+    "install_packages": false,
+    "commit_changes": false
+  },
+  "current_agent": "backend",
+  "agent_start_time": "2026-01-20T10:25:00.000Z",
+  "agent_timeout": 600000,
+  "agent_history": [
+    {
+      "agent": "backend",
+      "task": "Implement login endpoint",
+      "started_at": "2026-01-20T10:20:00.000Z",
+      "completed_at": "2026-01-20T10:25:00.000Z",
+      "duration_ms": 300000,
+      "status": "completed"
+    }
+  ]
+}
+```
+
+## Field Reference
+
+### Core Fields
+
+#### `version`
+- **Type**: `string`
+- **Required**: Yes
+- **Description**: Schema version for backward compatibility
+- **Example**: `"1.0"`
+
+#### `current_task`
+- **Type**: `string | null`
+- **Required**: Yes
+- **Description**: ID of the currently active task/feature
+- **Example**: `"authentication/login"` or `null`
+
+#### `current_phase`
+- **Type**: `string`
+- **Required**: Yes
+- **Description**: Current phase of development
+- **Values**: `"idle"`, `"analyzing"`, `"implementing"`, `"testing"`, `"reviewing"`, `"fixing"`, `"validating"`
+- **Example**: `"implementing"`
+
+#### `iterations`
+- **Type**: `number`
+- **Required**: Yes
+- **Description**: Number of development loop iterations completed
+- **Example**: `5`
+
+#### `last_updated`
+- **Type**: `string` (ISO 8601 timestamp)
+- **Required**: Yes
+- **Description**: When the state was last modified
+- **Example**: `"2026-01-20T10:30:00.000Z"`
+
+#### `blocked_on`
+- **Type**: `array<string>`
+- **Required**: Yes
+- **Description**: List of decision IDs blocking progress
+- **Example**: `["decision-001", "decision-002"]` or `[]`
+
+### Execution Mode Fields
+
+#### `execution_mode`
+- **Type**: `string`
+- **Required**: Yes (added in v1.0)
+- **Description**: Current execution mode controlling how agents operate
+- **Values**:
+  - `"plan"` - Read-only analysis mode
+  - `"auto"` - Auto-accept non-destructive operations
+  - `"interactive"` - Require approval for each delegation (default)
+- **Example**: `"interactive"`
+- **Default**: `"interactive"`
+
+#### `permissions`
+- **Type**: `object`
+- **Required**: Yes (added in v1.0)
+- **Description**: Permission flags for different operation types
+- **Fields**:
+  - `write_code` (boolean) - Allow code modification
+  - `run_tests` (boolean) - Allow test execution
+  - `modify_database` (boolean) - Allow database schema changes
+  - `install_packages` (boolean) - Allow package installation
+  - `commit_changes` (boolean) - Allow git commits
+- **Example**:
+  ```json
+  {
+    "write_code": true,
+    "run_tests": true,
+    "modify_database": false,
+    "install_packages": false,
+    "commit_changes": false
+  }
+  ```
+
+### Agent Tracking Fields
+
+#### `current_agent`
+- **Type**: `string | null`
+- **Required**: No (optional)
+- **Description**: Name of currently executing agent
+- **Example**: `"backend"` or `null`
+
+#### `agent_start_time`
+- **Type**: `string | null` (ISO 8601 timestamp)
+- **Required**: No (optional)
+- **Description**: When current agent delegation started
+- **Example**: `"2026-01-20T10:25:00.000Z"` or `null`
+
+#### `agent_timeout`
+- **Type**: `number | null`
+- **Required**: No (optional)
+- **Description**: Timeout duration in milliseconds for current agent
+- **Example**: `600000` (10 minutes) or `null`
+
+#### `agent_history`
+- **Type**: `array<AgentHistoryEntry>`
+- **Required**: No (optional)
+- **Description**: Historical record of agent delegations
+- **Example**:
+  ```json
+  [
+    {
+      "agent": "backend",
+      "task": "Implement login endpoint",
+      "started_at": "2026-01-20T10:20:00.000Z",
+      "completed_at": "2026-01-20T10:25:00.000Z",
+      "duration_ms": 300000,
+      "status": "completed"
+    }
+  ]
+  ```
+
+### AgentHistoryEntry Type
+
+```typescript
+interface AgentHistoryEntry {
+  agent: string;              // Agent name (e.g., "backend", "frontend")
+  task: string;               // Task description
+  started_at: string;         // ISO 8601 timestamp
+  completed_at: string;       // ISO 8601 timestamp
+  duration_ms: number;        // Duration in milliseconds
+  status: "completed" | "timeout" | "failed";
+  recovery_action?: string;   // Action taken on failure (optional)
+  notes?: string;            // Additional context (optional)
+}
+```
+
+## Execution Modes
+
+### Plan Mode (`execution_mode: "plan"`)
+
+Read-only analysis mode. No changes are executed.
+
+**Behavior**:
+- All permissions set to `false`
+- Agent delegations are logged but not executed
+- Shows what would happen without making changes
+- Safe for cost estimation and impact analysis
+
+**State Example**:
+```json
+{
+  "execution_mode": "plan",
+  "permissions": {
+    "write_code": false,
+    "run_tests": false,
+    "modify_database": false,
+    "install_packages": false,
+    "commit_changes": false
+  }
+}
+```
+
+### Auto-Accept Mode (`execution_mode: "auto"`)
+
+Auto-approve safe operations, require confirmation for destructive ones.
+
+**Behavior**:
+- Auto-approves: reading files, linting, running tests, type checking
+- Requires confirmation: database changes, package installs, file deletions, git operations
+- Balances speed with safety
+
+**State Example**:
+```json
+{
+  "execution_mode": "auto",
+  "permissions": {
+    "write_code": true,
+    "run_tests": true,
+    "modify_database": false,
+    "install_packages": false,
+    "commit_changes": false
+  }
+}
+```
+
+### Interactive Mode (`execution_mode: "interactive"`)
+
+Full control mode. Require approval for each agent delegation.
+
+**Behavior**:
+- Requires explicit approval for each agent delegation
+- User sees exactly what will happen at each step
+- Best for learning, critical changes, production systems
+
+**State Example**:
+```json
+{
+  "execution_mode": "interactive",
+  "permissions": {
+    "write_code": true,
+    "run_tests": true,
+    "modify_database": false,
+    "install_packages": false,
+    "commit_changes": false
+  }
+}
+```
+
+## Usage
+
+### Reading State
+
+```javascript
+const state = JSON.parse(Read(".agentful/state.json"));
+const mode = state.execution_mode || "interactive";
+const canWriteCode = state.permissions?.write_code ?? true;
+```
+
+### Updating State
+
+```javascript
+// Read current state
+const state = JSON.parse(Read(".agentful/state.json"));
+
+// Update fields
+state.current_task = "authentication/login";
+state.current_phase = "implementing";
+state.execution_mode = "auto";
+state.last_updated = new Date().toISOString();
+
+// Write back
+Write(".agentful/state.json", JSON.stringify(state, null, 2));
+```
+
+### Setting Execution Mode
+
+Via command line:
+```bash
+# Plan mode (read-only)
+/agentful-start --plan "Add user authentication"
+
+# Auto-accept mode
+/agentful-start --auto-accept "Add login form"
+
+# Interactive mode (default)
+/agentful-start "Implement payment processing"
+```
+
+Programmatically:
+```javascript
+const state = JSON.parse(Read(".agentful/state.json"));
+state.execution_mode = "auto";
+state.permissions = {
+  write_code: true,
+  run_tests: true,
+  modify_database: false,
+  install_packages: false,
+  commit_changes: false
+};
+Write(".agentful/state.json", JSON.stringify(state, null, 2));
+```
+
+## Migration
+
+### From Pre-1.0 Versions
+
+If your state.json doesn't have execution mode fields:
+
+```javascript
+// Read existing state
+const state = JSON.parse(Read(".agentful/state.json"));
+
+// Add new fields
+if (!state.execution_mode) {
+  state.execution_mode = "interactive";
+}
+
+if (!state.permissions) {
+  state.permissions = {
+    write_code: true,
+    run_tests: true,
+    modify_database: false,
+    install_packages: false,
+    commit_changes: false
+  };
+}
+
+// Write updated state
+Write(".agentful/state.json", JSON.stringify(state, null, 2));
+```
+
+The `agentful-start` command automatically handles this migration.
+
+## Best Practices
+
+1. **Always validate state exists** before reading
+2. **Update `last_updated`** when modifying state
+3. **Use ISO 8601 timestamps** for all time fields
+4. **Track agent history** for timeout analysis
+5. **Check execution mode** before delegating to agents
+6. **Respect permissions** in all operations
+7. **Handle missing fields gracefully** for backward compatibility
+
+## Related Files
+
+- `.claude/agentful-config.json` - Default configuration including default execution mode
+- `.agentful/completion.json` - Feature completion tracking
+- `.agentful/decisions.json` - Pending user decisions
+- `.agentful/architecture.json` - Detected tech stack
+
+## See Also
+
+- [Execution Modes](/commands/agentful-start#execution-modes)
+- [Orchestrator Agent](/agents/orchestrator)
+- [Background Agent Patterns](/concepts/background-agents)
