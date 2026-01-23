@@ -39,16 +39,25 @@ export function trackAgentMetrics({ agentName, feature = '', domain = '', timest
 
   // Validate and read existing metrics file
   let metrics;
-  try {
-    const metricsContent = fs.readFileSync(METRICS_FILE, 'utf8');
-    metrics = JSON.parse(metricsContent);
-  } catch (err) {
-    console.log('WARNING: agent-metrics.json is corrupted, recreating');
+  if (!fs.existsSync(METRICS_FILE)) {
+    // File doesn't exist, create new structure
     metrics = {
       invocations: {},
       last_invocation: null,
       feature_hooks: []
     };
+  } else {
+    try {
+      const metricsContent = fs.readFileSync(METRICS_FILE, 'utf8');
+      metrics = JSON.parse(metricsContent);
+    } catch (err) {
+      console.log('WARNING: agent-metrics.json is corrupted, recreating');
+      metrics = {
+        invocations: {},
+        last_invocation: null,
+        feature_hooks: []
+      };
+    }
   }
 
   // Update invocation count for this agent

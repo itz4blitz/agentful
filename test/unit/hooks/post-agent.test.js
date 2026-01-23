@@ -94,6 +94,10 @@ describe('post-agent hook', () => {
 
   describe('error handling', () => {
     it('should handle corrupted metrics file', () => {
+      const agentfulDir = path.join(projectRoot, '.agentful');
+      if (!fs.existsSync(agentfulDir)) {
+        fs.mkdirSync(agentfulDir, { recursive: true });
+      }
       fs.writeFileSync(metricsFile, 'invalid json {{{');
       const result = trackAgentMetrics({ agentName: 'backend' });
       expect(result.success).toBe(true);
