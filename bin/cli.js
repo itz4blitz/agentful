@@ -1041,13 +1041,19 @@ async function startDaemon(args, config) {
   // Prepare args for child process (remove --daemon flag)
   const childArgs = args.filter(arg => !arg.startsWith('--daemon') && arg !== '-d');
 
+  // Create log files for daemon output
+  const logFile = path.join(agentfulDir, 'server.log');
+  const errLogFile = path.join(agentfulDir, 'server.err.log');
+  const out = fs.openSync(logFile, 'a');
+  const err = fs.openSync(errLogFile, 'a');
+
   // Spawn detached child process
   const child = spawn(
     process.argv[0], // node executable
     [process.argv[1], 'serve', ...childArgs], // script path and args
     {
       detached: true,
-      stdio: 'ignore',
+      stdio: ['ignore', out, err],
       cwd: process.cwd(),
       env: {
         ...process.env,
@@ -1056,11 +1062,32 @@ async function startDaemon(args, config) {
     }
   );
 
-  // Write PID file
-  fs.writeFileSync(pidFile, child.pid.toString(), 'utf-8');
-
-  // Unref to allow parent to exit
+  // Unref immediately to allow parent to exit independently
   child.unref();
+
+  // Wait for server to start (check health endpoint)
+  const maxAttempts = 10;
+  let started = false;
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const response = await fetch(`http://localhost:${config.port}/health`);
+      if (response.ok) {
+        started = true;
+        break;
+      }
+    } catch {
+      // Server not ready yet
+    }
+  }
+
+  if (!started) {
+    log(colors.yellow, 'Warning: Server may not have started successfully');
+    log(colors.dim, `Check logs: ${logFile}`);
+  }
+
+  // Write PID file after confirming server started
+  fs.writeFileSync(pidFile, child.pid.toString(), 'utf-8');
 
   // Show success message
   log(colors.green, `Server started in background (PID: ${child.pid})`);
@@ -1068,6 +1095,7 @@ async function startDaemon(args, config) {
   log(colors.dim, `PID file: ${pidFile}`);
   log(colors.dim, `Port: ${config.port}`);
   log(colors.dim, `Auth: ${config.auth}`);
+  log(colors.dim, `Logs: ${logFile}`);
   console.log('');
   log(colors.dim, 'Commands:');
   log(colors.dim, '  agentful serve --stop     Stop the daemon');
