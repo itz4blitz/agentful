@@ -128,6 +128,9 @@ The `reviewer` agent runs these checks automatically. The `fixer` agent resolves
 **"Need to rollback or restart a feature"**
 → Edit completion % in `.agentful/completion.json` for specific feature, then run `/agentful-start`.
 
+**"Want to work on multiple features in parallel?"**
+→ Use git worktrees for branch-based parallel development, or `agentful serve` for coordinated remote execution.
+
 ## Getting Help
 
 **Documentation**: See `.claude/commands/` for detailed command documentation

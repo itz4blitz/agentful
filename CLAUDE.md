@@ -114,6 +114,9 @@ The `reviewer` agent runs these checks. The `fixer` agent resolves failures.
 **"Agent generated wrong type of code"**
 → Check that the right specialized agent was generated in `.claude/agents/`.
 
+**"Want to work on multiple features in parallel?"**
+→ Use git worktrees for branch-based parallel development, or `agentful serve` for coordinated remote execution.
+
 ## Getting Help
 
 - **Documentation**: See `.claude/commands/` for detailed command documentation

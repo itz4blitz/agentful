@@ -1,0 +1,258 @@
+---
+title: Git Worktrees
+description: Using agentful with git worktrees for parallel development workflows.
+---
+
+# Git Worktrees
+
+agentful supports git worktrees for parallel development workflows. Each worktree maintains independent state while sharing the git repository.
+
+## How It Works
+
+Git worktrees allow you to check out multiple branches simultaneously in different directories. agentful works naturally with this pattern because:
+
+- **Independent state** - Each worktree has its own `.agentful/` directory (gitignored)
+- **Branch-specific specs** - Product specifications in `.claude/product/` are git-tracked and branch-specific
+- **No coordination** - Worktrees don't coordinate with each other, enabling true parallel work
+
+```bash
+# Main worktree structure
+repo/
+├── .git/                        # Shared git database
+├── .agentful/                   # Main worktree state
+├── .claude/product/index.md     # Git-tracked spec
+└── src/
+
+# Additional worktree structure
+repo-dashboard/
+├── .git -> repo/.git/worktrees/repo-dashboard/  # Links to shared git
+├── .agentful/                   # Independent state
+├── .claude/product/index.md     # Different branch = different spec
+└── src/
+```
+
+## Use Cases
+
+### Parallel Feature Development
+
+Work on multiple features simultaneously on different branches:
+
+```bash
+# Main worktree - authentication work
+cd ~/repo
+/agentful-start  # Building auth features
+
+# Create worktree for dashboard feature
+git worktree add ../repo-dashboard -b feature/dashboard
+cd ../repo-dashboard
+/agentful-start  # Building dashboard features independently
+```
+
+Each worktree operates completely independently:
+- Different `.agentful/state.json` (different current task, phase)
+- Different `.agentful/completion.json` (different feature completion)
+- Different product specs (if branches have diverged)
+
+### Safe Experimentation
+
+Try new approaches without disrupting stable development:
+
+```bash
+# Main worktree - stable development continues
+cd ~/repo
+/agentful-start
+
+# Experimental worktree - test new architecture
+git worktree add ../repo-experiment -b experiment/new-approach
+cd ../repo-experiment
+# Edit .claude/product/index.md with experimental ideas
+/agentful-start  # Completely isolated from main work
+```
+
+If the experiment fails, simply delete the worktree. If it succeeds, merge the branch.
+
+### Review While Building
+
+Review pull requests without interrupting active development:
+
+```bash
+# Main worktree - building features
+cd ~/repo
+/agentful-start  # Work in progress
+
+# Review worktree - check PR quality
+git worktree add ../repo-review pr/123
+cd ../repo-review
+/agentful-validate  # Run quality checks on PR
+```
+
+The review worktree has its own state, so validation doesn't interfere with ongoing work in the main worktree.
+
+### Bug Fixes During Feature Work
+
+Fix urgent bugs without context-switching your main work:
+
+```bash
+# Main worktree - building large feature
+cd ~/repo
+/agentful-start  # Feature work in progress
+
+# Hotfix worktree - urgent production bug
+git worktree add ../repo-hotfix -b hotfix/critical-bug main
+cd ../repo-hotfix
+# Fix the bug, run tests, create PR
+# Main worktree remains untouched
+```
+
+## Limitations
+
+### Same Branch Restriction
+
+Git prevents checking out the same branch in multiple worktrees:
+
+```bash
+# This fails - main is already checked out
+git worktree add ../repo-2 main
+# error: 'main' is already checked out at '/Users/you/repo'
+```
+
+**Workaround:** Create a new branch from the target branch:
+
+```bash
+git worktree add ../repo-2 -b temp/parallel-work main
+```
+
+### No Shared State
+
+Worktrees operate independently - there's no coordination between them. If you need:
+- Shared progress tracking across worktrees
+- Coordination of which worktree handles which feature
+- Lock mechanisms to prevent conflicts
+
+Consider using [remote execution](/remote-execution) instead.
+
+### Branch-Based Isolation
+
+Worktrees are most effective when working on different branches. If you want parallel work on the same branch, you'll need separate branches:
+
+```bash
+# Create feature branches for parallel work
+git worktree add ../repo-auth -b feature/auth-backend main
+git worktree add ../repo-ui -b feature/auth-frontend main
+
+# Each can work independently, merge when ready
+```
+
+## Cleanup
+
+Remove worktrees when done:
+
+```bash
+# From any worktree or main repo
+git worktree remove ../repo-dashboard
+
+# Or forcefully if worktree has uncommitted changes
+git worktree remove -f ../repo-dashboard
+
+# List all worktrees
+git worktree list
+```
+
+## Alternative: Remote Execution
+
+For long-running parallel development that requires coordination, consider [`agentful serve`](/remote-execution):
+
+```bash
+# Run agentful server on VPS or background process
+agentful serve --port 3000
+
+# Trigger work from anywhere
+agentful remote start "Build authentication feature"
+agentful remote start "Build dashboard feature"
+
+# Check progress
+agentful remote status
+```
+
+Remote execution provides:
+- **Centralized state** - Single source of truth for progress
+- **True parallelism** - Multiple agents working simultaneously
+- **Coordination** - Server coordinates which features are being built
+- **Remote access** - Trigger from any machine
+
+## Best Practices
+
+### 1. Use Descriptive Worktree Names
+
+```bash
+# Good - clear what each worktree is for
+git worktree add ../myapp-auth feature/authentication
+git worktree add ../myapp-dashboard feature/dashboard
+git worktree add ../myapp-hotfix hotfix/login-bug
+
+# Avoid - unclear purpose
+git worktree add ../wt1 feature/a
+git worktree add ../wt2 feature/b
+```
+
+### 2. Keep Worktrees Temporary
+
+Worktrees are best for short-term parallel work:
+- Building a feature while reviewing PRs
+- Quick experiments or prototypes
+- Urgent hotfixes during feature work
+
+For long-term parallel development, use the remote execution server.
+
+### 3. Clean Up Regularly
+
+Remove worktrees when you're done:
+
+```bash
+# After merging feature branch
+git worktree remove ../myapp-feature-x
+git branch -d feature/feature-x
+```
+
+### 4. Document Active Worktrees
+
+Keep track of what each worktree is doing:
+
+```bash
+# Add to .git/worktrees/notes.txt (or similar)
+repo-auth:       Building authentication system
+repo-dashboard:  Building analytics dashboard
+repo-review:     Reviewing PR #123
+```
+
+## Troubleshooting
+
+**"State seems out of sync between worktrees"**
+
+This is expected - each worktree has independent state. If you want shared state, use remote execution instead.
+
+**"Can't create worktree on current branch"**
+
+Git prevents multiple checkouts of the same branch. Create a new branch:
+
+```bash
+git worktree add ../repo-2 -b feature/parallel-work
+```
+
+**"Worktree shows files from wrong branch"**
+
+Navigate to the correct worktree directory. Each worktree is a separate directory with its own checkout.
+
+**"Lost track of worktrees"**
+
+List all active worktrees:
+
+```bash
+git worktree list
+```
+
+Remove stale worktrees:
+
+```bash
+git worktree prune
+```

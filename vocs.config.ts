@@ -2,7 +2,7 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
   title: 'agentful',
-  description: 'Pre-configured AI agent toolkit with self-hosted remote execution. Run Claude Code agents on your infrastructure with multi-platform CI/CD support.',
+  description: 'Pre-configured AI agent toolkit with self-hosted remote execution. The Swiss Army Knife of AI Agents - works with any LLM, any tech stack, any platform.',
 
   logoUrl: '/logo.svg',
   iconUrl: '/logo-icon.svg',
@@ -19,6 +19,7 @@ export default defineConfig({
           { text: 'Configure & Install', link: '/' },
           { text: 'Overview', link: '/getting-started/overview' },
           { text: 'Quick Start', link: '/getting-started/quick-start' },
+          { text: 'Installation', link: '/getting-started/installation' },
           { text: 'Your First Project', link: '/getting-started/first-project' },
           { text: 'Presets', link: '/getting-started/presets' },
           { text: 'Migration Guide', link: '/getting-started/migration' },
@@ -39,6 +40,7 @@ export default defineConfig({
         items: [
           { text: 'Agent Architecture', link: '/concepts/architecture' },
           { text: 'Background Agent Patterns', link: '/concepts/background-agents' },
+          { text: 'Git Worktrees', link: '/concepts/git-worktrees' },
         ],
       },
       {
@@ -66,13 +68,31 @@ export default defineConfig({
           { text: '/agentful-decide', link: '/commands/agentful-decide' },
           { text: '/agentful-validate', link: '/commands/agentful-validate' },
           { text: '/agentful-analyze', link: '/commands/agentful-analyze' },
+          { text: '/agentful-generate', link: '/commands/agentful-generate' },
+          { text: '/agentful-update', link: '/commands/agentful-update' },
         ],
       },
       {
-        text: 'Deployment',
+        text: 'LLM Providers',
         items: [
-          { text: 'CI/CD Integration', link: '/ci-integration' },
+          { text: 'Provider Overview', link: '/llm-providers' },
+          { text: 'GLM-4.7 (10x Cheaper)', link: '/llm-providers/glm' },
+          { text: 'Ollama & LM Studio (Local)', link: '/llm-providers/local' },
+        ],
+      },
+      {
+        text: 'Server & Infrastructure',
+        items: [
+          { text: 'Self-Hosted Server', link: '/server' },
           { text: 'Remote Execution', link: '/remote-execution' },
+          { text: 'CI/CD Integration', link: '/ci-integration' },
+          { text: 'Pipelines', link: '/pipelines/overview' },
+        ],
+      },
+      {
+        text: 'Reference',
+        items: [
+          { text: 'State Schema', link: '/reference/state-schema' },
         ],
       },
       {

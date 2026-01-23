@@ -1,7 +1,7 @@
 {
   "name": "@itz4blitz/agentful",
   "version": "1.1.0",
-  "description": "Pre-configured AI agent toolkit with self-hosted remote execution. Auto-generates domain specialists, supports all platforms, complete development automation.",
+  "description": "Pre-configured AI agent toolkit with self-hosted remote execution. The Swiss Army Knife of AI Agents - works with any LLM, any tech stack, any platform.",
   "type": "module",
   "bin": {
     "agentful": "bin/cli.js"

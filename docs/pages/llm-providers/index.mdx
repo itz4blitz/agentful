@@ -1,0 +1,336 @@
+# LLM Provider Compatibility
+
+agentful is **LLM-agnostic**. While it ships with Claude Code integration, you can use any LLM that supports:
+
+- ✅ **Function/tool calling**
+- ✅ **128K+ context window**
+- ✅ **Structured JSON output**
+- ✅ **OpenAI or Anthropic-compatible API**
+
+## How It Works
+
+Claude Code can be configured to use different LLM providers via environment variables:
+
+```bash
+# Use GLM-4.7 instead of Claude
+export ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic
+export ANTHROPIC_AUTH_TOKEN=your_zai_api_key
+claude
+
+# Or use OpenAI models
+export OPENAI_API_KEY=your_openai_key
+# Configure Claude Code to use OpenAI provider
+```
+
+Once configured, **all agentful agents work seamlessly** with the new provider.
+
+---
+
+## Supported Providers
+
+### Tier 1: Production-Ready (Native Support)
+
+| Provider | Model | Cost vs Claude | Setup Difficulty | Best For |
+|----------|-------|----------------|------------------|----------|
+| **[GLM-4.7](/llm-providers/glm)** | glm-4.7 | **10x cheaper** | ⭐ Easy | Math/algorithms, tool-heavy workflows, cost optimization |
+| **[DeepSeek](/llm-providers/deepseek)** | deepseek-v3.2 | 8x cheaper | ⭐ Easy | Thinking mode + tools, agent training, high performance |
+| **[Gemini](/llm-providers/gemini)** | gemini-2.5-pro | Similar | ⭐⭐ Medium | 1M context, MCP native, long documents |
+| **[OpenAI](/llm-providers/openai)** | gpt-4.1, gpt-5.2 | Similar/higher | ⭐ Easy | Proven reliability, Responses API, wide ecosystem |
+| **[Qwen](/llm-providers/qwen)** | qwen3-coder-480b | Open-source | ⭐⭐ Medium | Agentic coding, MCP support, open weights |
+
+### Tier 2: Compatible (OpenAI-Compatible APIs)
+
+| Provider | Model | Notes |
+|----------|-------|-------|
+| **Mistral** | mistral-large-24.11 | Strong function calling, 256K context |
+| **Cohere** | command-a | Enterprise focus, multi-step tool use |
+| **Together AI** | Multiple | Hosted open-source models |
+| **Replicate** | Multiple | Easy model switching |
+| **Anthropic (Official)** | claude-sonnet-4.5 | Default, highest quality |
+
+### Tier 3: Self-Hosted (Local Models)
+
+| Provider | Setup | Best Models |
+|----------|-------|-------------|
+| **[Ollama](/llm-providers/local#ollama)** | ⭐ Easy | qwen2.5-7b, llama3.1-70b |
+| **vLLM** | ⭐⭐⭐ Advanced | Any HuggingFace model |
+| **LM Studio** | ⭐ Easy | Local GUI, prototyping only |
+
+---
+
+## Quick Comparison
+
+### Cost Comparison (per 1M tokens)
+
+```
+Input Tokens:
+┌────────────────────────────────────────┐
+│ Claude Sonnet 4.5     $3.00           │
+│ GPT-4.1               $2.50           │
+│ GLM-4.7               $0.60  ████     │ 10x cheaper
+│ DeepSeek-V3.2         $0.40  ███      │ 7.5x cheaper
+│ Qwen3-Coder           FREE   █        │ Self-hosted
+└────────────────────────────────────────┘
+
+Output Tokens:
+┌────────────────────────────────────────┐
+│ Claude Sonnet 4.5     $15.00          │
+│ GPT-4.1               $10.00          │
+│ GLM-4.7               $2.20   ███     │ 6.8x cheaper
+│ DeepSeek-V3.2         $2.00   ██      │ 7.5x cheaper
+│ Qwen3-Coder           FREE    █       │ Self-hosted
+└────────────────────────────────────────┘
+```
+
+### Performance Comparison (SWE-bench Verified)
+
+```
+Code Generation Quality:
+┌────────────────────────────────────────┐
+│ Claude Sonnet 4.5     77.2% ████████  │
+│ GLM-4.7               73.8% ███████   │
+│ DeepSeek-V3.2         72.0% ███████   │
+│ GPT-4.1               70.5% ███████   │
+│ Qwen3-Coder-480B      68.0% ██████    │
+└────────────────────────────────────────┘
+```
+
+### Agent Capabilities
+
+| Capability | Claude 4.5 | GLM-4.7 | DeepSeek | Gemini 2.5 | GPT-5.2 |
+|------------|------------|---------|----------|------------|---------|
+| **Function Calling** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Tool Orchestration** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ |
+| **Math Reasoning** | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Code Quality** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **Context Window** | 200K | 200K | 128K | 1M | 400K |
+| **Output Capacity** | 8K | 128K | 64K | 8K | 32K |
+
+---
+
+## Use Case Recommendations
+
+### Cost-Sensitive Projects
+**Best Choice: GLM-4.7 or DeepSeek-V3.2**
+
+- 80-90% cost reduction vs Claude
+- Competitive quality (73-77% on SWE-bench)
+- Production-ready APIs
+
+```bash
+# Setup GLM for cost savings
+npm install -g @xqsit94/glm
+glm --model glm-4.7
+```
+
+### Mathematical/Algorithmic Work
+**Best Choice: GLM-4.7 or DeepSeek-V3.2**
+
+- Superior math reasoning (98.6 vs Claude's 87.0)
+- Excellent for algorithm optimization
+- Proof verification, complexity analysis
+
+### Tool-Heavy Workflows
+**Best Choice: GLM-4.7**
+
+- τ²-Bench: 84.7 (beats Claude)
+- BrowseComp: 45.1 (130% better than Claude)
+- Excellent multi-tool orchestration
+
+### Production-Critical Code
+**Best Choice: Claude Sonnet 4.5**
+
+- Best code polish (comments, error handling)
+- Strong safety guardrails
+- Enterprise integrations
+
+### Long Documents/Codebases
+**Best Choice: Gemini 2.5 Pro**
+
+- 1M token context window
+- Analyze entire codebases
+- Full documentation sets
+
+### Privacy-Sensitive Projects
+**Best Choice: Local models (Ollama)**
+
+- Complete data privacy
+- No API costs
+- Full control
+
+### Hybrid Approach (Recommended)
+**Best Choice: GLM for most tasks, Claude for critical code**
+
+- 56-72% cost savings
+- Maintain quality where it matters
+- Best of both worlds
+
+---
+
+## Provider-Specific Strengths
+
+### GLM-4.7
+- **Math & Logic**: 98.6 (highest)
+- **Tool Invocation**: 84.7 τ²-Bench (highest)
+- **Output Capacity**: 128K tokens (16x Claude)
+- **Cost**: $0.60/M input (10x cheaper)
+- **Unique**: Preserved thinking across turns
+
+### DeepSeek-V3.2
+- **Thinking Mode**: Reasoning + tool use integration
+- **Agent Training**: 1,800+ environments, 85K instructions
+- **Cost**: $0.40/M input (cheapest API)
+- **Performance**: GPT-5 level on math/coding
+
+### Gemini 2.5 Pro
+- **Context**: 1M tokens (largest)
+- **MCP**: Native Model Context Protocol
+- **Thought Signatures**: Reasoning continuity
+- **Use Case**: Entire codebase analysis
+
+### GPT-5.2
+- **Context**: 400K tokens
+- **Responses API**: Built-in tools (search, code interpreter)
+- **Reliability**: Proven uptime
+- **Ecosystem**: Widest integration support
+
+### Qwen3-Coder
+- **Open Source**: Self-host, fine-tune
+- **Agentic Coding**: SOTA performance
+- **MCP Native**: Leading open-source agent
+- **Agent RL**: 20K parallel environment training
+
+---
+
+## Getting Started
+
+### 1. Choose Your Provider
+
+Based on your needs:
+- **Cost optimization** → [GLM-4.7](/llm-providers/glm) or [DeepSeek](/llm-providers/deepseep)
+- **Math/algorithms** → [GLM-4.7](/llm-providers/glm)
+- **Long context** → [Gemini](/llm-providers/gemini)
+- **Privacy** → [Ollama](/llm-providers/local)
+- **Reliability** → Claude (default)
+
+### 2. Follow Setup Guide
+
+Each provider has a detailed setup guide:
+- [GLM Setup](/llm-providers/glm)
+- [DeepSeek Setup](/llm-providers/deepseek)
+- [Gemini Setup](/llm-providers/gemini)
+- [OpenAI Setup](/llm-providers/openai)
+- [Qwen Setup](/llm-providers/qwen)
+- [Local Models Setup](/llm-providers/local)
+
+### 3. Run agentful
+
+Once configured, agentful works identically:
+
+```bash
+# All agentful commands work with any provider
+agentful init
+claude
+/agentful-start
+```
+
+---
+
+## Multi-Provider Strategy (Advanced)
+
+Run different providers for different tasks:
+
+```bash
+# Use GLM for bulk operations
+export ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic
+export ANTHROPIC_AUTH_TOKEN=$GLM_API_KEY
+claude -p "Analyze these 50 files"
+
+# Switch to Claude for production code
+unset ANTHROPIC_BASE_URL
+export ANTHROPIC_API_KEY=$CLAUDE_API_KEY
+claude -p "Generate production API endpoint"
+```
+
+Or use hybrid approach with routing:
+```yaml
+# Future feature: automatic routing
+routing:
+  - task_type: math → provider: glm
+  - task_type: production → provider: claude
+  - task_type: bulk → provider: glm
+```
+
+---
+
+## Cost Optimization Tips
+
+### 1. Use Cheaper Models for Bulk Operations
+
+```bash
+# Example: Analyzing 1000 files
+# Claude: 1000 files × 50K tokens × $3/M = $150
+# GLM: 1000 files × 50K tokens × $0.60/M = $30
+# Savings: $120 (80%)
+```
+
+### 2. Route by Complexity
+
+- Simple CRUD → GLM/DeepSeek
+- Complex architecture → Claude
+- Math-heavy → GLM
+- Production API → Claude
+
+### 3. Context Caching
+
+GLM and some providers offer context caching:
+```bash
+# Cached tokens: $0.11/M (vs $0.60/M)
+# 20-40% cost reduction for repeated context
+```
+
+### 4. Self-Host for High Volume
+
+```bash
+# 100M tokens/month
+# API cost: $60-300/month
+# Self-hosted: $20-50/month infrastructure
+# Break-even: ~20M tokens/month
+```
+
+---
+
+## Troubleshooting
+
+### Provider Not Working?
+
+1. **Check API key**: `echo $ANTHROPIC_AUTH_TOKEN` or `$OPENAI_API_KEY`
+2. **Check base URL**: Some providers need specific endpoints
+3. **Test connection**: `curl https://api.z.ai/v1/models -H "Authorization: Bearer $API_KEY"`
+4. **Check Claude Code version**: `claude --version` (need v0.8+)
+
+### Poor Quality Output?
+
+1. **Try different model variant**: glm-4.7 vs glm-4.6
+2. **Adjust temperature**: Lower for code (0.2), higher for creative (0.7)
+3. **Enable thinking mode**: Better for complex tasks
+4. **Check context window**: Some models degrade >150K tokens
+
+### Cost Higher Than Expected?
+
+1. **Monitor token usage**: Add usage tracking
+2. **Use context caching**: For repeated prompts
+3. **Optimize prompts**: Shorter prompts = lower cost
+4. **Switch models**: Use cheaper variant for simple tasks
+
+---
+
+## Contributing
+
+Found a provider that works? [Open a PR](https://github.com/itz4blitz/agentful/pulls) to add it to the docs!
+
+Requirements:
+- Must support function calling
+- Must have 128K+ context
+- Must work with Claude Code or agentful server
+- Must include setup instructions
