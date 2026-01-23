@@ -1,6 +1,6 @@
 ---
-title: agentful - Autonomous Development Agents for Claude Code
-description: AI agents that build your product while you sleep. Configure and install in minutes.
+title: agentful - Pre-configured AI Agent Toolkit with Self-hosted Remote Execution
+description: Run Claude Code agents on your infrastructure. Auto-generates domain specialists with multi-platform CI/CD support (GitHub Actions, GitLab, Jenkins, CircleCI).
 ---
 
 import { ConfigWizard } from '../components/configurator/ConfigWizard'
@@ -50,7 +50,18 @@ import { ConfigWizard } from '../components/configurator/ConfigWizard'
     marginLeft: 'auto',
     marginRight: 'auto',
   }}>
-    An agent toolkit for development, automation, and CI
+    Pre-configured AI agent toolkit with self-hosted remote execution
+  </p>
+  <p style={{
+    fontSize: '1.125rem',
+    color: '#94a3b8',
+    fontWeight: '400',
+    maxWidth: '48rem',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    marginTop: '0.5rem',
+  }}>
+    Run Claude Code agents on your infrastructure with auto-generated specialists for your tech stack
   </p>
 </div>
 
@@ -79,12 +90,13 @@ This creates:
 
 ## What is agentful?
 
-**agentful** extends Claude Code with specialized agents and structured workflows for autonomous development:
+**agentful** is a self-hosted AI agent server that runs Claude Code agents on your infrastructure:
 
-- **Specialized Agents** - Backend, frontend, testing, review, orchestration
-- **Quality Gates** - Type checking, linting, test coverage, security scanning
-- **Product Tracking** - Feature status, completion percentage, blocking decisions
-- **Tech Stack Detection** - Automatically detects and adapts to your stack
+- **Self-Hosted Server** - Deploy with `agentful serve` on your own infrastructure (Oracle Cloud free tier, AWS, GCP, on-prem)
+- **Multi-Platform CI/CD** - Native support for GitHub Actions, GitLab CI, Jenkins, CircleCI, Bitbucket Pipelines
+- **Auto-Generated Agents** - Architect analyzes your stack and generates specialized agents for your frameworks
+- **Complete Agent Toolkit** - 8 core agents, 6 extensible skills, custom hooks, adaptive quality gates
+- **Human-in-the-Loop** - You control decisions while agents handle implementation
 
 [Learn more about how it works →](/getting-started/overview)
 

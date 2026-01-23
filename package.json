@@ -1,7 +1,7 @@
 {
   "name": "@itz4blitz/agentful",
   "version": "1.0.2",
-  "description": "Human-in-the-loop development kit for Claude Code with smart product analysis and natural conversation",
+  "description": "Pre-configured AI agent toolkit with self-hosted remote execution. Auto-generates domain specialists, supports all platforms, complete development automation.",
   "type": "module",
   "bin": {
     "agentful": "bin/cli.js"
@@ -34,10 +34,17 @@
   ],
   "keywords": [
     "claude-code",
-    "human-in-the-loop",
-    "ai-development",
-    "agent",
-    "productivity"
+    "self-hosted",
+    "agent-server",
+    "autonomous-development",
+    "code-generation",
+    "multi-platform",
+    "ai-agents",
+    "development-automation",
+    "specialized-agents",
+    "orchestrator",
+    "ci-cd",
+    "remote-execution"
   ],
   "author": "agentful",
   "license": "MIT",

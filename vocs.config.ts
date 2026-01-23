@@ -2,7 +2,7 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
   title: 'agentful',
-  description: 'An agent toolkit for development, automation, and CI',
+  description: 'Pre-configured AI agent toolkit with self-hosted remote execution. Run Claude Code agents on your infrastructure with multi-platform CI/CD support.',
 
   logoUrl: '/logo.svg',
   iconUrl: '/logo-icon.svg',
