@@ -1,6 +1,6 @@
 # agentful
 
-Human-in-the-loop development framework for Claude Code.
+A carrot on a stick for Claude Code
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://badge.fury.io/js/%40itz4blitz%2Fagentful.svg)](https://www.npmjs.com/package/@itz4blitz/agentful)
