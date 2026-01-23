@@ -1,26 +1,6 @@
 # Local Models (Ollama & LM Studio)
 
-Run AI agents completely locally on your hardware - zero API costs, complete privacy, offline capability.
-
-## Why Run Locally?
-
-**Privacy**: Your code never leaves your machine
-**Cost**: $0 after hardware investment
-**Offline**: Work without internet
-**Control**: Full customization of models
-
----
-
-## Quick Comparison
-
-| Feature | Ollama | LM Studio |
-|---------|--------|-----------|
-| **Ease of Use** | ⭐⭐⭐⭐⭐ CLI-first | ⭐⭐⭐⭐ GUI-first |
-| **Claude Code Integration** | ✅ Native (v0.14+) | ⚠️ Requires LiteLLM proxy |
-| **Model Library** | 100+ models | Hundreds (HuggingFace) |
-| **Platform Support** | Mac, Linux, Windows | Mac, Windows, Linux |
-| **API Format** | Anthropic + OpenAI | OpenAI only |
-| **Best For** | Developers, automation | Beginners, visual users |
+Run models locally - zero API costs, complete privacy.
 
 ---
 
@@ -28,71 +8,51 @@ Run AI agents completely locally on your hardware - zero API costs, complete pri
 
 ### Installation
 
-**macOS:**
 ```bash
+# macOS
 brew install --cask ollama
-```
 
-**Linux:**
-```bash
+# Linux
 curl -fsSL https://ollama.com/install.sh | sh
+
+# Windows
+# Download from https://ollama.com/download/windows
 ```
 
-**Windows:**
-Download from https://ollama.com/download/windows
-
-### Setup with agentful (2 minutes)
+### Setup with agentful
 
 ```bash
 # 1. Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
 
-# 2. Download model
+# 2. Pull a model
 ollama pull qwen2.5-coder:7b
 
 # 3. Configure Claude Code
 export ANTHROPIC_AUTH_TOKEN=ollama
 export ANTHROPIC_BASE_URL=http://localhost:11434
 
-# 4. Run agentful
+# 4. Run
 claude
 /agentful-start
 ```
 
 ### Recommended Models
 
-**For Coding (Best → Fastest):**
 ```bash
-# Best quality (24GB VRAM)
-ollama pull qwen2.5-coder:32b
+# Best for coding (start here)
+ollama pull qwen2.5-coder:7b     # 6GB VRAM
+ollama pull qwen2.5-coder:14b    # 12GB VRAM
+ollama pull qwen2.5-coder:32b    # 24GB VRAM
 
-# Balanced (12GB VRAM)
-ollama pull qwen2.5-coder:14b
-
-# Fast (6GB VRAM)  ← START HERE
-ollama pull qwen2.5-coder:7b
+# Best for tool calling
+ollama pull llama3.1:8b          # 6GB VRAM
 ```
 
-**For Tool Calling:**
-```bash
-ollama pull llama3.1:8b          # Best overall
-ollama pull mistral:7b-instruct  # Most efficient
-```
+### Advanced Config
 
-### Performance
+**Increase context window:**
 
-**Quality vs Claude:**
-- Qwen2.5-Coder 32B: ~74% of Claude 3.5 Sonnet
-- Qwen2.5-Coder 7B: ~60% of Claude 3.5 Sonnet
-
-**Speed (on RTX 4060):**
-- 7B models: 40-60 tokens/second
-- 14B models: 20-35 tokens/second
-- 32B models: 8-15 tokens/second
-
-### Advanced Configuration
-
-**Increase Context Window:**
 ```dockerfile
 # Create Modelfile
 FROM qwen2.5-coder:7b
@@ -100,11 +60,12 @@ PARAMETER num_ctx 32768
 PARAMETER temperature 0.7
 
 # Apply
-$ ollama create qwen-32k -f ./Modelfile
-$ claude --model qwen-32k
+ollama create qwen-32k -f ./Modelfile
+claude --model qwen-32k
 ```
 
-**Persistent Configuration:**
+**Persistent config:**
+
 ```bash
 # Add to ~/.bashrc or ~/.zshrc
 export ANTHROPIC_AUTH_TOKEN=ollama
@@ -117,13 +78,11 @@ export ANTHROPIC_BASE_URL=http://localhost:11434
 
 ### Installation
 
-Download from https://lmstudio.ai
-
-**Platforms:** macOS, Windows, Linux
+Download from https://lmstudio.ai (macOS, Windows, Linux)
 
 ### Setup with agentful
 
-**Requires LiteLLM proxy** (Ollama doesn't need this):
+LM Studio requires LiteLLM proxy (Ollama doesn't):
 
 ```bash
 # 1. Install LiteLLM
@@ -148,180 +107,15 @@ litellm --config litellm-config.yaml --port 4000
 export ANTHROPIC_BASE_URL=http://localhost:4000/anthropic
 export ANTHROPIC_AUTH_TOKEN=sk-1234
 
-# 6. Run agentful
+# 6. Run
 claude
 ```
 
-### Why the Extra Step?
-
-- LM Studio speaks OpenAI API format
-- Claude Code speaks Anthropic API format
+**Why the extra step?**
+- LM Studio uses OpenAI API format
+- Claude Code uses Anthropic API format
 - LiteLLM translates between them
-- **Ollama has native Anthropic support** (easier)
-
-### When to Use LM Studio
-
-✅ **Good for:**
-- Visual model management (GUI)
-- Testing different quantizations
-- Beginners who prefer GUIs
-
-❌ **Not ideal for:**
-- Quick setup (Ollama is faster)
-- Automation/scripting
-- CI/CD pipelines
-
----
-
-## Hardware Requirements
-
-### Minimum (7B models)
-
-- **RAM:** 16GB
-- **VRAM:** 6-8GB (or Apple Silicon 16GB unified)
-- **Storage:** 50GB
-- **Performance:** ~40 tokens/second
-
-### Recommended (13-14B models)
-
-- **RAM:** 32GB
-- **VRAM:** 12-16GB (or Apple Silicon 32GB unified)
-- **Storage:** 100GB
-- **Performance:** ~60 tokens/second
-
-### Optimal (32B+ models)
-
-- **RAM:** 64GB
-- **VRAM:** 24GB (or Apple Silicon 64GB unified)
-- **Storage:** 200GB
-- **Performance:** ~80+ tokens/second
-
-### GPU Recommendations (2025)
-
-**Budget ($200-500):**
-- Intel Arc B580 12GB - $249
-- RTX 3060 12GB - $300
-- RTX 4060 8GB - $300
-
-**Mid-Range ($500-1000):**
-- RTX 4060 Ti 16GB - $500
-- RTX 4070 12GB - $600
-- AMD RX 7900 GRE 16GB - $550
-
-**High-End ($1000+):**
-- RTX 4090 24GB - $1600
-- AMD RX 7900 XTX 24GB - $900
-
-**Apple Silicon:**
-- M1/M2 16GB - Good for 7B models
-- M3/M4 Pro 32GB - Great for 14B models
-- M3/M4 Max/Ultra 64GB+ - Excellent for 32B models
-
----
-
-## Model Comparison
-
-### Coding Models (HumanEval Scores)
-
-| Model | Size | VRAM (Q5) | Score | Tool Calling | Best For |
-|-------|------|-----------|-------|--------------|----------|
-| Qwen2.5-Coder | 32B | 24GB | 49% | ✅ | Best quality |
-| Qwen2.5-Coder | 14B | 10GB | 45% | ✅ | Balanced |
-| Qwen2.5-Coder | 7B | 5GB | 40% | ✅ | Fast iteration |
-| DeepSeek-V2 | 16B | 12GB | 43% | ✅ | Strong reasoning |
-| Llama 3.1 | 8B | 6GB | 38% | ✅ | Tool calling |
-| Mistral | 7B | 5GB | 35% | ✅ | Efficiency |
-
-### Quantization Guide
-
-| Format | Quality | VRAM | Speed | Recommended For |
-|--------|---------|------|-------|-----------------|
-| Q4_K_M | 92% | 25% | Fastest | 8GB VRAM |
-| Q5_K_M | 95% | 35% | Fast | 12GB+ VRAM ⭐ |
-| Q8_0 | 99% | 50% | Medium | 16GB+ VRAM |
-| FP16 | 100% | 100% | Slow | 24GB+ VRAM |
-
-**Recommendation:** Q5_K_M is the sweet spot.
-
----
-
-## Performance Benchmarks
-
-### Speed (Tokens/Second)
-
-**RTX 4060 (8GB):**
-- 7B Q5: 45 t/s
-- 13B Q5: 22 t/s
-- 32B Q4: 10 t/s
-
-**RTX 4090 (24GB):**
-- 7B Q5: 120 t/s
-- 13B Q5: 80 t/s
-- 32B Q5: 40 t/s
-
-**M3 Pro (32GB unified):**
-- 7B Q5: 30 t/s
-- 13B Q5: 15 t/s
-- 32B Q5: 5 t/s
-
-### Quality vs Claude
-
-**Code Generation:**
-- Qwen2.5-Coder 32B: 74% of Claude 3.5 Sonnet (Aider benchmark)
-- Qwen2.5-Coder 7B: 58% of Claude 3.5 Sonnet
-
-**Realistic Expectations:**
-- Local models are 60-75% as good as Claude
-- Good for standard tasks, struggle with novel problems
-- Best for development, use cloud for production
-
----
-
-## Use Case Recommendations
-
-### Use Local Models When
-
-✅ **Privacy-sensitive code**
-✅ **Offline development**
-✅ **High-volume usage (>1M tokens/day)**
-✅ **Learning and experimentation**
-✅ **Budget constraints**
-✅ **Standard coding tasks**
-
-### Use Claude API When
-
-✅ **Production-critical code**
-✅ **Complex architectural decisions**
-✅ **Security-sensitive features**
-✅ **Novel problem-solving**
-✅ **Need best quality**
-✅ **Low usage (< 50K tokens/day)**
-
----
-
-## Cost Analysis
-
-### Break-Even Calculation
-
-**Hardware Investment:**
-- Budget setup: $500 (RTX 4060 + upgrades)
-- Quality setup: $1600 (RTX 4090)
-- Premium setup: $4000 (Mac Studio M2 Ultra)
-
-**Cloud API Costs** (Claude 3.5 Sonnet):
-- 1M tokens/day: ~$540/month
-- 100K tokens/day: ~$54/month
-- 10K tokens/day: ~$5.40/month
-
-**Break-Even Points:**
-- Heavy user (1M tokens/day): 1-3 months
-- Medium user (100K tokens/day): 9-30 months
-- Light user (10K tokens/day): Never breaks even
-
-**Recommendation:**
-- **< 50K tokens/day:** Cloud is cheaper
-- **> 500K tokens/day:** Local pays off quickly
-- **Privacy needs:** Local regardless of cost
+- Ollama has native Anthropic support (easier)
 
 ---
 
@@ -329,148 +123,41 @@ claude
 
 ### Ollama
 
-**"Model not found":**
+**Model not found:**
 ```bash
 ollama pull model-name
 ollama list
 ```
 
-**"Out of memory":**
+**Out of memory:**
 ```bash
-# Use smaller model or more aggressive quantization
+# Use smaller model
 ollama pull qwen2.5-coder:7b-q4_K_M
 ```
 
-**"Slow inference":**
+**Slow inference:**
 ```bash
-# Verify GPU usage
-nvidia-smi  # or watch -n 1 nvidia-smi
-
-# Check Ollama is using GPU
+# Check GPU usage
+nvidia-smi
 ollama ps
 ```
 
-**"Context too long":**
+**Context too long:**
 ```dockerfile
-# Increase context via Modelfile
 FROM qwen2.5-coder:7b
 PARAMETER num_ctx 32768
 ```
 
 ### LM Studio
 
-**"Connection refused":**
-- Verify LM Studio server is running (Local Server tab)
+- Verify server is running (Local Server tab)
 - Check port 1234 is accessible
 - Ensure LiteLLM proxy is running
 
-**"Poor quality":**
-- Use Q5_K_M instead of Q4_K_M
-- Try larger model (14B instead of 7B)
-- Lower temperature in settings
-
 ---
 
-## Best Practices
+## Resources
 
-### 1. Start Small, Scale Up
-
-```bash
-# Start with 7B
-ollama pull qwen2.5-coder:7b
-
-# If quality insufficient → 14B
-ollama pull qwen2.5-coder:14b
-
-# For production-grade → 32B
-ollama pull qwen2.5-coder:32b
-```
-
-### 2. Use Q5_K_M Quantization
-
-Best balance of quality and efficiency.
-
-### 3. Set 32K+ Context
-
-Required for complex agent tasks:
-
-```dockerfile
-FROM qwen2.5-coder:7b
-PARAMETER num_ctx 32768
-```
-
-### 4. Close Unnecessary Apps
-
-Free up VRAM and RAM for better performance.
-
-### 5. Monitor Resources
-
-```bash
-# NVIDIA
-watch -n 1 nvidia-smi
-
-# Apple Silicon
-sudo powermetrics --samplers gpu_power -i1000 -n1
-```
-
----
-
-## Hybrid Strategy
-
-Best of both worlds:
-
-```bash
-# Development: Local
-export ANTHROPIC_BASE_URL=http://localhost:11434
-claude --model qwen2.5-coder:7b
-
-# Production: Cloud
-unset ANTHROPIC_BASE_URL
-export ANTHROPIC_API_KEY=your_claude_key
-claude
-```
-
-**Use Local For:**
-- Rapid prototyping
-- Refactoring
-- Documentation
-- Standard CRUD code
-- Experimentation
-
-**Use Cloud For:**
-- Final production code
-- Complex architecture
-- Security-critical features
-- Novel problem-solving
-- Code review
-
----
-
-## Next Steps
-
-**Quickstart (Ollama):**
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-ollama pull qwen2.5-coder:7b
-export ANTHROPIC_AUTH_TOKEN=ollama
-export ANTHROPIC_BASE_URL=http://localhost:11434
-claude
-```
-
-**Resources:**
 - [Ollama Docs](https://docs.ollama.com)
 - [LM Studio Docs](https://lmstudio.ai/docs)
 - [Model Library](https://ollama.com/library)
-- [Benchmark Comparisons](https://artificialanalysis.ai)
-
----
-
-## Summary
-
-**Ollama**: Easiest local setup, works natively with Claude Code
-**LM Studio**: GUI-friendly, requires proxy layer
-**Quality**: 60-75% of Claude 3.5 Sonnet
-**Cost**: Break-even at 100K+ tokens/day
-**Hardware**: 16GB VRAM + 32GB RAM recommended
-**Models**: Start with Qwen2.5-Coder 7B, scale to 32B
-**Quantization**: Q5_K_M is the sweet spot
