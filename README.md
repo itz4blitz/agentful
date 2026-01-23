@@ -17,15 +17,13 @@ agentful is a production-ready Claude Code configuration that provides structure
 
 Configure your agentful installation with an interactive web interface:
 
-**[itz4blitz.github.io/agentful/getting-started/configurator](https://itz4blitz.github.io/agentful/getting-started/configurator)**
+**[agentful.app](https://agentful.app)**
 
 - Visual component selection
 - 5 optimized presets
 - Custom configurations
 - Shareable setup URLs
 - No CLI required
-
-See the [Web Configurator Guide](https://itz4blitz.github.io/agentful/getting-started/configurator) for details.
 
 ## Installation
 
