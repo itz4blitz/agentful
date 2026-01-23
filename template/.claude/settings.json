@@ -73,15 +73,6 @@
     ]
   },
   "permissions": {
-    "allow": [
-      "Bash(npm:*)",
-      "Bash(npx:*)",
-      "Bash(node:*)",
-      "Bash(git:*)",
-      "Bash(cat:*)",
-      "Bash(echo:*)",
-      "Bash(jq:*)"
-    ],
     "deny": [
       "Bash(rm -rf /)",
       "Bash(rm -rf ~/.*)",

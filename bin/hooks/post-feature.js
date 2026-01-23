@@ -38,76 +38,90 @@ export function validateFeatureCompletion(feature, domain = '') {
   console.log(`=== Post-Feature Validation: ${feature} ===`);
   console.log('');
 
+  // Detect stack
+  const hasPackageJson = fs.existsSync('package.json');
+  const hasPyProject = fs.existsSync('pyproject.toml') || fs.existsSync('requirements.txt');
+  const hasGoMod = fs.existsSync('go.mod');
+  const hasPomXml = fs.existsSync('pom.xml');
+  const hasCargoToml = fs.existsSync('Cargo.toml');
+
   // Check 1: Run tests
   console.log('[1/4] Running tests...');
-  const testResult = runCommand('npm test -- --run 2>&1 | tail -5', 'tests');
-  if (testResult.success) {
-    console.log('  Tests: PASS');
-    validationResults.push('tests:pass');
+  let testCmd = null;
+  if (hasPackageJson) testCmd = 'npm test 2>&1';
+  else if (hasPyProject) testCmd = 'pytest 2>&1';
+  else if (hasGoMod) testCmd = 'go test ./... 2>&1';
+  else if (hasPomXml) testCmd = 'mvn test 2>&1';
+  else if (hasCargoToml) testCmd = 'cargo test 2>&1';
+
+  if (testCmd) {
+    const testResult = runCommand(testCmd, 'tests');
+    if (testResult.success) {
+      console.log('  Tests: PASS');
+      validationResults.push('tests:pass');
+    } else {
+      console.log('  Tests: FAIL');
+      validationResults.push('tests:fail');
+      errors++;
+    }
   } else {
-    console.log('  Tests: FAIL');
-    validationResults.push('tests:fail');
-    errors++;
+    console.log('  Tests: SKIP (no test framework detected)');
+    validationResults.push('tests:skip');
   }
   console.log('');
 
   // Check 2: Type checking
   console.log('[2/4] Running type check...');
-  // Check if TypeScript exists
-  if (fs.existsSync('tsconfig.json')) {
-    const tscResult = runCommand('npx tsc --noEmit 2>&1', 'type-check');
+  let typeCmd = null;
+  if (fs.existsSync('tsconfig.json')) typeCmd = 'npx tsc --noEmit 2>&1';
+  else if (hasPyProject) typeCmd = 'mypy . --ignore-missing-imports 2>&1';
+  else if (hasGoMod) typeCmd = 'go vet ./... 2>&1';
+  else if (hasCargoToml) typeCmd = 'cargo check 2>&1';
+
+  if (typeCmd) {
+    const tscResult = runCommand(typeCmd, 'type-check');
     if (tscResult.success) {
       console.log('  Type Check: PASS');
       validationResults.push('types:pass');
     } else {
-      // Count errors
-      const errorMatches = tscResult.output.match(/error TS/g);
-      const typeErrors = errorMatches ? errorMatches.length : 0;
-      if (typeErrors === 0) {
-        console.log('  Type Check: PASS');
-        validationResults.push('types:pass');
-      } else {
-        console.log(`  Type Check: FAIL (${typeErrors} errors)`);
-        validationResults.push('types:fail');
-        errors++;
-      }
+      console.log('  Type Check: FAIL');
+      validationResults.push('types:fail');
+      errors++;
     }
   } else {
-    console.log('  Type Check: SKIP (no TypeScript)');
+    console.log('  Type Check: SKIP (no type checker detected)');
     validationResults.push('types:skip');
   }
   console.log('');
 
   // Check 3: Linting
   console.log('[3/4] Running linter...');
-  const lintResult = runCommand('npm run lint 2>&1 | tail -5', 'lint');
-  if (lintResult.success) {
-    console.log('  Lint: PASS');
-    validationResults.push('lint:pass');
+  let lintCmd = null;
+  if (hasPackageJson) lintCmd = 'npm run lint 2>&1';
+  else if (hasPyProject) lintCmd = 'ruff check . 2>&1 || pylint **/*.py 2>&1';
+  else if (hasGoMod) lintCmd = 'golangci-lint run 2>&1';
+  else if (hasCargoToml) lintCmd = 'cargo clippy -- -D warnings 2>&1';
+
+  if (lintCmd) {
+    const lintResult = runCommand(lintCmd, 'lint');
+    if (lintResult.success) {
+      console.log('  Lint: PASS');
+      validationResults.push('lint:pass');
+    } else {
+      console.log('  Lint: FAIL');
+      validationResults.push('lint:fail');
+      errors++;
+    }
   } else {
-    console.log('  Lint: FAIL');
-    validationResults.push('lint:fail');
-    errors++;
+    console.log('  Lint: SKIP (no linter detected)');
+    validationResults.push('lint:skip');
   }
   console.log('');
 
   // Check 4: Coverage check
   console.log('[4/4] Checking test coverage...');
-  const coverageResult = runCommand('npm test -- --coverage --reporter=json 2>/dev/null', 'coverage');
-  if (coverageResult.success && coverageResult.output.includes('"lines"')) {
-    try {
-      // Try to parse coverage percentage (this is a simplified approach)
-      // Real implementation would depend on test framework
-      console.log('  Coverage: SKIP (unable to measure)');
-      validationResults.push('coverage:skip');
-    } catch (err) {
-      console.log('  Coverage: SKIP (unable to measure)');
-      validationResults.push('coverage:skip');
-    }
-  } else {
-    console.log('  Coverage: SKIP (unable to measure)');
-    validationResults.push('coverage:skip');
-  }
+  console.log('  Coverage: SKIP (run /agentful-validate for full coverage report)');
+  validationResults.push('coverage:skip');
   console.log('');
 
   // Update completion.json with validation results
