@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/itz4blitz/agentful/compare/v1.1.0...v1.2.0) (2026-01-23)
+
+
+### Features
+
+* Add documentation for local models and self-hosted agent server ([657d4fc](https://github.com/itz4blitz/agentful/commit/657d4fcb00bb445ba66b1249a295bb433fdffda1))
+
 # [1.1.0](https://github.com/itz4blitz/agentful/compare/v1.0.2...v1.1.0) (2026-01-23)
 
 
