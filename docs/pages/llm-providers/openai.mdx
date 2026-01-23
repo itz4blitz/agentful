@@ -1,0 +1,552 @@
+# OpenAI (GPT-4, GPT-4.5) Setup
+
+Use OpenAI models with agentful via **LiteLLM proxy** (required for Anthropic API compatibility).
+
+## Why LiteLLM Proxy?
+
+Claude Code uses the **Anthropic SDK**, which requires an Anthropic-compatible API. LiteLLM acts as a **translation layer**:
+
+```
+Claude Code → LiteLLM Proxy → OpenAI API
+(Anthropic format)  (translates)  (OpenAI format)
+```
+
+---
+
+## Quick Start (5 minutes)
+
+### Option 1: Docker (Recommended)
+
+```bash
+# Start LiteLLM proxy
+docker run -d \
+  --name litellm \
+  -p 4000:4000 \
+  -e OPENAI_API_KEY=$OPENAI_API_KEY \
+  ghcr.io/berriai/litellm:main-latest \
+  --model gpt-4o --drop_params
+
+# Configure Claude Code
+export ANTHROPIC_BASE_URL=http://localhost:4000
+export ANTHROPIC_API_KEY=$OPENAI_API_KEY
+claude
+
+# Run agentful
+/agentful-start
+```
+
+### Option 2: pip Install
+
+```bash
+# Install LiteLLM
+pip install 'litellm[proxy]'
+
+# Start proxy (in separate terminal)
+litellm --model gpt-4o --drop_params --port 4000
+
+# Configure Claude Code
+export ANTHROPIC_BASE_URL=http://localhost:4000
+export ANTHROPIC_API_KEY=$OPENAI_API_KEY
+claude
+```
+
+### Option 3: OpenRouter (No Proxy Needed)
+
+[OpenRouter](https://openrouter.ai) provides Anthropic-compatible endpoints for OpenAI models:
+
+```bash
+# Get API key from https://openrouter.ai/keys
+export ANTHROPIC_BASE_URL=https://openrouter.ai/api/v1
+export ANTHROPIC_API_KEY=$OPENROUTER_API_KEY
+
+# Set model via header (optional)
+export ANTHROPIC_MODEL=openai/gpt-4o
+
+claude
+/agentful-start
+```
+
+---
+
+## Detailed Setup
+
+### Step 1: Get OpenAI API Key
+
+1. Visit [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+2. Create new secret key
+3. Copy key (starts with `sk-proj-...`)
+
+**Pricing** (as of Jan 2025):
+- **gpt-4o**: $2.50/M input, $10/M output
+- **gpt-4o-mini**: $0.15/M input, $0.60/M output
+- **o1**: $15/M input, $60/M output
+- **o1-mini**: $3/M input, $12/M output
+
+### Step 2: Install LiteLLM
+
+**Docker (recommended for production):**
+
+```bash
+docker run -d \
+  --name litellm \
+  --restart unless-stopped \
+  -p 4000:4000 \
+  -e OPENAI_API_KEY=$OPENAI_API_KEY \
+  -e LITELLM_MASTER_KEY=sk-1234 \
+  ghcr.io/berriai/litellm:main-latest \
+  --config /app/config.yaml
+```
+
+**pip (for development):**
+
+```bash
+pip install 'litellm[proxy]'
+```
+
+### Step 3: Configure LiteLLM
+
+Create `litellm_config.yaml`:
+
+```yaml
+model_list:
+  - model_name: gpt-4o
+    litellm_params:
+      model: gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+      drop_params: true  # Required for Claude Code compatibility
+
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+      drop_params: true
+
+  - model_name: o1
+    litellm_params:
+      model: o1
+      api_key: os.environ/OPENAI_API_KEY
+      drop_params: true
+
+litellm_settings:
+  drop_params: true
+  success_callback: []
+```
+
+Start with config:
+
+```bash
+litellm --config litellm_config.yaml --port 4000
+```
+
+### Step 4: Configure Claude Code
+
+**Persistent configuration** (`~/.claude/settings.json`):
+
+```json
+{
+  "environmentVariables": {
+    "ANTHROPIC_BASE_URL": "http://localhost:4000",
+    "ANTHROPIC_API_KEY": "your_openai_api_key",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-4o",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-4o-mini",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "o1"
+  }
+}
+```
+
+**Session-based:**
+
+```bash
+export ANTHROPIC_BASE_URL=http://localhost:4000
+export ANTHROPIC_API_KEY=$OPENAI_API_KEY
+claude
+```
+
+### Step 5: Verify Setup
+
+```bash
+# Test with simple prompt
+claude
+
+# Check if using OpenAI
+You: What model are you?
+Assistant: I am GPT-4o, OpenAI's multimodal AI model.
+```
+
+---
+
+## Model Variants
+
+### GPT-4o (Recommended)
+
+**Latest multimodal model**
+- **Context:** 128K tokens
+- **Output:** 16K tokens max
+- **Strengths:** Vision, reasoning, function calling
+- **Cost:** $2.50/M input, $10/M output
+- **Use for:** Production applications, complex reasoning
+
+```yaml
+model_name: gpt-4o
+```
+
+### GPT-4o-mini
+
+**Lightweight variant**
+- **Context:** 128K tokens
+- **Speed:** 2-3x faster than gpt-4o
+- **Cost:** $0.15/M input, $0.60/M output (93% cheaper)
+- **Use for:** Simple tasks, high-volume operations
+
+```yaml
+model_name: gpt-4o-mini
+```
+
+### o1 (Preview)
+
+**Extended reasoning model**
+- **Context:** 200K tokens
+- **Reasoning tokens:** Uses additional tokens for "thinking"
+- **Cost:** $15/M input, $60/M output
+- **Use for:** Math, coding, complex problem-solving
+
+**Note:** o1 models don't support streaming or some parameters. Use with caution.
+
+```yaml
+model_name: o1
+litellm_params:
+  model: o1
+  drop_params: true  # Critical for o1
+```
+
+### o1-mini
+
+**Faster reasoning model**
+- **Context:** 128K tokens
+- **Cost:** $3/M input, $12/M output (80% cheaper than o1)
+- **Use for:** STEM reasoning, code generation
+
+---
+
+## Advanced Configuration
+
+### Multiple Models
+
+Run different models for different tasks:
+
+```yaml
+model_list:
+  - model_name: sonnet  # Map to gpt-4o
+    litellm_params:
+      model: gpt-4o
+      api_key: os.environ/OPENAI_API_KEY
+      drop_params: true
+
+  - model_name: haiku  # Map to gpt-4o-mini
+    litellm_params:
+      model: gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+      drop_params: true
+
+  - model_name: opus  # Map to o1
+    litellm_params:
+      model: o1
+      api_key: os.environ/OPENAI_API_KEY
+      drop_params: true
+```
+
+### Cost Tracking
+
+Enable usage tracking:
+
+```yaml
+litellm_settings:
+  success_callback: ["langfuse"]  # Or "posthog", "s3"
+
+general_settings:
+  master_key: sk-1234
+  database_url: postgresql://user:pass@localhost/litellm
+```
+
+View usage:
+```bash
+curl http://localhost:4000/spend/tags
+```
+
+### Load Balancing
+
+Multiple API keys for higher throughput:
+
+```yaml
+model_list:
+  - model_name: gpt-4o
+    litellm_params:
+      model: gpt-4o
+      api_key: os.environ/OPENAI_API_KEY_1
+
+  - model_name: gpt-4o
+    litellm_params:
+      model: gpt-4o
+      api_key: os.environ/OPENAI_API_KEY_2
+```
+
+### Caching
+
+Enable prompt caching for cost savings:
+
+```yaml
+litellm_settings:
+  cache: true
+  cache_params:
+    type: redis
+    host: localhost
+    port: 6379
+```
+
+---
+
+## Integration with agentful
+
+### All Agents Work
+
+Once configured, agentful agents work identically:
+
+```bash
+# Orchestrator
+/agentful-start
+
+# Architecture review
+/agentful-product
+
+# All agents use OpenAI models automatically
+```
+
+### Recommended Agent Configuration
+
+**Best OpenAI models for each agent:**
+
+| Agent | Model | Why |
+|-------|-------|-----|
+| **Orchestrator** | gpt-4o | Best at planning, coordination |
+| **Architect** | o1 | Deep reasoning for system design |
+| **Backend** | gpt-4o | Strong code generation |
+| **Frontend** | gpt-4o | Multimodal (can see designs) |
+| **Tester** | gpt-4o-mini | Fast test generation |
+| **Reviewer** | gpt-4o | Code review quality |
+| **Fixer** | gpt-4o-mini | Quick fixes |
+
+Configure in `~/.claude/settings.json`:
+
+```json
+{
+  "environmentVariables": {
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gpt-4o",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gpt-4o-mini",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "o1"
+  }
+}
+```
+
+---
+
+## Troubleshooting
+
+### LiteLLM not starting
+
+```bash
+# Check if port 4000 is in use
+lsof -i :4000
+
+# Try different port
+litellm --model gpt-4o --port 8000 --drop_params
+
+# Update ANTHROPIC_BASE_URL
+export ANTHROPIC_BASE_URL=http://localhost:8000
+```
+
+### "Unsupported parameter" errors
+
+```bash
+# Ensure drop_params is enabled
+litellm --model gpt-4o --drop_params
+
+# Or in config:
+litellm_settings:
+  drop_params: true
+```
+
+### OpenAI API errors
+
+```bash
+# Check API key
+echo $OPENAI_API_KEY
+
+# Test directly
+curl https://api.openai.com/v1/models \
+  -H "Authorization: Bearer $OPENAI_API_KEY"
+
+# Check rate limits
+# OpenAI has per-model rate limits (RPM/TPM)
+```
+
+### Claude Code not using proxy
+
+```bash
+# Verify environment variables
+env | grep ANTHROPIC
+
+# Should show:
+# ANTHROPIC_BASE_URL=http://localhost:4000
+# ANTHROPIC_API_KEY=sk-proj-...
+
+# Clear any conflicting variables
+unset ANTHROPIC_API_KEY  # If using OpenAI key
+```
+
+### High costs
+
+```bash
+# Switch to gpt-4o-mini for most tasks
+export ANTHROPIC_DEFAULT_SONNET_MODEL=gpt-4o-mini
+
+# Monitor usage
+curl http://localhost:4000/spend/tags
+
+# Enable caching in litellm_config.yaml
+```
+
+---
+
+## Comparison: OpenAI vs Claude
+
+| Feature | GPT-4o | Claude Sonnet 4.5 |
+|---------|--------|-------------------|
+| **Input cost** | $2.50/M | $3.00/M |
+| **Output cost** | $10/M | $15/M |
+| **Context** | 128K | 200K |
+| **Output max** | 16K | 8K |
+| **Vision** | ✅ Native | ✅ Native |
+| **Thinking mode** | o1 only | ✅ Native |
+| **Streaming** | ✅ | ✅ |
+| **Function calling** | ✅ | ✅ |
+| **agentful support** | Via LiteLLM | ✅ Direct |
+
+**When to use OpenAI:**
+- Lower cost than Claude (20% cheaper)
+- Larger output capacity (16K vs 8K)
+- Already using OpenAI elsewhere
+- Need o1 reasoning mode
+
+**When to use Claude:**
+- No proxy required (simpler setup)
+- Better at following complex instructions
+- Longer context (200K vs 128K)
+- Superior function calling
+
+---
+
+## Alternative: OpenRouter
+
+Skip LiteLLM by using [OpenRouter](https://openrouter.ai):
+
+**Advantages:**
+- No local proxy required
+- Access to 100+ models (OpenAI, Anthropic, Meta, etc.)
+- Single API for all providers
+- Built-in fallback/retry
+
+**Setup:**
+
+```bash
+# Get key from https://openrouter.ai/keys
+export ANTHROPIC_BASE_URL=https://openrouter.ai/api/v1
+export ANTHROPIC_API_KEY=$OPENROUTER_API_KEY
+
+# Use specific model
+export ANTHROPIC_MODEL=openai/gpt-4o
+
+claude
+/agentful-start
+```
+
+**Pricing:** OpenRouter adds ~10-20% markup over provider pricing.
+
+---
+
+## Production Deployment
+
+### Docker Compose
+
+```yaml
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY}
+    volumes:
+      - ./litellm_config.yaml:/app/config.yaml
+    command: ["--config", "/app/config.yaml"]
+
+  agentful:
+    build: .
+    depends_on:
+      - litellm
+    environment:
+      ANTHROPIC_BASE_URL: http://litellm:4000
+      ANTHROPIC_API_KEY: ${OPENAI_API_KEY}
+```
+
+### Kubernetes
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: litellm
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: litellm
+        image: ghcr.io/berriai/litellm:main-latest
+        ports:
+        - containerPort: 4000
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openai-secret
+              key: api-key
+        volumeMounts:
+        - name: config
+          mountPath: /app/config.yaml
+          subPath: config.yaml
+      volumes:
+      - name: config
+        configMap:
+          name: litellm-config
+```
+
+---
+
+## Resources
+
+- **OpenAI Docs**: https://platform.openai.com/docs
+- **LiteLLM Docs**: https://docs.litellm.ai
+- **OpenRouter**: https://openrouter.ai
+- **Pricing**: https://openai.com/api/pricing
+- **Models**: https://platform.openai.com/docs/models
+
+---
+
+## Next Steps
+
+- [Try DeepSeek](#TODO) for 80% cost savings vs OpenAI
+- [Configure GLM-4.7](/llm-providers/glm) for 90% cost savings
+- [Run local models](/llm-providers/local) for complete privacy
+- [Learn cost optimization](/llm-providers#cost-optimization-tips)

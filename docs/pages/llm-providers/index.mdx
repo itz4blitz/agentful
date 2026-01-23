@@ -12,14 +12,17 @@ agentful is **LLM-agnostic**. While it ships with Claude Code integration, you c
 Claude Code can be configured to use different LLM providers via environment variables:
 
 ```bash
-# Use GLM-4.7 instead of Claude
+# Use GLM-4.7 (direct Anthropic-compatible API)
 export ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic
 export ANTHROPIC_AUTH_TOKEN=your_zai_api_key
 claude
 
-# Or use OpenAI models
-export OPENAI_API_KEY=your_openai_key
-# Configure Claude Code to use OpenAI provider
+# Use OpenAI (requires LiteLLM proxy)
+pip install 'litellm[proxy]'
+litellm --model gpt-4o --drop_params --port 4000
+export ANTHROPIC_BASE_URL=http://localhost:4000
+export ANTHROPIC_API_KEY=$OPENAI_API_KEY
+claude
 ```
 
 Once configured, **all agentful agents work seamlessly** with the new provider.
@@ -33,10 +36,9 @@ Once configured, **all agentful agents work seamlessly** with the new provider.
 | Provider | Model | Cost vs Claude | Setup Difficulty | Best For |
 |----------|-------|----------------|------------------|----------|
 | **[GLM-4.7](/llm-providers/glm)** | glm-4.7 | **10x cheaper** | ⭐ Easy | Math/algorithms, tool-heavy workflows, cost optimization |
-| **[DeepSeek](#TODO)** | deepseek-v3.2 | 8x cheaper | ⭐ Easy | Thinking mode + tools, agent training, high performance |
-| **[Gemini](#TODO)** | gemini-2.5-pro | Similar | ⭐⭐ Medium | 1M context, MCP native, long documents |
-| **[OpenAI](#TODO)** | gpt-4.1, gpt-5.2 | Similar/higher | ⭐ Easy | Proven reliability, Responses API, wide ecosystem |
-| **[Qwen](#TODO)** | qwen3-coder-480b | Open-source | ⭐⭐ Medium | Agentic coding, MCP support, open weights |
+| **[DeepSeek](/llm-providers/deepseek)** | deepseek-v3 | 8x cheaper | ⭐⭐ Medium | Thinking mode, math reasoning, very cheap |
+| **[Gemini](/llm-providers/gemini)** | gemini-2.0-flash | 40x cheaper | ⭐⭐ Medium | 1M context, multimodal, long documents |
+| **[OpenAI](/llm-providers/openai)** | gpt-4o | Similar | ⭐⭐ Medium | Requires LiteLLM proxy, proven reliability |
 
 ### Tier 2: Compatible (OpenAI-Compatible APIs)
 
@@ -207,20 +209,19 @@ glm --model glm-4.7
 ### 1. Choose Your Provider
 
 Based on your needs:
-- **Cost optimization** → [GLM-4.7](/llm-providers/glm) or [DeepSeek](#TODO)
+- **Cost optimization** → [GLM-4.7](/llm-providers/glm) or [DeepSeek](/llm-providers/deepseek)
 - **Math/algorithms** → [GLM-4.7](/llm-providers/glm)
-- **Long context** → [Gemini](#TODO)
-- **Privacy** → [Ollama](/llm-providers/local)
+- **Long context** → [Gemini](/llm-providers/gemini)
+- **Privacy** → [Local models](/llm-providers/local)
 - **Reliability** → Claude (default)
 
 ### 2. Follow Setup Guide
 
 Each provider has a detailed setup guide:
 - [GLM Setup](/llm-providers/glm)
-- [DeepSeek Setup](#TODO)
-- [Gemini Setup](#TODO)
-- [OpenAI Setup](#TODO)
-- [Qwen Setup](#TODO)
+- [DeepSeek Setup](/llm-providers/deepseek)
+- [Gemini Setup](/llm-providers/gemini)
+- [OpenAI Setup](/llm-providers/openai)
 - [Local Models Setup](/llm-providers/local)
 
 ### 3. Run agentful
