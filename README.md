@@ -1,10 +1,24 @@
 # agentful
 
-Pre-configured AI agent toolkit with self-hosted remote execution
+<div align="center">
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://badge.fury.io/js/%40itz4blitz%2Fagentful.svg)](https://www.npmjs.com/package/@itz4blitz/agentful)
 [![CI Status](https://github.com/itz4blitz/agentful/actions/workflows/pipeline.yml/badge.svg)](https://github.com/itz4blitz/agentful/actions)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D22-brightgreen)](https://nodejs.org)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/itz4blitz/agentful/pulls)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
+
+[![Downloads](https://img.shields.io/npm/dm/@itz4blitz/agentful.svg)](https://www.npmjs.com/package/@itz4blitz/agentful)
+[![GitHub Stars](https://img.shields.io/github/stars/itz4blitz/agentful?style=social)](https://github.com/itz4blitz/agentful)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289da)](https://discord.gg/agentful)
+[![Documentation](https://img.shields.io/badge/docs-agentful.app-blue)](https://agentful.app)
+
+**Pre-configured AI agent toolkit with self-hosted remote execution**
+
+[Quick Start](#quick-start) • [Features](#why-agentful) • [Documentation](https://agentful.app) • [Examples](https://github.com/itz4blitz/agentful/tree/main/examples)
+
+</div>
 
 Run specialized AI agents on your infrastructure with full control over data, costs, and integrations. Deploy to Oracle Cloud's free tier ($0/month), integrate with any CI/CD platform, and get agents that understand YOUR codebase.
 
