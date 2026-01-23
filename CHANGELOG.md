@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/itz4blitz/agentful/compare/v1.0.2...v1.1.0) (2026-01-23)
+
+
+### Features
+
+* Update README and documentation for agentful toolkit ([247fc4e](https://github.com/itz4blitz/agentful/commit/247fc4e8a9e66a2bb7332133a5187db97e0f0f39))
+
 ## [1.0.2](https://github.com/itz4blitz/agentful/compare/v1.0.1...v1.0.2) (2026-01-23)
 
 

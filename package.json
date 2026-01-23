@@ -1,6 +1,6 @@
 {
   "name": "@itz4blitz/agentful",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Pre-configured AI agent toolkit with self-hosted remote execution. Auto-generates domain specialists, supports all platforms, complete development automation.",
   "type": "module",
   "bin": {
