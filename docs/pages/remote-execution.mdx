@@ -234,6 +234,96 @@ Health check endpoint (no authentication required).
 }
 ```
 
+## Running in Background
+
+### Using Process Managers (Recommended)
+
+For production deployments, use a process manager like systemd or PM2 instead of the `--daemon` flag.
+
+#### systemd (Linux)
+
+```bash
+# Create systemd service file
+sudo tee /etc/systemd/system/agentful.service > /dev/null <<EOF
+[Unit]
+Description=agentful Remote Execution Server
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/project
+ExecStart=/usr/bin/npx @itz4blitz/agentful serve --auth=tailscale
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/var/log/agentful/server.log
+StandardError=append:/var/log/agentful/server.err.log
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Create log directory
+sudo mkdir -p /var/log/agentful
+sudo chown ubuntu:ubuntu /var/log/agentful
+
+# Start service
+sudo systemctl daemon-reload
+sudo systemctl enable agentful
+sudo systemctl start agentful
+
+# Check status
+sudo systemctl status agentful
+sudo journalctl -u agentful -f
+```
+
+#### PM2 (Cross-platform)
+
+```bash
+# Install PM2
+npm install -g pm2
+
+# Start server
+pm2 start "npx @itz4blitz/agentful serve --auth=tailscale" --name agentful
+
+# Save process list for auto-restart
+pm2 save
+pm2 startup
+
+# Monitor
+pm2 status
+pm2 logs agentful
+pm2 monit
+
+# Stop/restart
+pm2 stop agentful
+pm2 restart agentful
+```
+
+### Manual Background Execution
+
+If you don't have a process manager, use `nohup`:
+
+```bash
+# Start server in background
+nohup agentful serve --auth=tailscale > .agentful/server.log 2>&1 &
+
+# Save PID for later
+echo $! > .agentful/server.pid
+
+# Check if running
+ps aux | grep "$(cat .agentful/server.pid)"
+
+# View logs
+tail -f .agentful/server.log
+
+# Stop server
+kill $(cat .agentful/server.pid)
+rm .agentful/server.pid
+```
+
+**Note**: The `--daemon` flag is currently not supported due to platform-specific process detachment issues. Use one of the methods above instead.
+
 ## Deployment Examples
 
 ### Oracle Cloud Free Tier + Tailscale
