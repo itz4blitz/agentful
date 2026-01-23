@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/itz4blitz/agentful/compare/v1.2.0...v1.2.1) (2026-01-23)
+
+
+### Bug Fixes
+
+* **docs:** replace dead links with #TODO to fix CI build ([795bad2](https://github.com/itz4blitz/agentful/commit/795bad276b0844d16b2bf59b4deaf9f4110d2bef)), closes [#TODO](https://github.com/itz4blitz/agentful/issues/TODO)
+
 # [1.2.0](https://github.com/itz4blitz/agentful/compare/v1.1.0...v1.2.0) (2026-01-23)
 
 

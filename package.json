@@ -1,6 +1,6 @@
 {
   "name": "@itz4blitz/agentful",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Pre-configured AI agent toolkit with self-hosted remote execution. The Swiss Army Knife of AI Agents - works with any LLM, any tech stack, any platform.",
   "type": "module",
   "bin": {
