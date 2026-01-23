@@ -184,7 +184,7 @@ npm install -g @itz4blitz/agentful
 agentful serve --auth=tailscale --port=3000
 ```
 
-[Full Oracle Cloud Guide →](/server/deployment#oracle-cloud)
+[Full Oracle Cloud Guide →](#TODO)
 
 ### AWS / GCP / Azure
 
@@ -211,7 +211,7 @@ az vm create \
   --custom-data cloud-init.txt
 ```
 
-[Full Cloud Provider Guide →](/server/deployment#cloud-providers)
+[Full Cloud Provider Guide →](#TODO)
 
 ### Docker / Kubernetes
 
@@ -241,7 +241,7 @@ spec:
         - containerPort: 3000
 ```
 
-[Full Docker/K8s Guide →](/server/deployment#docker-kubernetes)
+[Full Docker/K8s Guide →](#TODO)
 
 ### On-Premises / Homelab
 
@@ -258,7 +258,7 @@ sudo systemctl enable agentful
 sudo systemctl start agentful
 ```
 
-[Full On-Prem Guide →](/server/deployment#on-premises)
+[Full On-Prem Guide →](#TODO)
 
 ---
 
@@ -287,7 +287,7 @@ curl http://your-server-name:3000/agent/orchestrator
 - ✅ ACLs for access control
 - ✅ Works across NAT/firewalls
 
-[Tailscale Setup Guide →](/server/authentication#tailscale)
+[Tailscale Setup Guide →](#TODO)
 
 ### HMAC Signatures
 
@@ -315,7 +315,7 @@ curl -X POST https://your-server:3000/agent/orchestrator \
 - ✅ Works with public endpoints
 - ✅ No VPN required
 
-[HMAC Setup Guide →](/server/authentication#hmac)
+[HMAC Setup Guide →](#TODO)
 
 ### SSH Tunnel
 
@@ -337,7 +337,7 @@ curl http://localhost:3000/agent/orchestrator
 - Temporary access
 - Simple setups
 
-[SSH Tunnel Guide →](/server/authentication#ssh-tunnel)
+[SSH Tunnel Guide →](#TODO)
 
 ---
 
@@ -407,7 +407,7 @@ curl https://your-server:3000/status
 }
 ```
 
-[Full API Documentation →](/server/api)
+[Full API Documentation →](#TODO)
 
 ---
 
@@ -517,7 +517,7 @@ agentful serve --log-level=debug
 - Error rates
 - Resource usage
 
-[Full Monitoring Guide →](/server/monitoring)
+[Full Monitoring Guide →](#TODO)
 
 ---
 
@@ -565,7 +565,7 @@ server {
 }
 ```
 
-[Full Scaling Guide →](/server/scaling)
+[Full Scaling Guide →](#TODO)
 
 ---
 
@@ -649,7 +649,7 @@ export AGENTFUL_SECRET=$(cat /secrets/hmac-secret)
 agentful serve --rate-limit=100/minute --rate-limit-per-ip=10/minute
 ```
 
-[Full Security Guide →](/server/security)
+[Full Security Guide →](#TODO)
 
 ---
 
@@ -686,14 +686,14 @@ Managed Service:
 Break-even: ~8 users
 ```
 
-[Full Cost Analysis →](/server/cost-optimization)
+[Full Cost Analysis →](#TODO)
 
 ---
 
 ## Next Steps
 
-- **[Deploy to Oracle Cloud](/server/deployment#oracle-cloud)** - Free forever hosting
-- **[Configure Tailscale](/server/authentication#tailscale)** - Secure remote access
+- **[Deploy to Oracle Cloud](#TODO)** - Free forever hosting
+- **[Configure Tailscale](#TODO)** - Secure remote access
 - **[Integrate with CI/CD](/ci-integration)** - Automate workflows
-- **[Set up monitoring](/server/monitoring)** - Track performance
-- **[Scale horizontally](/server/scaling)** - Handle more load
+- **[Set up monitoring](#TODO)** - Track performance
+- **[Scale horizontally](#TODO)** - Handle more load
