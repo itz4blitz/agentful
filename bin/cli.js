@@ -997,10 +997,270 @@ async function remote(args) {
 }
 
 /**
+ * Get PID file path
+ * @returns {string} Path to PID file
+ */
+function getPidFilePath() {
+  return path.join(process.cwd(), '.agentful', 'server.pid');
+}
+
+/**
+ * Start server in daemon mode
+ * @param {string[]} args - Original args
+ * @param {Object} config - Server configuration
+ */
+async function startDaemon(args, config) {
+  const { spawn } = await import('child_process');
+
+  // Check if daemon is already running
+  const pidFile = getPidFilePath();
+  if (fs.existsSync(pidFile)) {
+    const pid = parseInt(fs.readFileSync(pidFile, 'utf-8').trim(), 10);
+
+    // Check if process is still running
+    try {
+      process.kill(pid, 0); // Signal 0 checks if process exists
+      log(colors.yellow, 'Server is already running');
+      log(colors.dim, `PID: ${pid}`);
+      console.log('');
+      log(colors.dim, 'To stop: agentful serve --stop');
+      log(colors.dim, 'To check status: agentful serve --status');
+      process.exit(1);
+    } catch (error) {
+      // Process doesn't exist, clean up stale PID file
+      fs.unlinkSync(pidFile);
+    }
+  }
+
+  // Ensure .agentful directory exists
+  const agentfulDir = path.join(process.cwd(), '.agentful');
+  if (!fs.existsSync(agentfulDir)) {
+    fs.mkdirSync(agentfulDir, { recursive: true });
+  }
+
+  // Prepare args for child process (remove --daemon flag)
+  const childArgs = args.filter(arg => !arg.startsWith('--daemon') && arg !== '-d');
+
+  // Spawn detached child process
+  const child = spawn(
+    process.argv[0], // node executable
+    [process.argv[1], 'serve', ...childArgs], // script path and args
+    {
+      detached: true,
+      stdio: 'ignore',
+      cwd: process.cwd(),
+      env: {
+        ...process.env,
+        AGENTFUL_DAEMON: '1' // Flag to indicate we're running as daemon
+      }
+    }
+  );
+
+  // Write PID file
+  fs.writeFileSync(pidFile, child.pid.toString(), 'utf-8');
+
+  // Unref to allow parent to exit
+  child.unref();
+
+  // Show success message
+  log(colors.green, `Server started in background (PID: ${child.pid})`);
+  console.log('');
+  log(colors.dim, `PID file: ${pidFile}`);
+  log(colors.dim, `Port: ${config.port}`);
+  log(colors.dim, `Auth: ${config.auth}`);
+  console.log('');
+  log(colors.dim, 'Commands:');
+  log(colors.dim, '  agentful serve --stop     Stop the daemon');
+  log(colors.dim, '  agentful serve --status   Check daemon status');
+  console.log('');
+}
+
+/**
+ * Stop daemon server
+ */
+async function stopDaemon() {
+  const pidFile = getPidFilePath();
+
+  if (!fs.existsSync(pidFile)) {
+    log(colors.yellow, 'No daemon server running');
+    log(colors.dim, 'PID file not found');
+    process.exit(1);
+  }
+
+  const pid = parseInt(fs.readFileSync(pidFile, 'utf-8').trim(), 10);
+
+  // Try to kill the process
+  try {
+    process.kill(pid, 'SIGTERM');
+
+    // Wait a moment for graceful shutdown
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Check if process is still running
+    try {
+      process.kill(pid, 0);
+      // Still running, force kill
+      log(colors.yellow, 'Graceful shutdown failed, forcing...');
+      process.kill(pid, 'SIGKILL');
+    } catch {
+      // Process stopped successfully
+    }
+
+    // Remove PID file
+    fs.unlinkSync(pidFile);
+
+    log(colors.green, `Server stopped (PID: ${pid})`);
+  } catch (error) {
+    if (error.code === 'ESRCH') {
+      // Process doesn't exist
+      log(colors.yellow, 'Server process not found (stale PID file)');
+      fs.unlinkSync(pidFile);
+    } else if (error.code === 'EPERM') {
+      log(colors.red, `Permission denied to kill process ${pid}`);
+      log(colors.dim, 'Try: sudo agentful serve --stop');
+      process.exit(1);
+    } else {
+      log(colors.red, `Failed to stop server: ${error.message}`);
+      process.exit(1);
+    }
+  }
+}
+
+/**
+ * Check daemon server status
+ */
+async function checkDaemonStatus() {
+  const pidFile = getPidFilePath();
+
+  if (!fs.existsSync(pidFile)) {
+    log(colors.yellow, 'No daemon server running');
+    log(colors.dim, 'PID file not found');
+    console.log('');
+    log(colors.dim, 'Start daemon: agentful serve --daemon');
+    process.exit(1);
+  }
+
+  const pid = parseInt(fs.readFileSync(pidFile, 'utf-8').trim(), 10);
+
+  // Check if process is running
+  try {
+    process.kill(pid, 0); // Signal 0 just checks if process exists
+
+    log(colors.green, 'Server is running');
+    console.log('');
+    log(colors.dim, `PID: ${pid}`);
+    log(colors.dim, `PID file: ${pidFile}`);
+
+    // Try to get more info from /proc (Linux/macOS)
+    try {
+      const { execSync } = await import('child_process');
+      const psOutput = execSync(`ps -p ${pid} -o comm,etime,rss`, { encoding: 'utf-8' });
+      const lines = psOutput.trim().split('\n');
+      if (lines.length > 1) {
+        const [cmd, etime, rss] = lines[1].trim().split(/\s+/);
+        console.log('');
+        log(colors.dim, `Uptime: ${etime}`);
+        log(colors.dim, `Memory: ${Math.round(parseInt(rss) / 1024)} MB`);
+      }
+    } catch {
+      // ps command failed, skip detailed info
+    }
+
+    console.log('');
+    log(colors.dim, 'Commands:');
+    log(colors.dim, '  agentful serve --stop     Stop the daemon');
+  } catch (error) {
+    if (error.code === 'ESRCH') {
+      log(colors.yellow, 'Server not running (stale PID file)');
+      log(colors.dim, `PID file exists but process ${pid} not found`);
+      console.log('');
+      log(colors.dim, 'Clean up: rm .agentful/server.pid');
+      process.exit(1);
+    } else {
+      log(colors.red, `Failed to check status: ${error.message}`);
+      process.exit(1);
+    }
+  }
+}
+
+/**
  * Serve command - Start remote execution server
  */
 async function serve(args) {
   const flags = parseFlags(args);
+
+  // Handle --stop subcommand
+  if (flags.stop) {
+    return await stopDaemon();
+  }
+
+  // Handle --status subcommand
+  if (flags.status) {
+    return await checkDaemonStatus();
+  }
+
+  // Handle --help flag first
+  if (flags.help || flags.h) {
+    showBanner();
+    log(colors.bright, 'Agentful Remote Execution Server');
+    console.log('');
+    log(colors.dim, 'Start a secure HTTP server for remote agent execution.');
+    console.log('');
+    log(colors.bright, 'USAGE:');
+    console.log(`  ${colors.green}agentful serve${colors.reset} ${colors.dim}[options]${colors.reset}`);
+    console.log('');
+    log(colors.bright, 'AUTHENTICATION MODES:');
+    console.log(`  ${colors.cyan}--auth=tailscale${colors.reset}   ${colors.dim}(default) Tailscale network only${colors.reset}`);
+    console.log(`  ${colors.cyan}--auth=hmac${colors.reset}        ${colors.dim}HMAC signature authentication (requires --secret)${colors.reset}`);
+    console.log(`  ${colors.cyan}--auth=none${colors.reset}        ${colors.dim}No authentication (binds to all interfaces, use with SSH tunnel)${colors.reset}`);
+    console.log('');
+    log(colors.bright, 'OPTIONS:');
+    console.log(`  ${colors.yellow}--port=<number>${colors.reset}      ${colors.dim}Server port (default: 3000)${colors.reset}`);
+    console.log(`  ${colors.yellow}--secret=<key>${colors.reset}       ${colors.dim}HMAC secret key (required for --auth=hmac)${colors.reset}`);
+    console.log(`  ${colors.yellow}--https${colors.reset}             ${colors.dim}Enable HTTPS (requires --cert and --key)${colors.reset}`);
+    console.log(`  ${colors.yellow}--cert=<path>${colors.reset}        ${colors.dim}SSL certificate file path${colors.reset}`);
+    console.log(`  ${colors.yellow}--key=<path>${colors.reset}         ${colors.dim}SSL private key file path${colors.reset}`);
+    console.log(`  ${colors.yellow}--daemon, -d${colors.reset}        ${colors.dim}Run server in background (daemon mode)${colors.reset}`);
+    console.log(`  ${colors.yellow}--stop${colors.reset}              ${colors.dim}Stop background server${colors.reset}`);
+    console.log(`  ${colors.yellow}--status${colors.reset}            ${colors.dim}Check background server status${colors.reset}`);
+    console.log(`  ${colors.yellow}--help, -h${colors.reset}          ${colors.dim}Show this help message${colors.reset}`);
+    console.log('');
+    log(colors.bright, 'EXAMPLES:');
+    console.log('');
+    log(colors.dim, '  # Start server with Tailscale auth (default)');
+    console.log(`  ${colors.green}agentful serve${colors.reset}`);
+    console.log('');
+    log(colors.dim, '  # Start server with HMAC authentication');
+    console.log(`  ${colors.green}agentful serve --auth=hmac --secret=your-secret-key${colors.reset}`);
+    console.log('');
+    log(colors.dim, '  # Start HTTPS server with HMAC auth');
+    console.log(`  ${colors.green}agentful serve --auth=hmac --secret=key --https --cert=cert.pem --key=key.pem${colors.reset}`);
+    console.log('');
+    log(colors.dim, '  # Start server without auth (public access, use SSH tunnel)');
+    console.log(`  ${colors.green}agentful serve --auth=none --port=3737${colors.reset}`);
+    console.log('');
+    log(colors.dim, '  # Start server in background (daemon mode)');
+    console.log(`  ${colors.green}agentful serve --daemon${colors.reset}`);
+    console.log('');
+    log(colors.dim, '  # Check daemon status');
+    console.log(`  ${colors.green}agentful serve --status${colors.reset}`);
+    console.log('');
+    log(colors.dim, '  # Stop daemon');
+    console.log(`  ${colors.green}agentful serve --stop${colors.reset}`);
+    console.log('');
+    log(colors.dim, '  # Generate HMAC secret');
+    console.log(`  ${colors.green}openssl rand -hex 32${colors.reset}`);
+    console.log('');
+    log(colors.dim, '  # Generate self-signed certificate');
+    console.log(`  ${colors.green}openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes${colors.reset}`);
+    console.log('');
+    log(colors.bright, 'SECURITY NOTES:');
+    console.log(`  ${colors.yellow}Tailscale mode:${colors.reset} Binds to 0.0.0.0, relies on Tailscale network isolation`);
+    console.log(`  ${colors.yellow}HMAC mode:${colors.reset}      Binds to 0.0.0.0, uses cryptographic signatures (recommended for public networks)`);
+    console.log(`  ${colors.yellow}None mode:${colors.reset}       Binds to 0.0.0.0, no authentication (use SSH tunnel: ssh -L 3000:localhost:3000 user@host)`);
+    console.log('');
+    return;
+  }
 
   // Parse configuration
   const config = {
@@ -1012,6 +1272,9 @@ async function serve(args) {
     key: flags.key,
     projectRoot: process.cwd(),
   };
+
+  // Check if --daemon flag is set
+  const isDaemon = flags.daemon || flags.d;
 
   // Validate auth mode
   const validAuthModes = ['tailscale', 'hmac', 'none'];
@@ -1027,8 +1290,15 @@ async function serve(args) {
     process.exit(1);
   }
 
-  // Show configuration
-  showBanner();
+  // If daemon mode, fork the process
+  if (isDaemon) {
+    return await startDaemon(args, config);
+  }
+
+  // Show configuration (skip banner if running as daemon child)
+  if (!process.env.AGENTFUL_DAEMON) {
+    showBanner();
+  }
   log(colors.bright, 'Starting Agentful Server');
   console.log('');
   log(colors.dim, `Authentication: ${config.auth}`);
@@ -1036,8 +1306,8 @@ async function serve(args) {
   log(colors.dim, `HTTPS: ${config.https ? 'enabled' : 'disabled'}`);
 
   if (config.auth === 'none') {
-    log(colors.yellow, 'Warning: Server will only accept localhost connections');
-    log(colors.dim, 'Use SSH tunnel for remote access: ssh -L 3000:localhost:3000 user@host');
+    log(colors.yellow, 'Warning: Server running with no authentication (binds to all interfaces)');
+    log(colors.dim, 'Recommended: Use SSH tunnel for remote access: ssh -L 3000:localhost:3000 user@host');
   }
 
   if (config.auth === 'hmac' && !config.secret) {

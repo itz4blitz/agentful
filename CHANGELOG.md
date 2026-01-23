@@ -20,6 +20,41 @@ Existing .agentful/ directories will need reinitialization.
 
 # [Unreleased]
 
+## Added
+
+### 🚀 Daemon Mode for Remote Server
+- **NEW**: `--daemon` / `-d` flag for `agentful serve` command
+  - Runs server in background as a detached process
+  - Automatically creates PID file at `.agentful/server.pid`
+  - Returns immediately after starting daemon
+- **NEW**: `agentful serve --stop` to stop daemon
+  - Gracefully shuts down daemon using SIGTERM
+  - Falls back to SIGKILL if needed
+  - Automatically cleans up PID file
+- **NEW**: `agentful serve --status` to check daemon status
+  - Shows PID, uptime, and memory usage (when available)
+  - Detects and reports stale PID files
+  - Provides helpful commands for management
+- **IMPROVED**: Better process management
+  - Prevents starting multiple daemons on same port
+  - Detects stale PID files and cleans them up
+  - Handles permission errors gracefully
+
+### Examples
+```bash
+# Start server in background
+agentful serve --daemon
+
+# Check if daemon is running
+agentful serve --status
+
+# Stop daemon
+agentful serve --stop
+
+# Start daemon with custom options
+agentful serve --daemon --auth=hmac --secret=xxx --port=3737
+```
+
 ## Changed
 
 ### 🎯 Simplified Preset System
