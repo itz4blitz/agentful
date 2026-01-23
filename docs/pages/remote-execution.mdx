@@ -7,14 +7,16 @@ description: Run agentful agents on remote servers via secure HTTP API
 
 Run agentful agents on remote servers through a secure HTTP API using `agentful serve`.
 
+**Default port**: 3000 (configurable with `--port` flag)
+
 ## Quick Start
 
 ```bash
-# Start server with Tailscale (recommended)
+# Start server with Tailscale (recommended) - default port 3000
 agentful serve
 
-# Start server with HMAC authentication
-agentful serve --auth=hmac --secret=$SECRET --https --cert=cert.pem --key=key.pem
+# Start server with HMAC authentication on custom port
+agentful serve --auth=hmac --secret=$SECRET --https --cert=cert.pem --key=key.pem --port=8080
 
 # Start server for local SSH tunnel access
 agentful serve --auth=none

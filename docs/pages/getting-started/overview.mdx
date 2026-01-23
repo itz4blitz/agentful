@@ -55,11 +55,7 @@ Each agent knows when to delegate to others and when a task is outside their sco
 
 The orchestrator coordinates all specialist agents, delegating work based on the task at hand.
 
-{/* TODO: Add AgentArchitectureFlow component
-<div style={{ marginTop: '2rem', marginBottom: '3rem' }}>
-  <AgentArchitectureFlow interactive={false} showControls={false} />
-</div>
-*/}
+> Interactive architecture diagram coming soon.
 
 ---
 
@@ -86,9 +82,9 @@ Task management for distributed teams
 3. Task assignment (MEDIUM)
 ```
 
-### 2. Generate Domain Agents
+### 2. Detect Tech Stack & Generate Agents
 
-Run `/agentful-generate` to analyze your codebase and generate:
+agentful automatically detects your tech stack and generates:
 - Domain-specific agents based on your business logic
 - Tech stack skills for framework patterns
 - Pattern-matched instructions from your actual code
@@ -97,20 +93,7 @@ Run `/agentful-generate` to analyze your codebase and generate:
 
 Run `/agentful-start` to begin the automated development workflow.
 
-{/* TODO: Add DevelopmentWorkflowPipeline component
-<div style={{ marginTop: '2rem', marginBottom: '3rem' }}>
-  <DevelopmentWorkflowPipeline
-    currentStage="implement"
-    completedStages={['spec']}
-    failedStages={[]}
-    interactive={false}
-    showControls={false}
-    animatedFlow={true}
-    orientation="horizontal"
-    height="600px"
-  />
-</div>
-*/}
+> Interactive workflow pipeline visualization coming soon.
 
 The workflow follows these stages:
 1. **Product Specification** - Analyze requirements for completeness
@@ -137,11 +120,7 @@ You remain in control while Claude handles implementation details.
 
 All implementations are validated against six automated quality gates before deployment.
 
-{/* TODO: Add QualityGateDashboard component
-<div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
-  <QualityGateDashboard showOverallScore={true} interactive={true} />
-</div>
-*/}
+> Interactive quality gate dashboard coming soon.
 
 Every feature must pass all six gates:
 
@@ -269,8 +248,7 @@ Works best with:
 npx @itz4blitz/agentful init
 claude
 /agentful-product          # Interactive spec creation
-/agentful-generate         # Generate agents
-/agentful-start            # Begin development
+/agentful-start            # Begin development (auto-detects tech stack)
 /agentful-status           # Check progress
 /agentful-decide           # Answer blocking decisions
 ```
@@ -281,8 +259,7 @@ claude
 npx @itz4blitz/agentful init
 claude
 /agentful-product          # Reverse-engineer spec
-/agentful-generate         # Generate from existing code
-/agentful-start            # Continue development
+/agentful-start            # Continue development (auto-detects tech stack)
 ```
 
 ### Ad-hoc Questions

@@ -56,12 +56,17 @@ describe('Init Workflow', () => {
       const content = await fs.readFile(stateFile, 'utf-8');
       const state = JSON.parse(content);
 
-      expect(state).toHaveProperty('initialized');
       expect(state).toHaveProperty('version');
-      expect(state).toHaveProperty('agents');
-      expect(state).toHaveProperty('skills');
-      expect(Array.isArray(state.agents)).toBe(true);
-      expect(Array.isArray(state.skills)).toBe(true);
+      expect(state).toHaveProperty('current_task');
+      expect(state).toHaveProperty('current_phase');
+      expect(state).toHaveProperty('iterations');
+      expect(state).toHaveProperty('last_updated');
+      expect(state).toHaveProperty('blocked_on');
+      expect(state.version).toBe('1.0');
+      expect(state.current_task).toBeNull();
+      expect(state.current_phase).toBe('idle');
+      expect(state.iterations).toBe(0);
+      expect(Array.isArray(state.blocked_on)).toBe(true);
     });
 
     it('should create completion.json with correct structure', async () => {
@@ -71,11 +76,17 @@ describe('Init Workflow', () => {
       const content = await fs.readFile(completionFile, 'utf-8');
       const completion = JSON.parse(content);
 
-      expect(completion).toHaveProperty('agents');
-      expect(completion).toHaveProperty('skills');
-      expect(completion).toHaveProperty('lastUpdated');
-      expect(typeof completion.agents).toBe('object');
-      expect(typeof completion.skills).toBe('object');
+      expect(completion).toHaveProperty('features');
+      expect(completion).toHaveProperty('gates');
+      expect(completion).toHaveProperty('overall_progress');
+      expect(typeof completion.features).toBe('object');
+      expect(typeof completion.gates).toBe('object');
+      expect(completion.gates).toHaveProperty('tests_passing');
+      expect(completion.gates).toHaveProperty('no_type_errors');
+      expect(completion.gates).toHaveProperty('no_dead_code');
+      expect(completion.gates).toHaveProperty('coverage_80');
+      expect(completion.gates).toHaveProperty('security_clean');
+      expect(completion.overall_progress).toBe(0);
     });
 
     it('should create decisions.json with correct structure', async () => {
@@ -85,9 +96,10 @@ describe('Init Workflow', () => {
       const content = await fs.readFile(decisionsFile, 'utf-8');
       const decisions = JSON.parse(content);
 
-      expect(decisions).toHaveProperty('decisions');
-      expect(decisions).toHaveProperty('lastUpdated');
-      expect(Array.isArray(decisions.decisions)).toBe(true);
+      expect(decisions).toHaveProperty('pending');
+      expect(decisions).toHaveProperty('resolved');
+      expect(Array.isArray(decisions.pending)).toBe(true);
+      expect(Array.isArray(decisions.resolved)).toBe(true);
     });
 
     it('should create conversation-state.json', async () => {
@@ -225,10 +237,12 @@ describe('Init Workflow', () => {
       const state = await getState(testDir);
 
       expect(state).not.toBeNull();
-      expect(state).toHaveProperty('initialized');
       expect(state).toHaveProperty('version');
-      expect(state).toHaveProperty('agents');
-      expect(state).toHaveProperty('skills');
+      expect(state).toHaveProperty('current_task');
+      expect(state).toHaveProperty('current_phase');
+      expect(state).toHaveProperty('iterations');
+      expect(state).toHaveProperty('last_updated');
+      expect(state).toHaveProperty('blocked_on');
     });
 
     it('should return parsed JSON from state.json', async () => {
@@ -236,8 +250,9 @@ describe('Init Workflow', () => {
       const state = await getState(testDir);
 
       expect(typeof state).toBe('object');
-      expect(Array.isArray(state.agents)).toBe(true);
-      expect(Array.isArray(state.skills)).toBe(true);
+      expect(state.version).toBe('1.0');
+      expect(state.current_phase).toBe('idle');
+      expect(Array.isArray(state.blocked_on)).toBe(true);
     });
 
     it('should return null if state.json is invalid JSON', async () => {
@@ -250,26 +265,28 @@ describe('Init Workflow', () => {
   });
 
   describe('state file timestamps', () => {
-    it('should set initialized timestamp in ISO format', async () => {
+    it('should set last_updated timestamp in ISO format', async () => {
       await initProject(testDir);
       const state = await getState(testDir);
 
-      expect(state.initialized).toBeTruthy();
+      expect(state.last_updated).toBeTruthy();
       // Should be valid ISO 8601 date
-      const date = new Date(state.initialized);
-      expect(date.toISOString()).toBe(state.initialized);
+      const date = new Date(state.last_updated);
+      expect(date.toISOString()).toBe(state.last_updated);
     });
 
-    it('should set lastUpdated timestamp in completion.json', async () => {
+    it('should not have lastUpdated in completion.json', async () => {
       await initProject(testDir);
 
       const completionFile = path.join(testDir, '.agentful', 'completion.json');
       const content = await fs.readFile(completionFile, 'utf-8');
       const completion = JSON.parse(content);
 
-      expect(completion.lastUpdated).toBeTruthy();
-      const date = new Date(completion.lastUpdated);
-      expect(date.toISOString()).toBe(completion.lastUpdated);
+      // New schema doesn't have lastUpdated
+      expect(completion.lastUpdated).toBeUndefined();
+      expect(completion).toHaveProperty('features');
+      expect(completion).toHaveProperty('gates');
+      expect(completion).toHaveProperty('overall_progress');
     });
   });
 
@@ -278,7 +295,7 @@ describe('Init Workflow', () => {
       await initProject(testDir);
       const state = await getState(testDir);
 
-      expect(state.version).toBe('1.0.0');
+      expect(state.version).toBe('1.0');
     });
   });
 });
