@@ -4,14 +4,11 @@ A carrot on a stick for Claude Code
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![npm version](https://badge.fury.io/js/%40itz4blitz%2Fagentful.svg)](https://www.npmjs.com/package/@itz4blitz/agentful)
-[![Tests](https://img.shields.io/badge/tests-921%20passing-brightgreen)](https://github.com/itz4blitz/agentful)
 [![CI Status](https://github.com/itz4blitz/agentful/actions/workflows/pipeline.yml/badge.svg)](https://github.com/itz4blitz/agentful/actions)
 
 ## Overview
 
-agentful is a production-ready Claude Code configuration that provides structured development through specialized AI agents. It coordinates multiple agents to implement features, write tests, and validate code quality according to a defined product specification, with human checkpoints for key decisions.
-
-**Production Quality**: Enterprise-grade testing (921 tests passing), comprehensive error handling, and lifecycle hooks for validation and metrics.
+agentful is a Claude Code configuration that provides structured development through specialized AI agents. It coordinates multiple agents to implement features, write tests, and validate code quality according to a defined product specification.
 
 ## Web Configurator
 
@@ -38,7 +35,6 @@ npx @itz4blitz/agentful init
 This installs:
 - **8 agents**: orchestrator, architect, backend, frontend, tester, reviewer, fixer, product-analyzer
 - **6 skills**: product-tracking, validation, testing, conversation, product-planning, deployment
-- **Hooks**: health-check (configurable)
 - **Quality gates**: types, tests, coverage, lint, security, dead-code
 
 **Tech stack is auto-detected** on first run (TypeScript, Python, React, etc.) - no need to specify.
@@ -79,7 +75,6 @@ npx @itz4blitz/agentful init --config=<shareable-url>
 - `--preset=<name>` - Use a preset configuration
 - `--agents=<list>` - Comma-separated list of agents (orchestrator, backend, frontend, tester, reviewer, fixer, architect, product-analyzer)
 - `--skills=<list>` - Comma-separated list of skills (validation, testing, product-tracking, conversation, product-planning, deployment)
-- `--hooks=<list>` - Comma-separated list of hooks (health-check, typescript-validation, notifications, format-on-save)
 - `--gates=<list>` - Comma-separated list of quality gates (types, tests, coverage, lint, security, dead-code)
 
 Flags override preset values when both are specified.
@@ -208,12 +203,12 @@ agentful uses seven specialized agents:
 
 ### Quality Gates
 
-Code changes are validated against 6 core automated quality gates:
+Code changes are validated against 6 automated quality gates:
 
 - Type checking (TypeScript, Flow, etc.)
 - Linting (ESLint, Biome, etc.)
-- Test execution (all tests must pass)
-- Code coverage (minimum 80%)
+- Test execution
+- Code coverage
 - Security scanning
 - Dead code detection
 
@@ -234,7 +229,7 @@ Runtime state is stored in `.agentful/` (gitignored, managed by npm package):
 
 User configuration is stored in `.claude/` (version controlled):
 
-- `agents/` - Agent definitions (core + custom + ephemeral)
+- `agents/` - Agent definitions
 - `commands/` - Slash commands
 - `product/` - Product specifications
   - `index.md` - Main product spec (user editable)
@@ -244,9 +239,9 @@ User configuration is stored in `.claude/` (version controlled):
   - `product-tracking/` - Progress calculation and state tracking
   - `product-planning/` - Product specification guidance
   - `validation/` - Quality gate checks and tool detection
+  - `testing/` - Test strategy and coverage
+  - `deployment/` - Deployment preparation and validation
 - `settings.json` - Project configuration
-
-**See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed explanation of file organization.**
 
 ## Commands
 
@@ -309,13 +304,7 @@ agentful detects and adapts to your technology stack automatically:
 
 ## Documentation
 
-Full documentation: [itz4blitz.github.io/agentful](https://itz4blitz.github.io/agentful)
-
-Key guides:
-- [Getting Started](https://itz4blitz.github.io/agentful/getting-started) - Quick start guide
-- [Installation](https://itz4blitz.github.io/agentful/getting-started/installation) - Installation options and presets
-- [Commands](https://itz4blitz.github.io/agentful/commands) - All available slash commands
-- [Agents](https://itz4blitz.github.io/agentful/agents) - Specialized agent documentation
+Documentation: [agentful.app](https://agentful.app)
 
 ## Project Structure
 
@@ -348,5 +337,4 @@ MIT
 
 - GitHub: [github.com/itz4blitz/agentful](https://github.com/itz4blitz/agentful)
 - Issues: [github.com/itz4blitz/agentful/issues](https://github.com/itz4blitz/agentful/issues)
-- Documentation: [itz4blitz.github.io/agentful](https://itz4blitz.github.io/agentful)
 - NPM: [npmjs.com/package/@itz4blitz/agentful](https://www.npmjs.com/package/@itz4blitz/agentful)
