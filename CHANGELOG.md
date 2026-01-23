@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/itz4blitz/agentful/compare/v1.0.1...v1.0.2) (2026-01-23)
+
+
+### Bug Fixes
+
+* **daemon:** add log file redirection and health check wait ([ec7097d](https://github.com/itz4blitz/agentful/commit/ec7097d1b3f7cc33a16575a3b9e790240ea083d2))
+* **server:** allow network connections with --auth=none ([35bac75](https://github.com/itz4blitz/agentful/commit/35bac75a3c7fb93dcc6dd8de0436d85451308dcc))
+
 ## [1.0.1](https://github.com/itz4blitz/agentful/compare/v1.0.0...v1.0.1) (2026-01-23)
 
 
