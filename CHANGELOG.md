@@ -1,3 +1,10 @@
+## [0.5.1](https://github.com/itz4blitz/agentful/compare/v0.5.0...v0.5.1) (2026-01-23)
+
+
+### Bug Fixes
+
+* trigger npm publish on push to main, let semantic-release manage versioning ([cc0290b](https://github.com/itz4blitz/agentful/commit/cc0290b0b9b7f1384bffc30c0b63db710895c5f4))
+
 # [Unreleased]
 
 ## Changed
