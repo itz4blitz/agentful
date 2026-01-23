@@ -19,13 +19,6 @@ The agentful web configurator provides an interactive interface to customize you
 
 Visit [agentful.app](https://agentful.app)
 
-Or run:
-```bash
-npx @itz4blitz/agentful configure
-```
-
-This opens the configurator in your default browser.
-
 ## Step-by-Step Guide
 
 ### 1. Choose Your Starting Point
@@ -36,8 +29,6 @@ Select the default installation with all components:
 
 - **Default** - All components included (recommended for most projects)
 - **Minimal** - Lightweight backend-only setup (for simple scripts/APIs)
-
-[Screenshot: Installation options showing default and minimal configurations]
 
 **Option B: Start from Scratch**
 
@@ -62,8 +53,6 @@ Select which specialized agents to include:
 - **fixer** - Auto-fixes validation failures
 - **product-analyzer** - Analyzes product specifications
 
-[Screenshot: Agent selection checklist with descriptions and toggle switches]
-
 #### Skills
 
 Skills provide reusable capabilities:
@@ -75,8 +64,6 @@ Skills provide reusable capabilities:
 - **product-planning** - Specification guidance
 - **deployment** - Deployment automation
 
-[Screenshot: Skills selection with descriptions]
-
 #### Lifecycle Hooks
 
 Hooks run at specific events:
@@ -85,8 +72,6 @@ Hooks run at specific events:
 - **typescript-validation** - Type checks after file changes
 - **notifications** - Desktop alerts for file updates
 - **format-on-save** - Auto-formats files with Prettier
-
-[Screenshot: Hooks selection with event triggers shown]
 
 #### Quality Gates
 
@@ -99,8 +84,6 @@ Gates validate code before completion:
 - **security** - Dependency vulnerability scanning
 - **dead-code** - Unused code detection
 
-[Screenshot: Quality gates selection with pass/fail indicators]
-
 ### 3. Customize Your Selection
 
 Start with default or minimal, then:
@@ -108,8 +91,6 @@ Start with default or minimal, then:
 1. **Add Components**: Toggle on additional agents, skills, or hooks
 2. **Remove Components**: Toggle off components you don't need
 3. **Review Summary**: See total agents, skills, hooks, and gates
-
-[Screenshot: Configuration summary panel showing counts and selected components]
 
 ### 4. Generate Installation Command
 
@@ -125,8 +106,6 @@ npx @itz4blitz/agentful init \
   --gates=types,tests,coverage
 ```
 
-[Screenshot: Generated command with copy button]
-
 ### 5. Share Your Configuration
 
 Click **"Share Configuration"** to generate a shareable URL:
@@ -139,8 +118,6 @@ Anyone with this URL sees your exact configuration and can:
 - Copy the installation command
 - Modify and re-share
 - Install directly
-
-[Screenshot: Share modal with URL and social sharing buttons]
 
 ## Installing from a Shared Configuration
 

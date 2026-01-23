@@ -445,10 +445,10 @@ Once your server is running, use the `agentful remote` CLI to trigger executions
 
 ```bash
 # Add a remote server
-agentful remote add prod http://my-server:3737
+agentful remote add prod http://my-server:3000
 
 # With HMAC authentication
-agentful remote add prod https://my-server:3737 --auth=hmac --secret=$SECRET
+agentful remote add prod https://my-server:3000 --auth=hmac --secret=$SECRET
 
 # List configured remotes
 agentful remote list
@@ -581,7 +581,7 @@ code_review:
 #!/bin/bash
 # trigger-agent.sh
 
-SERVER="https://my-server:3737"
+SERVER="https://my-server:3000"
 SECRET="your-hmac-secret"
 AGENT="$1"
 TASK="$2"

@@ -233,18 +233,15 @@ agentful adapts to your existing code rather than imposing new patterns.
 
 ## Extended Development Sessions
 
-Use the [Ralph Wiggum plugin](https://github.com/anthropics/claude-code/tree/main/plugins/ralph-wiggum) for uninterrupted development:
+Use the Ralph Wiggum plugin for extended sessions:
 
 ```bash
 claude
 /plugin install ralph-wiggum@anthropics
-/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
+/ralph-loop "/agentful-start" --max-iterations 50
 ```
 
-This runs until:
-- Feature is complete
-- All quality gates pass
-- Human decision is required
+This runs multiple development iterations until the max is reached or the orchestrator completes its work.
 
 ---
 
