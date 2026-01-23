@@ -20,19 +20,11 @@ npx @itz4blitz/agentful init --agents=orchestrator,backend --skills=validation
 npx @itz4blitz/agentful presets
 ```
 
-**[agentful.app/configure](https://agentful.app/configure)** - Interactive web configurator for shareable configurations
-
 ## Quick Start
 
 1. Edit `.claude/product/index.md` to define your product requirements
 2. Run: `claude`
 3. Type: `/agentful-start`
-
-For extended sessions:
-```bash
-claude --dangerously-skip-permissions
-/ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
-```
 
 ## Commands
 
@@ -43,7 +35,6 @@ claude --dangerously-skip-permissions
 | `/agentful-decide` | Answer pending decisions blocking work |
 | `/agentful-validate` | Run all quality checks manually |
 | `/agentful-product` | Analyze and improve product specification |
-| `/agents` | List all available specialized agents |
 
 ## When to Use What
 
@@ -79,9 +70,7 @@ claude --dangerously-skip-permissions
 
 **Runtime State** (managed by agentful, gitignored):
 - `.agentful/state.json` - Current work phase and progress
-- `.agentful/completion.json` - Feature completion % and quality gates
 - `.agentful/decisions.json` - Pending and resolved decisions
-- `.agentful/last-validation.json` - Most recent validation report
 - `.agentful/architecture.json` - Detected tech stack and generated agents
 
 **Configuration** (auto-generated, customizable):
@@ -91,7 +80,7 @@ claude --dangerously-skip-permissions
 
 ## Quality Gates
 
-Every feature must pass 6 core automated quality gates before marked complete:
+agentful validates code through automated checks:
 
 - **Type checking** - No type errors (TypeScript, Flow, etc.)
 - **Linting** - Code follows project style guide
@@ -100,7 +89,7 @@ Every feature must pass 6 core automated quality gates before marked complete:
 - **Security** - No known vulnerabilities in dependencies
 - **Dead code** - No unused exports, files, or dependencies
 
-The `reviewer` agent runs these checks automatically. The `fixer` agent resolves failures.
+The `reviewer` agent runs these checks. The `fixer` agent resolves failures.
 
 ## Troubleshooting
 
@@ -108,13 +97,13 @@ The `reviewer` agent runs these checks automatically. The `fixer` agent resolves
 → Your product spec needs more detail. Run `/agentful-product` to analyze and improve it.
 
 **"Validation keeps failing"**
-→ Check `.agentful/last-validation.json` for details. The `fixer` agent should auto-resolve, but you can run `/agentful-validate` manually.
+→ The `fixer` agent should auto-resolve issues, or run `/agentful-validate` manually to check details.
 
 **"Agent isn't working on the right feature"**
 → Check priority in `.claude/product/index.md`. CRITICAL > HIGH > MEDIUM > LOW. Run `/agentful-status` to see current focus.
 
 **"State seems stuck or corrupted"**
-→ Delete `.agentful/state.json` and run `/agentful-start` to reset. Completion progress is preserved.
+→ Delete `.agentful/state.json` and run `/agentful-start` to reset.
 
 **"Tech stack not detected correctly"**
 → Add explicit tech stack section to `.claude/product/index.md` or check `.agentful/architecture.json` for what was detected.
@@ -123,19 +112,14 @@ The `reviewer` agent runs these checks automatically. The `fixer` agent resolves
 → Create `.claude/product/domains/` directories and organize features by domain. Auto-detected.
 
 **"Agent generated wrong type of code"**
-→ Check that the right specialized agent was generated. Run `/agents` to list all agents.
-
-**"Need to rollback or restart a feature"**
-→ Edit completion % in `.agentful/completion.json` for specific feature, then run `/agentful-start`.
+→ Check that the right specialized agent was generated in `.claude/agents/`.
 
 ## Getting Help
 
-**Documentation**: See `.claude/commands/` for detailed command documentation
-**Product Planning**: Run `/agentful-product --help` for comprehensive product analysis
-**Agent Reference**: Run `/agents` to see all specialized agents and their roles
-**GitHub**: [github.com/itz4blitz/agentful](https://github.com/itz4blitz/agentful)
-**Issues**: Report bugs or request features on GitHub Issues
-**Version**: Check `package.json` for your agentful version
+- **Documentation**: See `.claude/commands/` for detailed command documentation
+- **Product Planning**: Run `/agentful-product` for product spec analysis
+- **GitHub**: [github.com/itz4blitz/agentful](https://github.com/itz4blitz/agentful)
+- **Issues**: Report bugs or request features on GitHub Issues
 
 ---
 
