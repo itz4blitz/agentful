@@ -1,3 +1,10 @@
+---
+title: Background Agent Patterns
+description: How agentful handles background and parallel agent execution, including current capabilities and future roadmap.
+---
+
+import { DiagramModal } from '../../components/DiagramModal'
+
 # Background Agent Patterns
 
 This document explains how agentful handles background and parallel agent execution, including current capabilities, limitations, and future roadmap.
@@ -33,19 +40,29 @@ Task("frontend", "Create login page");
 ```
 
 **Execution Flow:**
+
+<DiagramModal title="Sequential Execution Flow">
+
+```mermaid
+sequenceDiagram
+    participant O as Orchestrator
+    participant B as Backend
+    participant F as Frontend
+
+    O->>B: Task("backend", "Implement API")
+    Note over O: ⏸️ BLOCKING<br/>Waits for completion
+    B->>B: Executes implementation
+    B->>O: Returns result
+
+    O->>F: Task("frontend", "Create UI")
+    Note over O: ⏸️ BLOCKING<br/>Waits for completion
+    F->>F: Executes implementation
+    F->>O: Returns result
+
+    O->>O: Continue orchestration
 ```
-Orchestrator
-  ↓
-  Task("backend", "Implement API")
-  ↓ [BLOCKING - waits for completion]
-  Backend executes → Returns
-  ↓
-  Task("frontend", "Create UI")
-  ↓ [BLOCKING - waits for completion]
-  Frontend executes → Returns
-  ↓
-  Continue orchestration
-```
+
+</DiagramModal>
 
 ### State Tracking During Execution
 
@@ -90,13 +107,23 @@ for (const task of tasks) {
 ```
 
 **Timeline:**
+
+<DiagramModal title="Sequential Task Timeline">
+
+```mermaid
+gantt
+    title Sequential Execution Timeline (18 minutes total)
+    dateFormat mm:ss
+    axisFormat %M:%S
+
+    section Agents
+    Backend       :00:00, 5m
+    Frontend      :05:00, 5m
+    Tester        :10:00, 5m
+    Reviewer      :15:00, 3m
 ```
-0:00 → backend starts
-0:05 → backend completes, frontend starts
-0:10 → frontend completes, tester starts
-0:15 → tester completes, reviewer starts
-0:18 → reviewer completes, ALL DONE
-```
+
+</DiagramModal>
 
 Total: 18 minutes (sequential)
 
@@ -215,25 +242,39 @@ return "<promise>AGENTFUL_COMPLETE</promise>";
 
 **Example: Building 4 independent features**
 
-Sequential (current):
-```
-Feature A: backend (5min) → frontend (5min) → tester (5min)
-Feature B: backend (5min) → frontend (5min) → tester (5min)
-Feature C: backend (5min) → frontend (5min) → tester (5min)
-Feature D: backend (5min) → frontend (5min) → tester (5min)
+<DiagramModal title="Sequential vs Parallel Execution Comparison">
 
-Total: 60 minutes
+```mermaid
+gantt
+    title Sequential vs Parallel Execution
+    dateFormat mm:ss
+    axisFormat %M:%S
+
+    section Sequential (60min)
+    Feature A: Backend    :a1, 00:00, 5m
+    Feature A: Frontend   :a2, after a1, 5m
+    Feature A: Tester     :a3, after a2, 5m
+    Feature B: Backend    :b1, after a3, 5m
+    Feature B: Frontend   :b2, after b1, 5m
+    Feature B: Tester     :b3, after b2, 5m
+    Feature C: Backend    :c1, after b3, 5m
+    Feature C: Frontend   :c2, after c1, 5m
+    Feature C: Tester     :c3, after c2, 5m
+    Feature D: Backend    :d1, after c3, 5m
+    Feature D: Frontend   :d2, after d1, 5m
+    Feature D: Tester     :d3, after d2, 5m
+
+    section Parallel (15min)
+    Feature A: Pipeline   :pa, 00:00, 15m
+    Feature B: Pipeline   :pb, 00:00, 15m
+    Feature C: Pipeline   :pc, 00:00, 15m
+    Feature D: Pipeline   :pd, 00:00, 15m
 ```
 
-Parallel (if supported):
-```
-Feature A: [backend → frontend → tester] (15min)
-Feature B: [backend → frontend → tester] (15min)  } All running
-Feature C: [backend → frontend → tester] (15min)  } in parallel
-Feature D: [backend → frontend → tester] (15min)
+</DiagramModal>
 
-Total: 15 minutes (4x faster!)
-```
+**Sequential:** 60 minutes total
+**Parallel:** 15 minutes total (4x faster!)
 
 ### Resource Underutilization
 

@@ -11,16 +11,37 @@ agentful's architecture centers around a **hub-and-spoke model** where the Orche
 
 <DiagramModal title="Agent Architecture - Hub and Spoke Model">
 
-<div style={{
-  margin: '3rem auto',
-  maxWidth: '800px',
-  padding: '2rem',
-  background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%)',
-  borderRadius: '1rem',
-  border: '1px solid rgba(16, 185, 129, 0.2)'
-}}>
-  <img src="/architecture-diagram.svg" alt="Agent Architecture - Hub and spoke model showing orchestrator delegating to specialized agents" style={{ width: '100%', height: 'auto' }} />
-</div>
+```mermaid
+graph TD
+    Orchestrator[🎯 Orchestrator<br/>Central Coordinator]
+
+    Orchestrator --> PA[📊 Product Analyzer<br/>Requirements & Gaps]
+    Orchestrator --> Architect[🏗️ Architect<br/>Tech Stack & Design]
+    Orchestrator --> Backend[⚙️ Backend<br/>APIs & Database]
+    Orchestrator --> Frontend[🎨 Frontend<br/>UI & State]
+    Orchestrator --> Tester[🧪 Tester<br/>Tests & Coverage]
+    Orchestrator --> Reviewer[🔍 Reviewer<br/>Quality Gates]
+    Orchestrator --> Fixer[🔧 Fixer<br/>Auto-remediation]
+    Orchestrator -.-> Custom[➕ Custom Agents<br/>Domain-specific]
+
+    PA -.-> Orchestrator
+    Architect -.-> Orchestrator
+    Backend -.-> Orchestrator
+    Frontend -.-> Orchestrator
+    Tester -.-> Orchestrator
+    Reviewer -.-> Orchestrator
+    Fixer -.-> Orchestrator
+
+    style Orchestrator fill:#10b981,stroke:#059669,color:#fff
+    style PA fill:#3b82f6,stroke:#2563eb,color:#fff
+    style Architect fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style Backend fill:#06b6d4,stroke:#0891b2,color:#fff
+    style Frontend fill:#f59e0b,stroke:#d97706,color:#fff
+    style Tester fill:#ec4899,stroke:#db2777,color:#fff
+    style Reviewer fill:#14b8a6,stroke:#0d9488,color:#fff
+    style Fixer fill:#ef4444,stroke:#dc2626,color:#fff
+    style Custom fill:#64748b,stroke:#475569,color:#fff
+```
 
 </DiagramModal>
 

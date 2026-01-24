@@ -88,6 +88,26 @@ This creates:
 - `.agentful/` - Runtime state (gitignored)
 - `.claude/product/` - Product specification structure
 
+## Why agentful?
+
+Building software with AI agents is powerful, but comes with challenges:
+
+**❌ The Problems:**
+- **Generic agents** that don't understand your tech stack or patterns
+- **Manual orchestration** - you're the glue between frontend, backend, and testing agents
+- **No quality enforcement** - agents write code without validation gates
+- **Lost context** - agents forget decisions and duplicate work
+- **Local-only execution** - can't run agents on CI/CD or remote infrastructure
+
+**✅ agentful solves this by:**
+- **Auto-generating specialists** that match your exact stack and patterns
+- **Orchestrating work** across backend, frontend, testing, and review agents
+- **Enforcing quality gates** - type checking, linting, tests, coverage, security
+- **Tracking state** - remembers decisions, progress, and blocking issues
+- **Running anywhere** - local dev, CI/CD pipelines, self-hosted servers
+
+Think of it as a **pre-configured Claude Code setup** that transforms chaotic AI-assisted development into a structured, quality-enforced workflow.
+
 ## What is agentful?
 
 **agentful** is a self-hosted AI agent server that runs Claude Code agents on your infrastructure:

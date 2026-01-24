@@ -3,6 +3,8 @@ title: Git Worktrees
 description: Using agentful with git worktrees for parallel development workflows.
 ---
 
+import { DiagramModal } from '../../components/DiagramModal'
+
 # Git Worktrees
 
 agentful supports git worktrees for parallel development workflows. Each worktree maintains independent state while sharing the git repository.
@@ -15,21 +17,44 @@ Git worktrees allow you to check out multiple branches simultaneously in differe
 - **Branch-specific specs** - Product specifications in `.claude/product/` are git-tracked and branch-specific
 - **No coordination** - Worktrees don't coordinate with each other, enabling true parallel work
 
-```bash
-# Main worktree structure
-repo/
-├── .git/                        # Shared git database
-├── .agentful/                   # Main worktree state
-├── .claude/product/index.md     # Git-tracked spec
-└── src/
+<DiagramModal title="Git Worktree Structure">
 
-# Additional worktree structure
-repo-dashboard/
-├── .git -> repo/.git/worktrees/repo-dashboard/  # Links to shared git
-├── .agentful/                   # Independent state
-├── .claude/product/index.md     # Different branch = different spec
-└── src/
+```mermaid
+graph TB
+    subgraph SharedGit[Shared Git Database]
+        GitDB[(.git)]
+    end
+
+    subgraph MainWT[Main Worktree: repo/]
+        MainGit[.git] -.-> GitDB
+        MainState[.agentful/<br/>state.json<br/>completion.json]
+        MainSpec[.claude/product/<br/>index.md]
+        MainSrc[src/]
+
+        style MainState fill:#3b82f6,stroke:#2563eb,color:#fff
+        style MainSpec fill:#10b981,stroke:#059669,color:#fff
+    end
+
+    subgraph DashWT[Worktree: repo-dashboard/]
+        DashGit[.git] -.-> GitDB
+        DashState[.agentful/<br/>state.json<br/>completion.json]
+        DashSpec[.claude/product/<br/>index.md]
+        DashSrc[src/]
+
+        style DashState fill:#3b82f6,stroke:#2563eb,color:#fff
+        style DashSpec fill:#10b981,stroke:#059669,color:#fff
+    end
+
+    GitDB -->|Shared| MainGit
+    GitDB -->|Shared| DashGit
+
+    style GitDB fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style SharedGit fill:#1e293b,stroke:#475569
+    style MainWT fill:#1e293b,stroke:#475569
+    style DashWT fill:#1e293b,stroke:#475569
 ```
+
+</DiagramModal>
 
 ## Use Cases
 
