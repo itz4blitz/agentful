@@ -299,31 +299,243 @@ agentful-mcp
 
 ### HTTP
 
-Best for remote or networked MCP clients.
+Best for remote or networked MCP clients, web applications, and REST-based integrations.
 
 ```bash
-agentful-mcp --transport=http --port=3838
+# Start HTTP server
+agentful-mcp --transport=http --port=3838 --host=localhost
+
+# Start with HTTPS
+agentful-mcp --transport=http --port=3838 \
+  --https-key=/path/to/key.pem \
+  --https-cert=/path/to/cert.pem
 ```
 
 **Characteristics**:
-- REST API over HTTP
-- CORS support
-- Bearer token authentication (optional)
-- Useful for testing and debugging
+- REST API over HTTP/HTTPS
+- CORS support for web clients
+- Compression middleware
+- Security headers via Helmet
+- Request/response logging
+- Health check endpoint
+
+**Endpoints**:
+- `POST /mcp` - JSON-RPC endpoint
+- `GET /health` - Health check
+
+**Example Usage**:
+```bash
+# List available tools
+curl -X POST http://localhost:3838/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "tools/list",
+    "id": 1
+  }'
+
+# Call a tool
+curl -X POST http://localhost:3838/mcp \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jsonrpc": "2.0",
+    "method": "tools/call",
+    "params": {
+      "name": "get_status",
+      "arguments": { "executionId": "abc123" }
+    },
+    "id": 2
+  }'
+
+# Health check
+curl http://localhost:3838/health
+```
+
+**JavaScript Client Example**:
+```javascript
+async function callMCPTool(method, params = {}) {
+  const response = await fetch('http://localhost:3838/mcp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method,
+      params,
+      id: Date.now()
+    })
+  });
+  return response.json();
+}
+
+// Use it
+const tools = await callMCPTool('tools/list');
+const result = await callMCPTool('tools/call', {
+  name: 'launch_specialist',
+  arguments: {
+    agent: 'backend',
+    task: 'Implement caching layer'
+  }
+});
+```
 
 ### SSE (Server-Sent Events)
 
-Best for streaming updates and real-time progress.
+Best for streaming updates, real-time progress, and bidirectional communication.
 
 ```bash
-agentful-mcp --transport=sse --port=3838
+# Start SSE server
+agentful-mcp --transport=sse --port=3838 --host=localhost
+
+# Start with custom heartbeat interval
+agentful-mcp --transport=sse --port=3838 --heartbeat=60000
 ```
 
 **Characteristics**:
+- Bidirectional communication (SSE for server→client, POST for client→server)
 - Real-time event streaming
-- Progress updates pushed to client
+- Connection management and tracking
+- Heartbeat/keepalive mechanism (30s default)
+- Automatic reconnection support
+- Broadcast support for multiple clients
 - Lower latency than polling
-- Great for long-running tasks
+
+**Endpoints**:
+- `GET /mcp/sse` - Establish SSE connection (server→client)
+- `POST /mcp/rpc` - Send RPC requests (client→server)
+- `GET /health` - Health check with connection count
+
+**JavaScript Client Example**:
+```javascript
+// Establish SSE connection
+const eventSource = new EventSource('http://localhost:3838/mcp/sse');
+
+let connectionId = null;
+
+// Handle connection event
+eventSource.addEventListener('connected', (event) => {
+  const data = JSON.parse(event.data);
+  connectionId = data.connectionId;
+  console.log('Connected:', connectionId);
+});
+
+// Handle server messages (responses, notifications)
+eventSource.addEventListener('message', (event) => {
+  const message = JSON.parse(event.data);
+
+  if (message.result) {
+    console.log('Response:', message.result);
+  } else if (message.error) {
+    console.error('Error:', message.error);
+  } else if (message.method) {
+    console.log('Notification:', message.method, message.params);
+  }
+});
+
+// Handle heartbeat
+eventSource.addEventListener('heartbeat', (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Heartbeat:', data.timestamp);
+});
+
+// Handle connection close
+eventSource.addEventListener('close', (event) => {
+  const data = JSON.parse(event.data);
+  console.log('Server closing:', data.reason);
+  eventSource.close();
+});
+
+// Handle errors
+eventSource.onerror = (error) => {
+  console.error('SSE error:', error);
+  // EventSource will automatically try to reconnect
+};
+
+// Send RPC request (client→server)
+async function sendRPCRequest(method, params = {}) {
+  const response = await fetch('http://localhost:3838/mcp/rpc', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Connection-Id': connectionId
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      method,
+      params,
+      id: Date.now()
+    })
+  });
+
+  return response.json();
+}
+
+// Use it
+await sendRPCRequest('tools/call', {
+  name: 'launch_specialist',
+  arguments: {
+    agent: 'backend',
+    task: 'Add real-time features'
+  }
+});
+
+// The response will arrive via the SSE 'message' event
+```
+
+**Python Client Example**:
+```python
+import requests
+import sseclient
+import json
+
+# Establish SSE connection
+sse_url = 'http://localhost:3838/mcp/sse'
+rpc_url = 'http://localhost:3838/mcp/rpc'
+
+response = requests.get(sse_url, stream=True)
+client = sseclient.SSEClient(response)
+
+connection_id = None
+
+# Listen for events
+for event in client.events():
+    data = json.loads(event.data)
+
+    if event.event == 'connected':
+        connection_id = data['connectionId']
+        print(f'Connected: {connection_id}')
+
+    elif event.event == 'message':
+        print(f'Response: {data}')
+
+    elif event.event == 'heartbeat':
+        print(f'Heartbeat: {data["timestamp"]}')
+
+# Send RPC request
+def send_rpc_request(method, params=None):
+    payload = {
+        'jsonrpc': '2.0',
+        'method': method,
+        'params': params or {},
+        'id': int(time.time() * 1000)
+    }
+
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Connection-Id': connection_id
+    }
+
+    response = requests.post(rpc_url, json=payload, headers=headers)
+    return response.json()
+
+# Use it
+send_rpc_request('tools/call', {
+    'name': 'launch_specialist',
+    'arguments': {
+        'agent': 'backend',
+        'task': 'Optimize database queries'
+    }
+})
+```
 
 ## Troubleshooting
 

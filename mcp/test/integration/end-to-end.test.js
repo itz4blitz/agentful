@@ -277,7 +277,6 @@ describe('MCP End-to-End Integration', () => {
           {
             method: 'resources/read',
             params: { uri: 'agentful://unknown' }
-            }
           },
           'ReadResourceResultSchema'
         );

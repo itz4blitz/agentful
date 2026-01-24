@@ -170,14 +170,44 @@ async function main() {
       log(colors.dim, `Project: ${config.projectRoot}`);
     }
 
+    // Import transport factory
+    const { createTransport, TransportType } = await import('../core/transport-factory.js');
+
+    // Create transport based on configuration
+    const transportConfig = {
+      type: config.transport,
+      options: {
+        port: config.port,
+        host: config.host,
+        logLevel: config.logLevel
+      }
+    };
+
+    const transport = createTransport(transportConfig);
+
     // Import and start actual MCP server
     const { createMCPServer } = await import('../server.js');
-    const server = await createMCPServer({ projectRoot: config.projectRoot });
+    const server = await createMCPServer({
+      projectRoot: config.projectRoot,
+      transport
+    });
+
     await server.start();
 
     // Server is now running (stdio mode keeps process alive)
     if (config.transport !== 'stdio') {
-      log(colors.green, `MCP server running on ${config.host}:${config.port}`);
+      const protocol = transport.https ? 'https' : 'http';
+      log(colors.green, `MCP server running on ${protocol}://${config.host}:${config.port}`);
+      log(colors.dim, `Endpoints:`);
+
+      if (config.transport === 'http') {
+        log(colors.dim, `  - POST ${protocol}://${config.host}:${config.port}/mcp`);
+        log(colors.dim, `  - GET  ${protocol}://${config.host}:${config.port}/health`);
+      } else if (config.transport === 'sse') {
+        log(colors.dim, `  - GET  ${protocol}://${config.host}:${config.port}/mcp/sse`);
+        log(colors.dim, `  - POST ${protocol}://${config.host}:${config.port}/mcp/rpc`);
+        log(colors.dim, `  - GET  ${protocol}://${config.host}:${config.port}/health`);
+      }
     }
 
   } catch (error) {

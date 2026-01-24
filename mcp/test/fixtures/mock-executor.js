@@ -78,5 +78,53 @@ export class MockExecutor extends EventEmitter {
   reset() {
     this.executions.clear();
     this.removeAllListeners();
+    this.mockResults = new Map();
+    this.mockError = null;
+    this.mockDelay = 0;
+  }
+
+  /**
+   * Set a mock result for a specific operation
+   * @param {string} operation - Operation name (e.g., 'launched', 'status')
+   * @param {*} result - Result to return
+   */
+  setMockResult(operation, result) {
+    if (!this.mockResults) {
+      this.mockResults = new Map();
+    }
+    this.mockResults.set(operation, result);
+  }
+
+  /**
+   * Set a mock error to be thrown
+   * @param {Error} error - Error to throw
+   */
+  setMockError(error) {
+    this.mockError = error;
+  }
+
+  /**
+   * Set a mock delay for operations
+   * @param {number} delay - Delay in milliseconds
+   */
+  setMockDelay(delay) {
+    this.mockDelay = delay;
+  }
+
+  /**
+   * Get mock result for an operation
+   * @param {string} operation - Operation name
+   * @returns {*} Mock result
+   */
+  getMockResult(operation) {
+    if (this.mockError) {
+      throw this.mockError;
+    }
+
+    if (this.mockResults && this.mockResults.has(operation)) {
+      return this.mockResults.get(operation);
+    }
+
+    return null;
   }
 }

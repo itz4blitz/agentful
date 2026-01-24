@@ -282,11 +282,177 @@ export class AgentfulMCPServer {
 
   /**
    * Start the MCP server
+   *
+   * @param {Object} [transport] - Custom transport (optional)
    */
-  async start() {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    log('info', 'MCP server running on stdio transport');
+  async start(transport = null) {
+    // Use provided transport, or stored transport, or default to stdio
+    const activeTransport = transport || this.transport;
+
+    if (!activeTransport) {
+      // Default to stdio transport (MCP SDK)
+      const stdioTransport = new StdioServerTransport();
+      await this.server.connect(stdioTransport);
+      log('info', 'MCP server running on stdio transport');
+    } else {
+      // Use custom transport (HTTP, SSE, etc.)
+      await this._startCustomTransport(activeTransport);
+    }
+  }
+
+  /**
+   * Start server with custom transport
+   *
+   * @private
+   * @param {Object} transport - Custom transport instance
+   */
+  async _startCustomTransport(transport) {
+    // Start the transport
+    await transport.start();
+
+    // Setup message handling
+    transport.on('message', async (message, connectionId) => {
+      try {
+        // Handle JSON-RPC request
+        const handler = this._getRequestHandler(message.method);
+
+        if (!handler) {
+          transport.sendError(
+            message.id,
+            -32601, // Method not found
+            `Method not found: ${message.method}`,
+            null,
+            connectionId
+          );
+          return;
+        }
+
+        // Execute handler
+        const result = await handler({ params: message.params });
+
+        // Send response
+        transport.sendResponse(message.id, result, connectionId);
+
+      } catch (error) {
+        log('error', 'Request handler error', {
+          method: message.method,
+          error: error.message
+        });
+
+        transport.sendError(
+          message.id,
+          -32603, // Internal error
+          error.message,
+          null,
+          connectionId
+        );
+      }
+    });
+
+    // Setup error handling
+    transport.on('error', (error) => {
+      log('error', 'Transport error', { error: error.message });
+    });
+
+    transport.on('close', () => {
+      log('info', 'Transport closed');
+    });
+
+    log('info', `MCP server running on ${transport.constructor.name}`);
+  }
+
+  /**
+   * Get request handler for method
+   *
+   * @private
+   * @param {string} method - Request method
+   * @returns {Function|null} Handler function or null
+   */
+  _getRequestHandler(method) {
+    // Map MCP SDK request types to methods
+    const methodMap = {
+      'tools/list': this._handleToolsList.bind(this),
+      'tools/call': this._handleToolsCall.bind(this),
+      'resources/list': this._handleResourcesList.bind(this),
+      'resources/read': this._handleResourcesRead.bind(this)
+    };
+
+    return methodMap[method] || null;
+  }
+
+  /**
+   * Handle tools/list request
+   *
+   * @private
+   * @param {Object} request - Request object
+   * @returns {Object} Response
+   */
+  async _handleToolsList(request) {
+    const toolList = this.registries.tools.list();
+    log('debug', 'Listing tools', { count: toolList.length });
+    return { tools: toolList };
+  }
+
+  /**
+   * Handle tools/call request
+   *
+   * @private
+   * @param {Object} request - Request object
+   * @returns {Object} Response
+   */
+  async _handleToolsCall(request) {
+    const { name, arguments: args } = request.params;
+    log('info', 'Calling tool', { name, args });
+
+    const result = await this.registries.tools.call(name, args || {});
+    log('info', 'Tool executed successfully', { name });
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: typeof result === 'string' ? result : JSON.stringify(result, null, 2)
+        }
+      ]
+    };
+  }
+
+  /**
+   * Handle resources/list request
+   *
+   * @private
+   * @param {Object} request - Request object
+   * @returns {Object} Response
+   */
+  async _handleResourcesList(request) {
+    const resourceList = this.registries.resources.list();
+    log('debug', 'Listing resources', { count: resourceList.length });
+    return { resources: resourceList };
+  }
+
+  /**
+   * Handle resources/read request
+   *
+   * @private
+   * @param {Object} request - Request object
+   * @returns {Object} Response
+   */
+  async _handleResourcesRead(request) {
+    const { uri } = request.params;
+    log('info', 'Reading resource', { uri });
+
+    const resource = await this.registries.resources.read(uri);
+    log('info', 'Resource read successfully', { uri });
+
+    return {
+      contents: [
+        {
+          uri: resource.uri,
+          mimeType: resource.mimeType,
+          text: resource.contents.toString()
+        }
+      ]
+    };
   }
 
   /**
@@ -303,6 +469,7 @@ export class AgentfulMCPServer {
  * @param {Object} options - Server options
  * @param {string} options.projectRoot - Project root directory
  * @param {Object} options.executor - Agent executor (optional, for testing)
+ * @param {Object} options.transport - Transport instance (optional)
  * @returns {Promise<AgentfulMCPServer>} Server instance
  */
 export async function createMCPServer(options = {}) {
@@ -329,6 +496,11 @@ export async function createMCPServer(options = {}) {
   // Override executor for testing
   if (options.executor) {
     server.executor = options.executor;
+  }
+
+  // Store transport for later use
+  if (options.transport) {
+    server.transport = options.transport;
   }
 
   return server;
