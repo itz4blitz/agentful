@@ -44,6 +44,16 @@ export default defineConfig({
         ],
       },
       {
+        text: 'Architecture',
+        items: [
+          { text: 'Distributed MCP', link: '/architecture/distributed-mcp' },
+          { text: 'HTTP/SSE Transport', link: '/architecture/http-transport' },
+          { text: 'OAuth 2.1 Flow', link: '/architecture/oauth-flow' },
+          { text: 'Client Pool', link: '/architecture/client-pool' },
+          { text: 'Work Distribution', link: '/architecture/work-distribution' },
+        ],
+      },
+      {
         text: 'Agents',
         items: [
           { text: 'Agent Overview', link: '/agents' },
