@@ -35,6 +35,17 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node bin/hooks/product-spec-watcher.js",
+            "timeout": 3,
+            "description": "Watch for product spec changes and auto-trigger generation"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
             "command": "node bin/hooks/analyze-trigger.js",
             "timeout": 3,
             "description": "Check if file changes warrant analysis"

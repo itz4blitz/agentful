@@ -9,7 +9,105 @@ This command initiates the structured product development loop with human checkp
 
 ## Startup Sequence
 
-### 0. State File Validation
+### 0. First-Run Detection
+
+Check if this is the user's first time running agentful:
+
+```javascript
+const isFirstRun = !exists('.agentful/state.json') &&
+                  !exists('.agentful/architecture.json');
+
+if (isFirstRun) {
+  const hasProductSpec = exists('.claude/product/index.md') &&
+                        Read('.claude/product/index.md').length > 200;
+
+  if (!hasProductSpec) {
+    // No product spec - guide user to setup
+    const response = AskUserQuestion({
+      question: `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Welcome to agentful!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This is your first time running agentful in this project.
+
+To get started, I need to understand what you're building.
+
+Would you like to:
+`,
+      options: [
+        'Use guided setup (/agentful-init) - 5 minutes',
+        'Manually edit .claude/product/index.md first',
+        'Skip setup and explore agentful commands'
+      ]
+    });
+
+    if (response.includes('guided setup')) {
+      console.log(`
+Launching guided setup...
+
+This will ask 7 quick questions to understand your product,
+then automatically generate specialized agents for your stack.
+`);
+      // User should run /agentful-init
+      // SlashCommand('/agentful-init');
+      return;
+    } else if (response.includes('Manually edit')) {
+      console.log(`
+Please edit .claude/product/index.md with:
+- Product description
+- Key features
+- Business domains
+- Priority levels
+
+Template: https://github.com/itz4blitz/agentful#product-spec
+
+When done, run /agentful-start again.
+`);
+      return;
+    } else {
+      // Skip setup - show help
+      console.log(`
+agentful commands:
+  /agentful-init     - Guided setup (recommended for first-time)
+  /agentful-product  - Analyze product requirements
+  /agentful-status   - Show progress
+  /agentful          - Quick reference
+
+Edit .claude/product/index.md when ready to start development.
+`);
+      return;
+    }
+  } else {
+    // Has product spec but no agents - generate them
+    console.log(`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   First Run Detected
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+I found your product specification at .claude/product/index.md
+
+Before starting development, let me generate specialized agents
+for your tech stack and domains.
+
+This takes about 30-60 seconds...
+`);
+
+    // Auto-trigger /agentful-generate
+    // SlashCommand('/agentful-generate');
+
+    console.log(`
+After agent generation completes, run /agentful-start again
+to begin development.
+`);
+    return;
+  }
+}
+
+// Not first run - continue with normal startup
+```
+
+### 1. State File Validation
 
 Before processing any state files, validate their existence and structure. This prevents corrupted or missing state from causing failures.
 
