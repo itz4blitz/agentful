@@ -89,6 +89,29 @@ agentful serve
 
 See [deployment docs](https://agentful.app/remote-execution) for Tailscale, HMAC auth, and Oracle Cloud setup.
 
+## MCP Server
+
+Use agentful with any MCP-compatible AI tool (Claude Code, Kiro, Aider):
+
+```json
+{
+  "mcpServers": {
+    "agentful": {
+      "command": "npx",
+      "args": ["-y", "@itz4blitz/agentful-mcp"]
+    }
+  }
+}
+```
+
+**Features**:
+- Cross-tool compatibility (works with any MCP client)
+- Launch specialized agents via MCP tools
+- Access product specs and state via MCP resources
+- Real-time execution status updates
+
+See [MCP Integration Guide](./docs/mcp-integration.md) for setup with different AI tools.
+
 ## CI/CD Integration
 
 Works with any platform via HTTP API or templates:
@@ -101,6 +124,7 @@ Works with any platform via HTTP API or templates:
 ## Documentation
 
 - **Full docs**: [agentful.app](https://agentful.app)
+- **MCP Integration**: [MCP Server Guide](./mcp/README.md) | [Integration Guide](./docs/mcp-integration.md)
 - **Architecture**: [Agent system](https://agentful.app/concepts/architecture)
 - **Agents**: [Orchestrator](https://agentful.app/agents/orchestrator), [Backend](https://agentful.app/agents/backend), [Frontend](https://agentful.app/agents/frontend), etc.
 - **Skills**: [Product tracking](https://agentful.app/skills/product-tracking), [Validation](https://agentful.app/skills/validation), etc.

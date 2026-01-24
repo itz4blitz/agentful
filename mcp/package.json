@@ -1,0 +1,32 @@
+{
+  "name": "@agentful/mcp-server",
+  "version": "1.0.0",
+  "description": "Model Context Protocol server for agentful - expose agentful capabilities to any MCP client",
+  "type": "module",
+  "main": "server.js",
+  "bin": {
+    "agentful-mcp": "./server.js"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "agentful",
+    "ai-agents",
+    "code-generation"
+  ],
+  "author": "agentful",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {}
+}

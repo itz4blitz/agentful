@@ -102,6 +102,7 @@ function showHelp() {
   console.log(`  ${colors.green}ci${colors.reset}           Generate prompts for claude-code-action`);
   console.log(`  ${colors.green}serve${colors.reset}        Start remote execution server`);
   console.log(`  ${colors.green}remote${colors.reset}       Configure and execute agents on remote servers`);
+  console.log(`  ${colors.green}mcp${colors.reset}          Start MCP (Model Context Protocol) server`);
   console.log(`  ${colors.green}help${colors.reset}         Show this help message`);
   console.log(`  ${colors.green}--version${colors.reset}    Show version`);
   console.log('');
@@ -146,6 +147,9 @@ function showHelp() {
   console.log('');
   console.log(`  ${colors.dim}# Execute agent on remote${colors.reset}`);
   console.log(`  ${colors.bright}agentful remote exec backend "Fix memory leak" --remote=prod${colors.reset}`);
+  console.log('');
+  console.log(`  ${colors.dim}# Start MCP server (for Claude Code, Kiro, Aider)${colors.reset}`);
+  console.log(`  ${colors.bright}agentful mcp${colors.reset}`);
   console.log('');
   console.log('AFTER INIT:');
   console.log(`  1. ${colors.bright}Run claude${colors.reset} to start Claude Code`);
@@ -1371,6 +1375,108 @@ async function serve(args) {
 }
 
 /**
+ * MCP command - Start MCP server
+ * @param {string[]} args - Command arguments
+ */
+async function mcp(args) {
+  const flags = parseFlags(args);
+
+  // Handle --help flag
+  if (flags.help || flags.h) {
+    showBanner();
+    log(colors.bright, 'Agentful MCP Server');
+    console.log('');
+    log(colors.dim, 'Start a Model Context Protocol server for AI assistants.');
+    console.log('');
+    log(colors.bright, 'USAGE:');
+    console.log(`  ${colors.green}agentful mcp${colors.reset} ${colors.dim}[options]${colors.reset}`);
+    console.log('');
+    log(colors.bright, 'OPTIONS:');
+    console.log(`  ${colors.yellow}--transport=<mode>${colors.reset}    Transport mode: stdio|http|sse (default: stdio)`);
+    console.log(`  ${colors.yellow}--port=<number>${colors.reset}       HTTP/SSE server port (default: 3838)`);
+    console.log(`  ${colors.yellow}--host=<address>${colors.reset}      HTTP/SSE bind address (default: localhost)`);
+    console.log(`  ${colors.yellow}--help, -h${colors.reset}            Show this help`);
+    console.log('');
+    log(colors.bright, 'EXAMPLES:');
+    console.log('');
+    log(colors.dim, '  # Start stdio server (for Claude Code, Kiro)');
+    console.log(`  ${colors.green}agentful mcp${colors.reset}`);
+    console.log('');
+    log(colors.dim, '  # Start HTTP server');
+    console.log(`  ${colors.green}agentful mcp --transport=http --port=3838${colors.reset}`);
+    console.log('');
+    log(colors.bright, 'CLAUDE CODE CONFIGURATION:');
+    console.log('');
+    console.log('  Add to ~/.config/claude-code/config.json:');
+    console.log('');
+    console.log('  {');
+    console.log('    "mcpServers": {');
+    console.log('      "agentful": {');
+    console.log('        "command": "agentful",');
+    console.log('        "args": ["mcp"]');
+    console.log('      }');
+    console.log('    }');
+    console.log('  }');
+    console.log('');
+    process.exit(0);
+  }
+
+  // Build args for mcp-server.js
+  const mcpArgs = [];
+
+  if (flags.transport) {
+    mcpArgs.push(`--transport=${flags.transport}`);
+  }
+
+  if (flags.port) {
+    mcpArgs.push(`--port=${flags.port}`);
+  }
+
+  if (flags.host) {
+    mcpArgs.push(`--host=${flags.host}`);
+  }
+
+  if (flags['log-level']) {
+    mcpArgs.push(`--log-level=${flags['log-level']}`);
+  }
+
+  // Get path to mcp-server.js
+  const mcpServerPath = path.join(__dirname, '../mcp/bin/mcp-server.js');
+
+  try {
+    // Import dynamically to execute
+    const { spawn } = await import('child_process');
+
+    // Spawn MCP server process
+    const child = spawn(process.argv[0], [mcpServerPath, ...mcpArgs], {
+      stdio: 'inherit',
+      cwd: process.cwd(),
+    });
+
+    // Handle child process exit
+    child.on('exit', (code) => {
+      process.exit(code || 0);
+    });
+
+    // Handle parent process termination
+    process.on('SIGINT', () => {
+      child.kill('SIGINT');
+    });
+
+    process.on('SIGTERM', () => {
+      child.kill('SIGTERM');
+    });
+
+  } catch (error) {
+    log(colors.red, `Failed to start MCP server: ${error.message}`);
+    if (flags.verbose) {
+      console.error(error.stack);
+    }
+    process.exit(1);
+  }
+}
+
+/**
  * CI command - Generate prompts for claude-code-action
  */
 async function ci(args) {
@@ -1537,6 +1643,10 @@ async function main() {
 
   case 'remote':
     await remote(args.slice(1));
+    break;
+
+  case 'mcp':
+    await mcp(args.slice(1));
     break;
 
   case 'help':

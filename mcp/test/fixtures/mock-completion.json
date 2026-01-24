@@ -1,0 +1,13 @@
+{
+  "totalFeatures": 10,
+  "completedFeatures": 4,
+  "inProgressFeatures": 2,
+  "pendingFeatures": 4,
+  "completionPercentage": 40,
+  "featuresByStatus": {
+    "completed": ["landing-page", "user-model", "database-setup", "basic-routing"],
+    "in_progress": ["auth", "api"],
+    "pending": ["payments", "notifications", "admin-panel", "analytics"]
+  },
+  "lastUpdated": "2024-01-23T12:00:00Z"
+}

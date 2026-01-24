@@ -47,3 +47,4 @@ coverage/
 .env.*.local
 .test-health-check-*/
 .test-health-check-*
+.claude/research/

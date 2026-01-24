@@ -1,0 +1,334 @@
+#!/usr/bin/env node
+
+/**
+ * Example usage of MCP resources
+ * Demonstrates how to read and interact with agentful resources
+ */
+
+import { readResource, listResources, watchResource, createAdapters } from './index.js';
+
+// ANSI colors for output
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  dim: '\x1b[2m',
+  cyan: '\x1b[36m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m'
+};
+
+function log(color, ...args) {
+  console.log(color, ...args, colors.reset);
+}
+
+/**
+ * Example 1: List all available resources
+ */
+async function listAllResources() {
+  log(colors.bright, '\n=== Example 1: List Available Resources ===\n');
+
+  const resources = listResources();
+
+  resources.forEach(resource => {
+    log(colors.cyan, `${resource.name}`);
+    log(colors.dim, `  URI: ${resource.uri}`);
+    log(colors.dim, `  Type: ${resource.mimeType}`);
+    log(colors.dim, `  Description: ${resource.description}`);
+    console.log('');
+  });
+}
+
+/**
+ * Example 2: Read state resource
+ */
+async function readStateResource() {
+  log(colors.bright, '\n=== Example 2: Read Current State ===\n');
+
+  const result = await readResource('agentful://state/current');
+  const content = result.contents[0];
+
+  if (content.mimeType === 'application/json') {
+    const data = JSON.parse(content.text);
+
+    if (data.error) {
+      log(colors.yellow, `Error: ${data.error}`);
+      log(colors.dim, `Hint: ${data.hint}`);
+    } else {
+      log(colors.green, `Status: ${data.status}`);
+      log(colors.dim, `Initialized: ${data.initialized}`);
+      log(colors.dim, `Agents: ${data.agentCount} (${data.agents.join(', ')})`);
+      log(colors.dim, `Skills: ${data.skillCount} (${data.skills.join(', ')})`);
+    }
+  }
+
+  console.log('');
+}
+
+/**
+ * Example 3: Read completion tracking
+ */
+async function readCompletionResource() {
+  log(colors.bright, '\n=== Example 3: Read Completion Tracking ===\n');
+
+  const result = await readResource('agentful://completion');
+  const content = result.contents[0];
+  const data = JSON.parse(content.text);
+
+  if (data.error) {
+    log(colors.yellow, `Error: ${data.error}`);
+  } else {
+    log(colors.green, `Overall Progress: ${data.overallProgress}%`);
+    console.log('');
+
+    log(colors.dim, 'Summary:');
+    log(colors.dim, `  Domains: ${data.summary.domains.completed}/${data.summary.domains.total} (${data.summary.domains.progress}%)`);
+    log(colors.dim, `  Features: ${data.summary.features.completed}/${data.summary.features.total} (${data.summary.features.progress}%)`);
+    log(colors.dim, `  Subtasks: ${data.summary.subtasks.completed}/${data.summary.subtasks.total} (${data.summary.subtasks.progress}%)`);
+    log(colors.dim, `  Validation Gates: ${data.summary.validationGates.passing}/${data.summary.validationGates.total} (${data.summary.validationGates.progress}%)`);
+  }
+
+  console.log('');
+}
+
+/**
+ * Example 4: Read pending decisions
+ */
+async function readDecisionsResource() {
+  log(colors.bright, '\n=== Example 4: Read Pending Decisions ===\n');
+
+  const result = await readResource('agentful://decisions');
+  const content = result.contents[0];
+  const data = JSON.parse(content.text);
+
+  if (data.error) {
+    log(colors.yellow, `Error: ${data.error}`);
+  } else {
+    log(colors.green, `Pending Decisions: ${data.summary.total}`);
+    console.log('');
+
+    if (data.summary.total > 0) {
+      log(colors.dim, 'By Priority:');
+      log(colors.dim, `  Critical: ${data.summary.critical}`);
+      log(colors.dim, `  High: ${data.summary.high}`);
+      log(colors.dim, `  Medium: ${data.summary.medium}`);
+      log(colors.dim, `  Low: ${data.summary.low}`);
+      console.log('');
+
+      log(colors.dim, 'Recent Decisions:');
+      data.decisions.slice(0, 3).forEach(decision => {
+        log(colors.dim, `  [${decision.priority}] ${decision.question || decision.id}`);
+        log(colors.dim, `    Age: ${decision.age?.human || 'unknown'}`);
+      });
+    } else {
+      log(colors.dim, 'No pending decisions');
+    }
+  }
+
+  console.log('');
+}
+
+/**
+ * Example 5: Read agents list
+ */
+async function readAgentsResource() {
+  log(colors.bright, '\n=== Example 5: Read Available Agents ===\n');
+
+  const result = await readResource('agentful://agents/list');
+  const content = result.contents[0];
+  const data = JSON.parse(content.text);
+
+  if (data.error) {
+    log(colors.yellow, `Error: ${data.error}`);
+  } else {
+    log(colors.green, `Total Agents: ${data.summary.total}`);
+    console.log('');
+
+    log(colors.dim, 'By Type:');
+    log(colors.dim, `  Core: ${data.summary.core} (${data.categorized.core.join(', ')})`);
+    log(colors.dim, `  Domain: ${data.summary.domain} (${data.categorized.domain.join(', ') || 'none'})`);
+    log(colors.dim, `  Custom: ${data.summary.custom} (${data.categorized.custom.join(', ') || 'none'})`);
+    console.log('');
+
+    log(colors.dim, 'Generated by analysis:');
+    const generated = data.agents.filter(a => a.generated);
+    if (generated.length > 0) {
+      generated.forEach(agent => {
+        log(colors.dim, `  - ${agent.name} (${agent.type})`);
+      });
+    } else {
+      log(colors.dim, '  None yet. Run /agentful-generate to analyze codebase.');
+    }
+  }
+
+  console.log('');
+}
+
+/**
+ * Example 6: Read product specification
+ */
+async function readProductSpecResource() {
+  log(colors.bright, '\n=== Example 6: Read Product Specification ===\n');
+
+  const result = await readResource('agentful://product/spec');
+  const content = result.contents[0];
+
+  if (content.mimeType === 'text/markdown') {
+    log(colors.green, 'Product Spec Found');
+    log(colors.dim, `Structure: ${content.metadata?.structure || 'unknown'}`);
+    console.log('');
+
+    // Show first 10 lines
+    const lines = content.text.split('\n').slice(0, 10);
+    log(colors.dim, 'Preview (first 10 lines):');
+    lines.forEach(line => {
+      log(colors.dim, `  ${line}`);
+    });
+    log(colors.dim, '  ...');
+  } else {
+    const data = JSON.parse(content.text);
+    log(colors.yellow, `Error: ${data.error}`);
+    log(colors.dim, `Hint: ${data.hint}`);
+  }
+
+  console.log('');
+}
+
+/**
+ * Example 7: Read specific agent
+ */
+async function readSpecificAgent() {
+  log(colors.bright, '\n=== Example 7: Read Specific Agent ===\n');
+
+  const agentName = 'backend';
+  const result = await readResource(`agentful://agents/${agentName}`);
+  const content = result.contents[0];
+
+  if (content.mimeType === 'text/markdown') {
+    log(colors.green, `Agent: ${agentName}`);
+    log(colors.dim, `Path: ${content.metadata?.path || 'unknown'}`);
+    console.log('');
+
+    // Show first 15 lines
+    const lines = content.text.split('\n').slice(0, 15);
+    log(colors.dim, 'Preview (first 15 lines):');
+    lines.forEach(line => {
+      log(colors.dim, `  ${line}`);
+    });
+    log(colors.dim, '  ...');
+  } else {
+    const data = JSON.parse(content.text);
+    log(colors.yellow, `Error: ${data.error}`);
+  }
+
+  console.log('');
+}
+
+/**
+ * Example 8: Watch resource for changes
+ */
+async function watchResourceExample() {
+  log(colors.bright, '\n=== Example 8: Watch Resource for Changes ===\n');
+  log(colors.dim, 'Watching agentful://state/current for 15 seconds...\n');
+
+  let updateCount = 0;
+
+  const unwatch = watchResource(
+    'agentful://state/current',
+    (result) => {
+      updateCount++;
+      const content = result.contents[0];
+      const data = JSON.parse(content.text);
+
+      log(colors.cyan, `[Update #${updateCount}] State changed`);
+      log(colors.dim, `  Agents: ${data.agentCount}`);
+      log(colors.dim, `  Skills: ${data.skillCount}`);
+      log(colors.dim, `  Read at: ${data.readAt}`);
+      console.log('');
+    },
+    { interval: 3000 } // Check every 3 seconds
+  );
+
+  // Watch for 15 seconds, then stop
+  setTimeout(() => {
+    unwatch();
+    log(colors.green, `Stopped watching. Total updates: ${updateCount}`);
+    console.log('');
+  }, 15000);
+}
+
+/**
+ * Example 9: Direct adapter usage
+ */
+async function directAdapterUsage() {
+  log(colors.bright, '\n=== Example 9: Direct Adapter Usage ===\n');
+
+  const adapters = createAdapters();
+
+  // Read multiple sources
+  const [state, completion, decisions] = await Promise.all([
+    adapters.state.readState(),
+    adapters.completion.readCompletion(),
+    adapters.decisions.readDecisions()
+  ]);
+
+  log(colors.green, 'Direct adapter reads (parallel):');
+  log(colors.dim, `  State: ${state.status || state.error}`);
+  log(colors.dim, `  Completion: ${completion.overallProgress}%`);
+  log(colors.dim, `  Decisions: ${decisions.decisions?.length || 0} pending`);
+  console.log('');
+
+  // Demonstrate cache
+  log(colors.dim, 'Reading state again (should be cached)...');
+  const stateAgain = await adapters.state.readState();
+  log(colors.dim, `  Same result: ${JSON.stringify(state) === JSON.stringify(stateAgain)}`);
+  console.log('');
+
+  // Invalidate cache
+  log(colors.dim, 'Invalidating cache...');
+  adapters.state.invalidateCache();
+  log(colors.dim, 'Cache cleared');
+  console.log('');
+}
+
+/**
+ * Main execution
+ */
+async function main() {
+  try {
+    // Run all examples
+    await listAllResources();
+    await readStateResource();
+    await readCompletionResource();
+    await readDecisionsResource();
+    await readAgentsResource();
+    await readProductSpecResource();
+    await readSpecificAgent();
+    await directAdapterUsage();
+
+    // Uncomment to run watch example (takes 15 seconds)
+    // await watchResourceExample();
+
+    log(colors.green, '\n✓ All examples completed successfully\n');
+  } catch (error) {
+    console.error('Error running examples:', error.message);
+    console.error(error.stack);
+    process.exit(1);
+  }
+}
+
+// Run if executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main();
+}
+
+export {
+  listAllResources,
+  readStateResource,
+  readCompletionResource,
+  readDecisionsResource,
+  readAgentsResource,
+  readProductSpecResource,
+  readSpecificAgent,
+  watchResourceExample,
+  directAdapterUsage
+};

@@ -16,10 +16,11 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
-      include: ['lib/**/*.js', 'bin/**/*.js'],
+      include: ['lib/**/*.js', 'bin/**/*.js', 'mcp/**/*.js'],
       exclude: [
         'node_modules/**',
         'test/**',
+        'mcp/test/**',
         'docs/**',
         'template/**',
         '.claude/**',
@@ -36,7 +37,9 @@ export default defineConfig({
     // Test file patterns
     include: [
       'test/**/*.test.js',
-      'test/**/*.spec.js'
+      'test/**/*.spec.js',
+      'mcp/test/**/*.test.js',
+      'mcp/test/**/*.spec.js'
     ],
 
     // Setup files
@@ -53,7 +56,8 @@ export default defineConfig({
     // Aliases for imports
     alias: {
       '@': path.resolve(__dirname, './lib'),
-      '@test': path.resolve(__dirname, './test')
+      '@test': path.resolve(__dirname, './test'),
+      '@mcp': path.resolve(__dirname, './mcp')
     },
 
     // Isolation
@@ -71,7 +75,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './lib'),
-      '@test': path.resolve(__dirname, './test')
+      '@test': path.resolve(__dirname, './test'),
+      '@mcp': path.resolve(__dirname, './mcp')
     }
   }
 });

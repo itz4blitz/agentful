@@ -1,0 +1,121 @@
+{
+  "timestamp": "2026-01-23T21:30:00Z",
+  "duration": 3,
+  "summary": {
+    "total": 44,
+    "passed": 44,
+    "failed": 0,
+    "successRate": 100.0
+  },
+  "suites": {
+    "tools": {
+      "file": "test-results-tools.json",
+      "tests": 24,
+      "passed": 24,
+      "failed": 0,
+      "coverage": [
+        {
+          "tool": "launch_specialist",
+          "tests": 3,
+          "scenarios": ["valid", "missing_agent", "unknown_agent"]
+        },
+        {
+          "tool": "get_status",
+          "tests": 2,
+          "scenarios": ["valid", "extra_params"]
+        },
+        {
+          "tool": "update_progress",
+          "tests": 3,
+          "scenarios": ["valid", "missing_required", "invalid_percent"]
+        },
+        {
+          "tool": "run_validation",
+          "tests": 3,
+          "scenarios": ["all_gates", "single_gate", "unknown_gate"]
+        },
+        {
+          "tool": "resolve_decision",
+          "tests": 3,
+          "scenarios": ["valid", "missing_id", "missing_choice"]
+        },
+        {
+          "tool": "analyze_architecture",
+          "tests": 3,
+          "scenarios": ["depth_1", "depth_3", "invalid_depth"]
+        },
+        {
+          "tool": "generate_agents",
+          "tests": 3,
+          "scenarios": ["no_override", "with_override", "wrong_type"]
+        },
+        {
+          "tool": "manage_state",
+          "tests": 4,
+          "scenarios": ["get", "set", "reset", "unknown_operation"]
+        }
+      ]
+    },
+    "resources": {
+      "file": "test-results-resources.json",
+      "tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "coverage": [
+        {
+          "resource": "agentful://product/spec",
+          "status": "pass"
+        },
+        {
+          "resource": "agentful://state/current",
+          "status": "pass"
+        },
+        {
+          "resource": "agentful://completion",
+          "status": "pass"
+        },
+        {
+          "resource": "agentful://decisions",
+          "status": "pass"
+        },
+        {
+          "resource": "agentful://agents/list",
+          "status": "pass"
+        },
+        {
+          "resource": "agentful://agents/{name}",
+          "status": "pass",
+          "note": "Template URI tested with valid and invalid names"
+        }
+      ]
+    },
+    "errors": {
+      "file": "test-results-errors.json",
+      "tests": 10,
+      "passed": 10,
+      "failed": 0,
+      "scenarios": [
+        "unknown_tool",
+        "unknown_resource",
+        "invalid_json",
+        "missing_required_param",
+        "invalid_param_type",
+        "empty_args",
+        "schema_violation",
+        "missing_uri",
+        "invalid_method",
+        "extra_params"
+      ]
+    }
+  },
+  "environment": {
+    "node_version": "v22.0.0+",
+    "mcp_server": "/Users/blitz/Development/agentful/mcp/bin/mcp-server.js",
+    "inspector_version": "@modelcontextprotocol/inspector@latest"
+  },
+  "execution": {
+    "parallel": false,
+    "isolation": "per_test",
+    "retries": 0
+  }
+}

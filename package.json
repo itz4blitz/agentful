@@ -4,13 +4,18 @@
   "description": "Pre-configured AI toolkit with self-hosted execution - works with any LLM, any tech stack, any platform.",
   "type": "module",
   "bin": {
-    "agentful": "bin/cli.js"
+    "agentful": "bin/cli.js",
+    "agentful-mcp": "mcp/bin/mcp-server.js",
+    "agentful-mcp-stdio": "mcp/bin/mcp-stdio.js"
   },
   "scripts": {
     "init": "node bin/cli.js init",
     "test": "vitest run",
     "test:unit": "vitest run test/unit",
     "test:validation": "vitest run test/validation",
+    "test:mcp": "vitest run mcp/test",
+    "test:mcp:watch": "vitest mcp/test",
+    "test:mcp:coverage": "vitest run --coverage mcp/test",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
@@ -28,6 +33,7 @@
   "files": [
     "bin/",
     "lib/",
+    "mcp/",
     "template/",
     "version.json",
     "LICENSE"
