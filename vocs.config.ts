@@ -2,10 +2,11 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
   title: 'agentful',
-  description: 'Local-first AI development toolkit for Claude Code. Works with any LLM, any tech stack, any platform.',
+  description: 'Pre-configured development toolkit for Claude Code. Orchestrates specialized agents in parallel with inter-agent communication to build features from product specs.',
 
   logoUrl: '/logo.svg',
   iconUrl: '/logo-icon.svg',
+  ogImageUrl: '/logo-icon.svg',
 
   editLink: {
     pattern: 'https://github.com/itz4blitz/agentful/edit/main/docs/:path',

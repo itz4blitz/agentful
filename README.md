@@ -14,22 +14,22 @@
 [![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289da)](https://discord.gg/SMDvJXUe)
 [![Documentation](https://img.shields.io/badge/docs-agentful.app-blue)](https://agentful.app)
 
-**AI agent toolkit for autonomous product development with Claude Code**
+**Pre-configured development toolkit for Claude Code**
+
+Orchestrates specialized agents in parallel with inter-agent communication to build features from product specs.
 
 [Quick Start](#quick-start) • [Documentation](https://agentful.app) • [Discord](https://discord.gg/SMDvJXUe)
 
 </div>
 
-**The Swiss Army Knife of AI Agents** - Works with any LLM (Claude, GLM, DeepSeek, Ollama), any tech stack, any platform. Self-hosted or cloud.
-
 ## Features
 
-- **8 specialized agents** - orchestrator, architect, backend, frontend, tester, reviewer, fixer, product-analyzer
-- **6 quality gates** - types, tests, coverage, lint, security, dead code
-- **Auto-generated domain agents** - learns your codebase patterns and conventions
-- **Self-hosted execution** - run agents on your infrastructure (optional)
-- **Multi-platform CI/CD** - GitHub Actions, GitLab, Jenkins, or any HTTP client
-- **Product-driven workflow** - define specs, agents build features
+- **Parallel execution** - Multiple agents work simultaneously in git worktrees (frontend + backend + tests running concurrently)
+- **Three-tier architecture** - Core agents (pre-built), domain agents (generated for your stack), ephemeral agents (task-specific)
+- **Shared skills** - Reusable capabilities like validation, testing, and research across all agents
+- **Quality gates** - Automated validation for every change (types, lint, tests, coverage, security, dead code)
+- **Tech stack agnostic** - Works with any language/framework
+- **Human checkpoints** - You decide, agents execute
 
 ## Quick Start
 
@@ -71,70 +71,22 @@ https://agentful.app/configure
 | Command | Description |
 |---------|-------------|
 | `/agentful-product` | Create and analyze product specifications |
+| `/agentful-generate` | Generate domain-specific agents for your stack |
 | `/agentful-start` | Start autonomous development |
 | `/agentful-status` | View completion % and current work |
 | `/agentful-validate` | Run quality checks |
 | `/agentful-decide` | Answer blocking decisions |
-| `/agentful-analyze` | Generate domain-specific agents |
-
-## Self-Hosted Remote Execution
-
-Run agents on your infrastructure:
-
-```bash
-# Deploy to Oracle Cloud free tier ($0/month)
-agentful serve --auth=tailscale
-
-# Or use SSH tunnel for local dev
-ssh -L 3000:localhost:3000 your-server
-agentful serve
-```
-
-See [deployment docs](https://agentful.app/remote-execution) for Tailscale, HMAC auth, and Oracle Cloud setup.
-
-## MCP Server
-
-Use agentful with any MCP-compatible AI tool (Claude Code, Kiro, Aider):
-
-```json
-{
-  "mcpServers": {
-    "agentful": {
-      "command": "npx",
-      "args": ["-y", "@itz4blitz/agentful-mcp"]
-    }
-  }
-}
-```
-
-**Features**:
-- Cross-tool compatibility (works with any MCP client)
-- Launch specialized agents via MCP tools
-- Access product specs and state via MCP resources
-- Real-time execution status updates
-
-See [MCP Integration Guide](./docs/mcp-integration.md) for setup with different AI tools.
-
-## CI/CD Integration
-
-Works with any platform via HTTP API or templates:
-
-- [GitHub Actions](https://agentful.app/ci-integration#github-actions)
-- [GitLab CI](https://agentful.app/ci-integration#gitlab-ci)
-- [Jenkins](https://agentful.app/ci-integration#jenkins)
-- [HTTP API](https://agentful.app/ci-integration#http-api) (CircleCI, Bitbucket, Travis, etc.)
 
 ## Documentation
 
 - **Full docs**: [agentful.app](https://agentful.app)
-- **MCP Integration**: [MCP Server Guide](./mcp/README.md) | [Integration Guide](./docs/mcp-integration.md)
-- **Architecture**: [Agent system](https://agentful.app/concepts/architecture)
-- **Agents**: [Orchestrator](https://agentful.app/agents/orchestrator), [Backend](https://agentful.app/agents/backend), [Frontend](https://agentful.app/agents/frontend), etc.
-- **Skills**: [Product tracking](https://agentful.app/skills/product-tracking), [Validation](https://agentful.app/skills/validation), etc.
+- **Architecture**: [Three-tier system](https://agentful.app/concepts/architecture) | [Background agents](https://agentful.app/concepts/background-agents)
+- **Agents**: [Orchestrator](https://agentful.app/agents/orchestrator), [Backend](https://agentful.app/agents/backend), [Frontend](https://agentful.app/agents/frontend), [Reviewer](https://agentful.app/agents/reviewer), [Fixer](https://agentful.app/agents/fixer)
+- **Skills**: [Validation](https://agentful.app/skills/validation), [Testing](https://agentful.app/skills/testing), [Research](https://agentful.app/skills/research), [Product Planning](https://agentful.app/skills/product-planning)
 
 ## Requirements
 
-- Claude Code ([code.anthropic.com](https://code.anthropic.com))
+- [Claude Code](https://claude.ai/download)
 - Node.js 22+
 - Git
 
