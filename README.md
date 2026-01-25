@@ -40,13 +40,12 @@ npx @itz4blitz/agentful init
 # 2. Start Claude Code
 claude
 
-# 3. Define product spec (interactive)
-/agentful-product
+# 3. Define product spec (choose one):
+/agentful-init       # Interactive 7-question wizard (recommended for new users)
+# OR
+/agentful-product    # Manual spec creation/analysis
 
-# 4. Generate specialized agents
-/agentful-generate
-
-# 5. Start development
+# 4. Start development (auto-generates agents on first run)
 /agentful-start
 ```
 
@@ -70,6 +69,7 @@ https://agentful.app/configure
 
 | Command | Description |
 |---------|-------------|
+| `/agentful-init` | Interactive onboarding - 7 guided questions |
 | `/agentful-product` | Create and analyze product specifications |
 | `/agentful-generate` | Generate domain-specific agents for your stack |
 | `/agentful-start` | Start autonomous development |

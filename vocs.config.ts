@@ -1,7 +1,10 @@
 import { defineConfig } from 'vocs'
+import { readFileSync } from 'fs'
+
+const version = JSON.parse(readFileSync('./version.json', 'utf-8')).version
 
 export default defineConfig({
-  title: 'agentful',
+  title: `agentful v${version}`,
   description: 'Pre-configured development toolkit for Claude Code. Orchestrates specialized agents in parallel with inter-agent communication to build features from product specs.',
 
   logoUrl: '/logo.svg',

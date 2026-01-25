@@ -179,24 +179,26 @@ Task management for distributed teams
 3. Task assignment (MEDIUM)
 ```
 
-### 2. Generate Specialized Agents
-
-Run `/agentful-generate` to analyze your codebase:
-
-**For new projects** (no code yet):
-- Prompts you to define tech stack and product requirements first
-- Can use `/agentful-init` for guided setup
-- Generates agents from product spec + best practices
-
-**For existing projects**:
-- Scans code to discover business domains and patterns
-- Detects tech stack from package files and imports
-- Generates domain-specific agents (e.g., `@auth`, `@billing`) based on actual code
-- Creates tech skills (e.g., React patterns, Prisma patterns) from your conventions
-
-### 3. Start Structured Development
+### 2. Start Structured Development
 
 Run `/agentful-start` to begin the autonomous work workflow:
+
+**On first run**, `/agentful-start` automatically:
+- Analyzes your codebase and detects tech stack
+- Generates specialized agents based on your code patterns
+- Creates tech skills from your conventions
+- Then begins development
+
+**For new projects** (no code yet):
+- Prompts you to run `/agentful-init` for guided setup
+- Generates agents from product spec + researched best practices
+
+**For existing projects**:
+- Scans code to discover business domains
+- Generates domain-specific agents (e.g., `@auth`, `@billing`)
+- Creates tech skills (e.g., React patterns, Prisma patterns)
+
+**Then it**:
 - Orchestrator reads product specification
 - Picks highest-priority incomplete feature
 - Delegates to specialist agents

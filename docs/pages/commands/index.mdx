@@ -11,6 +11,7 @@ Agentful provides slash commands for structured product development. These comma
 ### Planning Commands
 
 - **[/agentful-product](./agentful-product)** - Create and refine product requirements
+- **[/agentful-init](./agentful-init)** - Interactive onboarding with 7 guided questions
 
 ### Generation Commands
 
@@ -37,24 +38,25 @@ Agentful provides slash commands for structured product development. These comma
 Basic workflow:
 
 ```bash
-# 1. Define requirements (optional but recommended)
-/agentful-product
+# 1. Define requirements (choose one):
+/agentful-init      # Interactive 7-question wizard (recommended for new users)
+# OR
+/agentful-product   # Manual spec creation/analysis
 
-# 2. Generate agents and skills from codebase
-/agentful-generate
-
-# 3. Start development
+# 2. Start development (auto-generates agents on first run)
 /agentful-start
 
-# 4. Check progress
+# 3. Check progress
 /agentful-status
 
-# 5. Resolve decisions if needed
+# 4. Resolve decisions if needed
 /agentful-decide
 
-# 6. Run quality checks
+# 5. Run quality checks
 /agentful-validate
 ```
+
+**Note**: You don't need to manually run `/agentful-generate` - it runs automatically on first `/agentful-start`. Only re-run `/agentful-generate` manually if you significantly change your tech stack.
 
 ## Setup
 
@@ -78,9 +80,8 @@ echo '{"pending":[],"resolved":[]}' > .agentful/decisions.json
 ### Workflow 1: Initial Development
 
 ```bash
-/agentful-product     # Define requirements
-/agentful-generate    # Generate agents/skills
-/agentful-start       # Begin development
+/agentful-init        # Interactive setup (or /agentful-product for manual)
+/agentful-start       # Auto-generates agents, then begins development
 /agentful-status      # Check progress
 ```
 

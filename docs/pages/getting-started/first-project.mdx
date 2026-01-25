@@ -352,7 +352,7 @@ Check status:
 
 Look for:
 - Pending decisions → `/agentful-decide`
-- High iteration count → `/agentful-generate` to resume
+- High iteration count → Check for blocking decisions
 - Errors → `/agentful-validate`
 
 ### Tests failing
@@ -369,7 +369,7 @@ Fixer agent resolves these. If persistent:
 ```bash
 npx tsc --noEmit
 # Fix manually if needed
-/agentful-generate  # Continue
+/agentful-start  # Continue development
 ```
 
 ## Customizing Your Project
@@ -389,12 +389,14 @@ Edit `.claude/product/index.md`:
 
 Then:
 ```bash
-/agentful-generate
+/agentful-start
 ```
+
+agentful will detect the new feature and work on it.
 
 ### Modify Existing Features
 
-Update acceptance criteria in `.claude/product/index.md`, then run `/agentful-generate`.
+Update acceptance criteria in `.claude/product/index.md`, then run `/agentful-start` to continue.
 
 ### Add Domain Structure
 
@@ -422,7 +424,7 @@ You built a complete task management app with:
 
 1. **Intelligent Init** - agentful analyzes and creates appropriate structure
 2. **Product Structure** - Hierarchical `.claude/product/` with optional domain organization
-3. **Agent Generation** - `/agentful-generate` creates stack-specific agents
+3. **Agent Generation** - `/agentful-start` auto-generates stack-specific agents on first run
 4. **Progress Monitoring** - `/agentful-status` shows what's being worked on
 5. **Quality Automation** - Tests, type checking, linting enforced automatically
 

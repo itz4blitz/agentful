@@ -122,7 +122,7 @@ function showPresets() {
   log(colors.cyan, 'DEFAULT (Recommended)');
   log(colors.dim, '  Install all components - agentful works best with everything enabled');
   log(colors.dim, '  Command: agentful init');
-  log(colors.dim, '  Includes: 8 agents, 6 skills, all hooks, all gates');
+  log(colors.dim, '  Includes: 8 agents, 7 skills, all hooks, all gates');
   console.log('');
 
   log(colors.cyan, 'MINIMAL');

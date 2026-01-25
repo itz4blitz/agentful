@@ -67,7 +67,11 @@ npx @itz4blitz/agentful presets
 
 **Runtime State** (managed by agentful, gitignored):
 - `.agentful/state.json` - Current work phase and progress
+- `.agentful/completion.json` - Feature completion % and quality gates
 - `.agentful/decisions.json` - Pending and resolved decisions
+- `.agentful/conversation-state.json` - Natural language conversation context
+- `.agentful/conversation-history.json` - Message history for context tracking
+- `.agentful/agent-metrics.json` - Agent lifecycle hooks and metrics
 - `.agentful/architecture.json` - Detected tech stack and generated agents
 
 **Configuration** (auto-generated, customizable):
@@ -134,7 +138,7 @@ By default, agentful blocks creation of random files to keep your codebase clean
 Prevents creation of random markdown files outside approved locations.
 
 **Always allowed**:
-- ✅ `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `LICENSE.md`
+- ✅ `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `LICENSE`
 - ✅ `.claude/agents/*.md` - Agent definitions
 - ✅ `.claude/skills/*/SKILL.md` - Skill documentation
 - ✅ `.claude/product/**/*.md` - Product specifications
