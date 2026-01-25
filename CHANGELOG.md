@@ -1,3 +1,15 @@
+# [1.3.0](https://github.com/itz4blitz/agentful/compare/v1.2.1...v1.3.0) (2026-01-25)
+
+
+### Features
+
+* **docs:** add DiagramModal component for interactive architecture and workflow visualizations ([ed9c84c](https://github.com/itz4blitz/agentful/commit/ed9c84cbcca6e0167a3b1b44f2466364f9a56063))
+* **docs:** enhance architecture documentation with interactive DiagramModal components ([6a96ac0](https://github.com/itz4blitz/agentful/commit/6a96ac079871b33dd657fcbe65397992ec8721f3))
+* **docs:** update architecture and background agents documentation with mermaid diagrams for better visualization ([b44fb8f](https://github.com/itz4blitz/agentful/commit/b44fb8fd49a083f2bd588e73fa05172b1696adc9))
+* **mcp:** complete distributed MCP architecture with horizontal scaling ([2e36b5b](https://github.com/itz4blitz/agentful/commit/2e36b5be4174470150ecaaad2c170fe05327fa20)), closes [#distributed-mcp](https://github.com/itz4blitz/agentful/issues/distributed-mcp) [#horizontal-scaling](https://github.com/itz4blitz/agentful/issues/horizontal-scaling) [#oauth-authentication](https://github.com/itz4blitz/agentful/issues/oauth-authentication)
+* **mcp:** implement MCP server with stdio transport and fix hook paths ([865132d](https://github.com/itz4blitz/agentful/commit/865132d6716f96b590a005adf4bcc1067eb57a32)), closes [#distributed-mcp-foundation](https://github.com/itz4blitz/agentful/issues/distributed-mcp-foundation)
+* update version to 1.2.2 and enhance agent generation workflow ([f523a86](https://github.com/itz4blitz/agentful/commit/f523a86285c014fd7a36c809d120d6c053074168))
+
 ## [1.2.1](https://github.com/itz4blitz/agentful/compare/v1.2.0...v1.2.1) (2026-01-23)
 
 

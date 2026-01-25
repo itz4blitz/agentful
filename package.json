@@ -1,6 +1,6 @@
 {
   "name": "@itz4blitz/agentful",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Pre-configured AI toolkit with self-hosted execution - works with any LLM, any tech stack, any platform.",
   "type": "module",
   "bin": {
