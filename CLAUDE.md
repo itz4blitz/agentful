@@ -24,7 +24,7 @@ npx @itz4blitz/agentful presets
 
 1. Edit `.claude/product/index.md` to define your product requirements
 2. Run: `claude`
-3. Type: `/agentful-start`
+3. Type: `/agentful-generate`
 
 ## Commands
 
@@ -128,9 +128,13 @@ The `reviewer` agent runs these checks. The `fixer` agent resolves failures.
 
 ## Configuration
 
-### Documentation Hook
+### File Creation Protection Hooks
 
-By default, agentful blocks creation of random markdown files to keep your codebase clean.
+By default, agentful blocks creation of random files to keep your codebase clean and prevent littering.
+
+#### Block Random Documentation (`block-random-docs`)
+
+Prevents creation of random markdown files outside approved locations.
 
 **Always allowed**:
 - ✅ `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `LICENSE.md`
@@ -144,29 +148,44 @@ By default, agentful blocks creation of random markdown files to keep your codeb
 - 📁 `wiki/*.md` - Requires `wiki/` directory
 - 📁 `guides/*.md` - Requires `guides/` directory
 
-This prevents accidental creation of `docs/pages/foo.mdx` when you don't have a docs site.
+#### Block Arbitrary File Creation (`block-file-creation`)
 
-**To disable the hook**:
+Prevents creation of random JSON, TXT, LOG, and other data files outside approved locations.
 
-Option 1: Set environment variable (temporary):
-```bash
-export AGENTFUL_ALLOW_RANDOM_DOCS=true
-claude
-```
+**Always allowed**:
+- ✅ Source code files (`.js`, `.ts`, `.py`, `.go`, `.rs`, etc.)
+- ✅ Root config files (`package.json`, `tsconfig.json`, `vite.config.js`, etc.)
+- ✅ Test files in test directories
 
-Option 2: Remove from `.claude/settings.json` (permanent):
+**Allowed in specific directories**:
+- 📁 `.agentful/` - Runtime state (validated files only)
+- 📁 `fixtures/`, `test/fixtures/` - Test fixtures
+- 📁 `mocks/`, `__mocks__/` - Test mocks
+- 📁 `public/assets/` - Static assets
+- 📁 `config/`, `.config/` - Configuration files
+
+**Blocked everywhere else**:
+- ❌ Random `.json` files (e.g., `random-state.json`, `debug-output.json`)
+- ❌ Random `.txt` files (e.g., `notes.txt`, `todo.txt`)
+- ❌ Random `.log` files (e.g., `debug.log`, `output.log`)
+- ❌ Temporary files (`.tmp`, `.temp`, `.bak`, `.old`)
+
+**To disable hooks**:
+
+Option 1: Remove from `.claude/settings.json` (permanent):
 ```json
 {
   "hooks": {
     "PreToolUse": [
-      // Remove or comment out the block-random-docs hook
+      // Remove the hooks you want to disable
     ]
   }
 }
 ```
 
-Option 3: Customize allowed patterns:
-Edit `bin/hooks/block-random-docs.js` and modify the `ALLOWED_PATTERNS` array.
+Option 2: Customize allowed patterns:
+- Edit `bin/hooks/block-random-docs.js` for markdown files
+- Edit `bin/hooks/block-file-creation.js` for other file types
 
 ---
 

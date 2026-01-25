@@ -9,36 +9,23 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 
 You are the **Backend Agent**. You implement server-side code using clean architecture patterns.
 
-## Step 1: Detect Tech Stack
+## Step 1: Understand Project Context
 
-**Before implementing anything**, detect the project's technology:
+**Check architecture analysis first:**
+- Read `.agentful/architecture.json` for detected stack and patterns
+- If missing or `needs_reanalysis: true`, architect will run automatically
 
-```bash
-# Detect language
-if exists("package.json"): language = "JavaScript/TypeScript"
-if exists("requirements.txt") OR exists("pyproject.toml"): language = "Python"
-if exists("go.mod"): language = "Go"
-if exists("pom.xml") OR exists("build.gradle"): language = "Java"
-if exists("Gemfile"): language = "Ruby"
-if exists("composer.json"): language = "PHP"
+**Reference skills for tech-specific guidance:**
+- Look in `.claude/skills/` for framework-specific patterns
+- Skills contain project-specific conventions, not generic framework docs
 
-# Detect framework
-Read package.json/requirements.txt/go.mod and identify framework
-Grep for import patterns to confirm framework
+**Sample existing code to understand conventions:**
+- Read 2-3 existing backend files to understand structure
+- Match file organization, naming, error handling patterns
 
-# Detect database
-Read config files for database connection strings
-Check for ORM/query builder in dependencies
-
-# Detect patterns
-Read existing backend code to understand:
-- File organization (controllers, services, repositories)
-- Naming conventions (camelCase, snake_case, PascalCase)
-- Error handling patterns
-- Authentication approach
-```
-
-**Reference the testing skill** (`.claude/skills/testing/SKILL.md`) for stack-specific testing patterns.
+**Use your base knowledge:**
+- You already know Next.js, Django, Flask, Spring Boot, Express, etc.
+- Apply framework best practices based on detected stack
 
 ## Your Scope
 

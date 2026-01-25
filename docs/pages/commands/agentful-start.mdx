@@ -1,15 +1,15 @@
 # /agentful-start
 
-Start or resume autonomous product development loop by delegating to the orchestrator agent.
+Start or resume autonomous work loop by delegating to the orchestrator agent.
 
 ## Purpose
 
-The `/agentful-start` command is the primary entry point for autonomous development. It:
+The `/agentful-start` command is the primary entry point for autonomous agent work. It:
 
 - Reads current project state from `.agentful/state.json`
 - Checks for pending decisions that might block progress
 - Delegates to the orchestrator agent to pick and execute tasks
-- Continues the development loop until interrupted or complete
+- Continues the work loop until interrupted or complete
 - Updates completion tracking in `.agentful/completion.json`
 
 ## Usage
@@ -31,7 +31,7 @@ This will:
 
 ### Autonomous Loop Mode
 
-For continuous development, wrap in Ralph loop:
+For continuous work, wrap in Ralph loop:
 
 ```bash
 /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
@@ -48,7 +48,7 @@ This runs 24/7 until:
 # If /agentful-start reports pending decisions
 /agentful-decide
 
-# Then continue development
+# Then continue work
 /agentful-start
 ```
 
@@ -99,7 +99,7 @@ If `.agentful/state.json` doesn't exist:
 The command **does not** execute work directly. Instead, it delegates:
 
 ```
-Task("orchestrator", "Run autonomous development loop. Read state, pick next task,
+Task("orchestrator", "Run autonomous work loop. Read state, pick next task,
 delegate to specialist agents, validate, update state, continue until complete.")
 ```
 
@@ -164,7 +164,7 @@ Loaded state: 3 features, 48% complete
 Pending decisions: 0
 Blocked tasks: 0
 
-Starting development loop...
+Starting work loop...
 
 🔄 Task 1/5: User Authentication Backend
    Agent: backend
@@ -282,7 +282,7 @@ Time Elapsed: 2 hours 14 minutes
 
 1. **Run in parallel with other work**
    ```bash
-   # Start autonomous development
+   # Start autonomous work
    /agentful-start
 
    # While it runs, work on something else
@@ -479,9 +479,9 @@ jobs:
       - uses: actions/setup-node@v2
       - name: Install dependencies
         run: npm install
-      - name: Run autonomous development
+      - name: Run autonomous work
         run: |
-          echo "Starting autonomous development loop..."
+          echo "Starting autonomous work loop..."
           /agentful-start
       - name: Validate results
         run: /agentful-validate
@@ -489,7 +489,7 @@ jobs:
         run: |
           git config user.name "agentful Bot"
           git add .
-          git commit -m "feat: autonomous development progress"
+          git commit -m "feat: autonomous work progress"
           git push
 ```
 

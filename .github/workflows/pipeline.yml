@@ -274,11 +274,14 @@ jobs:
   deploy-docs:
     name: Deploy Documentation
     runs-on: ubuntu-latest
-    needs: [detect-changes, validate-docs]
+    needs: [detect-changes, lint, test, security-audit, validate-docs, validate-templates]
     if: |
+      always() &&
       github.ref == 'refs/heads/main' &&
       github.event_name == 'push' &&
-      needs.detect-changes.outputs.docs == 'true'
+      needs.detect-changes.outputs.docs == 'true' &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled')
 
     permissions:
       contents: read
@@ -290,6 +293,27 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - name: Verify quality gates passed
+        run: |
+          echo "🔍 Verifying all quality gates passed before deployment..."
+          echo "Lint: ${{ needs.lint.result }}"
+          echo "Test: ${{ needs.test.result }}"
+          echo "Security Audit: ${{ needs.security-audit.result }}"
+          echo "Validate Docs: ${{ needs.validate-docs.result }}"
+          echo "Validate Templates: ${{ needs.validate-templates.result }}"
+
+          # Fail if any quality gate failed
+          if [[ "${{ needs.lint.result }}" == "failure" ]] || \
+             [[ "${{ needs.test.result }}" == "failure" ]] || \
+             [[ "${{ needs.security-audit.result }}" == "failure" ]] || \
+             [[ "${{ needs.validate-docs.result }}" == "failure" ]] || \
+             [[ "${{ needs.validate-templates.result }}" == "failure" ]]; then
+            echo "❌ Quality gates failed. Aborting docs deployment."
+            exit 1
+          fi
+
+          echo "✅ All quality gates passed. Proceeding with deployment."
+
       - name: Checkout code
         uses: actions/checkout@v4
 

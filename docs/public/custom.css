@@ -647,3 +647,90 @@ html {
   transform: translateY(-4px);
   box-shadow: var(--shadow-xl);
 }
+
+/* ============================================
+   MERMAID DIAGRAM ENHANCEMENTS
+   ============================================ */
+
+/* Target edge labels by their data-id attributes for quality gates diagram */
+/* Green background for checkmarks (pass) */
+[data-id="L_G1_G2_0"] .labelBkg,
+[data-id="L_G2_G3_0"] .labelBkg,
+[data-id="L_G3_G4_0"] .labelBkg,
+[data-id="L_G4_G5_0"] .labelBkg,
+[data-id="L_G5_G6_0"] .labelBkg,
+[data-id="L_G6_Ship_0"] .labelBkg {
+  background-color: rgba(34, 197, 94, 0.3) !important;
+  border: 1px solid rgba(34, 197, 94, 0.6);
+  border-radius: 4px;
+}
+
+/* Red background for X marks (fail) */
+[data-id="L_G1_Fixer_0"] .labelBkg,
+[data-id="L_G2_Fixer_0"] .labelBkg,
+[data-id="L_G3_Fixer_0"] .labelBkg,
+[data-id="L_G4_Fixer_0"] .labelBkg,
+[data-id="L_G5_Fixer_0"] .labelBkg,
+[data-id="L_G6_Fixer_0"] .labelBkg {
+  background-color: rgba(239, 68, 68, 0.3) !important;
+  border: 1px solid rgba(239, 68, 68, 0.6);
+  border-radius: 4px;
+}
+
+/* Parallel execution Gantt chart customization */
+.mermaid svg {
+  background: #0f172a !important;
+}
+
+/* Individual task bar colors by ID */
+#p1 rect, #s1 rect {
+  fill: #ef4444 !important;
+}
+
+#p2 rect, #s2 rect {
+  fill: #3b82f6 !important;
+}
+
+#p3 rect, #s3 rect {
+  fill: #f59e0b !important;
+}
+
+#p4 rect, #s4 rect {
+  fill: #8b5cf6 !important;
+}
+
+/* Task text inside bars - white */
+#p1-text, #p2-text, #p3-text, #p4-text,
+#s1-text, #s2-text, #s3-text, #s4-text {
+  fill: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+}
+
+/* Title */
+.mermaid .titleText {
+  fill: #f1f5f9 !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+}
+
+/* Section labels */
+.mermaid .sectionTitle,
+.mermaid .sectionTitle0,
+.mermaid .sectionTitle1 {
+  fill: #cbd5e1 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+/* Grid text (time labels) */
+.mermaid .grid .tick text {
+  fill: #94a3b8 !important;
+  font-size: 12px !important;
+}
+
+/* Grid lines */
+.mermaid .grid line,
+.mermaid .grid .tick {
+  stroke: #334155 !important;
+}

@@ -1,0 +1,724 @@
+---
+title: Product Analyzer Agent
+description: Analyzes product specifications for gaps, ambiguities, and readiness before development begins
+---
+
+# Product Analyzer Agent
+
+## Overview
+
+The **Product Analyzer Agent** is a specialized agent that evaluates your product specification for quality, completeness, and readiness before development begins. It performs comprehensive analysis across five quality dimensions, identifies blocking issues, and calculates a readiness score (0-100%) to determine if your product spec is ready to build.
+
+**Agent Details:**
+- **Name:** `product-analyzer`
+- **Model:** Sonnet
+- **Tools:** Read, Write, Edit, Glob, Grep, Bash
+- **Output:** `.agentful/product-analysis.json`, `.agentful/completion.json`
+
+## When It Runs
+
+The product analyzer is triggered by:
+
+- **`/agentful-product` command** - Analyzes product specification and provides improvement recommendations
+- **First-time setup** - Validates product spec before generating agents
+- **After spec updates** - Re-evaluates readiness after you modify `.claude/product/index.md`
+- **Manual invocation** - When development seems blocked or confused
+
+## What It Analyzes
+
+### 5 Quality Dimensions
+
+The product analyzer evaluates your specification across five weighted dimensions:
+
+1. **Completeness (30% weight)** - Are all essential elements defined?
+2. **Clarity (20% weight)** - Are requirements unambiguous?
+3. **Feasibility (25% weight)** - Can the declared stack support requirements?
+4. **Testability (15% weight)** - Are requirements measurable?
+5. **Consistency (10% weight)** - Are there conflicting requirements?
+
+### Readiness Score Formula
+
+```javascript
+readiness_score = (
+  completeness * 0.30 +    // 30% weight
+  clarity * 0.20 +         // 20% weight
+  feasibility * 0.25 +     // 25% weight
+  testability * 0.15 +     // 15% weight
+  consistency * 0.10       // 10% weight
+)
+```
+
+**Readiness Levels:**
+- **90-100%**: Production-ready - Start development immediately
+- **75-89%**: Good - Minor issues, can start with caution
+- **60-74%**: Fair - Address warnings before starting
+- **40-59%**: Poor - Fix blocking issues before proceeding
+- **0-39%**: Not ready - Major gaps, needs significant work
+
+### Ready to Build Criteria
+
+A product spec is **Ready to Build** when ALL of the following are true:
+
+1. ✅ **Readiness Score >= 75%**
+2. ✅ **Zero blocking issues** (all critical gaps resolved)
+3. ✅ **Tech Stack 100% specified** (no placeholder values)
+
+## Analysis Workflow
+
+### Step 1: Detect Product Structure
+
+The analyzer automatically detects whether you're using flat or hierarchical product structure:
+
+```bash
+# Hierarchical structure (domains-based)
+.claude/product/
+├── index.md                    # Product overview
+└── domains/
+    ├── authentication/
+    │   ├── index.md           # Domain overview
+    │   └── features/
+    │       ├── login.md       # Feature spec
+    │       └── password-reset.md
+    └── user-management/
+        ├── index.md
+        └── features/
+            └── profile.md
+
+# Flat structure (single-file)
+.claude/product/
+└── index.md                    # All features in one file
+```
+
+### Step 2: Validation Checks
+
+Before analyzing quality, the agent validates:
+
+- ✅ Required sections present (Product name, Tech Stack, Features)
+- ✅ Tech stack minimum fields (frontend, backend, database)
+- ✅ Acceptance criteria format (no subjective terms)
+- ✅ Feature priority validation (CRITICAL/HIGH/MEDIUM/LOW only)
+- ✅ Circular dependency detection
+- ✅ Tech stack compatibility
+
+**Blocking Examples:**
+- Missing tech stack core elements (frontend, backend, OR database)
+- Invalid priority levels (P0, P1, must-have, etc.)
+- Circular dependencies (Feature A → B → A)
+- Stack incompatibility (Prisma + MongoDB, NextAuth + Express)
+
+### Step 3: Quality Dimension Analysis
+
+#### 1. Completeness (30%)
+
+Checks if all essential elements are defined:
+
+**Tech Stack Completeness:**
+- ✅ Frontend framework specified
+- ✅ Backend runtime/framework specified
+- ✅ Database type and ORM specified
+- ✅ Authentication method specified
+- ✅ Testing framework specified
+- ✅ Deployment platform specified
+
+**Feature Completeness (per feature):**
+- ✅ Description provided
+- ✅ Acceptance criteria defined
+- ✅ User stories included
+- ✅ Priority level set
+- ✅ Edge cases considered
+- ✅ Error handling scenarios defined
+
+**BLOCKING if:**
+- Tech stack missing core elements
+- Any CRITICAL feature lacks acceptance criteria
+- Auth method unspecified when auth feature exists
+
+#### 2. Clarity (20%)
+
+Checks if requirements are unambiguous:
+
+**Tech Stack Clarity:**
+- ✅ No placeholder values (e.g., "[Next.js / React]")
+- ✅ No conflicting technologies (e.g., Express AND Fastify)
+- ✅ Version numbers specified where important
+- ✅ No vague terms (e.g., "database" without type)
+
+**Feature Clarity:**
+- ✅ Acceptance criteria are measurable
+- ✅ No ambiguous terms (e.g., "fast", "good", "nice")
+- ✅ API contracts defined (for backend features)
+- ✅ UI requirements clear (for frontend features)
+- ✅ Data models specified (for database features)
+
+**Subjective terms flagged:**
+- "fast", "quick", "slow"
+- "good", "bad", "better", "worse"
+- "nice", "clean", "beautiful", "ugly"
+- "simple", "easy", "hard", "difficult"
+- "user-friendly", "intuitive"
+- "scalable", "performant" (without metrics)
+
+**BLOCKING if:**
+- Multiple conflicting tech choices specified
+- Acceptance criteria use only subjective terms
+
+#### 3. Feasibility (25%)
+
+Checks if declared stack can support requirements:
+
+**Stack Compatibility Checks:**
+- ✅ Frontend can integrate with backend
+- ✅ ORM supports the database type
+- ✅ Auth method works with the stack
+- ✅ Testing framework compatible with language
+
+**Common Incompatibilities Detected:**
+- **ORM/ODM mismatch:** Prisma + MongoDB, Mongoose + PostgreSQL, Drizzle + MongoDB
+- **Auth framework lock-in:** NextAuth + Express, Spring Security + Flask
+- **Real-time + Serverless:** Socket.io + Vercel/Lambda
+- **Language-specific tools:** SQLAlchemy in Node.js, Prisma in Python
+
+**Feature Feasibility:**
+- ✅ Real-time features: Check if stack supports WebSockets/SSE
+- ✅ File uploads: Check if backend can handle multipart
+- ✅ Search: Check if database supports text search
+- ✅ Analytics: Check if stack can handle data aggregation
+
+**BLOCKING if:**
+- Tech stack fundamentally incompatible
+- Feature requires capability not in stack
+
+#### 4. Testability (15%)
+
+Checks if requirements are measurable:
+
+**Acceptance Criteria Testability:**
+- ✅ Each criterion has clear pass/fail
+- ✅ No subjective criteria (e.g., "looks good")
+- ✅ API responses are specified
+- ✅ Error cases have expected behavior
+- ✅ Edge cases have expected outcomes
+
+**Testing Infrastructure:**
+- ✅ Unit test framework specified
+- ✅ E2E test framework specified (if frontend)
+- ✅ Coverage threshold defined
+- ✅ Integration test strategy clear
+
+**BLOCKING if:**
+- Critical features have only subjective criteria
+- No testing framework specified
+- API features lack response specifications
+
+#### 5. Consistency (10%)
+
+Checks for conflicting requirements:
+
+**Tech Stack Consistency:**
+- ✅ Frontend state management fits architecture
+- ✅ Auth method aligns with backend approach
+- ✅ Database choice fits data model
+- ✅ All layers speak same language (e.g., all TypeScript)
+
+**Feature Consistency:**
+- ✅ Feature priorities align with dependencies
+- ✅ No circular dependencies
+- ✅ Success criteria match feature list
+- ✅ Out-of-scope items don't conflict with in-scope
+
+**Circular Dependency Detection:**
+
+The analyzer builds a dependency graph and detects cycles:
+
+```
+Feature A depends on Feature B
+Feature B depends on Feature C
+Feature C depends on Feature A   ❌ BLOCKING
+```
+
+**BLOCKING if:**
+- Critical features have dependency conflicts
+- Tech stack has contradictory choices
+- Success criteria reference non-existent features
+
+### Step 4: Generate Recommendations
+
+For each issue, the analyzer provides actionable recommendations with:
+
+- **Action:** What to do
+- **Options:** 3-5 concrete choices (including "Specify your own")
+- **Rationale:** Why this matters
+
+**Example - Missing Tech Stack:**
+
+```json
+{
+  "issue": "Frontend framework not specified",
+  "category": "completeness",
+  "severity": "blocking",
+  "recommendation": {
+    "action": "Specify frontend framework in Tech Stack section",
+    "options": [
+      "Next.js 14 (recommended for full-stack TypeScript)",
+      "React + Vite (recommended for SPA)",
+      "Vue + Nuxt (recommended for Vue developers)",
+      "SvelteKit (recommended for performance)",
+      "Specify your own"
+    ],
+    "rationale": "Framework choice affects project structure, routing, and build process"
+  }
+}
+```
+
+**Example - Vague Acceptance Criteria:**
+
+```json
+{
+  "issue": "Login feature has subjective acceptance criteria: 'login should be fast'",
+  "category": "testability",
+  "severity": "warning",
+  "recommendation": {
+    "action": "Make acceptance criteria measurable",
+    "example": "Replace 'login should be fast' with 'login completes in < 2 seconds'",
+    "rationale": "Measurable criteria enable objective testing"
+  }
+}
+```
+
+**Example - Stack Incompatibility:**
+
+```json
+{
+  "issue": "Prisma is incompatible with MongoDB",
+  "category": "feasibility",
+  "severity": "blocking",
+  "recommendation": {
+    "action": "Change ORM or Database to compatible pair",
+    "options": [
+      "Keep MongoDB, use Mongoose instead of Prisma",
+      "Keep Prisma, use PostgreSQL/MySQL instead of MongoDB",
+      "Specify your own compatible combination"
+    ],
+    "rationale": "Prisma is designed for relational databases only"
+  }
+}
+```
+
+### Step 5: Auto-generate completion.json
+
+When analysis completes successfully, the analyzer generates `.agentful/completion.json` to track development progress:
+
+**Hierarchical structure:**
+
+```json
+{
+  "version": "1.0",
+  "timestamp": "2026-01-24T00:00:00Z",
+  "structure": "hierarchical",
+  "domains": {
+    "authentication": {
+      "status": "pending",
+      "score": 0,
+      "features": {
+        "login": {
+          "status": "pending",
+          "score": 0,
+          "subtasks": {
+            "subtask-1": {
+              "status": "pending",
+              "description": "User can log in with email and password"
+            },
+            "subtask-2": {
+              "status": "pending",
+              "description": "Invalid credentials show error message"
+            }
+          }
+        }
+      }
+    }
+  },
+  "gates": {
+    "tests_passing": false,
+    "no_type_errors": false,
+    "no_security_issues": false
+  },
+  "overall": 0
+}
+```
+
+**Flat structure:**
+
+```json
+{
+  "version": "1.0",
+  "timestamp": "2026-01-24T00:00:00Z",
+  "structure": "flat",
+  "features": {
+    "login": {
+      "status": "pending",
+      "score": 0
+    },
+    "dashboard": {
+      "status": "pending",
+      "score": 0
+    }
+  },
+  "gates": {
+    "tests_passing": false,
+    "no_type_errors": false,
+    "no_security_issues": false
+  },
+  "overall": 0
+}
+```
+
+## Output Format
+
+The analyzer writes two files:
+
+### 1. `.agentful/product-analysis.json` (Full Analysis)
+
+```json
+{
+  "version": "1.0",
+  "timestamp": "2026-01-24T10:30:00Z",
+  "structure": "hierarchical",
+  "readiness_score": 75,
+  "readiness_level": "Good - Minor issues, can start with caution",
+  "ready_to_build": false,
+  "dimensions": {
+    "completeness": {
+      "score": 85,
+      "checks_passed": 17,
+      "checks_total": 20,
+      "issues": [
+        "E2E testing framework not specified",
+        "Feature 'password-reset' missing edge cases"
+      ]
+    },
+    "clarity": {
+      "score": 90,
+      "checks_passed": 18,
+      "checks_total": 20,
+      "issues": [
+        "Feature 'dashboard' has vague requirement: 'show useful stats'"
+      ]
+    },
+    "feasibility": {
+      "score": 70,
+      "checks_passed": 14,
+      "checks_total": 20,
+      "issues": [
+        "Real-time feature requires WebSocket but not in stack"
+      ]
+    },
+    "testability": {
+      "score": 65,
+      "checks_passed": 13,
+      "checks_total": 20,
+      "issues": [
+        "Login feature: 'should be fast' is not measurable"
+      ]
+    },
+    "consistency": {
+      "score": 80,
+      "checks_passed": 16,
+      "checks_total": 20,
+      "issues": [
+        "Authentication CRITICAL but depends on user-management (HIGH)"
+      ]
+    }
+  },
+  "blocking_issues": [
+    {
+      "id": "blocking-001",
+      "issue": "Feature 'Login' uses invalid priority 'P0'",
+      "category": "consistency",
+      "affected_features": ["authentication/login"],
+      "recommendation": {
+        "action": "Replace priority level with standard value",
+        "example": "Change 'P0' to 'CRITICAL', 'P1' to 'HIGH'",
+        "rationale": "Standard priority levels ensure consistency"
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "id": "warning-001",
+      "issue": "E2E testing framework not specified",
+      "category": "completeness",
+      "affected_features": ["all"],
+      "recommendation": {
+        "action": "Specify E2E testing framework in Tech Stack",
+        "options": [
+          "Playwright (recommended for modern apps)",
+          "Cypress (good DX, slightly slower)",
+          "Skip E2E for MVP (use manual testing)"
+        ],
+        "rationale": "E2E tests ensure features work end-to-end"
+      }
+    }
+  ],
+  "summary": {
+    "total_issues": 7,
+    "blocking_count": 1,
+    "warning_count": 3,
+    "recommendation_count": 2,
+    "ready_to_build": false,
+    "readiness_score": 75,
+    "blocking_issues_present": true,
+    "tech_stack_complete": true,
+    "can_start_development": false,
+    "next_steps": [
+      "Resolve 1 blocking issue (invalid priority level)",
+      "Review 3 warnings and address if needed",
+      "Run product analyzer again after updates"
+    ]
+  },
+  "dependency_analysis": {
+    "circular_dependencies": [],
+    "recommended_build_order": [
+      "shared-types",
+      "authentication",
+      "user-management",
+      "dashboard"
+    ]
+  }
+}
+```
+
+### 2. Console Output (Human-Readable Summary)
+
+```
+========================================
+PRODUCT READINESS ANALYSIS
+========================================
+
+📊 Overall Readiness: 75% (Good - Minor issues)
+
+Ready to Build: NO
+  ❌ 1 blocking issue must be resolved
+  ✅ Readiness score: 75% (>= 75% required)
+  ✅ Tech stack: 100% complete
+
+Quality Dimensions:
+  ✅ Completeness:  85% (17/20 checks passed)
+  ✅ Clarity:       90% (18/20 checks passed)
+  ⚠️  Feasibility:  70% (14/20 checks passed)
+  ⚠️  Testability:  65% (13/20 checks passed)
+  ✅ Consistency:   80% (16/20 checks passed)
+
+========================================
+🚨 BLOCKING ISSUES (1)
+========================================
+
+[blocking-001] Feature 'Login' uses invalid priority 'P0'
+  Affected: authentication/login
+
+  ➜ Action: Replace priority level with standard value
+  Example: Change 'P0' to 'CRITICAL', 'P1' to 'HIGH'
+  Why: Standard priority levels ensure consistency
+
+========================================
+⚠️  WARNINGS (3)
+========================================
+
+[warning-001] E2E testing framework not specified
+  ➜ Specify E2E framework: Playwright, Cypress, or skip for MVP
+
+[warning-002] Dashboard requirement vague: "show useful stats"
+  ➜ Define specific metrics to display
+
+========================================
+✅ NEXT STEPS
+========================================
+
+1. ❌ Resolve 1 blocking issue (invalid priority level)
+2. 🔍 Review 3 warnings and address if needed
+3. 🔄 Run product analyzer again after updates
+
+Can start development: NO (blocking issues present)
+
+========================================
+Analysis saved to: .agentful/product-analysis.json
+Completion tracking: .agentful/completion.json
+========================================
+```
+
+## Example Analysis Scenarios
+
+### Scenario 1: Tech Stack Incomplete
+
+**Product Spec:**
+
+```markdown
+## Tech Stack
+
+Frontend: [Next.js / React]
+Backend: Express.js
+Database: TBD
+```
+
+**Analysis Result:**
+
+```json
+{
+  "readiness_score": 45,
+  "readiness_level": "Poor - Fix blocking issues",
+  "ready_to_build": false,
+  "blocking_issues": [
+    {
+      "issue": "Frontend framework has placeholder value '[Next.js / React]'",
+      "recommendation": {
+        "action": "Choose one framework",
+        "options": ["Next.js 14", "React + Vite", "Specify your own"]
+      }
+    },
+    {
+      "issue": "Database type not specified (placeholder 'TBD')",
+      "recommendation": {
+        "action": "Specify database",
+        "options": ["PostgreSQL + Prisma", "MongoDB + Mongoose", "Specify your own"]
+      }
+    }
+  ]
+}
+```
+
+### Scenario 2: Circular Dependency
+
+**Product Spec:**
+
+```markdown
+## Features
+
+### Authentication (CRITICAL)
+Depends on: User Management
+
+### User Management (HIGH)
+Depends on: Authentication
+```
+
+**Analysis Result:**
+
+```json
+{
+  "blocking_issues": [
+    {
+      "issue": "Circular dependency: Authentication → User Management → Authentication",
+      "recommendation": {
+        "action": "Break the circular dependency",
+        "options": [
+          "Extract shared types into separate feature",
+          "Make User Management depend on Authentication only",
+          "Merge Authentication and User Management"
+        ]
+      }
+    }
+  ],
+  "dependency_analysis": {
+    "circular_dependencies": [
+      ["Authentication", "User Management", "Authentication"]
+    ]
+  }
+}
+```
+
+### Scenario 3: Vague Acceptance Criteria
+
+**Product Spec:**
+
+```markdown
+### Login Feature
+
+Acceptance Criteria:
+- Login should be fast
+- UI should look good
+- Error handling should be robust
+```
+
+**Analysis Result:**
+
+```json
+{
+  "warnings": [
+    {
+      "issue": "Login has subjective criteria: 'should be fast'",
+      "recommendation": {
+        "example": "Replace 'fast' with 'completes in < 2 seconds'"
+      }
+    },
+    {
+      "issue": "Login has subjective criteria: 'should look good'",
+      "recommendation": {
+        "example": "Replace 'look good' with 'follows design system colors/spacing'"
+      }
+    },
+    {
+      "issue": "Login has vague criteria: 'error handling should be robust'",
+      "recommendation": {
+        "example": "Specify exact error cases: invalid email, wrong password, rate limiting"
+      }
+    }
+  ]
+}
+```
+
+## Core Principles
+
+The product analyzer follows these principles:
+
+1. **Never suggest third-party services by default** - Always prefer in-stack solutions
+2. **Never provide time estimates** - AI works in minutes, estimates are meaningless
+3. **Focus on gaps in requirements** - Not implementation details
+4. **Be opinionated about in-stack solutions** - Match the declared tech stack
+5. **Always provide "specify your own" option** - Give user flexibility
+
+## Error Handling
+
+The analyzer handles common error scenarios gracefully:
+
+### Product Spec File Missing
+
+```bash
+# No .claude/product/index.md found
+# Recovery: Offer to reverse-engineer from code or guide user to create spec
+```
+
+### Malformed Markdown
+
+```bash
+# Cannot parse markdown, missing sections, broken links
+# Recovery: Parse what's valid, skip malformed sections, report specific issues
+```
+
+### Conflicting Tech Stack
+
+```bash
+# Multiple contradictory frameworks specified
+# Recovery: Mark as blocking issue, suggest resolving conflict
+```
+
+## Related
+
+- **[/agentful-product command](/reference/slash-commands#agentful-product)** - Triggers product analysis
+- **[Product specification structure](/guides/product-planning)** - How to write effective product specs
+- **[Quality gates](/reference/quality-gates)** - Automated validation checks
+- **[Orchestrator agent](/reference/orchestrator)** - Coordinates development workflow
+
+## Troubleshooting
+
+**"Analysis shows 0% readiness"**
+→ Product spec file missing or severely malformed. Check `.claude/product/index.md` exists.
+
+**"Why are circular dependencies blocking?"**
+→ They prevent clear build order and cause integration issues. Break the cycle by extracting shared logic or reversing one dependency.
+
+**"How do I fix 'invalid priority level' error?"**
+→ Use only CRITICAL, HIGH, MEDIUM, or LOW (not P0, P1, must-have, etc.).
+
+**"Analyzer says stack is incompatible but I know it works"**
+→ The analyzer uses LLM knowledge of common incompatibilities. If you have a custom solution, add a note to your product spec explaining the integration approach.
+
+**"Can I customize the readiness score formula?"**
+→ Yes, but it's defined in the agent template (`.claude/agents/product-analyzer.md`). Modify the weights if needed, but 30% completeness / 25% feasibility is recommended.

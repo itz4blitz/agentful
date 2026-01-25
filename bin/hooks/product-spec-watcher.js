@@ -3,7 +3,7 @@
 /**
  * Product Spec Watcher Hook
  *
- * Triggered on Write/Edit of .claude/product/**/*.md files
+ * Triggered on Write/Edit of .claude/product/ markdown files
  * Auto-triggers /agentful-generate when product spec is updated
  *
  * Use case:
@@ -13,8 +13,9 @@
  * 4. Auto-triggers agent generation with BOTH tech stack + requirements
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
 
 // Get tool use metadata from environment
 const toolUseEnv = process.env.CLAUDE_TOOL_USE || '{}';
@@ -38,7 +39,6 @@ if (!filePath.includes('.claude/product/')) {
 // Get the root directory
 const getRepoRoot = () => {
   try {
-    const { execSync } = require('child_process');
     return execSync('git rev-parse --show-toplevel', {
       encoding: 'utf8'
     }).trim();

@@ -22,7 +22,7 @@ Example:
 ## Tech Stack
 
 ### Frontend
-- **Framework**: [Next.js 14 / React + Vite / Vue + Nuxt / SvelteKit]
+- **Framework**: [Next.js 15 / React + Vite / Vue + Nuxt / SvelteKit]
 - **Language**: [TypeScript / JavaScript]
 - **Styling**: [Tailwind CSS / CSS Modules / styled-components / shadcn/ui]
 - **State Management**: [Zustand / Context API / Redux / Jotai]

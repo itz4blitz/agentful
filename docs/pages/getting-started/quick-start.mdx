@@ -9,33 +9,15 @@ Build your project in 5 minutes.
 
 ## Step 1: Install agentful
 
-### Option A: Web Configurator (Recommended)
-
-Visit **[agentful.app](https://agentful.app)** to:
-- Visual configuration builder
-- Customize agents, skills, and hooks
-- Generate installation command
-- Share configuration with team
-
-Then copy and run the generated command.
-
-### Option B: Default Installation (Fast)
-
-Install with all components (recommended for most projects):
+First, install agentful in your project:
 
 ```bash
-# Default installation - All components
 npx @itz4blitz/agentful init
-
-# Minimal installation - Backend-only (for simple scripts/APIs)
-npx @itz4blitz/agentful init --preset=minimal
 ```
 
-**Tech stack is auto-detected** on first run - no need to specify during installation.
+For custom configurations, see the [Installation Guide](/getting-started/installation).
 
-See the [Installation Options Guide](/getting-started/presets) for details.
-
-agentful creates `.claude/product/index.md` for your product specification.
+This creates `.claude/product/index.md` for your product specification.
 
 ## Step 2: Define Your Product
 
@@ -50,7 +32,7 @@ Edit `.claude/product/index.md`.
 A todo list application.
 
 ## Tech Stack
-- Frontend: Next.js 14, TypeScript, Tailwind CSS
+- Frontend: Next.js 15, TypeScript, Tailwind CSS
 - Backend: Next.js API Routes
 - Database: None (in-memory)
 - Testing: Vitest
@@ -82,45 +64,7 @@ A todo list application.
 - [ ] Task removes from list
 ```
 
-### Complex Projects (with domains)
-
-**`.claude/product/index.md`**:
-```markdown
-# Product Specification
-
-## Overview
-A todo app with user accounts.
-
-## Domains
-- Authentication
-- Tasks
-- Sharing
-
-## Tech Stack
-- Frontend: Next.js 14, TypeScript, Tailwind
-- Backend: Next.js API Routes
-- Database: PostgreSQL with Prisma
-- Testing: Vitest + Playwright
-```
-
-**`.claude/product/domains/authentication/index.md`**:
-```markdown
-# Authentication Domain
-
-## Features
-
-### 1. User Registration - CRITICAL
-**Description**: Users can create accounts
-
-**Acceptance Criteria**:
-- [ ] Email validation (required, valid format)
-- [ ] Password min 8 characters, 1 uppercase, 1 number
-- [ ] Unique email check
-- [ ] Success: redirect to dashboard
-- [ ] Error: show inline message
-```
-
-Create additional domain files as needed.
+For complex projects with multiple domains, see the [First Project guide](/getting-started/first-project) for a complete product spec example with domains.
 
 ## Step 3: Start Claude
 
@@ -134,36 +78,18 @@ claude
 /agentful-start
 ```
 
-This generates specialized agents for your tech stack. agentful detects:
-- Frontend framework (Next.js, React, Vue, etc.)
-- Backend framework (Express, NestJS, etc.)
-- Database/ORM (Prisma, Drizzle, etc.)
-- Testing tools (Vitest, Jest, Playwright)
-- Build tools (Vite, Webpack, etc.)
+This will automatically:
+- Analyze your codebase and tech stack
+- Generate specialized agents on first run
+- Begin structured development
 
-Then creates stack-specific agents that know your framework's patterns.
-
-## Understanding the Workflow
-
-agentful uses a structured development loop:
-
-1. **Architect** - Analyzes tech stack, generates specialized agents
-2. **Orchestrator** - Plans work, delegates tasks
-3. **Specialists** - Implement features (@frontend, @backend, @tester)
-4. **Reviewer** - Validates quality gates
-5. **Fixer** - Auto-fixes issues
-
-### Quality Gates
-
-Code must pass 6 core automated quality gates before completion:
-- Type checking (TypeScript, Flow, etc.)
-- Linting (ESLint, Biome, etc.)
-- Tests (all tests must pass)
-- Coverage (minimum 80%)
-- Security (vulnerability scanning)
-- Dead code (no unused exports, files, dependencies)
-
-Gates automatically adapt to your stack. TypeScript project? Type checking enabled. JavaScript only? Type checking skipped.
+The orchestrator:
+- Reads your product specification
+- Picks the highest-priority incomplete feature
+- Delegates to appropriate specialist agents
+- Validates quality gates
+- Tracks progress
+- Repeats until 100% complete
 
 ## Common Commands
 
@@ -172,7 +98,10 @@ Gates automatically adapt to your stack. TypeScript project? Type checking enabl
 /agentful-status    - Check progress
 /agentful-decide    - Answer pending decisions
 /agentful-validate  - Run quality checks
+/agentful-generate  - Re-generate agents (optional, after codebase changes)
 ```
+
+**Note**: Agents are generated automatically on first run of `/agentful-start`. Only re-run `/agentful-generate` if your tech stack changes significantly.
 
 ## Tips
 

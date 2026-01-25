@@ -1,0 +1,299 @@
+---
+title: Research Skill
+description: Best practices research via Context7 or WebSearch
+sidebar_position: 6
+---
+
+# Research Skill
+
+Enables agents to research current best practices, design patterns, and implementation approaches for technologies and product domains.
+
+## What It Provides
+
+**Research Methods**
+- Context7 MCP integration patterns (preferred)
+- WebSearch fallback strategies
+- Query formulation techniques
+- Result synthesis methods
+
+**Research Workflows**
+- Tech stack analysis procedures
+- Domain pattern research
+- Pre-implementation research
+- Trend analysis approaches
+
+**Quality Criteria**
+- Result evaluation standards (recency, authority, specificity)
+- Source prioritization rules
+- Actionability assessment
+
+## Used By
+
+**`/agentful-generate` Command:**
+- Researches best practices for detected tech stack
+- Informs domain agent generation
+- Guides skill creation with current patterns
+
+**Orchestrator Agent:**
+- Before implementing complex features
+- When architectural decisions needed
+- For comparing implementation approaches
+
+**Agent Generation:**
+- Researching framework-specific patterns
+- Understanding domain implementation approaches
+- Informing specialized agent creation
+
+## Tools Available
+
+- Context7 MCP (if connected)
+- WebSearch (always available)
+- Read (tech stack detection, product specs)
+- Write (research synthesis reports)
+
+## Research Methods
+
+### 1. Context7 MCP (Preferred)
+
+**Note:** Context7 is an **optional** MCP dependency. If not installed, the skill falls back to WebSearch.
+
+**Advantages:**
+- Curated, accurate results
+- Up-to-date framework documentation
+- Language-specific patterns
+- Faster than web search
+- No noise or outdated content
+
+**Check Availability:**
+```javascript
+function hasContext7() {
+  return typeof mcp__context7__search !== 'undefined';
+}
+```
+
+**Usage:**
+```javascript
+const results = await mcp__context7__search({
+  query: 'Next.js 15 app router best practices',
+  limit: 5
+});
+```
+
+### 2. WebSearch (Fallback)
+
+**Advantages:**
+- Always available
+- Broader coverage (blogs, forums)
+- Real-world examples
+- Community insights
+
+**Limitations:**
+- May include outdated content
+- Requires filtering and verification
+- More noise
+
+**Usage:**
+```javascript
+const results = await WebSearch({
+  query: 'Next.js 15 app router best practices 2026',
+  limit: 5
+});
+// Always include current year for freshness
+```
+
+## Research Workflow
+
+### Step 1: Determine Research Method
+```javascript
+const researchMethod = hasContext7() ? 'context7' : 'websearch';
+console.log(`Research method: ${researchMethod}`);
+```
+
+### Step 2: Formulate Queries
+
+**Good queries:**
+- "Next.js 15 server components best practices"
+- "React 19 concurrent rendering patterns"
+- "PostgreSQL connection pooling with Prisma"
+- "Authentication implementation patterns 2026"
+
+**Bad queries:**
+- "Next.js" (too broad)
+- "How to code" (too generic)
+- "Best JavaScript framework" (subjective, not actionable)
+
+**Query Template:**
+```
+[Technology/Framework] + [Specific Topic] + [Year]
+```
+
+### Step 3: Execute Research
+
+Research 5-10 targeted queries to balance coverage vs speed.
+
+### Step 4: Synthesize Findings
+
+Extract actionable insights:
+- Tech stack patterns
+- Domain-specific patterns
+- Best practices
+- Common pitfalls
+- References
+
+## Research Use Cases
+
+### Use Case 1: Tech Stack Research
+
+After tech stack detection, research current best practices:
+
+```
+Tech Stack: Next.js 15, TypeScript, PostgreSQL, Prisma
+
+Queries:
+1. "Next.js 15.1.0 best practices"
+2. "Next.js project structure patterns"
+3. "Prisma with PostgreSQL optimization"
+4. "TypeScript configuration for Next.js"
+
+Synthesis:
+- Framework patterns for Next.js 15
+- Project structure recommendations
+- Database optimization approaches
+- TypeScript configuration best practices
+```
+
+### Use Case 2: Domain Research
+
+Research implementation patterns for product domains:
+
+```
+Product: Task management app
+Domains: authentication, tasks, collaboration
+
+Queries:
+1. "Task management app architecture patterns"
+2. "Authentication implementation Next.js"
+3. "Task management data model design"
+4. "Real-time collaboration implementation"
+
+Synthesis:
+- Domain-specific implementation patterns
+- Database schema design approaches
+- API design recommendations
+```
+
+### Use Case 3: Pre-Implementation Research
+
+Before implementing complex features:
+
+```
+Feature: Real-time notifications
+Technologies: WebSockets, Redis, React
+
+Queries:
+1. "WebSocket implementation Next.js"
+2. "Redis pub/sub patterns notifications"
+3. "React real-time updates best practices"
+4. "Scaling WebSocket connections"
+
+Synthesis:
+- WebSocket implementation patterns
+- Redis pub/sub approaches
+- React real-time update strategies
+- Scalability considerations
+```
+
+## Quality Criteria
+
+When evaluating research findings:
+
+1. **Recency**: Prefer results from current year
+2. **Authority**: Official docs > verified blogs > forums
+3. **Specificity**: Specific patterns > general advice
+4. **Actionability**: Code examples > theory
+5. **Relevance**: Exact version match > general version
+
+## Examples
+
+### Tech Stack Research Flow
+```
+1. Detect tech stack (Next.js 15, TypeScript, Prisma)
+2. Check Context7 availability
+3. Research queries:
+   - "Next.js 15 best practices"
+   - "Next.js project structure"
+   - "Prisma patterns"
+4. Synthesize findings
+5. Apply to agent generation
+```
+
+### Domain Research Flow
+```
+1. Read product requirements
+2. Extract domains (auth, tasks, collaboration)
+3. Research each domain:
+   - "Authentication implementation patterns"
+   - "Task management data model"
+   - "Real-time collaboration implementation"
+4. Synthesize domain-specific patterns
+5. Inform domain agent specialization
+```
+
+### Architectural Decision Research
+```
+1. Identify complex feature
+2. Research implementation approaches:
+   - "Feature X implementation approach A"
+   - "Feature X implementation approach B"
+3. Present findings to user for decision
+4. Proceed with chosen approach
+```
+
+## Best Practices
+
+1. **Always check Context7 availability first** - More accurate results
+2. **Include year in WebSearch queries** - Ensure freshness
+3. **Limit queries to 5-10** - Balance coverage vs speed
+4. **Synthesize findings** - Don't just dump raw results
+5. **Cache research results** - Avoid redundant queries
+6. **Provide references** - Link to source material
+7. **Time-box research** - Don't spend hours researching
+
+## Rules
+
+### DO
+- Prefer Context7 when available
+- Include current year in WebSearch queries
+- Formulate specific, targeted queries
+- Synthesize findings into actionable insights
+- Provide references to sources
+- Time-box research activities
+
+### DON'T
+- Use overly broad queries
+- Skip synthesis step
+- Ignore result quality criteria
+- Spend excessive time researching
+- Present raw results without context
+
+## Implementation Details
+
+**Location:** `.claude/skills/research/SKILL.md`
+
+**Model:** Sonnet
+
+**MCP Dependencies:**
+- Context7 (optional, preferred)
+- WebSearch (built-in fallback)
+
+**Tools Used:**
+- Context7 MCP (if available)
+- WebSearch (fallback)
+- Read (tech stack, product specs)
+- Write (research synthesis)
+
+## See Also
+
+- **[/agentful-generate](/commands/agentful-generate)** - Uses research for agent generation
+- **[Orchestrator Agent](/agents/orchestrator)** - Uses research for architectural decisions
+- **[Context7 MCP](https://github.com/context7/mcp-server)** - Optional MCP dependency

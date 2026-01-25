@@ -1,579 +1,85 @@
 # GLM-4.7 Setup
 
-Use GLM-4.7 with agentful for **10x cost savings** while maintaining competitive quality.
+Use GLM-4.7 with agentful for 10x cost savings.
 
-## Why GLM-4.7?
-
-| Metric | GLM-4.7 | Claude Sonnet 4.5 | Difference |
-|--------|---------|-------------------|------------|
-| **Input Cost** | $0.60/M | $3.00/M | **83% cheaper** |
-| **Output Cost** | $2.20/M | $15.00/M | **85% cheaper** |
-| **SWE-bench** | 73.8% | 77.2% | -4.4% |
-| **Math Reasoning** | **98.6** | 87.0 | +13.3% |
-| **Tool Invocation** | **84.7** | Lower | **Better** |
-| **Context Window** | 200K | 200K | Same |
-| **Output Capacity** | **128K** | 8K | **16x larger** |
-
-**Best For**:
-- Cost-sensitive projects
-- Mathematical/algorithmic tasks
-- Tool-heavy workflows
-- Bulk operations
-- Large output requirements
-
----
-
-## Quick Start (2 minutes)
-
-### Option 1: Using GLM CLI Tool (Easiest)
+## Quick Start
 
 ```bash
-# Install GLM CLI
+# Option 1: Coding Tool Helper (easiest)
+npx @z_ai/coding-helper
+
+# Option 2: GLM CLI
 npm install -g @xqsit94/glm
-
-# Launch Claude Code with GLM
 glm --model glm-4.7
-
-# That's it! Now run agentful commands:
 /agentful-start
-```
 
-### Option 2: Environment Variables
-
-```bash
-# Get API key from https://z.ai
+# Option 3: Manual setup
 export ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic
 export ANTHROPIC_AUTH_TOKEN=your_zai_api_key
-
-# Launch Claude Code
 claude
-
-# Run agentful
-/agentful-start
 ```
 
-### Option 3: Automatic Setup Script
+## Get API Key
 
+1. Visit [Z.AI](https://z.ai)
+2. Sign up → API Keys → Generate
+3. Copy key
+
+**Or use Coding Tool Helper:**
 ```bash
-# Download and run setup script
-curl -O "https://cdn.bigmodel.cn/install/claude_code_zai_env.sh"
-bash ./claude_code_zai_env.sh
-
-# Follow prompts to configure
-claude
+npx @z_ai/coding-helper
 ```
+This automatically configures Claude Code, Windsurf, Cursor, and other coding tools.
 
----
+## Configure Claude Code
 
-## Detailed Setup
-
-### Step 1: Get API Key
-
-1. Visit **[Z.AI](https://z.ai)** (international) or **[BigModel](https://open.bigmodel.cn)** (China)
-2. Sign up for free account
-3. Navigate to API Keys section
-4. Generate new API key
-5. Copy the key (starts with `zai_...` or similar)
-
-**Pricing**:
-- **Free Tier**: Limited requests for testing
-- **GLM Coding Plan Lite**: $3/month (~2400 prompts)
-- **GLM Coding Plan Max**: ~$10-20/month (production usage)
-- **Pay-as-you-go**: $0.60/M input, $2.20/M output
-
-### Step 2: Configure Claude Code
-
-#### Persistent Configuration (Recommended)
-
-Edit `~/.claude/settings.json`:
+**Persistent** (`~/.claude/settings.json`):
 
 ```json
 {
   "environmentVariables": {
     "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
     "ANTHROPIC_AUTH_TOKEN": "your_zai_api_key",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.7",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-4.7"
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.7"
   }
 }
 ```
 
-#### Session-Based Configuration
+**Session-based:**
 
 ```bash
-# Set for current session only
 export ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic
 export ANTHROPIC_AUTH_TOKEN=your_zai_api_key
-
-# Launch Claude Code
 claude
 ```
 
-#### Per-Project Configuration
-
-Add to your project's `.env`:
+## Verify
 
 ```bash
-ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic
-ANTHROPIC_AUTH_TOKEN=your_zai_api_key
-```
-
-### Step 3: Verify Setup
-
-```bash
-# Start Claude Code
 claude
 
-# Check status
-/status
-
-# Should show:
-# Model: glm-4.7 (via Z.AI)
-# Status: Connected
-```
-
-Test with a simple prompt:
-
-```
 You: What model are you?
 Assistant: I am GLM-4.7, running via Z.AI API.
 ```
 
----
+## Model Variants
 
-## GLM Model Variants
+- **glm-4.7** - Latest, 200K context, 128K output (recommended)
+- **glm-4.5-air** - Faster, cheaper, use for simple tasks
+- **glm-4-long** - Ultra-long context
 
-### glm-4.7 (Recommended)
-
-**Latest and most capable**
-
-- **Released**: December 2025
-- **Context**: 200K tokens
-- **Output**: 128K tokens
-- **Strengths**: Math reasoning, tool use, multilingual
-- **SWE-bench**: 73.8%
-- **Cost**: $0.60/M input, $2.20/M output
+## Switch Back to Claude
 
 ```bash
-# Use in settings.json
-"ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.7"
-```
-
-### glm-4.6
-
-**Previous generation**
-
-- **Context**: 200K tokens
-- **Strengths**: Still very capable, slightly cheaper
-- **SWE-bench**: 68.0%
-- **Use Case**: Fallback option
-
-### glm-4.5-air
-
-**Lightweight variant**
-
-- **Context**: 128K tokens
-- **Speed**: Faster responses
-- **Cost**: Lower than 4.7
-- **Use Case**: Simple tasks, prototyping
-
-```bash
-# Good for Haiku-level tasks
-"ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air"
-```
-
-### glm-4-long
-
-**Ultra-long context**
-
-- **Context**: Ultra-long (exact limit varies)
-- **Cost**: $0.14/M tokens (both input/output)
-- **Use Case**: Analyzing massive codebases
-
----
-
-## Advanced Features
-
-### Preserved Thinking Mode
-
-GLM-4.7 can maintain reasoning state across conversation turns:
-
-```bash
-# Enable via API (future agentful feature)
-{
-  "clear_thinking": false,  # Preserve reasoning
-  "enable_thinking": true    # Enable interleaved thinking
-}
-```
-
-**Benefits**:
-- 42.8% on HLE benchmark (+12.4% improvement)
-- Consistent architectural decisions
-- Reduced re-computation
-- Better for multi-session projects
-
-### Large Output Generation
-
-GLM-4.7 can generate **128K tokens in one response** (Claude: 8K):
-
-```bash
-# Use case: Generate entire codebase
-You: "Create a full e-commerce application with frontend, backend, and database"
-
-GLM-4.7: [Generates 50+ files in single response]
-- Complete React frontend (20K tokens)
-- Full Express backend (15K tokens)
-- Database schemas (5K tokens)
-- Docker configuration (3K tokens)
-- Documentation (10K tokens)
-```
-
-### Context Caching
-
-Reduce costs for repeated context:
-
-```bash
-# Cached tokens: $0.11/M (vs $0.60/M full price)
-# 20-40% cost reduction
-
-# Example: Analyzing same codebase multiple times
-# First analysis: $0.60/M tokens
-# Subsequent: $0.11/M tokens (cached)
-```
-
-### Multilingual Support
-
-GLM-4.7 excels at Chinese/English bilingual coding:
-
-```bash
-# SWE-bench Multilingual: 66.7% (+12.9% over GLM-4.6)
-
-You: "创建一个电商网站" (Create an e-commerce site)
-GLM-4.7: [Generates code with Chinese comments and English code]
-```
-
----
-
-## Integration with agentful
-
-### All Agents Work Seamlessly
-
-Once GLM is configured, **all agentful agents work identically**:
-
-```bash
-# Orchestrator
-/agentful-start
-
-# Architect
-/agentful-product
-
-# Backend/Frontend/Tester/Reviewer/Fixer
-# All use GLM-4.7 automatically
-```
-
-### Recommended Agent Configuration
-
-GLM-4.7 is particularly strong for:
-
-**Architect Agent**:
-- Superior at system design
-- Excellent pattern recognition
-- Cost-effective for large analysis
-
-**Backend Agent**:
-- Strong algorithmic performance
-- Database optimization
-- API design
-
-**Tester Agent**:
-- Test generation
-- Edge case identification
-- 128K output = comprehensive test suites
-
-**Orchestrator Agent**:
-- Tool orchestration (84.7 τ²-Bench)
-- Multi-step workflows
-- Long-running sessions
-
----
-
-## Cost Optimization Strategies
-
-### 1. Hybrid Approach
-
-Use GLM for most tasks, Claude for critical code:
-
-```bash
-# 70% GLM, 30% Claude
-# Cost: $1.32/M tokens (56% savings)
-
-# 90% GLM, 10% Claude
-# Cost: $0.84/M tokens (72% savings)
-```
-
-**When to use GLM**:
-- Bulk file analysis
-- Algorithm implementation
-- Test generation
-- Documentation
-- Refactoring
-- Tool-heavy workflows
-
-**When to use Claude**:
-- Production-critical endpoints
-- Security-sensitive code
-- Final code review
-- User-facing features
-
-### 2. Model Variant Routing
-
-```bash
-# Use glm-4.5-air for simple tasks
-export ANTHROPIC_DEFAULT_HAIKU_MODEL="glm-4.5-air"
-
-# Use glm-4.7 for complex tasks
-export ANTHROPIC_DEFAULT_SONNET_MODEL="glm-4.7"
-```
-
-### 3. Context Caching
-
-```bash
-# For repeated codebase analysis
-# First run: Full cost
-# Subsequent: 81% cheaper (cached context)
-```
-
----
-
-## Performance Tips
-
-### Math-Heavy Tasks
-
-GLM-4.7 **outperforms Claude** on mathematical reasoning:
-
-```bash
-# Math benchmark: 98.6 vs Claude's 87.0
-
-You: "Implement optimal algorithm for longest increasing subsequence"
-
-GLM-4.7:
-- Correctly identifies O(n log n) solution
-- Provides mathematical proof
-- Explains complexity analysis
-- Generates test cases
-- Optimized implementation
-```
-
-### Tool-Heavy Workflows
-
-GLM-4.7 excels at multi-tool orchestration:
-
-```bash
-# τ²-Bench: 84.7 (beats Claude)
-
-You: "Research competitors, analyze market, create presentation"
-
-GLM-4.7:
-[Tool: web_search] → "AI coding assistants 2025"
-[Tool: web_search] → "Market size AI development tools"
-[Tool: analyze_data] → Process search results
-[Tool: generate_slides] → Create presentation
-[Tool: image_search] → Find charts/diagrams
-[Success Rate: 85%]
-```
-
-### Large Codebase Generation
-
-Use GLM's 128K output capacity:
-
-```bash
-You: "Generate complete microservices architecture for e-commerce"
-
-GLM-4.7: [Generates in ONE response]
-- API Gateway (10K tokens)
-- Auth Service (15K tokens)
-- Product Service (15K tokens)
-- Order Service (15K tokens)
-- Payment Service (10K tokens)
-- Docker Compose (5K tokens)
-- Kubernetes configs (10K tokens)
-- Documentation (20K tokens)
-
-Total: 100K tokens in single response
-(Claude would need 12+ separate responses)
-```
-
----
-
-## Troubleshooting
-
-### Connection Issues
-
-```bash
-# Test API connectivity
-curl https://api.z.ai/v1/models \
-  -H "Authorization: Bearer $ANTHROPIC_AUTH_TOKEN"
-
-# Should return list of available models
-```
-
-### Authentication Errors
-
-```bash
-# Check environment variables
-echo $ANTHROPIC_BASE_URL
-echo $ANTHROPIC_AUTH_TOKEN
-
-# Should output:
-# https://api.z.ai/api/anthropic
-# zai_...your_key...
-```
-
-### Quality Issues
-
-**If responses are lower quality than expected**:
-
-1. **Check model variant**: Ensure using glm-4.7 (not 4.5-air)
-2. **Enable thinking mode**: Better for complex tasks
-3. **Adjust temperature**: Lower (0.2) for code, higher (0.7) for creative
-4. **Provide more context**: GLM benefits from detailed prompts
-
-### Rate Limiting
-
-```bash
-# GLM rate limits (typical):
-# Free tier: ~100 requests/day
-# Lite plan: ~2400 prompts/5 hours
-# Max plan: ~Production usage
-
-# If rate limited:
-# 1. Upgrade plan
-# 2. Use caching to reduce requests
-# 3. Add retry logic with backoff
-```
-
-### Long Context Degradation
-
-GLM-4.7 occasionally degrades beyond 150K tokens:
-
-```bash
-# Solution 1: Explicit guidance
-You: "Focus on authentication modules in files 50-75"
-
-# Solution 2: Chunk large contexts
-# Break 200K context into 2x 100K requests
-
-# Solution 3: Use glm-4-long variant
-export ANTHROPIC_DEFAULT_OPUS_MODEL="glm-4-long"
-```
-
----
-
-## Switching Back to Claude
-
-### Temporary Switch
-
-```bash
-# Unset GLM configuration
+# Temporary
 unset ANTHROPIC_BASE_URL
-unset ANTHROPIC_AUTH_TOKEN
-
-# Set Claude key
 export ANTHROPIC_API_KEY=your_claude_key
-
-# Launch Claude Code
 claude
+
+# Permanent - edit ~/.claude/settings.json and remove GLM config
 ```
-
-### Permanent Switch
-
-Edit `~/.claude/settings.json`:
-
-```json
-{
-  "environmentVariables": {
-    // Remove or comment out GLM config
-    // "ANTHROPIC_BASE_URL": "https://api.z.ai/api/anthropic",
-    "ANTHROPIC_API_KEY": "your_claude_key"
-  }
-}
-```
-
-### Per-Task Switching
-
-```bash
-# Use GLM for bulk analysis
-glm --model glm-4.7
-/analyze-codebase
-
-# Exit and use Claude for production code
-claude
-/generate-api-endpoint
-```
-
----
-
-## Community Tools
-
-### GLM CLI Manager
-
-```bash
-# Install
-npm install -g @xqsit94/glm
-
-# Features
-glm --model glm-4.7          # Launch with specific model
-glm token set YOUR_KEY       # Manage API keys
-glm token show               # View current key
-glm --help                   # See all options
-```
-
-### Claude Code GLM Switcher
-
-```bash
-# Install
-npm install -g claude-glm-switcher
-
-# Quick launch
-claude-glm        # GLM-4.7
-claude-glm-air    # GLM-4.5-Air
-claude            # Back to Claude
-```
-
-### MCP Servers
-
-**GLM Math Co-Processor** (robertcprice/glm-mcp-server):
-```json
-{
-  "mcpServers": {
-    "glm-math": {
-      "command": "node",
-      "args": ["glm-mcp-server/index.js"],
-      "env": { "ZHIPU_API_KEY": "your_key" }
-    }
-  }
-}
-```
-
-Use Claude for orchestration, GLM for math-heavy operations.
-
----
 
 ## Resources
 
-- **Z.AI Docs**: https://docs.z.ai/
-- **GLM-4.7 Overview**: https://docs.z.ai/guides/llm/glm-4.7
-- **Function Calling**: https://docs.z.ai/guides/capabilities/function-calling
-- **Pricing**: https://docs.z.ai/guides/overview/pricing
-- **Hugging Face**: https://huggingface.co/zai-org/GLM-4.7
-- **Community Discord**: https://discord.gg/agentful
-
----
-
-## Next Steps
-
-- [Set up DeepSeek](/llm-providers/deepseek) for thinking mode workflows
-- [Configure Gemini](/llm-providers/gemini) for 1M context
-- [Try local models](/llm-providers/local) for privacy
-- [Learn cost optimization](/llm-providers#cost-optimization-tips)
+- [Z.AI Docs](https://docs.z.ai/)
+- [Pricing](https://docs.z.ai/guides/overview/pricing)

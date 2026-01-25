@@ -1,6 +1,6 @@
 # Reviewer Agent
 
-Validates code quality through 9 comprehensive checks. Detects issues but doesn't fix them.
+Validates code quality through 6 core quality gates. Detects issues but doesn't fix them.
 
 **Model:** Sonnet
 
@@ -8,20 +8,30 @@ Validates code quality through 9 comprehensive checks. Detects issues but doesn'
 
 **Key Rule:** Reviewer DETECTS issues. Fixer FIXES them.
 
-## The 9 Checks
+## The 6 Core Quality Gates
 
-### 1. TypeScript Check
+Every change must pass these automated checks:
+
+### 1. Type Checking
 
 ```bash
 npx tsc --noEmit
+# or
+mypy .
+# or
+go vet ./...
 ```
 
 Fails if any type errors found.
 
-### 2. Lint Check
+### 2. Linting
 
 ```bash
 npm run lint
+# or
+pylint *
+# or
+golangci-lint run
 ```
 
 Fails if any lint errors (warnings are OK).
@@ -32,6 +42,8 @@ Fails if any lint errors (warnings are OK).
 npx knip --reporter json
 # or
 npx ts-prune
+# or
+vulture .
 ```
 
 Fails if unused exports, imports, files, or dependencies.
@@ -40,6 +52,10 @@ Fails if unused exports, imports, files, or dependencies.
 
 ```bash
 npm test
+# or
+pytest
+# or
+go test ./...
 ```
 
 Fails if any tests fail.
@@ -48,6 +64,10 @@ Fails if any tests fail.
 
 ```bash
 npm test -- --coverage
+# or
+pytest --cov
+# or
+go test -cover ./...
 ```
 
 Fails if coverage < 80%.
@@ -61,29 +81,6 @@ grep -rE "api[_-]?key.*[:=].*['\"]" src/
 ```
 
 Fails if high/critical vulnerabilities, hardcoded secrets, or debug logs.
-
-### 7. Documentation Check
-
-Check for:
-- Missing JSDoc on public functions
-- README.md exists
-- API documentation
-
-### 8. Manual Code Review
-
-Check for:
-- Unhandled promise rejections
-- Missing error boundaries
-- Hardcoded secrets
-- TODO/FIXME comments
-
-### 9. Quality Gates
-
-All must pass:
-- `tests_passing`
-- `no_type_errors`
-- `no_dead_code`
-- `coverage_80`
 
 ## Output Format
 
@@ -154,7 +151,7 @@ Saves to `.agentful/last-validation.json`:
 ## Workflow
 
 ```
-1. Run all 9 checks sequentially
+1. Run all 6 core quality gates sequentially
 2. Collect all failures
 3. Categorize (mustFix vs canIgnore)
 4. Save to .agentful/last-validation.json
@@ -204,7 +201,7 @@ const API_KEY = process.env.API_KEY;
 ## Rules
 
 **ALWAYS:**
-- Run all 9 checks
+- Run all 6 core quality gates
 - Be specific about file locations
 - Save report to .agentful/last-validation.json
 - Never fix issues yourself

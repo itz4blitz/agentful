@@ -1,9 +1,0 @@
-# Test results and reports
-test-results-*.json
-test-report.json
-
-# Logs
-*.log
-
-# Temporary files
-*.tmp

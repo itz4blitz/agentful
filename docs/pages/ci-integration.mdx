@@ -35,7 +35,17 @@ Native integration via `@claude` mentions in issues and merge requests.
 
 ### Other CI Platforms
 
-For Jenkins, Bitbucket Pipelines, CircleCI, and other platforms, use the [Remote Execution API](/remote-execution) to run agents on a dedicated server.
+For Jenkins, Bitbucket Pipelines, CircleCI, and other platforms, install the Claude Code CLI directly in your pipeline:
+
+```bash
+# Install Claude Code CLI
+curl -fsSL https://claude.ai/install.sh | sh
+
+# Run agent with task
+claude -p "Use the reviewer agent to check code quality"
+```
+
+Configure your `ANTHROPIC_API_KEY` as an environment variable in your CI platform's settings.
 
 ## GitHub Actions Setup
 
@@ -283,7 +293,7 @@ Create a `CLAUDE.md` file to define:
 
 ### 5. Monitor API Usage
 
-Track your Anthropic API usage in the [Anthropic Console](https://console.anthropic.com) to:
+Track your Anthropic API usage in the [Anthropic Console](https://platform.claude.com) to:
 - Monitor costs
 - Set usage limits
 - Review API logs
@@ -376,8 +386,79 @@ Implement rate limiting to prevent abuse:
 - Use workflow conditions to skip unnecessary runs
 - Cache results when possible
 
+## Advanced Patterns
+
+### Parallel Development with Git Worktrees
+
+For working on multiple features in parallel, use git worktrees with separate CI jobs:
+
+:::warning[Git Worktrees in CI]
+Git worktrees in CI is an advanced pattern. Consider:
+- **Disk space**: Each worktree duplicates working directory
+- **Cleanup complexity**: Worktrees must be removed before checkout cleanup
+- **Race conditions**: Parallel jobs may conflict on shared git state
+
+For most teams, sequential jobs or separate repository clones are simpler and more reliable.
+:::
+
+```yaml
+# GitHub Actions
+jobs:
+  feature-a:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create worktree for feature-a
+        run: git worktree add ../feature-a feature-a
+      - uses: anthropics/claude-code-action@v1
+        with:
+          working-directory: ../feature-a
+          agent: backend
+          task: Implement feature A
+
+  feature-b:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create worktree for feature-b
+        run: git worktree add ../feature-b feature-b
+      - uses: anthropics/claude-code-action@v1
+        with:
+          working-directory: ../feature-b
+          agent: frontend
+          task: Implement feature B
+```
+
+### Background Agents in CI
+
+Run long-running agents in the background for continuous development:
+
+```yaml
+# GitLab CI/CD
+continuous:development:
+  stage: ai
+  image: node:24-alpine
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+  before_script:
+    - curl -fsSL https://claude.ai/install.sh | sh
+  script:
+    - |
+      # Run orchestrator in background for continuous feature development
+      claude -p "Run /agentful-start to continue development" &
+      AGENT_PID=$!
+
+      # Monitor progress
+      while kill -0 $AGENT_PID 2>/dev/null; do
+        sleep 60
+        claude -p "Run /agentful-status"
+      done
+  timeout: 6h
+```
+
 ## Next Steps
 
-- [Remote Execution](/remote-execution) - Run agents on dedicated servers
 - [Commands](/commands) - Learn agentful slash commands
 - [Agents](/agents) - Understand agent specializations
+- [Getting Started](/getting-started/quick-start) - Set up your first project

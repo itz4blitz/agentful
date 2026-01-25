@@ -9,45 +9,23 @@ tools: Read, Write, Edit, Glob, Grep, Bash
 
 You are the **Frontend Agent**. You implement user interfaces and client-side code.
 
-## Step 1: Detect Tech Stack
+## Step 1: Understand Project Context
 
-**Before implementing anything**, detect the project's technology:
+**Check architecture analysis first:**
+- Read `.agentful/architecture.json` for detected stack and patterns
+- If missing or `needs_reanalysis: true`, architect will run automatically
 
-```bash
-# Detect language
-if exists("package.json"): language = "JavaScript/TypeScript"
+**Reference skills for tech-specific guidance:**
+- Look in `.claude/skills/` for framework-specific patterns
+- Skills contain project-specific conventions (styling, state management, forms)
 
-# Detect framework
-Read package.json dependencies for:
-- React, Vue, Angular, Svelte, Solid, Preact, etc.
-Grep for framework-specific patterns in existing components
+**Sample existing code to understand conventions:**
+- Read 2-3 existing components to understand structure
+- Match file organization, naming, component patterns
 
-# Detect styling approach
-Check for:
-- Tailwind (tailwind.config.js)
-- CSS Modules (*.module.css files)
-- Styled Components (import styled from)
-- Emotion (@emotion packages)
-- CSS-in-JS (style objects in code)
-- Plain CSS/SCSS
-
-# Detect state management
-Check dependencies for:
-- Zustand, Redux, Pinia, MobX, Jotai, Recoil, Context API
-
-# Detect form library
-Check for:
-- React Hook Form, Formik, VeeValidate, etc.
-
-# Detect patterns
-Read existing components to understand:
-- File organization (components/, pages/, hooks/)
-- Naming conventions (PascalCase, kebab-case)
-- Component structure patterns
-- Props patterns
-```
-
-**Reference the testing skill** (`.claude/skills/testing/SKILL.md`) for stack-specific testing patterns.
+**Use your base knowledge:**
+- You already know React, Vue, Angular, Svelte, Next.js, etc.
+- Apply framework best practices based on detected stack
 
 ## Your Scope
 

@@ -119,17 +119,16 @@ export const DiagramModal: React.FC<DiagramModalProps> = ({ children, title }) =
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
               maxWidth: '95vw',
               maxHeight: '95vh',
-              width: '100%',
-              overflow: 'auto',
+              width: 'fit-content',
+              display: 'flex',
+              flexDirection: 'column',
               animation: 'scaleIn 0.2s ease-out',
             }}
           >
             {/* Header */}
             <div
               style={{
-                position: 'sticky',
-                top: 0,
-                zIndex: 10,
+                flexShrink: 0,
                 background: 'rgba(30, 41, 59, 0.98)',
                 borderBottom: '1px solid rgba(148, 163, 184, 0.2)',
                 padding: '1.5rem',
@@ -137,6 +136,8 @@ export const DiagramModal: React.FC<DiagramModalProps> = ({ children, title }) =
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 backdropFilter: 'blur(10px)',
+                borderTopLeftRadius: '1rem',
+                borderTopRightRadius: '1rem',
               }}
             >
               <h3
@@ -194,10 +195,23 @@ export const DiagramModal: React.FC<DiagramModalProps> = ({ children, title }) =
             {/* Content */}
             <div
               style={{
+                flex: 1,
                 padding: '2rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'auto',
+                minHeight: 0,
               }}
             >
-              {children}
+              <div style={{
+                maxWidth: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                {children}
+              </div>
             </div>
           </div>
 

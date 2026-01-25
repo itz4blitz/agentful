@@ -4,10 +4,12 @@ Agents are autonomous workers that execute specific tasks in agentful. Each agen
 
 ## Core Concept
 
+:::info[Agents vs Skills]
 **Agents are ACTORS that do work. Skills are KNOWLEDGE they reference.**
 
-- **Agents** = Workers with tools (Read, Write, Bash, Task, etc.)
-- **Skills** = Reusable knowledge bases (patterns, examples, best practices)
+- 🤖 **Agents** = Workers with tools (Read, Write, Bash, Task, etc.)
+- 📚 **Skills** = Reusable knowledge bases (patterns, examples, best practices)
+:::
 
 ## Agent Types
 
@@ -17,29 +19,75 @@ Built-in agents that ship with agentful.
 
 | Agent | Purpose | Tools | Model |
 |-------|---------|-------|-------|
-| [Orchestrator](/agents/orchestrator) | Coordinates work, delegates to specialists | Read, Write, Edit, Glob, Grep, Task | Opus |
-| [Architect](/agents/architect) | Analyzes tech stack, generates framework-specific agents | Read, Write, Edit, Glob, Grep, Task | Opus |
-| [Backend](/agents/backend) | Implements server-side code | Read, Write, Edit, Glob, Grep, Bash | Sonnet |
-| [Frontend](/agents/frontend) | Implements client-side code | Read, Write, Edit, Glob, Grep, Bash | Sonnet |
-| [Tester](/agents/tester) | Writes tests, ensures 80% coverage | Read, Write, Edit, Glob, Grep, Bash | Sonnet |
-| [Reviewer](/agents/reviewer) | Validates code quality (9 checks) | Read, Glob, Grep, Bash, Write, Edit | Sonnet |
-| [Fixer](/agents/fixer) | Fixes issues found by Reviewer | Read, Write, Edit, Glob, Grep, Bash | Sonnet |
+| [Orchestrator](/agents/orchestrator) | Coordinates work, delegates to specialists | [Read](https://www.vtrivedy.com/posts/claudecode-tools-reference#read), [Write](https://www.vtrivedy.com/posts/claudecode-tools-reference#write), [Edit](https://www.vtrivedy.com/posts/claudecode-tools-reference#edit), [Glob](https://www.vtrivedy.com/posts/claudecode-tools-reference#glob), [Grep](https://www.vtrivedy.com/posts/claudecode-tools-reference#grep), [Task](https://www.vtrivedy.com/posts/claudecode-tools-reference#task) | Opus |
+| [Architect](/agents/architect) | Analyzes tech stack, generates domain agents and skills | [Read](https://www.vtrivedy.com/posts/claudecode-tools-reference#read), [Write](https://www.vtrivedy.com/posts/claudecode-tools-reference#write), [Edit](https://www.vtrivedy.com/posts/claudecode-tools-reference#edit), [Glob](https://www.vtrivedy.com/posts/claudecode-tools-reference#glob), [Grep](https://www.vtrivedy.com/posts/claudecode-tools-reference#grep), [Task](https://www.vtrivedy.com/posts/claudecode-tools-reference#task) | Opus |
+| [Backend](/agents/backend) | Implements server-side code | [Read](https://www.vtrivedy.com/posts/claudecode-tools-reference#read), [Write](https://www.vtrivedy.com/posts/claudecode-tools-reference#write), [Edit](https://www.vtrivedy.com/posts/claudecode-tools-reference#edit), [Glob](https://www.vtrivedy.com/posts/claudecode-tools-reference#glob), [Grep](https://www.vtrivedy.com/posts/claudecode-tools-reference#grep), [Bash](https://www.vtrivedy.com/posts/claudecode-tools-reference#bash) | Sonnet |
+| [Frontend](/agents/frontend) | Implements client-side code | [Read](https://www.vtrivedy.com/posts/claudecode-tools-reference#read), [Write](https://www.vtrivedy.com/posts/claudecode-tools-reference#write), [Edit](https://www.vtrivedy.com/posts/claudecode-tools-reference#edit), [Glob](https://www.vtrivedy.com/posts/claudecode-tools-reference#glob), [Grep](https://www.vtrivedy.com/posts/claudecode-tools-reference#grep), [Bash](https://www.vtrivedy.com/posts/claudecode-tools-reference#bash) | Sonnet |
+| [Tester](/agents/tester) | Writes tests, ensures 80% coverage | [Read](https://www.vtrivedy.com/posts/claudecode-tools-reference#read), [Write](https://www.vtrivedy.com/posts/claudecode-tools-reference#write), [Edit](https://www.vtrivedy.com/posts/claudecode-tools-reference#edit), [Glob](https://www.vtrivedy.com/posts/claudecode-tools-reference#glob), [Grep](https://www.vtrivedy.com/posts/claudecode-tools-reference#grep), [Bash](https://www.vtrivedy.com/posts/claudecode-tools-reference#bash) | Sonnet |
+| [Reviewer](/agents/reviewer) | Validates code quality (6 core gates) | [Read](https://www.vtrivedy.com/posts/claudecode-tools-reference#read), [Glob](https://www.vtrivedy.com/posts/claudecode-tools-reference#glob), [Grep](https://www.vtrivedy.com/posts/claudecode-tools-reference#grep), [Bash](https://www.vtrivedy.com/posts/claudecode-tools-reference#bash), [Write](https://www.vtrivedy.com/posts/claudecode-tools-reference#write), [Edit](https://www.vtrivedy.com/posts/claudecode-tools-reference#edit) | Sonnet |
+| [Fixer](/agents/fixer) | Fixes issues found by Reviewer | [Read](https://www.vtrivedy.com/posts/claudecode-tools-reference#read), [Write](https://www.vtrivedy.com/posts/claudecode-tools-reference#write), [Edit](https://www.vtrivedy.com/posts/claudecode-tools-reference#edit), [Glob](https://www.vtrivedy.com/posts/claudecode-tools-reference#glob), [Grep](https://www.vtrivedy.com/posts/claudecode-tools-reference#grep), [Bash](https://www.vtrivedy.com/posts/claudecode-tools-reference#bash) | Sonnet |
+| [Product Analyzer](/reference/product-analyzer) | Analyzes product specs, identifies gaps | [Read](https://www.vtrivedy.com/posts/claudecode-tools-reference#read), [Write](https://www.vtrivedy.com/posts/claudecode-tools-reference#write), [Edit](https://www.vtrivedy.com/posts/claudecode-tools-reference#edit), [Glob](https://www.vtrivedy.com/posts/claudecode-tools-reference#glob), [Grep](https://www.vtrivedy.com/posts/claudecode-tools-reference#grep) | Opus |
 
 Location: `.claude/agents/*.md`
 
-### 2. Generated Agents
+### 2. Domain Agents
 
-Framework-specific agents created by Architect based on your tech stack.
+Business-specific agents for your product's domain needs, generated by Architect.
 
-**Examples:**
-- `nextjs-specialist.md` - Next.js App Router, Server Components
-- `prisma-agent.md` - Schema management, migrations
-- `django-agent.md` - Models, views, ORM patterns
-- `nestjs-agent.md` - Modules, controllers, services
+**E-commerce example:**
+- `payment-processor.md` - Handles payments, refunds, billing (uses `stripe-integration`, `payment-webhooks` skills)
+- `order-fulfillment.md` - Order processing, shipping, tracking (uses `shipping-api`, `order-state-machine` skills)
+- `inventory-manager.md` - Stock tracking, restocking alerts (uses `inventory-sync`, `stock-alerts` skills)
 
-Location: `.claude/agents/generated/*.md`
+**SaaS platform example:**
+- `subscription-manager.md` - Plans, upgrades, billing cycles (uses `subscription-billing`, `plan-migration` skills)
+- `workspace-coordinator.md` - Team creation, permissions, sharing (uses `rbac-patterns`, `team-provisioning` skills)
+- `analytics-collector.md` - Event tracking, metrics, reports (uses `event-schema`, `metrics-aggregation` skills)
 
-**Generation:** Run `/agentful-generate` to create agents for your stack.
+Location: `.claude/agents/domain/*.md`
+
+**Generation:** Architect analyzes your product spec and creates domain agents matching your business logic.
+
+### How Generated Skills Work With Agents
+
+Generated tech stack skills are used by core agents (backend, frontend, tester).
+
+:::tip[Example: Next.js + Prisma + Stripe Project]
+**How this would work in a project that used Next.js, Prisma ORM, and Stripe for payments:**
+
+**Architect would generate these skills:**
+- `.claude/skills/nextjs-patterns/` - App Router, Server Components, Server Actions
+- `.claude/skills/prisma-schemas/` - Models, migrations, relations
+- `.claude/skills/stripe-integration/` - Payment flows, webhooks, subscriptions
+- `.claude/skills/react-patterns/` - Hooks, state management, forms
+- `.claude/skills/typescript-conventions/` - Types, interfaces, generics
+
+**Core agents automatically reference generated skills:**
+- 🔧 **Backend** looks in `.claude/skills/` for backend patterns (Next.js API routes, Prisma schemas, etc.)
+- 🎨 **Frontend** looks in `.claude/skills/` for frontend patterns (React hooks, Next.js components, etc.)
+- ✅ **Tester** looks in `.claude/skills/` for testing patterns matching your stack
+
+**Domain agents combine multiple generated skills:**
+- 💳 `payment-processor` references `.claude/skills/stripe-integration/`, `.claude/skills/prisma-schemas/`, etc.
+
+**How it works:**
+- Core agents ship with `.claude/agents/` and **never need modification**
+- Claude Code already knows how to use Next.js, Prisma, Stripe, etc.
+- Skills provide **project-specific patterns** (your file structure, naming conventions, custom patterns)
+- Agents automatically discover and reference skills in `.claude/skills/`
+:::
+
+**Auto-generation workflow:**
+
+Run `/agentful-generate` and Architect will:
+1. 🔍 Scan your codebase for tech stack and conventions
+2. 📝 Generate skills documenting **your specific patterns** (not generic framework docs)
+3. ✨ Core agents automatically find and use these skills - **zero modification**
+4. 🏗️ Optionally create domain agents for business workflows
+
+:::warning[Core Agents Are Read-Only]
+Core agent templates in `.claude/agents/` should never be edited. They work OOTB by referencing `.claude/skills/` automatically. Claude Code already understands frameworks - skills capture YOUR conventions.
+:::
 
 ### 3. Ephemeral Agents
 
@@ -101,7 +149,7 @@ Standard development cycle:
 
 ### Reviewer vs Fixer
 
-- **Reviewer** = DETECTS issues (runs 9 validation checks)
+- **Reviewer** = DETECTS issues (runs 6 core quality gates)
 - **Fixer** = FIXES issues (reads `.agentful/last-validation.json`)
 
 Reviewer finds problems, Fixer solves them.
@@ -113,12 +161,12 @@ Reviewer finds problems, Fixer solves them.
 
 Agents never cross domains. Backend doesn't modify UI; Frontend doesn't touch APIs.
 
-### Core vs Generated
+### Core vs Domain
 
-- **Core agents** = General-purpose (works with any stack)
-- **Generated agents** = Framework-specific (uses exact patterns for Next.js, Django, etc.)
+- **Core agents** = General roles (backend, frontend, tester, reviewer)
+- **Domain agents** = Business-specific roles (payment-processor, order-fulfillment, subscription-manager)
 
-Use generated agents when available for better code quality.
+Core agents handle generic implementation. Domain agents understand your business logic and workflows.
 
 ## Agent Communication
 

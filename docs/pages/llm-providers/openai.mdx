@@ -473,9 +473,11 @@ claude
 
 ---
 
-## Production Deployment
+## Running LiteLLM as a Service
 
 ### Docker Compose
+
+For persistent LiteLLM proxy:
 
 ```yaml
 services:
@@ -490,46 +492,14 @@ services:
     volumes:
       - ./litellm_config.yaml:/app/config.yaml
     command: ["--config", "/app/config.yaml"]
-
-  agentful:
-    build: .
-    depends_on:
-      - litellm
-    environment:
-      ANTHROPIC_BASE_URL: http://litellm:4000
-      ANTHROPIC_API_KEY: ${OPENAI_API_KEY}
 ```
 
-### Kubernetes
+Then configure Claude Code to use it:
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: litellm
-spec:
-  replicas: 3
-  template:
-    spec:
-      containers:
-      - name: litellm
-        image: ghcr.io/berriai/litellm:main-latest
-        ports:
-        - containerPort: 4000
-        env:
-        - name: OPENAI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: openai-secret
-              key: api-key
-        volumeMounts:
-        - name: config
-          mountPath: /app/config.yaml
-          subPath: config.yaml
-      volumes:
-      - name: config
-        configMap:
-          name: litellm-config
+```bash
+export ANTHROPIC_BASE_URL=http://localhost:4000
+export ANTHROPIC_API_KEY=$OPENAI_API_KEY
+claude
 ```
 
 ---

@@ -2,7 +2,7 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
   title: 'agentful',
-  description: 'Pre-configured AI agent toolkit with self-hosted remote execution. The Swiss Army Knife of AI Agents - works with any LLM, any tech stack, any platform.',
+  description: 'Local-first AI development toolkit for Claude Code. Works with any LLM, any tech stack, any platform.',
 
   logoUrl: '/logo.svg',
   iconUrl: '/logo-icon.svg',
@@ -31,7 +31,11 @@ export default defineConfig({
         items: [
           { text: 'Overview', link: '/skills' },
           { text: 'Conversation', link: '/skills/conversation' },
+          { text: 'Deployment', link: '/skills/deployment' },
+          { text: 'Product Planning', link: '/skills/product-planning' },
           { text: 'Product Tracking', link: '/skills/product-tracking' },
+          { text: 'Research', link: '/skills/research' },
+          { text: 'Testing', link: '/skills/testing' },
           { text: 'Validation', link: '/skills/validation' },
         ],
       },
@@ -44,20 +48,11 @@ export default defineConfig({
         ],
       },
       {
-        text: 'Architecture',
-        items: [
-          { text: 'Distributed MCP', link: '/architecture/distributed-mcp' },
-          { text: 'HTTP/SSE Transport', link: '/architecture/http-transport' },
-          { text: 'OAuth 2.1 Flow', link: '/architecture/oauth-flow' },
-          { text: 'Client Pool', link: '/architecture/client-pool' },
-          { text: 'Work Distribution', link: '/architecture/work-distribution' },
-        ],
-      },
-      {
         text: 'Agents',
         items: [
           { text: 'Agent Overview', link: '/agents' },
           { text: 'Orchestrator', link: '/agents/orchestrator' },
+          { text: 'Product Analyzer', link: '/agents/product-analyzer' },
           { text: 'Architect', link: '/agents/architect' },
           { text: 'Backend', link: '/agents/backend' },
           { text: 'Frontend', link: '/agents/frontend' },
@@ -91,12 +86,9 @@ export default defineConfig({
         ],
       },
       {
-        text: 'Server & Infrastructure',
+        text: 'Infrastructure',
         items: [
-          { text: 'Self-Hosted Server', link: '/server' },
-          { text: 'Remote Execution', link: '/remote-execution' },
           { text: 'CI/CD Integration', link: '/ci-integration' },
-          { text: 'Pipelines', link: '/pipelines/overview' },
         ],
       },
       {
@@ -144,6 +136,12 @@ export default defineConfig({
       {
         rel: 'stylesheet',
         href: '/custom.css',
+      },
+      {
+        rel: 'stylesheet',
+        href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+        integrity: 'sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==',
+        crossorigin: 'anonymous',
       },
     ],
     script: [

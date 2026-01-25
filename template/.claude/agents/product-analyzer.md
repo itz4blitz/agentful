@@ -659,7 +659,7 @@ For each issue, provide actionable recommendations:
   "recommendation": {
     "action": "Specify frontend framework in Tech Stack section",
     "options": [
-      "Next.js 14 (recommended for full-stack TypeScript)",
+      "Next.js 15 (recommended for full-stack TypeScript)",
       "React + Vite (recommended for SPA)",
       "Vue + Nuxt (recommended for Vue developers)",
       "SvelteKit (recommended for performance)",

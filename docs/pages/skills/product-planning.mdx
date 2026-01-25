@@ -1,0 +1,317 @@
+---
+title: Product Planning Skill
+description: Product specification analysis and gap identification
+sidebar_position: 5
+---
+
+# Product-Planning Skill
+
+Analyzes product specifications for completeness, identifies gaps, and guides refinement to ensure requirements are ready for development.
+
+## What It Provides
+
+**Product Specification Analysis**
+- Methods for reading flat and hierarchical product structures
+- Patterns for identifying missing requirements
+- Techniques for detecting ambiguous language
+- Procedures for finding conflicting requirements
+
+**Readiness Scoring**
+- Gap severity classification (blocking, warning, recommendation)
+- Prioritization patterns for issue resolution
+- Quality dimension evaluation methods
+
+**Refinement Guidance**
+- Question formulation strategies (5 W's framework)
+- Feature breakdown techniques
+- Acceptance criteria templates
+- Dependency mapping methods
+
+**Structure Validation**
+- Domain organization verification
+- Feature definition standards
+- Priority level validation (CRITICAL/HIGH/MEDIUM/LOW)
+
+## Used By
+
+**`/agentful-product` Command:**
+- Primary consumer for product spec analysis
+- Generates readiness scores and improvement recommendations
+- Identifies gaps before development begins
+
+**Product-Analyzer Agent:**
+- Uses this skill for comprehensive spec analysis
+- Calculates readiness scores (0-100%)
+- Validates tech stack compatibility
+- Detects circular dependencies
+
+**Conversation Skill:**
+- When user asks "Is my product spec ready?"
+- When user uploads or updates product documentation
+
+## Tools Available
+
+- Read (product specs, analysis reports)
+- Write (analysis reports, product-analysis.json)
+- Edit (product spec improvements)
+- Glob (find domain files)
+- Grep (search for features, requirements)
+
+## Product Structure Support
+
+### Flat Structure
+```
+.claude/product/
+└── index.md           # All features in one file
+```
+
+### Hierarchical Structure
+```
+.claude/product/
+├── index.md           # Overview
+└── domains/
+    ├── authentication/
+    │   └── index.md
+    └── profiles/
+        └── index.md
+```
+
+## Readiness Scoring
+
+**IMPORTANT:** The authoritative readiness scoring formula is defined in `.claude/agents/product-analyzer.md`.
+
+**Ready to Build Criteria:**
+- Readiness score ≥ 75%
+- Zero blocking issues
+- Tech stack 100% specified
+
+**Quality Dimensions:**
+- Completeness (features have descriptions, acceptance criteria)
+- Clarity (unambiguous requirements, measurable metrics)
+- Feasibility (realistic tech choices, achievable scope)
+- Testability (verifiable acceptance criteria)
+- Consistency (no conflicts, aligned priorities)
+
+**Gap Severity:**
+- **BLOCKING**: Cannot proceed without this information
+- **WARNING**: Major ambiguity that will cause rework
+- **RECOMMENDATION**: Nice-to-have details for better clarity
+
+## Analysis Workflow
+
+### Step 1: Detect Product Structure
+```bash
+# Check for flat structure
+.claude/product/index.md
+
+# Check for hierarchical structure
+.claude/product/domains/*/index.md
+```
+
+### Step 2: Analyze Completeness
+
+**For each feature, verify:**
+1. Description exists and is clear (what, why, who)
+2. Acceptance criteria are defined and testable
+3. Priority is assigned (CRITICAL/HIGH/MEDIUM/LOW)
+4. Technical considerations noted (performance, security, scalability)
+
+**For overall product, verify:**
+1. Tech stack is specified
+2. Goals are clear and measurable
+3. Target users are defined
+4. Domains are well-organized (hierarchical only)
+
+### Step 3: Delegate to Product Analyzer
+
+For comprehensive analysis including readiness scoring:
+
+```bash
+Task("product-analyzer", "Analyze .claude/product/index.md and generate product-analysis.json")
+```
+
+The product-analyzer will:
+- Calculate readiness score (0-100%)
+- Identify blocking issues, warnings, recommendations
+- Validate priority levels
+- Check tech stack compatibility
+- Detect circular dependencies
+
+### Step 4: Generate Report
+
+Save analysis to `.agentful/product-analysis.json`.
+
+### Step 5: Provide Recommendations
+
+Generate specific, actionable recommendations:
+- List specific questions to ask the user
+- Suggest template improvements
+- Recommend splitting/merging features
+- Provide examples from similar features
+
+## Priority Level Guidelines
+
+**Standard priority levels** (ONLY these are valid):
+
+- **CRITICAL**: Must-have for MVP, blocking for launch
+- **HIGH**: Important for launch, significant value
+- **MEDIUM**: Nice-to-have, enhances experience
+- **LOW**: Future consideration, not needed for launch
+
+**Invalid priority levels** (flag as BLOCKING issue):
+- P0, P1, P2, P3
+- Must-have, Should-have, Nice-to-have
+- 1, 2, 3, 4
+- Any custom values
+
+## Examples
+
+### Feature Request Analysis
+```
+Feature: User Authentication
+Status: Incomplete
+
+Missing:
+- OAuth provider support (should we support Google, GitHub?)
+- Session timeout duration (security requirement)
+- 2FA requirement (compliance consideration)
+
+Questions:
+1. Should we support OAuth providers (Google, GitHub)?
+2. What's the session timeout requirement?
+3. Do we need 2FA for compliance?
+```
+
+### Readiness Check
+```
+Product Specification Analysis
+
+Readiness Score: 68/100
+
+Ready to Build: NO
+- Readiness score: 68% (>= 75% required)
+- Blocking issues: 3 (0 required)
+- Tech stack: 85% complete (100% required)
+
+Blocking Issues (3):
+1. **Authentication**: OAuth providers not specified
+2. **Database**: Missing database choice
+3. **Tech Stack**: Deployment platform not specified
+```
+
+### Refinement Guidance
+```
+Suggestions for "User Profiles" feature:
+
+Current:
+> Users can update their profiles
+
+Improved:
+> Users can update their profiles with:
+> - Display name (required)
+> - Avatar image (optional, max 2MB)
+> - Bio text (optional, max 500 chars)
+>
+> Acceptance Criteria:
+> - [x] User can update display name
+> - [x] User can upload avatar (JPG, PNG)
+> - [x] Avatar is resized to 200x200px
+> - [x] Bio is limited to 500 characters
+> - [x] Changes are saved immediately
+```
+
+## Output Format
+
+```markdown
+## Product Specification Analysis
+
+### Readiness Score: X/100
+
+[Brief summary of overall readiness]
+
+### Ready to Build: YES/NO
+
+- Readiness score: X% (>= 75% required)
+- Blocking issues: X (0 required)
+- Tech stack: X% complete (100% required)
+
+### Blocking Issues (X)
+
+- **[Feature/Domain]**: [Specific issue]
+  - **Why it's blocking**: [Explanation]
+  - **To resolve**: [Specific questions or required information]
+
+### Warnings (X)
+
+- **[Feature/Domain]**: [Specific gap]
+  - **Impact**: [What could go wrong]
+  - **Recommendation**: [How to address it]
+
+### Recommendations (X)
+
+- **[Feature/Domain]**: [Improvement area]
+  - **Benefit**: [Why this helps]
+  - **Suggestion**: [How to improve]
+
+### Strengths
+
+- [What's well-defined]
+- [What's clear and actionable]
+
+### Next Steps
+
+1. [Most critical action]
+2. [Second priority action]
+3. [Third priority action]
+
+---
+
+*Analysis saved to `.agentful/product-analysis.json`*
+```
+
+## Rules
+
+### DO
+- Use the product-analyzer agent for deep analysis
+- Ask specific, targeted questions with concrete examples
+- Save analysis results to `.agentful/product-analysis.json`
+- Provide actionable recommendations
+- Recognize well-written specifications
+- Adapt analysis based on project type
+- Consider technical feasibility
+- Identify dependencies between features
+- Validate priority levels are CRITICAL/HIGH/MEDIUM/LOW
+
+### DON'T
+- Write code (this skill focuses on requirements analysis)
+- Make assumptions about unclear requirements
+- Provide generic feedback without specific questions
+- Skip saving the analysis report
+- Approve incomplete specs
+- Ignore conflicting requirements
+- Accept P0/P1/P2/P3 priority levels
+- Suggest third-party services by default
+
+## Implementation Details
+
+**Location:** `.claude/skills/product-planning/SKILL.md`
+
+**Model:** Sonnet
+
+**Tools Used:**
+- Read (product specs, analysis reports)
+- Write (product-analysis.json)
+- Edit (product spec improvements)
+- Glob (find domain files)
+- Grep (search for features)
+
+**Files:**
+- `.claude/product/index.md` - Product specification
+- `.claude/product/domains/*/index.md` - Domain specs
+- `.agentful/product-analysis.json` - Analysis results
+
+## See Also
+
+- **[/agentful-product](/commands/agentful-product)** - Uses this skill for product spec analysis
+- **[Product-Analyzer Agent](/reference/product-analyzer)** - Performs comprehensive analysis
+- **[Product-Tracking Skill](/skills/product-tracking)** - Progress calculation methods

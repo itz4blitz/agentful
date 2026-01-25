@@ -1,0 +1,211 @@
+---
+title: Deployment Skill
+description: Deployment procedures and production readiness validation
+sidebar_position: 4
+---
+
+# Deployment Skill
+
+Guides deployment preparation and production readiness validation for shipping applications.
+
+## What It Provides
+
+**Pre-Deployment Checklist**
+- Code quality verification steps
+- Build and configuration validation
+- Deployment planning procedures
+
+**Environment Configuration**
+- Environment variable documentation patterns
+- Runtime validation approaches
+- Configuration safety checks
+
+**Database Migration Strategy**
+- Safe migration procedures
+- Rollback script requirements
+- Migration testing approaches
+
+**Health Check Patterns**
+- Health endpoint implementations
+- Readiness and liveness checks
+- System health monitoring
+
+**Rollback Procedures**
+- Rollback planning requirements
+- Platform-specific rollback commands
+- Post-rollback verification steps
+
+## Used By
+
+**Orchestrator Agent:**
+- When user requests deployment
+- When feature is complete and ready to ship
+- When rollback is needed
+
+**Deployment Workflow:**
+- Validates production readiness
+- Executes deployment procedures
+- Verifies post-deployment health
+
+## Tools Available
+
+- Read (configuration files, environment templates)
+- Write (environment documentation, rollback scripts)
+- Edit (configuration updates)
+- Glob (find config files)
+- Grep (search for environment variables)
+- Bash (deployment commands, health checks)
+
+## Pre-Deployment Checklist
+
+### Code Quality
+```markdown
+- [ ] All tests passing (unit, integration, e2e)
+- [ ] Code coverage ≥80%
+- [ ] No type errors
+- [ ] No linter errors or warnings
+- [ ] No formatting issues
+- [ ] Security vulnerabilities checked
+```
+
+### Build & Configuration
+```markdown
+- [ ] Production build succeeds locally
+- [ ] Environment variables documented in .env.example
+- [ ] All required secrets configured
+- [ ] Database migrations ready and tested
+- [ ] Migration rollback scripts prepared
+```
+
+### Deployment Plan
+```markdown
+- [ ] Rollback procedure documented
+- [ ] Stakeholders notified
+- [ ] Monitoring and health checks configured
+- [ ] Post-deployment verification steps defined
+```
+
+## Environment Variables
+
+**Create `.env.example`:**
+```bash
+# Document all required variables
+DATABASE_URL=
+API_KEY=
+JWT_SECRET=
+NODE_ENV=production
+```
+
+**Runtime Validation:**
+Validate environment variables at application startup to catch configuration errors early.
+
+## Database Migrations
+
+**Safe Migration Strategy:**
+1. Test migrations in staging environment
+2. Backup production database before migration
+3. Write rollback scripts for all migrations
+4. Apply migrations before or after code deployment (depending on breaking changes)
+5. Monitor application after migration
+
+## Health Checks
+
+Implement health check endpoints:
+- `/health` - Overall system health (database, cache, external services)
+- `/ready` - Readiness to serve traffic
+- `/alive` - Process liveness
+
+## Rollback Procedures
+
+**Always have a rollback plan:**
+1. Know how to revert code deployment on your platform
+2. Know how to rollback database migrations
+3. Test rollback procedure in staging
+4. Document rollback commands
+
+## Post-Deployment Verification
+
+After deployment:
+1. Verify health checks return 200 OK
+2. Test critical user workflows
+3. Monitor error rates and logs for 15+ minutes
+4. Verify database migrations applied correctly
+
+## Common Deployment Platforms
+
+Choose platform based on your stack and requirements:
+- **Static sites**: Netlify, Vercel, CloudFlare Pages, GitHub Pages
+- **Serverless**: AWS Lambda, Vercel Functions, Netlify Functions, CloudFlare Workers
+- **Containers**: AWS ECS, Google Cloud Run, Azure Container Apps, Railway, Render
+- **Virtual Machines**: AWS EC2, DigitalOcean, Linode, Hetzner
+- **Kubernetes**: AWS EKS, Google GKE, Azure AKS, DigitalOcean Kubernetes
+
+Consult your platform's documentation for specific deployment commands and configuration.
+
+## Examples
+
+### Deployment Flow
+```
+1. Run pre-deployment checklist
+2. Validate environment configuration
+3. Test production build locally
+4. Apply database migrations (staging)
+5. Deploy to staging environment
+6. Run smoke tests
+7. Deploy to production
+8. Monitor health checks
+9. Verify critical workflows
+```
+
+### Rollback Flow
+```
+1. Detect deployment issue
+2. Execute rollback command
+3. Rollback database migrations (if needed)
+4. Verify health checks
+5. Monitor error rates
+6. Post-mortem analysis
+```
+
+## Rules
+
+### DO
+- Run full test suite before deploying
+- Validate environment configuration
+- Test production build locally
+- Document rollback procedure
+- Monitor after deployment
+- Tag releases in version control
+
+### DON'T
+- Deploy with failing tests
+- Commit secrets to version control
+- Deploy without rollback plan
+- Skip environment validation
+- Deploy breaking changes without coordination
+- Deploy on Friday afternoon without monitoring capacity
+
+## Implementation Details
+
+**Location:** `.claude/skills/deployment/SKILL.md`
+
+**Model:** Sonnet
+
+**Tools Used:**
+- Read (config files)
+- Write (environment docs, rollback scripts)
+- Edit (configuration)
+- Glob (find config files)
+- Grep (search for env vars)
+- Bash (deployment commands)
+
+**Files:**
+- `.env.example` - Environment variable template
+- `package.json` - Deployment scripts
+- Platform-specific config (vercel.json, netlify.toml, etc.)
+
+## See Also
+
+- **[/agentful-validate](/commands/agentful-validate)** - Pre-deployment validation
+- **[Validation Skill](/skills/validation)** - Quality gate checks
+- **[Orchestrator Agent](/agents/orchestrator)** - Coordinates deployment workflow

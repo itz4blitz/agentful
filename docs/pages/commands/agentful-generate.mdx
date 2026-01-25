@@ -2,6 +2,42 @@
 
 Analyze codebase, detect tech stack, discover business domains, generate domain agents and tech skills.
 
+:::warning[Most users never need to run this manually]
+Agent generation happens **automatically** on your first `/agentful-start` run. Only use this command if your tech stack changes significantly after initial setup.
+:::
+
+## When Agents Are Generated
+
+**Automatic generation (recommended):**
+- ✅ First time you run `/agentful-start` in a new project
+- ✅ Detects tech stack, discovers domains, generates agents/skills automatically
+- ✅ No manual intervention required
+
+**Manual regeneration (only if needed):**
+- 🔄 Adding a new language (e.g., Python to a TypeScript project)
+- 🔄 Switching architecture paradigms (e.g., REST API → GraphQL)
+- 🔄 Adopting new major framework (e.g., Express → NestJS)
+- 🔄 Adding new ORM or database technology
+
+**Examples of when to re-run:**
+```bash
+# ❌ Don't rerun for minor changes
+- Added a new npm package
+- Created a new feature/domain in existing stack
+- Fixed bugs or refactored code
+
+# ✅ Rerun for major tech stack changes
+- Migrated from JavaScript to TypeScript
+- Added Python backend alongside Node.js
+- Switched from REST to GraphQL API
+- Changed from Prisma to Drizzle ORM
+```
+
+**How it works:**
+1. First `/agentful-start`: Runs `/agentful-generate` automatically
+2. Saves results to `.agentful/architecture.json`
+3. Future runs: Uses cached architecture unless you manually regenerate
+
 ## Overview
 
 `/agentful-generate` unifies domain discovery and skill generation into a single command. It:
@@ -23,12 +59,16 @@ Analyze codebase, detect tech stack, discover business domains, generate domain 
 
 ## Usage
 
+:::info[For Advanced Users]
+This command is for manual regeneration only. First-time users should run `/agentful-start` instead, which handles generation automatically.
+:::
+
 ```bash
-# Analyze and generate everything
+# Manual regeneration (advanced users only)
 /agentful-generate
 
-# Regenerate after code structure changes
-/agentful-generate
+# Example scenario: You migrated from Express to NestJS
+/agentful-generate  # Regenerates skills with NestJS patterns
 ```
 
 ## Detection Process
@@ -195,13 +235,15 @@ Created at `.agentful/architecture.json`:
 
 ## When to Run
 
-| Situation | Action |
-|-----------|--------|
-| After initial development | Run to discover domains |
-| Major feature added | Rerun to detect new domains |
-| Tech stack changed | Rerun to update skills |
-| New domain emerged | Rerun to generate agent |
-| Periodic check | Rerun to stay current |
+| Situation | Action | Reason |
+|-----------|--------|--------|
+| **First `/agentful-start`** | Auto-runs | Initial tech stack detection |
+| **Added new language** | Manual rerun | Python → TypeScript project |
+| **Changed framework** | Manual rerun | Express → NestJS, REST → GraphQL |
+| **Changed ORM/database** | Manual rerun | Prisma → Drizzle, MongoDB → PostgreSQL |
+| **Added new feature** | ❌ No rerun needed | Use existing agents |
+| **Refactored code** | ❌ No rerun needed | Architecture unchanged |
+| **Added npm package** | ❌ No rerun needed | Minor dependency change |
 
 ## Example Output
 
@@ -236,10 +278,10 @@ Rerun /agentful-generate when codebase structure changes.
 **Cause**: Codebase too small or unclear structure
 
 **Solution**:
-- Implement features first with `/agentful-start`
-- Organize code into domain folders
-- Add more files per domain
-- Rerun `/agentful-generate`
+- This is normal for new projects
+- Implement features first with `/agentful-start` (uses core agents)
+- As code grows, domains emerge naturally
+- Rerun `/agentful-generate` only after significant domain structure appears
 
 ### Low confidence scores
 

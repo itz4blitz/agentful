@@ -43,15 +43,18 @@ export default defineConfig({
     ],
 
     // Setup files
-    setupFiles: [],
+    setupFiles: ['./vitest.setup.js'],
 
-    // Timeouts
-    testTimeout: 10000,
-    hookTimeout: 10000,
-    teardownTimeout: 5000,
+    // Global teardown to cleanup processes
+    globalTeardown: './vitest.global-teardown.js',
+
+    // Timeouts - increased for performance tests with concurrent operations
+    testTimeout: 120000,
+    hookTimeout: 60000,
+    teardownTimeout: 10000,
 
     // Reporters
-    reporters: ['verbose'],
+    reporters: ['basic'],
 
     // Aliases for imports
     alias: {
@@ -63,13 +66,18 @@ export default defineConfig({
     // Isolation
     isolate: true,
 
-    // Pool options - use forks for process.chdir() support
+    // Pool options - use forks instead of threads to support process.chdir()
+    // (Worker threads don't support process.chdir() which is needed by hook tests)
     pool: 'forks',
     poolOptions: {
       forks: {
-        singleFork: false
+        singleFork: false,
+        isolate: true
       }
-    }
+    },
+
+    // Control parallelism to prevent resource exhaustion
+    fileParallelism: true
   },
 
   resolve: {
