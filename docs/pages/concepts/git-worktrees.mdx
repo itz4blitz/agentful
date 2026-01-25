@@ -3,7 +3,7 @@ title: Git Worktrees
 description: Using agentful with git worktrees for parallel development workflows.
 ---
 
-import { DiagramModal } from '../../components/DiagramModal'
+
 
 # Git Worktrees
 
@@ -17,7 +17,7 @@ Git worktrees allow you to check out multiple branches simultaneously in differe
 - **Branch-specific specs** - Product specifications in `.claude/product/` are git-tracked and branch-specific
 - **No coordination** - Worktrees don't coordinate with each other, enabling true parallel work
 
-<DiagramModal title="Git Worktree Structure">
+<div className="mermaid-diagram">
 
 ```mermaid
 graph TB
@@ -54,7 +54,7 @@ graph TB
     style DashWT fill:#1e293b,stroke:#475569
 ```
 
-</DiagramModal>
+</div>
 
 ## Use Cases
 

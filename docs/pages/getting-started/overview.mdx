@@ -3,7 +3,7 @@ title: Overview - What is agentful?
 description: Understanding the agentful architecture, workflow, and how it transforms product specs into working code.
 ---
 
-import { DiagramModal } from '../../components/DiagramModal'
+
 
 # What is agentful?
 
@@ -102,7 +102,7 @@ Each agent knows when to delegate to others and when a task is outside their sco
 
 The orchestrator acts as the central coordinator, analyzing tasks and delegating to specialist agents based on the work required:
 
-<DiagramModal title="Multi-Agent Distribution">
+<div className="mermaid-diagram">
 
 ```mermaid
 graph TD
@@ -143,10 +143,9 @@ graph TD
     linkStyle 10 stroke:#22c55e,stroke-width:3px
     linkStyle 11 stroke:#ef4444,stroke-width:2px
     linkStyle 12 stroke:#f59e0b,stroke-width:2px
-    linkStyle 13,14 stroke:#8b5cf6,stroke-width:2px
 ```
 
-</DiagramModal>
+</div>
 
 **How it works:**
 1. You invoke `/agentful-start` with a task
@@ -209,7 +208,7 @@ Run `/agentful-start` to begin the autonomous work workflow:
 
 The workflow follows these stages with automatic progression:
 
-<DiagramModal title="Development Workflow Pipeline">
+<div className="mermaid-diagram">
 
 ```mermaid
 graph LR
@@ -249,7 +248,7 @@ graph LR
     style D fill:#ef4444,stroke:#dc2626,color:#fff
 ```
 
-</DiagramModal>
+</div>
 
 ### 4. Human Checkpoints
 
@@ -270,7 +269,7 @@ All implementations are validated against six automated quality gates before dep
 
 Every feature must pass all six gates:
 
-<DiagramModal title="Quality Gates Validation Flow">
+<div className="mermaid-diagram">
 
 ```mermaid
 %%{init: {'theme':'dark', 'themeVariables': { 'edgeLabelBackground':'transparent'}}}%%
@@ -304,7 +303,7 @@ graph LR
     linkStyle 7,8,9,10,11,12 stroke:#ef4444,stroke-width:2px,color:#ef4444
 ```
 
-</DiagramModal>
+</div>
 
 **Gate Details:**
 - **Type Checking** - Zero TypeScript/Flow errors

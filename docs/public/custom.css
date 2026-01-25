@@ -1,0 +1,166 @@
+/*
+SYSTEM VISUALIZATION STYLES
+*/
+
+.system-visualization-container {
+  margin: 2rem 0;
+  padding: 2rem;
+  background-color: #f8fafc;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.system-visualization {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.system-visualization .header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.system-visualization .logo {
+  width: 48px;
+  height: 48px;
+}
+
+.system-visualization .title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.main-workflow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.layer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.layer-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.agent-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.agent-card {
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s;
+}
+
+.agent-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.agent-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.agent-icon {
+  font-size: 1.5rem;
+}
+
+.agent-name {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.agent-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.agent-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.agent-card.active .status-indicator {
+  background-color: #10b981;
+}
+
+.agent-card.complete .status-indicator {
+  background-color: #a855f7;
+}
+
+.agent-card.active .agent-status {
+  color: #10b981;
+}
+
+.agent-card.complete .agent-status {
+  color: #a855f7;
+}
+
+.core-card {
+  border-left: 4px solid #8b5cf6;
+}
+
+.domain-card {
+  border-left: 4px solid #3b82f6;
+}
+
+.skill-card {
+  border-left: 4px solid #10b981;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-around;
+  padding: 1.5rem;
+  background-color: #f1f5f9;
+  border-radius: 0.75rem;
+  margin-top: 2rem;
+}
+
+.footer-stat {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #64748b;
+}
