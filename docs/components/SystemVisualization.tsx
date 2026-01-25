@@ -174,15 +174,15 @@ export function SystemVisualization() {
 
             <TimelineBar
               label="🏗️ Architect"
-              description="Detects tech stack"
+              description=""
               left="10px"
-              width="calc(25% - 10px)"
+              width="calc(60% - 10px)"
               color="#ef4444"
               top="10px"
             />
             <TimelineBar
               label="⚙️ Backend"
-              description="Implements APIs, DB schemas"
+              description=""
               left="10px"
               width="calc(55% - 10px)"
               color="#3b82f6"
@@ -190,7 +190,7 @@ export function SystemVisualization() {
             />
             <TimelineBar
               label="🎨 Frontend"
-              description="Builds UI components, pages"
+              description=""
               left="10px"
               width="calc(55% - 10px)"
               color="#10b981"
@@ -198,7 +198,7 @@ export function SystemVisualization() {
             />
             <TimelineBar
               label="🧪 Tester"
-              description="Writes tests (80% coverage)"
+              description=""
               left="10px"
               width="calc(45% - 10px)"
               color="#eab308"
@@ -262,7 +262,7 @@ export function SystemVisualization() {
         {/* Step 5: Reviewer validates */}
         <div style={{
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: 'column',
           gap: '1.25rem',
           padding: '1.75rem',
           background: 'linear-gradient(135deg, #a855f720, #a855f710)',
@@ -272,54 +272,59 @@ export function SystemVisualization() {
           boxShadow: '0 8px 24px #a855f730',
         }}>
           <div style={{
-            minWidth: '48px',
-            height: '48px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #a855f7, #a855f7dd)',
-            color: '#fff',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.5rem',
-            fontWeight: '800',
-            boxShadow: '0 6px 16px #a855f760',
+            gap: '1.25rem',
           }}>
-            5
+            <div style={{
+              minWidth: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #a855f7, #a855f7dd)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.5rem',
+              fontWeight: '800',
+              boxShadow: '0 6px 16px #a855f760',
+            }}>
+              5
+            </div>
+            <div style={{
+              fontSize: '2.5rem',
+              lineHeight: 1,
+            }}>
+              🔍
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontSize: '1.25rem',
+                fontWeight: '800',
+                color: '#e2e8f0',
+              }}>
+                Reviewer runs quality gates
+              </div>
+            </div>
           </div>
           <div style={{
-            fontSize: '2.5rem',
-            lineHeight: 1,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+            gap: '0.625rem',
           }}>
-            🔍
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{
-              fontSize: '1.25rem',
-              fontWeight: '800',
-              color: '#e2e8f0',
-              marginBottom: '1rem',
-            }}>
-              Reviewer runs quality gates
-            </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
-              gap: '0.625rem',
-            }}>
-              <QualityGate name="Types" icon="📘" />
-              <QualityGate name="Lint" icon="✨" />
-              <QualityGate name="Tests" icon="🧪" />
-              <QualityGate name="Coverage" icon="📊" />
-              <QualityGate name="Security" icon="🔒" />
-              <QualityGate name="Dead Code" icon="🗑️" />
-            </div>
+            <QualityGate name="Types" icon="📘" />
+            <QualityGate name="Lint" icon="✨" />
+            <QualityGate name="Tests" icon="🧪" />
+            <QualityGate name="Coverage" icon="📊" />
+            <QualityGate name="Security" icon="🔒" />
+            <QualityGate name="Dead Code" icon="🗑️" />
           </div>
         </div>
 
         <Arrow color="#a855f7" />
 
         {/* Decision point */}
-        <div style={{
+        <div className="decision-grid" style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '2rem',
@@ -332,12 +337,15 @@ export function SystemVisualization() {
               borderRadius: '12px',
               border: '2px solid rgba(239, 68, 68, 0.4)',
               boxShadow: '0 8px 24px rgba(239, 68, 68, 0.2)',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
             }}>
               <div style={{
                 fontSize: '1rem',
                 fontWeight: '700',
                 color: '#ef4444',
-                marginBottom: '0.75rem',
+                marginBottom: '1rem',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
@@ -346,17 +354,10 @@ export function SystemVisualization() {
                 Validation fails
               </div>
               <div style={{
-                fontSize: '1rem',
-                fontWeight: '800',
-                color: '#f59e0b',
-                marginBottom: '0.5rem',
-                marginTop: '1rem',
-              }}>🔧 Fixer auto-remediates</div>
-              <div style={{
                 fontSize: '0.875rem',
                 color: '#cbd5e1',
                 lineHeight: '1.6',
-              }}>Fixes linting, adds tests, removes dead code, then re-validates</div>
+              }}>🔧 Fixer auto-fixes issues and re-validates</div>
             </div>
           </div>
 
@@ -367,12 +368,15 @@ export function SystemVisualization() {
               borderRadius: '12px',
               border: '2px solid rgba(16, 185, 129, 0.4)',
               boxShadow: '0 8px 24px rgba(16, 185, 129, 0.2)',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
             }}>
               <div style={{
                 fontSize: '1rem',
                 fontWeight: '700',
                 color: '#10b981',
-                marginBottom: '0.75rem',
+                marginBottom: '1rem',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
@@ -384,8 +388,7 @@ export function SystemVisualization() {
                 fontSize: '0.875rem',
                 color: '#cbd5e1',
                 lineHeight: '1.6',
-                marginTop: '1rem',
-              }}>Code is clean, tested, secure, and fully validated. Ready for production deployment.</div>
+              }}>Clean, tested, secure, and fully validated</div>
             </div>
           </div>
         </div>
@@ -418,7 +421,7 @@ export function SystemVisualization() {
           textAlign: 'center',
         }}>Why Parallel Execution Matters</h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <div className="comparison-grid">
           <div style={{
             padding: '1.75rem',
             background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%)',
@@ -555,8 +558,8 @@ function SequenceStep({ number, title, description, color, icon, dashed = false 
   return (
     <div style={{
       display: 'flex',
-      alignItems: 'center',
-      gap: '1.25rem',
+      flexDirection: 'column',
+      gap: '1rem',
       padding: '1.75rem',
       background: dashed
         ? 'transparent'
@@ -581,42 +584,47 @@ function SequenceStep({ number, title, description, color, icon, dashed = false 
     }}
     >
       <div style={{
-        minWidth: '48px',
-        height: '48px',
-        borderRadius: '50%',
-        background: `linear-gradient(135deg, ${color}, ${color}dd)`,
-        color: '#fff',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '1.5rem',
-        fontWeight: '800',
-        boxShadow: `0 6px 16px ${color}60`,
+        gap: '1.25rem',
       }}>
-        {number}
+        <div style={{
+          minWidth: '48px',
+          height: '48px',
+          borderRadius: '50%',
+          background: `linear-gradient(135deg, ${color}, ${color}dd)`,
+          color: '#fff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '1.5rem',
+          fontWeight: '800',
+          boxShadow: `0 6px 16px ${color}60`,
+        }}>
+          {number}
+        </div>
+        <div style={{
+          fontSize: '2.5rem',
+          lineHeight: 1,
+        }}>
+          {icon}
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{
+            fontSize: '1.25rem',
+            fontWeight: '800',
+            color: '#e2e8f0',
+          }}>
+            {title}
+          </div>
+        </div>
       </div>
       <div style={{
-        fontSize: '2.5rem',
-        lineHeight: 1,
+        fontSize: '0.9rem',
+        color: '#cbd5e1',
+        fontWeight: '500',
       }}>
-        {icon}
-      </div>
-      <div style={{ flex: 1 }}>
-        <div style={{
-          fontSize: '1.25rem',
-          fontWeight: '800',
-          color: '#e2e8f0',
-          marginBottom: '0.375rem',
-        }}>
-          {title}
-        </div>
-        <div style={{
-          fontSize: '0.9rem',
-          color: '#cbd5e1',
-          fontWeight: '500',
-        }}>
-          {description}
-        </div>
+        {description}
       </div>
     </div>
   );
@@ -701,12 +709,14 @@ function WaitingAgent({ name, active, waiting = false }: {
         ? '1px solid rgba(16, 185, 129, 0.4)'
         : `1px solid ${waiting ? 'rgba(100, 116, 139, 0.2)' : 'rgba(100, 116, 139, 0.3)'}`,
       opacity: waiting ? 0.5 : 1,
+      flexWrap: 'wrap',
     }}>
       <div style={{
         fontSize: '0.875rem',
         color: isActive ? '#10b981' : waiting ? '#64748b' : '#94a3b8',
         fontWeight: '600',
-        flex: 1,
+        flex: '1 1 auto',
+        minWidth: 'fit-content',
       }}>
         {name}
       </div>
@@ -718,6 +728,8 @@ function WaitingAgent({ name, active, waiting = false }: {
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
+          flex: '0 0 auto',
+          whiteSpace: 'nowrap',
         }}>
           <span>⏸️</span>
           waiting...
@@ -730,6 +742,8 @@ function WaitingAgent({ name, active, waiting = false }: {
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
+          flex: '0 0 auto',
+          whiteSpace: 'nowrap',
         }}>
           <span>{isActive ? '▶️' : '▶️'}</span>
           running
@@ -763,20 +777,29 @@ function TimelineBar({ label, description, left, width, color, top }: {
       color: '#000',
       boxShadow: `0 4px 12px ${color}60`,
       border: `1px solid ${color}`,
+      overflow: 'hidden',
     }}>
       <div style={{
         fontSize: '13px',
         fontWeight: '800',
         lineHeight: '1.2',
         color: '#000',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
       }}>{label}</div>
-      <div style={{
-        fontSize: '10px',
-        opacity: 0.85,
-        lineHeight: '1.2',
-        fontWeight: '600',
-        color: '#000',
-      }}>{description}</div>
+      {description && (
+        <div style={{
+          fontSize: '10px',
+          opacity: 0.85,
+          lineHeight: '1.2',
+          fontWeight: '600',
+          color: '#000',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}>{description}</div>
+      )}
     </div>
   );
 }
