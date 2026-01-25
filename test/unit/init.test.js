@@ -116,16 +116,49 @@ describe('Init Workflow', () => {
       expect(state).toHaveProperty('context_history');
     });
 
-    it('should create conversation-history.json', async () => {
+    it('should create conversation-history.json with full schema', async () => {
       await initProject(testDir);
 
       const conversationHistoryFile = path.join(testDir, '.agentful', 'conversation-history.json');
       const content = await fs.readFile(conversationHistoryFile, 'utf-8');
       const history = JSON.parse(content);
 
-      expect(history).toHaveProperty('messages');
-      expect(history).toHaveProperty('created_at');
-      expect(Array.isArray(history.messages)).toBe(true);
+      // Schema metadata
+      expect(history).toHaveProperty('_schema_version', '1.0');
+      expect(history).toHaveProperty('version', '1.0');
+      expect(history).toHaveProperty('schema', 'conversation-history');
+
+      // Main sections
+      expect(history).toHaveProperty('session');
+      expect(history).toHaveProperty('conversation');
+      expect(history).toHaveProperty('context');
+      expect(history).toHaveProperty('state_integration');
+      expect(history).toHaveProperty('product_context');
+      expect(history).toHaveProperty('user');
+      expect(history).toHaveProperty('agents');
+      expect(history).toHaveProperty('skills_invoked');
+      expect(history).toHaveProperty('metadata');
+
+      // Backward compatibility - messages array still exists
+      expect(history.conversation).toHaveProperty('messages');
+      expect(Array.isArray(history.conversation.messages)).toBe(true);
+
+      // Session structure
+      expect(history.session).toMatchObject({
+        id: null,
+        started_at: null,
+        last_updated: null,
+        message_count: 0,
+        active: false,
+        mode: 'interactive'
+      });
+
+      // Metadata
+      expect(history.metadata).toHaveProperty('created_at');
+      expect(history.metadata).toHaveProperty('created_by', 'agentful-cli');
+      expect(history.metadata).toHaveProperty('project_root');
+      expect(history.metadata.environment).toHaveProperty('platform');
+      expect(history.metadata.environment).toHaveProperty('node_version');
     });
 
     it('should create .claude/product directory structure', async () => {

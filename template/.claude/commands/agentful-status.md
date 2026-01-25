@@ -118,85 +118,68 @@ Iterations: 24
 
 ### State File Validation
 
-Before reading any state files, validate their existence and structure:
+Use the centralized state validator module to validate all required state files:
 
 ```javascript
-function validate_state_file(file_path, required_fields) {
-  // Check file exists
-  if (!exists(file_path)) {
-    return { valid: false, error: `File not found: ${file_path}`, action: "not_found" };
-  }
+import { getStateFile, validateAllState, formatValidationResults } from './lib/state-validator.js';
 
-  // Check file is valid JSON
-  let content;
-  try {
-    content = JSON.parse(Read(file_path));
-  } catch (e) {
-    return { valid: false, error: `Invalid JSON in ${file_path}`, action: "corrupted" };
-  }
+// Validate all state files at once
+const validationResults = validateAllState(process.cwd(), {
+  autoRecover: true,
+  skipOptional: true,
+  verbose: false
+});
 
-  // Check required fields exist
-  for (const field of required_fields) {
-    if (!(field in content)) {
-      return { valid: false, error: `Missing field '${field}' in ${file_path}`, action: "incomplete" };
-    }
-  }
+// Check if validation failed
+if (!validationResults.valid) {
+  console.error(formatValidationResults(validationResults));
+  console.log(`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          State Validation Failed
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  return { valid: true, content };
+Critical state files are corrupted or missing.
+Run /agentful-start to initialize or repair state files.
+`);
+  return;  // Exit - cannot show status with invalid state
 }
-```
 
-### Validate Required Files
+// Get individual state files
+const stateResult = getStateFile(process.cwd(), 'state.json', { autoRecover: true });
+const completionResult = getStateFile(process.cwd(), 'completion.json', { autoRecover: true });
+const decisionsResult = getStateFile(process.cwd(), 'decisions.json', { autoRecover: true });
 
-```bash
-# Validate state.json
-validation = validate_state_file(".agentful/state.json", ["current_task", "current_phase", "iterations"])
-
-if !validation.valid:
-  if validation.action == "not_found":
-    console.log(`
+// Check critical files
+if (!stateResult.valid) {
+  console.log(`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           No Active Development Session
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 No state file found. Run /agentful-start to begin development.
-`)
-    return  # Exit - nothing to show
-  else if validation.action == "corrupted":
-    console.log("❌ Corrupted state.json file. Run /agentful-start to reset.")
-    return
-  else if validation.action == "incomplete":
-    console.log("⚠️  Incomplete state.json. Run /agentful-start to repair.")
-    return
+`);
+  return;
+}
 
-# Validate completion.json
-validation = validate_state_file(".agentful/completion.json", ["features", "gates"])
+if (!completionResult.valid) {
+  console.log(`⚠️  No completion tracking found. Run /agentful-start to initialize.`);
+  return;
+}
 
-if !validation.valid:
-  if validation.action == "not_found":
-    console.log("⚠️  No completion.json found. Run /agentful-start to initialize.")
-    return
-  else if validation.action == "corrupted":
-    console.log("❌ Corrupted completion.json file. Run /agentful-start to reset.")
-    return
+// Extract data for use
+const state = stateResult.data;
+const completion = completionResult.data;
+const decisions = decisionsResult.valid ? decisionsResult.data : { pending: [], resolved: [] };
 
-# Validate product-analysis.json (optional - may not exist)
-product_analysis_exists = exists(".agentful/product-analysis.json")
-if product_analysis_exists:
-  validation = validate_state_file(".agentful/product-analysis.json", ["readiness_score", "issues"])
-
-  if !validation.valid && validation.action == "corrupted":
-    console.log("⚠️  Corrupted product-analysis.json - skipping product readiness section")
-    product_analysis_exists = false
-
-# Validate decisions.json (optional - may not exist)
-decisions_exists = exists(".agentful/decisions.json")
-if decisions_exists:
-  validation = validate_state_file(".agentful/decisions.json", ["pending"])
-
-  if !validation.valid && validation.action == "corrupted":
-    console.log("⚠️  Corrupted decisions.json - initializing with empty array")
-    Write(".agentful/decisions.json", JSON.stringify({ pending: [], resolved: [] }))
+// Check for optional product-analysis.json (not in main validator)
+let productAnalysis = null;
+if (exists('.agentful/product-analysis.json')) {
+  try {
+    productAnalysis = JSON.parse(Read('.agentful/product-analysis.json'));
+  } catch (e) {
+    console.warn('⚠️  Corrupted product-analysis.json - skipping product readiness section');
+  }
+}
 ```
 
 ### Read and Display

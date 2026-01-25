@@ -142,84 +142,44 @@ Run /agentful-start to auto-fix these issues.
 
 ### 4. Update Completion JSON
 
-Before updating, validate the completion.json file:
+Use centralized state validator to safely update completion.json:
 
 ```javascript
-function validate_state_file(file_path, required_fields) {
-  // Check file exists
-  if (!exists(file_path)) {
-    return { valid: false, error: `File not found: ${file_path}`, action: "initialize" };
-  }
+import { updateStateFile, getStateFile } from './lib/state-validator.js';
 
-  // Check file is valid JSON
-  let content;
-  try {
-    content = JSON.parse(Read(file_path));
-  } catch (e) {
-    return { valid: false, error: `Invalid JSON in ${file_path}`, action: "backup_and_reset" };
-  }
+// Get current completion state with validation
+const completionResult = getStateFile(process.cwd(), 'completion.json', { autoRecover: true });
 
-  // Check required fields exist
-  for (const field of required_fields) {
-    if (!(field in content)) {
-      return { valid: false, error: `Missing field '${field}' in ${file_path}`, action: "add_field", missing_field: field };
-    }
-  }
-
-  return { valid: true, content };
+if (!completionResult.valid) {
+  console.error(`❌ Cannot update completion.json: ${completionResult.error}`);
+  return;
 }
+
+// Update gates with validation results
+const updateResult = updateStateFile(process.cwd(), 'completion.json', (current) => {
+  return {
+    ...current,
+    gates: {
+      tests_passing: validationResults.tests_passing,
+      no_type_errors: validationResults.no_type_errors,
+      no_dead_code: validationResults.no_dead_code,
+      coverage_80: validationResults.coverage_80,
+      security_clean: validationResults.security_clean,
+      no_lint_errors: validationResults.no_lint_errors
+    },
+    last_validated: new Date().toISOString()
+  };
+});
+
+if (!updateResult.success) {
+  console.error(`❌ Failed to update completion.json: ${updateResult.message}`);
+  return;
+}
+
+console.log('✅ Updated quality gates in completion.json');
 ```
 
-```bash
-# Validate completion.json before updating
-validation = validate_state_file(".agentful/completion.json", ["gates"])
-
-if !validation.valid:
-  if validation.action == "initialize":
-    # Create default completion.json
-    Write(".agentful/completion.json", JSON.stringify({
-      features: {},
-      gates: {
-        tests_passing: false,
-        no_type_errors: false,
-        no_dead_code: false,
-        coverage_80: false,
-        security_clean: false
-      },
-      overall_progress: 0
-    }))
-    console.log("✓ Initialized completion.json")
-  else if validation.action == "backup_and_reset":
-    # Backup corrupted file
-    Bash("cp .agentful/completion.json .agentful/completion.json.backup-$(date +%s)")
-    # Create fresh file
-    Write(".agentful/completion.json", JSON.stringify({
-      features: {},
-      gates: {
-        tests_passing: false,
-        no_type_errors: false,
-        no_dead_code: false,
-        coverage_80: false,
-        security_clean: false
-      },
-      overall_progress: 0
-    }))
-    console.log("⚠️  Corrupted completion.json backed up and reset")
-  else if validation.action == "add_field":
-    content = JSON.parse(Read(".agentful/completion.json"))
-    if validation.missing_field == "gates":
-      content.gates = {
-        tests_passing: false,
-        no_type_errors: false,
-        no_dead_code: false,
-        coverage_80: false,
-        security_clean: false
-      }
-    Write(".agentful/completion.json", JSON.stringify(content))
-    console.log("✓ Added missing 'gates' field to completion.json")
-```
-
-Update `.agentful/completion.json` gates:
+Updated `.agentful/completion.json` gates:
 
 ```json
 {

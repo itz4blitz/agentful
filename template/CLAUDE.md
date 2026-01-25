@@ -26,13 +26,40 @@ npx @itz4blitz/agentful presets
 
 1. Edit `.claude/product/index.md` to define your product requirements
 2. Run: `claude`
-3. Type: `/agentful-generate`
+3. **Intelligent Context Awareness** - agentful will automatically show you project status and suggest next steps
+4. Type: `/agentful-generate`
 
 For extended sessions:
 ```bash
 claude --dangerously-skip-permissions
 /ralph-loop "/agentful-start" --max-iterations 50 --completion-promise "AGENTFUL_COMPLETE"
 ```
+
+### Smart Session Start
+
+When you start a Claude Code session, agentful automatically:
+- ✅ Shows project completion status (features completed, progress %)
+- ⚠️ Highlights blocking issues (pending decisions, invalid architecture)
+- 💡 Suggests numbered next steps based on current project state
+
+**Example:**
+```
+✅ Agentful ready (parallel execution: ON)
+
+📊 Project Status: 47% complete (6/13 features)
+⚠️  Architecture needs attention
+⚠️  2 pending decision(s)
+
+💡 Suggested next steps:
+   1. ⚠️ Fix architecture → /agentful-generate
+      Architecture older than package.json - may need regeneration
+   2. ⚠️ Answer pending decisions → /agentful-decide
+      2 decision(s) blocking progress
+   3. Check progress → /agentful-status
+      Current: 47% complete (6/13 features)
+```
+
+No need to remember commands - just pick a numbered action!
 
 ## Commands
 
@@ -141,47 +168,214 @@ The `reviewer` agent runs these checks automatically. The `fixer` agent resolves
 
 ---
 
-## Configuration
+## Hooks System
 
-### Documentation Hook
+Agentful uses Claude Code hooks for automation, protection, and intelligent context awareness. Hooks run at specific lifecycle events to enhance the development experience.
 
-By default, agentful blocks creation of random markdown files to keep your codebase clean.
+### Context Awareness Hooks
 
-**Always allowed**:
-- ✅ `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `LICENSE.md`
-- ✅ `.claude/agents/*.md` - Agent definitions
-- ✅ `.claude/skills/*/SKILL.md` - Skill documentation
-- ✅ `.claude/product/**/*.md` - Product specifications
+**session-start** (`SessionStart` event)
+- **What it does**: Provides intelligent session startup with project status and smart suggestions
+- **When it runs**: Every time you start a new Claude Code session
+- **Features**:
+  - Shows project completion percentage and feature progress
+  - Detects parallel execution capability (TeammateTool)
+  - Highlights blocking issues (pending decisions, invalid architecture)
+  - Suggests numbered next steps based on current project state
+- **Output example**:
+  ```
+  ✅ Agentful ready (parallel execution: ON)
 
-**Allowed only if parent directory exists**:
-- 📁 `docs/*.md`, `docs/pages/*.mdx` - Requires `docs/` directory
-- 📁 `documentation/*.md` - Requires `documentation/` directory
-- 📁 `wiki/*.md` - Requires `wiki/` directory
-- 📁 `guides/*.md` - Requires `guides/` directory
+  📊 Project Status: 47% complete (6/13 features)
+  ⚠️  Architecture needs attention
+  ⚠️  2 pending decision(s)
 
-This prevents accidental creation of `docs/pages/foo.mdx` when you don't have a docs site.
+  💡 Suggested next steps:
+     1. ⚠️ Fix architecture → /agentful-generate
+        Architecture older than package.json - may need regeneration
+     2. ⚠️ Answer pending decisions → /agentful-decide
+        2 decision(s) blocking progress
+     3. Check progress → /agentful-status
+        Current: 47% complete (6/13 features)
+  ```
+- **How to disable**: Remove from `SessionStart` hooks in `.claude/settings.json`
 
-**To disable the hook**:
+**post-action-suggestions** (`PostToolUse` event - currently inactive)
+- **What it does**: Suggests smart follow-up actions after completing slash commands
+- **When it runs**: After `/agentful-*` commands complete
+- **Features**: Context-aware suggestions based on what you just did
+- **Status**: Module exists but not currently hooked (future enhancement)
 
-Option 1: Set environment variable (temporary):
+### File Protection Hooks
+
+**block-random-docs** (`PreToolUse` event on `Write`/`Edit`)
+- **What it does**: Prevents creation of random markdown files outside approved locations
+- **When it runs**: Before any `Write` or `Edit` operation on `.md` or `.mdx` files
+- **Always allowed**:
+  - ✅ `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `LICENSE.md`
+  - ✅ `.claude/agents/*.md` - Agent definitions
+  - ✅ `.claude/skills/*/SKILL.md` - Skill documentation
+  - ✅ `.claude/product/**/*.md` - Product specifications
+  - ✅ `template/**/*.md` - Template files
+  - ✅ `examples/**/*.md` - Example documentation
+- **Allowed if parent directory exists**:
+  - 📁 `docs/*.md`, `docs/pages/*.mdx` - Requires `docs/` directory
+  - 📁 `documentation/*.md` - Requires `documentation/` directory
+  - 📁 `wiki/*.md` - Requires `wiki/` directory
+  - 📁 `guides/*.md` - Requires `guides/` directory
+- **How to disable**:
+  - Temporary: `export AGENTFUL_ALLOW_RANDOM_DOCS=true`
+  - Permanent: Remove from `.claude/settings.json` `PreToolUse` hooks
+  - Customize: Edit `bin/hooks/block-random-docs.js` and modify `ALLOWED_PATTERNS`
+
+**block-file-creation** (`PreToolUse` event on `Write`)
+- **What it does**: Prevents creation of arbitrary data files outside approved directories
+- **When it runs**: Before any `Write` operation (not `Edit`)
+- **Always allowed**:
+  - ✅ Source code files (`.js`, `.ts`, `.py`, `.go`, `.rs`, `.java`, `.c`, `.cpp`, `.rb`, `.php`, etc.)
+  - ✅ Root config files (`package.json`, `tsconfig.json`, `vite.config.js`, etc.)
+  - ✅ Test files in test directories
+  - ✅ Markdown files (handled by `block-random-docs` hook)
+- **Allowed in specific directories**:
+  - 📁 `.agentful/` - Runtime state (validated files only: `state.json`, `completion.json`, `decisions.json`, etc.)
+  - 📁 `fixtures/`, `test/fixtures/` - Test fixtures
+  - 📁 `mocks/`, `__mocks__/` - Test mocks
+  - 📁 `public/assets/`, `static/assets/` - Static assets
+  - 📁 `config/`, `.config/` - Configuration files
+  - 📁 `dist/`, `build/`, `out/` - Build output (with warning)
+- **Blocked everywhere else**:
+  - ❌ Random `.json` files (e.g., `random-state.json`, `debug-output.json`)
+  - ❌ Random `.txt` files (e.g., `notes.txt`, `todo.txt`)
+  - ❌ Random `.log` files (e.g., `debug.log`, `output.log`)
+  - ❌ Temporary files (`.tmp`, `.temp`, `.bak`, `.old`)
+- **How to disable**: Remove from `.claude/settings.json` `PreToolUse` hooks
+- **Customize**: Edit `bin/hooks/block-file-creation.js` to modify allowed directories/extensions
+
+### Monitoring & Detection Hooks
+
+**health-check** (`SessionStart` event)
+- **What it does**: Runs comprehensive startup health check for agentful
+- **When it runs**: Every session start (after `session-start` hook)
+- **Checks**:
+  - ✅ `.agentful/` directory exists
+  - ✅ Core state files present (`state.json`, `completion.json`, `decisions.json`)
+  - ✅ `.claude/` directory structure complete
+  - ✅ Core agents exist (orchestrator, backend, frontend, tester, reviewer, fixer, architect, product-analyzer)
+  - ✅ Product specification exists (flat or hierarchical)
+  - ✅ Settings file valid JSON
+  - ⚠️ Architecture analysis exists and is valid
+  - ⚠️ Node.js version >= 22.0.0
+- **Output**: Shows errors (critical) and warnings (nice-to-have)
+- **How to disable**: Remove from `SessionStart` hooks in `.claude/settings.json`
+
+**architect-drift-detector** (`PostToolUse` event on `Write`/`Edit`)
+- **What it does**: Detects when project changes require architecture re-analysis
+- **When it runs**: After any `Write` or `Edit` operation
+- **Triggers re-analysis when**:
+  - 📦 Dependencies changed (`package.json`, `requirements.txt`, `go.mod`, `Gemfile`, `Cargo.toml`, etc.)
+  - ⚙️ Tech stack config modified (`tsconfig.json`, `next.config.js`, `vite.config.js`, etc.)
+  - 📈 Significant code growth (20%+ new files)
+  - ⏰ Analysis is stale (>7 days old)
+- **Action**: Updates `.agentful/architecture.json` with `needs_reanalysis: true` and drift reasons
+- **Output**: `⚠️ Architect drift detected: dependencies_changed, tech_stack_modified`
+- **How to disable**: Remove from `PostToolUse` hooks in `.claude/settings.json`
+
+**product-spec-watcher** (`PostToolUse` event on `Write`/`Edit`)
+- **What it does**: Watches for product specification changes and suggests agent regeneration
+- **When it runs**: After any `Write` or `Edit` to `.claude/product/` files
+- **Behavior**:
+  - After `/agentful-init` flow: Auto-suggests agent generation with tech stack + requirements
+  - Manual edit (no agents): Suggests running `/agentful-generate` or `/agentful-init`
+  - Agents already exist: Suggests regenerating agents or continuing with existing
+- **Use case**: Ensures agents stay aligned with product requirements
+- **How to disable**: Remove from `PostToolUse` hooks in `.claude/settings.json`
+
+**analyze-trigger** (`PostToolUse` event on `Write`/`Edit`)
+- **What it does**: Suggests `/agentful-analyze` when critical config files change
+- **When it runs**: After any `Write` or `Edit` operation
+- **Triggers suggestions for**:
+  - `package.json` - Dependencies changed
+  - `tsconfig.json`, `jsconfig.json` - TypeScript/JavaScript config changed
+  - `vite.config.*`, `webpack.config.*`, `next.config.*` - Build config changed
+  - `docker-compose.yml`, `Dockerfile` - Docker config changed
+  - `.env.example` - Environment template changed
+- **Output**: Helpful message like "Dependencies changed in package.json. Consider running /agentful-analyze to update architecture understanding."
+- **How to disable**: Remove from `PostToolUse` hooks in `.claude/settings.json`
+
+### Advanced Hooks
+
+**TypeScript type checking** (`PostToolUse` event on `Write`/`Edit`)
+- **What it does**: Runs `tsc --noEmit` after file changes to detect type errors
+- **When it runs**: After any `Write` or `Edit` operation
+- **Output**: First 5 lines of TypeScript errors (if any)
+- **How to disable**: Remove inline command hook from `PostToolUse` in `.claude/settings.json`
+
+**Similar documentation detector** (`PostToolUse` event on `Write`/`Edit` of `*.md` files)
+- **What it does**: Warns if similar documentation already exists
+- **When it runs**: After writing/editing markdown files
+- **Output**: `⚠️ Similar doc exists: docs/guide.md - consider updating instead`
+- **How to disable**: Remove inline command hook from `PostToolUse` in `.claude/settings.json`
+
+**Phase tracker** (`UserPromptSubmit` event)
+- **What it does**: Tracks current agentful phase from `.agentful/state.json`
+- **When it runs**: Every time user submits a prompt
+- **Output**: Silent (logs phase for internal use)
+- **How to disable**: Remove from `UserPromptSubmit` hooks in `.claude/settings.json`
+
+### Disabling Hooks
+
+**Option 1: Temporary disable (environment variable)**
 ```bash
+# Disable random docs hook
 export AGENTFUL_ALLOW_RANDOM_DOCS=true
 claude
 ```
 
-Option 2: Remove from `.claude/settings.json` (permanent):
+**Option 2: Permanent disable (edit settings)**
+
+Edit `.claude/settings.json` and remove specific hook from `hooks` object:
+
 ```json
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          // Keep session-start, remove health-check
+          {
+            "type": "command",
+            "command": "node bin/hooks/session-start.js",
+            "timeout": 3,
+            "description": "Intelligent context awareness"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
-      // Remove or comment out the block-random-docs hook
+      {
+        "tools": ["Write", "Edit"],
+        "hooks": [
+          // Remove block-random-docs to allow any markdown file
+        ]
+      }
     ]
   }
 }
 ```
 
-Option 3: Customize allowed patterns:
-Edit `bin/hooks/block-random-docs.js` and modify the `ALLOWED_PATTERNS` array.
+**Option 3: Customize hook behavior**
+
+Edit the hook file directly in `bin/hooks/`:
+- `bin/hooks/block-random-docs.js` - Modify `ALLOWED_PATTERNS`
+- `bin/hooks/block-file-creation.js` - Modify `SOURCE_CODE_EXTENSIONS` or `ALLOWED_DIRECTORY_PATTERNS`
+- `bin/hooks/architect-drift-detector.js` - Change `STALE_THRESHOLD_DAYS`
+
+### Hook Event Types
+
+- **SessionStart**: Runs once when Claude Code session starts
+- **PreToolUse**: Runs before a tool executes (can block execution)
+- **PostToolUse**: Runs after a tool executes (informational only)
+- **UserPromptSubmit**: Runs when user submits a prompt
 
 ---
 

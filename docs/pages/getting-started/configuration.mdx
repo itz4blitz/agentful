@@ -131,20 +131,336 @@ For simpler projects, keep all features in `index.md`.
 
 ### Hooks
 
-**PostToolUse Hook** - Runs after file edits:
+agentful uses Claude Code hooks for automation, protection, and intelligent context awareness. Hooks run at specific lifecycle events to enhance the development experience.
+
+<div className="callout callout-info">
+  **11 Hooks Included**
+
+  agentful provides 11 built-in hooks organized into 4 categories: Context Awareness, File Protection, Monitoring & Detection, and Advanced hooks.
+</div>
+
+#### Hook Event Types
+
+- **SessionStart** - Runs once when Claude Code session starts
+- **PreToolUse** - Runs before a tool executes (can block execution)
+- **PostToolUse** - Runs after a tool executes (informational only)
+- **UserPromptSubmit** - Runs when user submits a prompt
+
+#### Context Awareness Hooks
+
+**session-start** (`SessionStart` event)
+
+Provides intelligent session startup with project status and smart suggestions.
+
 ```json
 {
-  "matcher": "Edit|Write",
-  "hooks": [
+  "SessionStart": [
     {
-      "type": "command",
-      "command": "npx tsc --noEmit 2>&1 | head -5 || true"
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node bin/hooks/session-start.js",
+          "timeout": 3,
+          "description": "Intelligent context awareness"
+        }
+      ]
     }
   ]
 }
 ```
 
-Customize for your language:
+**Features**:
+- Shows project completion percentage and feature progress
+- Detects parallel execution capability
+- Highlights blocking issues (pending decisions, invalid architecture)
+- Suggests numbered next steps based on current project state
+
+**Example output**:
+```
+✅ Agentful ready (parallel execution: ON)
+
+📊 Project Status: 47% complete (6/13 features)
+⚠️  Architecture needs attention
+⚠️  2 pending decision(s)
+
+💡 Suggested next steps:
+   1. ⚠️ Fix architecture → /agentful-generate
+      Architecture older than package.json - may need regeneration
+   2. ⚠️ Answer pending decisions → /agentful-decide
+      2 decision(s) blocking progress
+```
+
+**To disable**: Remove from `SessionStart` hooks in `.claude/settings.json`
+
+---
+
+**post-action-suggestions** (`PostToolUse` event - currently inactive)
+
+Suggests smart follow-up actions after completing slash commands.
+
+**Status**: Module exists but not currently enabled (future enhancement)
+
+**Features**: Context-aware suggestions based on what you just did
+
+#### File Protection Hooks
+
+**block-random-docs** (`PreToolUse` event on `Write`/`Edit`)
+
+Prevents creation of random markdown files outside approved locations.
+
+```json
+{
+  "PreToolUse": [
+    {
+      "tools": ["Write", "Edit"],
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node bin/hooks/block-random-docs.js",
+          "timeout": 3,
+          "description": "Block random markdown file creation"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Always allowed**:
+- ✅ `README.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `LICENSE.md`
+- ✅ `.claude/agents/*.md` - Agent definitions
+- ✅ `.claude/skills/*/SKILL.md` - Skill documentation
+- ✅ `.claude/product/**/*.md` - Product specifications
+
+**Allowed if parent directory exists**:
+- 📁 `docs/*.md`, `docs/pages/*.mdx` - Requires `docs/` directory
+- 📁 `documentation/*.md` - Requires `documentation/` directory
+- 📁 `wiki/*.md` - Requires `wiki/` directory
+- 📁 `guides/*.md` - Requires `guides/` directory
+
+**To disable**:
+```bash
+# Temporary
+export AGENTFUL_ALLOW_RANDOM_DOCS=true
+
+# Permanent
+# Remove from .claude/settings.json PreToolUse hooks
+```
+
+**To customize**: Edit `bin/hooks/block-random-docs.js` and modify `ALLOWED_PATTERNS`
+
+---
+
+**block-file-creation** (`PreToolUse` event on `Write`)
+
+Prevents creation of arbitrary data files outside approved directories.
+
+```json
+{
+  "PreToolUse": [
+    {
+      "tools": ["Write"],
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node bin/hooks/block-file-creation.js",
+          "timeout": 3,
+          "description": "Block arbitrary file creation"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Always allowed**:
+- ✅ Source code files (`.js`, `.ts`, `.py`, `.go`, `.rs`, etc.)
+- ✅ Root config files (`package.json`, `tsconfig.json`, etc.)
+- ✅ Test files in test directories
+
+**Allowed in specific directories**:
+- 📁 `.agentful/` - Runtime state (validated files only)
+- 📁 `fixtures/`, `test/fixtures/` - Test fixtures
+- 📁 `mocks/`, `__mocks__/` - Test mocks
+- 📁 `public/assets/` - Static assets
+- 📁 `config/`, `.config/` - Configuration files
+
+**Blocked everywhere else**:
+- ❌ Random `.json` files (e.g., `random-state.json`, `debug-output.json`)
+- ❌ Random `.txt` files (e.g., `notes.txt`, `todo.txt`)
+- ❌ Random `.log` files (e.g., `debug.log`, `output.log`)
+- ❌ Temporary files (`.tmp`, `.temp`, `.bak`, `.old`)
+
+**To disable**: Remove from `.claude/settings.json` `PreToolUse` hooks
+
+**To customize**: Edit `bin/hooks/block-file-creation.js` to modify allowed directories/extensions
+
+#### Monitoring & Detection Hooks
+
+**health-check** (`SessionStart` event)
+
+Runs comprehensive startup health check for agentful.
+
+```json
+{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node bin/hooks/health-check.js",
+          "timeout": 5,
+          "description": "Quick agentful health check"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Checks**:
+- ✅ `.agentful/` directory exists
+- ✅ Core state files present (`state.json`, `completion.json`, `decisions.json`)
+- ✅ `.claude/` directory structure complete
+- ✅ Core agents exist (orchestrator, backend, frontend, tester, reviewer, fixer, architect, product-analyzer)
+- ✅ Product specification exists (flat or hierarchical)
+- ✅ Settings file valid JSON
+- ⚠️ Architecture analysis exists and is valid
+- ⚠️ Node.js version >= 22.0.0
+
+**Output**: Shows errors (critical) and warnings (nice-to-have)
+
+**To disable**: Remove from `SessionStart` hooks
+
+---
+
+**architect-drift-detector** (`PostToolUse` event on `Write`/`Edit`)
+
+Detects when project changes require architecture re-analysis.
+
+```json
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node bin/hooks/architect-drift-detector.js",
+          "timeout": 3,
+          "description": "Detect when architect needs to re-analyze"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Triggers re-analysis when**:
+- 📦 Dependencies changed (`package.json`, `requirements.txt`, `go.mod`, etc.)
+- ⚙️ Tech stack config modified (`tsconfig.json`, `next.config.js`, etc.)
+- 📈 Significant code growth (20%+ new files)
+- ⏰ Analysis is stale (>7 days old)
+
+**Action**: Updates `.agentful/architecture.json` with `needs_reanalysis: true` and drift reasons
+
+**Output**: `⚠️ Architect drift detected: dependencies_changed, tech_stack_modified`
+
+**To disable**: Remove from `PostToolUse` hooks
+
+---
+
+**product-spec-watcher** (`PostToolUse` event on `Write`/`Edit`)
+
+Watches for product specification changes and suggests agent regeneration.
+
+```json
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node bin/hooks/product-spec-watcher.js",
+          "timeout": 3,
+          "description": "Watch for product spec changes"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Behavior**:
+- After `/agentful-init` flow: Auto-suggests agent generation
+- Manual edit (no agents): Suggests running `/agentful-generate`
+- Agents already exist: Suggests regenerating agents or continuing
+
+**Use case**: Ensures agents stay aligned with product requirements
+
+**To disable**: Remove from `PostToolUse` hooks
+
+---
+
+**analyze-trigger** (`PostToolUse` event on `Write`/`Edit`)
+
+Suggests `/agentful-analyze` when critical config files change.
+
+```json
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node bin/hooks/analyze-trigger.js",
+          "timeout": 3,
+          "description": "Check if file changes warrant analysis"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Triggers suggestions for**:
+- `package.json` - Dependencies changed
+- `tsconfig.json`, `jsconfig.json` - TypeScript/JavaScript config changed
+- `vite.config.*`, `webpack.config.*`, `next.config.*` - Build config changed
+- `docker-compose.yml`, `Dockerfile` - Docker config changed
+- `.env.example` - Environment template changed
+
+**Output**: "Dependencies changed in package.json. Consider running /agentful-analyze to update architecture understanding."
+
+**To disable**: Remove from `PostToolUse` hooks
+
+#### Advanced Hooks
+
+**TypeScript type checking** (`PostToolUse` event on `Write`/`Edit`)
+
+Runs `tsc --noEmit` after file changes to detect type errors.
+
+```json
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "npx tsc --noEmit 2>&1 | head -5 || true"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Output**: First 5 lines of TypeScript errors (if any)
+
+**Customize for your language**:
 ```json
 // Python
 {"command": "python -m mypy . 2>&1 | head -5 || true"}
@@ -155,6 +471,156 @@ Customize for your language:
 // Disable
 {"command": "echo 'Type checking disabled'"}
 ```
+
+**To disable**: Remove from `PostToolUse` hooks
+
+---
+
+**Similar documentation detector** (`PostToolUse` event on `Write`/`Edit`)
+
+Warns if similar documentation already exists.
+
+```json
+{
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "if [ \"$FILE\" = \"*.md\" ]; then existing=$(find . -name '*.md' -not -path './node_modules/*' -not -path './.git/*' | xargs grep -l \"$(basename '$FILE' | sed 's/_/ /g' | sed 's/.md$//' | head -c 30)\" 2>/dev/null | grep -v \"$FILE\" | head -1); if [ -n \"$existing\" ]; then echo \"⚠️  Similar doc exists: $existing - consider updating instead\"; fi; fi || true"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Output**: `⚠️ Similar doc exists: docs/guide.md - consider updating instead`
+
+**To disable**: Remove from `PostToolUse` hooks
+
+---
+
+**Phase tracker** (`UserPromptSubmit` event)
+
+Tracks current agentful phase from `.agentful/state.json`.
+
+```json
+{
+  "UserPromptSubmit": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "if [ -f .agentful/state.json ]; then jq -r '.current_phase // \"idle\"' .agentful/state.json 2>/dev/null || echo 'idle'; else echo 'idle'; fi",
+          "description": "Track current agentful phase"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Output**: Silent (logs phase for internal use)
+
+**To disable**: Remove from `UserPromptSubmit` hooks
+
+#### Hook Configuration Syntax
+
+Hooks are configured in `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "EventType": [
+      {
+        "tools": ["Write", "Edit"],  // Optional: filter by tools
+        "matcher": "Write|Edit",     // Optional: regex matcher
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node bin/hooks/my-hook.js",
+            "timeout": 3,
+            "description": "What this hook does"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Event types**:
+- `SessionStart` - When Claude Code starts
+- `PreToolUse` - Before tool execution (can block)
+- `PostToolUse` - After tool execution (informational)
+- `UserPromptSubmit` - When user submits prompt
+
+**Hook properties**:
+- `type` - Always `"command"` for shell commands
+- `command` - The command to execute
+- `timeout` - Maximum execution time in seconds (optional)
+- `description` - Human-readable description (optional)
+
+#### Disabling Hooks
+
+**Option 1: Temporary disable (environment variable)**
+
+```bash
+# Disable random docs hook
+export AGENTFUL_ALLOW_RANDOM_DOCS=true
+claude
+```
+
+**Option 2: Permanent disable (edit settings)**
+
+Edit `.claude/settings.json` and remove specific hook:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          // Keep session-start, remove health-check
+          {
+            "type": "command",
+            "command": "node bin/hooks/session-start.js",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "tools": ["Write", "Edit"],
+        "hooks": [
+          // Remove block-random-docs to allow any markdown file
+        ]
+      }
+    ]
+  }
+}
+```
+
+**Option 3: Customize hook behavior**
+
+Edit the hook file directly in `bin/hooks/`:
+
+- `bin/hooks/block-random-docs.js` - Modify `ALLOWED_PATTERNS`
+- `bin/hooks/block-file-creation.js` - Modify `SOURCE_CODE_EXTENSIONS` or `ALLOWED_DIRECTORY_PATTERNS`
+- `bin/hooks/architect-drift-detector.js` - Change `STALE_THRESHOLD_DAYS`
+
+<div className="callout callout-warning">
+  **Editing Hook Files**
+
+  When editing hook files, make sure to preserve the exit code behavior:
+  - `process.exit(0)` - Success (proceed)
+  - `process.exit(1)` - Failure (block)
+
+  PreToolUse hooks can block execution by exiting with code 1.
+</div>
 
 ### Permissions
 

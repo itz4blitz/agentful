@@ -23,33 +23,45 @@ Fast health check (under 10 seconds). No deep codebase scanning.
 
 #### State File Validation
 
-Before checking anything, validate state files:
+Use centralized state validator for all core state files:
 
 ```javascript
-function validate_state_file(file_path, required_fields) {
-  // Check file exists
-  if (!exists(file_path)) {
-    return { valid: false, error: `File not found: ${file_path}`, action: "not_found" };
-  }
+import { validateAllState, getStateFile, formatValidationResults } from './lib/state-validator.js';
 
-  // Check file is valid JSON
-  let content;
-  try {
-    content = JSON.parse(Read(file_path));
-  } catch (e) {
-    return { valid: false, error: `Invalid JSON in ${file_path}`, action: "corrupted" };
-  }
+// Validate all state files without auto-recovery (diagnostic mode)
+const validationResults = validateAllState(process.cwd(), {
+  autoRecover: false,     // Don't auto-fix, just report issues
+  skipOptional: false,    // Check optional files too
+  verbose: true           // Show detailed results
+});
 
-  // Check required fields exist (if specified)
-  if (required_fields) {
-    for (const field of required_fields) {
-      if (!(field in content)) {
-        return { valid: false, error: `Missing field '${field}' in ${file_path}`, action: "incomplete", missing_field: field };
+// Extract validation issues for reporting
+const issues = [];
+
+if (!validationResults.valid) {
+  for (const [fileName, result] of Object.entries(validationResults.files)) {
+    if (!result.valid) {
+      if (result.action === 'initialize') {
+        issues.push({
+          type: 'warning',
+          msg: `Missing state file: ${fileName}`,
+          fix: `initialize_state:${fileName}`
+        });
+      } else if (result.action === 'backup_and_reset') {
+        issues.push({
+          type: 'error',
+          msg: `Corrupted state file: ${fileName}`,
+          fix: `reset_state:${fileName}`
+        });
+      } else if (result.action === 'add_field') {
+        issues.push({
+          type: 'warning',
+          msg: `Incomplete state file: ${fileName} (missing: ${result.missing_field})`,
+          fix: `repair_state:${fileName}`
+        });
       }
     }
   }
-
-  return { valid: true, content };
 }
 ```
 
@@ -73,22 +85,19 @@ function validate_state_file(file_path, required_fields) {
 **Process:**
 
 ```typescript
-// 1. Validate and check architecture.json
-const archPath = ".agentful/architecture.json";
-const archValidation = validate_state_file(archPath, ["language", "framework"]);
+// 1. Check architecture.json using centralized validator
+const archResult = getStateFile(process.cwd(), 'architecture.json', { autoRecover: false });
 
-if (!archValidation.valid) {
-  if (archValidation.action == "not_found") {
-    issues.push({ type: "critical", msg: "Missing architecture.json - run /agentful-start" });
-  } else if (archValidation.action == "corrupted") {
-    issues.push({ type: "critical", msg: "Corrupted architecture.json - backup and regenerate", fix: "reset_architecture" });
-  } else if (archValidation.action == "incomplete") {
-    issues.push({ type: "warning", msg: `Incomplete architecture.json - missing field: ${archValidation.missing_field}` });
-  }
+if (!archResult.valid) {
+  issues.push({
+    type: "critical",
+    msg: "Missing or invalid architecture.json - run /agentful-generate",
+    fix: "reset_architecture"
+  });
 } else {
-  const arch = archValidation.content;
-  if (!arch.language || !arch.framework) {
-    issues.push({ type: "warning", msg: "Incomplete architecture analysis" });
+  const arch = archResult.data;
+  if (!arch.techStack || !arch.techStack.languages || arch.techStack.languages.length === 0) {
+    issues.push({ type: "warning", msg: "Incomplete architecture analysis - no languages detected" });
   }
 }
 
@@ -125,28 +134,7 @@ for (const dep of deps) {
   }
 }
 
-// 4. Validate state files with proper validation
-const stateFilesConfig = [
-  { path: ".agentful/state.json", fields: ["current_task", "current_phase", "iterations"] },
-  { path: ".agentful/completion.json", fields: ["features", "gates"] },
-  { path: ".agentful/decisions.json", fields: ["pending"], optional: true }
-];
-
-for (const config of stateFilesConfig) {
-  if (exists(config.path) || !config.optional) {
-    const validation = validate_state_file(config.path, config.fields);
-
-    if (!validation.valid) {
-      if (validation.action == "not_found" && !config.optional) {
-        issues.push({ type: "warning", msg: `Missing state file: ${config.path}`, fix: `initialize_state:${config.path}` });
-      } else if (validation.action == "corrupted") {
-        issues.push({ type: "error", msg: `Corrupted state file: ${config.path}`, fix: `reset_state:${config.path}` });
-      } else if (validation.action == "incomplete") {
-        issues.push({ type: "warning", msg: `Incomplete state file: ${config.path} (missing: ${validation.missing_field})`, fix: `repair_state:${config.path}` });
-      }
-    }
-  }
-}
+// 4. State file validation already done above - issues already populated
 ```
 
 **Output Format:**

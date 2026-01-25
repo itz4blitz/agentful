@@ -11,69 +11,38 @@ This command helps you resolve pending decisions that are blocking development.
 
 ### 0. Validate Decisions File
 
-Before reading decisions, validate the file structure:
+Use centralized state validator to validate and recover decisions.json:
 
 ```javascript
-function validate_state_file(file_path, required_fields) {
-  // Check file exists
-  if (!exists(file_path)) {
-    return { valid: false, error: `File not found: ${file_path}`, action: "initialize" };
-  }
+import { getStateFile, updateStateFile } from './lib/state-validator.js';
 
-  // Check file is valid JSON
-  let content;
-  try {
-    content = JSON.parse(Read(file_path));
-  } catch (e) {
-    return { valid: false, error: `Invalid JSON in ${file_path}`, action: "backup_and_reset" };
-  }
+// Get decisions with automatic recovery
+const decisionsResult = getStateFile(process.cwd(), 'decisions.json', { autoRecover: true });
 
-  // Check required fields exist
-  for (const field of required_fields) {
-    if (!(field in content)) {
-      return { valid: false, error: `Missing field '${field}' in ${file_path}`, action: "add_field", missing_field: field };
-    }
-  }
-
-  return { valid: true, content };
+if (!decisionsResult.valid) {
+  console.error(`❌ Failed to load decisions: ${decisionsResult.error}`);
+  console.log(`
+Run /agentful-start to initialize state files.
+`);
+  return;
 }
-```
 
-```bash
-# Validate decisions.json
-validation = validate_state_file(".agentful/decisions.json", ["pending", "resolved"])
+const decisions = decisionsResult.data;
 
-if !validation.valid:
-  if validation.action == "initialize":
-    # Create default decisions.json with empty arrays
-    Write(".agentful/decisions.json", JSON.stringify({
-      pending: [],
-      resolved: []
-    }))
-    console.log(`
+// Check if there are any pending decisions
+if (!decisions.decisions || decisions.decisions.length === 0) {
+  console.log(`
 ✅ No pending decisions!
 
 All features are unblocked. Run /agentful-start to continue development.
-`)
-    return  # Exit - no decisions to process
-  else if validation.action == "backup_and_reset":
-    # Backup corrupted file
-    Bash("cp .agentful/decisions.json .agentful/decisions.json.backup-$(date +%s)")
-    # Create fresh file
-    Write(".agentful/decisions.json", JSON.stringify({
-      pending: [],
-      resolved: []
-    }))
-    console.log("⚠️  Corrupted decisions.json backed up and reset. No decisions to process.")
-    return
-  else if validation.action == "add_field":
-    content = JSON.parse(Read(".agentful/decisions.json"))
-    if validation.missing_field == "pending":
-      content.pending = []
-    else if validation.missing_field == "resolved":
-      content.resolved = []
-    Write(".agentful/decisions.json", JSON.stringify(content))
-    console.log("✓ Repaired decisions.json with missing fields")
+`);
+  return;
+}
+
+// Show recovery message if file was repaired
+if (decisionsResult.recovered) {
+  console.log('✅ Repaired corrupted decisions file\n');
+}
 ```
 
 ### 1. Read Decisions
@@ -231,61 +200,70 @@ Append to history instead of overwriting:
 
 ```javascript
 function record_decision(decision, answer) {
-  // Read current decisions
-  const decisionsFile = Read('.agentful/decisions.json');
-  const decisions = JSON.parse(decisionsFile);
+  // Update decisions.json with validation
+  const result = updateStateFile(process.cwd(), 'decisions.json', (current) => {
+    // Create resolved entry with full history
+    const resolvedEntry = {
+      id: decision.id,
+      question: decision.question,
+      options: decision.options || [],
+      context: decision.context || "",
+      blocking: decision.blocking || [],
+      answer: answer,
+      timestamp_asked: decision.timestamp,
+      timestamp_resolved: new Date().toISOString()
+    };
 
-  // Create resolved entry with full history
-  const resolvedEntry = {
-    id: decision.id,
-    question: decision.question,
-    options: decision.options || [],
-    context: decision.context || "",
-    blocking: decision.blocking || [],
-    answer: answer,
-    timestamp_asked: decision.timestamp,
-    timestamp_resolved: new Date().toISOString()
-  };
+    // Remove from pending
+    const updatedDecisions = current.decisions.filter(d => d.id !== decision.id);
 
-  // Remove from pending
-  decisions.pending = decisions.pending.filter(d => d.id !== decision.id);
+    // Append to resolved history (if supported by schema)
+    const resolvedHistory = current.resolved_history || [];
+    resolvedHistory.push(resolvedEntry);
 
-  // Append to resolved history (don't overwrite)
-  if (!decisions.resolved) {
-    decisions.resolved = [];
+    // Keep last 100 resolved decisions (prevent unbounded growth)
+    const trimmedHistory = resolvedHistory.length > 100
+      ? resolvedHistory.slice(-100)
+      : resolvedHistory;
+
+    return {
+      ...current,
+      decisions: updatedDecisions,
+      resolved_history: trimmedHistory,
+      lastUpdated: new Date().toISOString()
+    };
+  });
+
+  if (!result.success) {
+    console.error(`❌ Failed to record decision: ${result.message}`);
+    return false;
   }
-  decisions.resolved.push(resolvedEntry);
-
-  // Keep last 100 resolved decisions (prevent unbounded growth)
-  if (decisions.resolved.length > 100) {
-    decisions.resolved = decisions.resolved.slice(-100);
-  }
-
-  // Save updated decisions
-  Write('.agentful/decisions.json', JSON.stringify(decisions, null, 2));
 
   console.log(`✅ Decision ${decision.id} resolved: ${answer}`);
 
   // Update state.json to unblock features
   update_blocked_features(decision.blocking);
+
+  return true;
 }
 
 function update_blocked_features(blockedFeatures) {
   if (!blockedFeatures || blockedFeatures.length === 0) return;
 
-  const stateFile = Read('.agentful/state.json');
-  const state = JSON.parse(stateFile);
+  // Use centralized state updater for state.json
+  const result = updateStateFile(process.cwd(), 'state.json', (current) => {
+    return {
+      ...current,
+      blocked_on: (current.blocked_on || []).filter(
+        feature => !blockedFeatures.includes(feature)
+      ),
+      last_updated: new Date().toISOString()
+    };
+  });
 
-  // Remove these features from blocked_on array
-  if (state.blocked_on) {
-    state.blocked_on = state.blocked_on.filter(
-      feature => !blockedFeatures.includes(feature)
-    );
+  if (!result.success) {
+    console.warn(`⚠️  Could not update blocked features: ${result.message}`);
   }
-
-  state.last_updated = new Date().toISOString();
-
-  Write('.agentful/state.json', JSON.stringify(state, null, 2));
 }
 ```
 

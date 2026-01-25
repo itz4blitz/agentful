@@ -249,9 +249,11 @@ sequenceDiagram
 
 ## Agent Communication Protocol
 
-Agents communicate through structured messages:
+Agents communicate through structured messages and update state files using the centralized validator.
 
 ### Status Updates
+
+Agents report completion status and artifacts created:
 
 ```json
 {
@@ -262,7 +264,22 @@ Agents communicate through structured messages:
 }
 ```
 
+After completing work, agents update state using `updateStateFile()`:
+
+```javascript
+// Backend agent updates completion tracking
+updateStateFile(projectRoot, 'completion.json', (state) => ({
+  ...state,
+  features: {
+    ...state.features,
+    'user-api': { status: 'complete', progress: 100 }
+  }
+}));
+```
+
 ### Decision Requests
+
+Agents can request human input for architectural or design decisions:
 
 ```json
 {
@@ -276,7 +293,11 @@ Agents communicate through structured messages:
 }
 ```
 
+Decisions are tracked in `decisions.json` and can be resolved via `/agentful-decide`.
+
 ### Quality Gate Results
+
+The Reviewer agent validates code and updates quality gate status:
 
 ```json
 {
@@ -294,6 +315,111 @@ Agents communicate through structured messages:
     { "gate": "lint", "count": 3, "details": "..." }
   ]
 }
+```
+
+Quality gates are persisted to `completion.json` for tracking overall quality metrics.
+
+---
+
+## State Management & Validation
+
+agentful tracks all runtime state in the `.agentful/` directory using 7 core JSON files. These files maintain the current work phase, feature completion, pending decisions, and conversation context.
+
+### State Files Overview
+
+| File | Description | Auto-Recovery |
+|------|-------------|---------------|
+| `state.json` | Core initialization state, current phase, and iteration count | ✅ |
+| `completion.json` | Feature completion tracking, quality gate status, overall progress | ✅ |
+| `decisions.json` | Pending and resolved decisions requiring human input | ✅ |
+| `architecture.json` | Tech stack detection, generated agents, domain analysis | ✅ |
+| `conversation-state.json` | Natural language conversation context and unresolved references | ✅ |
+| `conversation-history.json` | Message history for context tracking and user preferences | ✅ |
+| `agent-metrics.json` | Agent lifecycle hooks, invocation counts, and feature hooks | ✅ |
+
+### Centralized Validation
+
+All state files use a centralized validator (`lib/state-validator.js`) that:
+
+- **Validates JSON structure** - Ensures files are valid JSON and parse correctly
+- **Checks required fields** - Verifies all mandatory fields are present
+- **Auto-recovers corrupted files** - Automatically repairs or recreates invalid state
+- **Provides consistent error messages** - Standardized error reporting across all files
+
+### Auto-Recovery Mechanisms
+
+When state files are missing or corrupted, the validator automatically:
+
+1. **Detects the issue** - Identifies missing files, invalid JSON, or missing required fields
+2. **Backs up corrupted files** - Creates timestamped backup (e.g., `state.json.backup-1706198400`)
+3. **Creates fresh file with defaults** - Initializes new file with schema-defined default values
+4. **Logs recovery action** - Reports what was recovered and how
+
+**Example recovery flow:**
+
+```javascript
+import { getStateFile, updateStateFile } from './lib/state-validator.js';
+
+// Get state with automatic recovery
+const result = getStateFile(projectRoot, 'completion.json', { autoRecover: true });
+
+if (result.recovered) {
+  console.log('State file was corrupted and has been recovered');
+}
+
+// Update state with validation
+updateStateFile(projectRoot, 'completion.json', {
+  overall_progress: 85,
+  features_complete: 17,
+  features_total: 20
+});
+```
+
+### Agent State Integration
+
+Agents communicate and update state through the centralized validator:
+
+```javascript
+// Orchestrator updates current phase
+updateStateFile(projectRoot, 'state.json', (current) => ({
+  ...current,
+  current_phase: 'implementation',
+  current_task: 'backend-api',
+  last_updated: new Date().toISOString()
+}));
+
+// Reviewer updates quality gates
+updateStateFile(projectRoot, 'completion.json', (current) => ({
+  ...current,
+  gates: {
+    ...current.gates,
+    tests_passing: true,
+    coverage_80: true,
+    no_type_errors: true
+  }
+}));
+```
+
+### State File Schemas
+
+All state files follow strict schemas with required fields and defaults. For detailed schema documentation, see:
+
+- [State Files Reference](/reference/state-schema) - Complete schema definitions
+- [State Validator API](/reference/state-validator) - Validation and recovery API
+
+### Manual State Recovery
+
+If you need to manually reset state:
+
+```bash
+# Delete corrupted state file (will be auto-recovered on next command)
+rm .agentful/state.json
+
+# Or delete all state to start fresh
+rm -rf .agentful/
+
+# Run any agentful command to trigger initialization
+/agentful-status
 ```
 
 ---

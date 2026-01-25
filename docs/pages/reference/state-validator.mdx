@@ -1,0 +1,981 @@
+---
+title: State Validator API
+description: Centralized state file validation and recovery for agentful.
+---
+
+# State Validator API
+
+The state validator provides centralized validation and recovery for all agentful state files. It prevents code duplication across commands and ensures consistent state management with automatic error recovery.
+
+## Overview
+
+### What is the State Validator?
+
+The state validator is a centralized module that validates and recovers agentful's state files (`.agentful/*.json`). It ensures all state files:
+- Exist and contain valid JSON
+- Have all required fields
+- Can be automatically recovered from corruption
+- Follow consistent schemas across commands
+
+### Why Use It vs Manual Validation?
+
+**Before (Manual Validation)**:
+```javascript
+// Duplicated across every command
+if (!fs.existsSync('.agentful/state.json')) {
+  fs.writeFileSync('.agentful/state.json', JSON.stringify({
+    initialized: new Date().toISOString(),
+    version: '1.0.0'
+  }));
+}
+
+const state = JSON.parse(fs.readFileSync('.agentful/state.json', 'utf-8'));
+```
+
+**After (State Validator)**:
+```javascript
+import { getStateFile } from '@itz4blitz/agentful';
+
+const result = getStateFile(process.cwd(), 'state.json', {
+  autoRecover: true
+});
+
+const state = result.data;
+```
+
+### Benefits
+
+- **Auto-recovery**: Automatically fixes corrupted, missing, or incomplete state files
+- **Consistent errors**: Standardized error messages across all commands
+- **Type safety**: Schema validation ensures required fields are present
+- **No duplication**: Write validation logic once, use everywhere
+- **Clear actions**: Recommended recovery actions for each error type
+- **Backup protection**: Corrupted files are backed up before reset
+
+## Quick Start
+
+### Installation
+
+The state validator is included in `@itz4blitz/agentful` - no separate installation needed.
+
+### Basic Usage
+
+```javascript
+import { validateAllState, getStateFile, updateStateFile } from '@itz4blitz/agentful';
+
+// Validate and auto-recover all state files
+const validation = validateAllState(process.cwd(), {
+  autoRecover: true,
+  skipOptional: true
+});
+
+if (!validation.valid) {
+  console.error('State validation failed');
+  process.exit(1);
+}
+
+// Get state file with automatic recovery
+const state = getStateFile(process.cwd(), 'completion.json', {
+  autoRecover: true
+});
+
+console.log('Overall progress:', state.data.overall_progress);
+
+// Update state file safely
+updateStateFile(process.cwd(), 'completion.json', {
+  overall_progress: 75,
+  features_complete: 3
+});
+```
+
+## API Reference
+
+The state validator exports 9 functions and 1 constant:
+
+### `validateStateFile(filePath, schema)`
+
+Validates a single state file against its schema.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `filePath` | `string` | Yes | Absolute path to the state file |
+| `schema` | `Object` | Yes | Schema object with `requiredFields` and `defaults` |
+
+**Returns:** `ValidationResult`
+
+```typescript
+{
+  valid: boolean;
+  error?: string;
+  action?: 'initialize' | 'backup_and_reset' | 'add_field';
+  missing_field?: string;
+  data?: Object;
+}
+```
+
+**Example:**
+
+```javascript
+import { validateStateFile, STATE_SCHEMAS } from '@itz4blitz/agentful';
+
+const result = validateStateFile(
+  '/path/to/.agentful/state.json',
+  STATE_SCHEMAS['state.json']
+);
+
+if (!result.valid) {
+  console.log('Error:', result.error);
+  console.log('Action:', result.action);
+}
+```
+
+---
+
+### `recoverStateFile(filePath, defaults, action, missingField)`
+
+Recovers a corrupted or missing state file.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `filePath` | `string` | Yes | Absolute path to the state file |
+| `defaults` | `Object` | Yes | Default values for the state file |
+| `action` | `string` | Yes | Recovery action: `'initialize'`, `'backup_and_reset'`, or `'add_field'` |
+| `missingField` | `string` | No | Field to add (if action is `'add_field'`) |
+
+**Returns:**
+
+```typescript
+{
+  success: boolean;
+  message: string;
+}
+```
+
+**Example:**
+
+```javascript
+import { recoverStateFile, STATE_SCHEMAS } from '@itz4blitz/agentful';
+
+const recovery = recoverStateFile(
+  '/path/to/.agentful/state.json',
+  STATE_SCHEMAS['state.json'].defaults,
+  'backup_and_reset'
+);
+
+console.log(recovery.message);
+// "⚠️ Corrupted state.json backed up to state.json.backup-1234567890 and reset"
+```
+
+---
+
+### `validateAllState(projectRoot, options)`
+
+Validates all state files in a project.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectRoot` | `string` | Yes | Absolute path to project root directory |
+| `options` | `Object` | No | Validation options |
+| `options.autoRecover` | `boolean` | No | Automatically recover invalid files (default: `false`) |
+| `options.skipOptional` | `boolean` | No | Skip validation of optional files (default: `true`) |
+| `options.verbose` | `boolean` | No | Include detailed validation info (default: `false`) |
+
+**Returns:**
+
+```typescript
+{
+  valid: boolean;
+  files: { [fileName: string]: ValidationResult };
+  errors: string[];
+  warnings: string[];
+  recovered: string[];
+}
+```
+
+**Example:**
+
+```javascript
+import { validateAllState, formatValidationResults } from '@itz4blitz/agentful';
+
+const results = validateAllState(process.cwd(), {
+  autoRecover: true,
+  skipOptional: true,
+  verbose: true
+});
+
+console.log(formatValidationResults(results));
+```
+
+---
+
+### `getDefaultState(fileName)`
+
+Gets the default state for a specific file.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `fileName` | `string` | Yes | Name of the state file (e.g., `'state.json'`) |
+
+**Returns:** `Object | null`
+
+Returns object with default values or `null` if file not found in schemas.
+
+**Example:**
+
+```javascript
+import { getDefaultState } from '@itz4blitz/agentful';
+
+const defaults = getDefaultState('completion.json');
+console.log('Default gates:', defaults.gates);
+// { tests_passing: null, no_type_errors: null, ... }
+```
+
+---
+
+### `isStateFileValid(projectRoot, fileName)`
+
+Quick check if a state file exists and is valid.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectRoot` | `string` | Yes | Absolute path to project root directory |
+| `fileName` | `string` | Yes | Name of the state file (e.g., `'state.json'`) |
+
+**Returns:** `boolean`
+
+**Example:**
+
+```javascript
+import { isStateFileValid } from '@itz4blitz/agentful';
+
+if (!isStateFileValid(process.cwd(), 'state.json')) {
+  console.error('State file is invalid or missing');
+  process.exit(1);
+}
+```
+
+---
+
+### `getStateFile(projectRoot, fileName, options)`
+
+Gets state file content with validation.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectRoot` | `string` | Yes | Absolute path to project root directory |
+| `fileName` | `string` | Yes | Name of the state file (e.g., `'state.json'`) |
+| `options` | `Object` | No | Options |
+| `options.autoRecover` | `boolean` | No | Automatically recover invalid files (default: `false`) |
+
+**Returns:**
+
+```typescript
+{
+  valid: boolean;
+  data: Object | null;
+  error: string | null;
+  recovered?: boolean;
+}
+```
+
+**Example:**
+
+```javascript
+import { getStateFile } from '@itz4blitz/agentful';
+
+const result = getStateFile(process.cwd(), 'completion.json', {
+  autoRecover: true
+});
+
+if (result.valid) {
+  console.log('Features:', result.data.features);
+  if (result.recovered) {
+    console.log('⚠️ File was auto-recovered');
+  }
+} else {
+  console.error('Failed to load state:', result.error);
+}
+```
+
+---
+
+### `updateStateFile(projectRoot, fileName, updates)`
+
+Updates a state file with validation.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectRoot` | `string` | Yes | Absolute path to project root directory |
+| `fileName` | `string` | Yes | Name of the state file (e.g., `'state.json'`) |
+| `updates` | `Object \| Function` | Yes | Object with updates or function that receives current state |
+
+**Returns:**
+
+```typescript
+{
+  success: boolean;
+  message: string;
+  data?: Object;
+}
+```
+
+**Examples:**
+
+```javascript
+import { updateStateFile } from '@itz4blitz/agentful';
+
+// Update with object
+updateStateFile(process.cwd(), 'state.json', {
+  agents: ['orchestrator', 'backend']
+});
+
+// Update with function
+updateStateFile(process.cwd(), 'completion.json', (current) => ({
+  ...current,
+  overall_progress: current.overall_progress + 10,
+  last_updated: new Date().toISOString()
+}));
+```
+
+:::warning[Protected Fields]
+Updates that remove required fields will be rejected:
+```javascript
+const result = updateStateFile(projectRoot, 'state.json', (current) => {
+  delete current.version; // ❌ Will fail
+  return current;
+});
+
+console.log(result.success); // false
+console.log(result.message); // "Update would remove required field 'version'"
+```
+:::
+
+---
+
+### `formatValidationResults(results)`
+
+Formats validation results for display.
+
+**Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `results` | `Object` | Yes | Results from `validateAllState()` |
+
+**Returns:** `string`
+
+Formatted string with errors, warnings, and recovery messages.
+
+**Example:**
+
+```javascript
+import { validateAllState, formatValidationResults } from '@itz4blitz/agentful';
+
+const results = validateAllState(process.cwd(), {
+  autoRecover: true
+});
+
+console.log(formatValidationResults(results));
+```
+
+**Output:**
+```
+✅ All state files are valid
+
+**Recovered:**
+  ✅ Created state.json with default values
+  ✅ Added missing field 'version' to completion.json
+```
+
+---
+
+### `STATE_SCHEMAS`
+
+Exported constant containing schemas for all state files.
+
+**Type:** `Object`
+
+**Structure:**
+```typescript
+{
+  [fileName: string]: {
+    requiredFields: string[];
+    defaults: Object;
+    description: string;
+    optional?: boolean;
+  }
+}
+```
+
+**Example:**
+
+```javascript
+import { STATE_SCHEMAS } from '@itz4blitz/agentful';
+
+// List all state files
+for (const [fileName, schema] of Object.entries(STATE_SCHEMAS)) {
+  console.log(`${fileName}: ${schema.description}`);
+  console.log('Required fields:', schema.requiredFields);
+  console.log('Optional:', schema.optional || false);
+}
+```
+
+**Output:**
+```
+state.json: Core initialization state
+Required fields: ['initialized', 'version']
+Optional: false
+
+completion.json: Feature completion tracking and quality gates
+Required fields: ['features', 'gates', 'overall_progress']
+Optional: false
+
+...
+```
+
+## Usage Patterns
+
+### Validating in Commands
+
+```javascript
+import { validateAllState, formatValidationResults } from '@itz4blitz/agentful';
+
+export async function runCommand() {
+  const projectRoot = process.cwd();
+
+  // Validate state at start of command
+  const validation = validateAllState(projectRoot, {
+    autoRecover: true,
+    skipOptional: true
+  });
+
+  if (!validation.valid) {
+    console.error('❌ State validation failed');
+    console.error(formatValidationResults(validation));
+    return false;
+  }
+
+  // Continue with command...
+}
+```
+
+### Auto-Recovery Workflows
+
+```javascript
+import { getStateFile } from '@itz4blitz/agentful';
+
+export async function runCommand() {
+  const projectRoot = process.cwd();
+
+  // Get state with auto-recovery
+  const state = getStateFile(projectRoot, 'completion.json', {
+    autoRecover: true
+  });
+
+  if (!state.valid) {
+    console.error('Failed to load state:', state.error);
+    return false;
+  }
+
+  if (state.recovered) {
+    console.log('⚠️ State file was automatically recovered');
+  }
+
+  // Use state.data safely
+  console.log('Progress:', state.data.overall_progress);
+}
+```
+
+### Batch Validation
+
+```javascript
+import { validateAllState } from '@itz4blitz/agentful';
+
+export async function healthCheck() {
+  const results = validateAllState(process.cwd(), {
+    autoRecover: false,
+    skipOptional: false,
+    verbose: true
+  });
+
+  // Check all files including optional ones
+  for (const [fileName, validation] of Object.entries(results.files)) {
+    if (validation.valid) {
+      console.log(`✅ ${fileName}: Valid`);
+    } else {
+      console.log(`❌ ${fileName}: ${validation.error}`);
+      console.log(`   Recommended action: ${validation.action}`);
+    }
+  }
+
+  return results.valid;
+}
+```
+
+### Safe State Updates
+
+```javascript
+import { getStateFile, updateStateFile } from '@itz4blitz/agentful';
+
+export async function incrementProgress(featureName) {
+  const projectRoot = process.cwd();
+
+  // Get current state
+  const state = getStateFile(projectRoot, 'completion.json', {
+    autoRecover: true
+  });
+
+  if (!state.valid) {
+    return { success: false, error: state.error };
+  }
+
+  // Update state safely
+  const updateResult = updateStateFile(projectRoot, 'completion.json', (current) => ({
+    ...current,
+    features: {
+      ...current.features,
+      [featureName]: { completed: true }
+    },
+    features_complete: current.features_complete + 1,
+    overall_progress: Math.round(((current.features_complete + 1) / current.features_total) * 100),
+    last_updated: new Date().toISOString()
+  }));
+
+  return updateResult;
+}
+```
+
+## State Files Covered
+
+The state validator manages 7 state files:
+
+| File | Required Fields | Description | Optional |
+|------|----------------|-------------|----------|
+| `state.json` | `initialized`, `version` | Core initialization state | No |
+| `completion.json` | `features`, `gates`, `overall_progress` | Feature completion tracking and quality gates | No |
+| `decisions.json` | `decisions` | Pending and resolved decisions | No |
+| `architecture.json` | `version`, `techStack` | Tech stack detection and generated agents | Yes |
+| `conversation-state.json` | `current_phase` | Natural language conversation context | No |
+| `conversation-history.json` | `messages` | Message history for context tracking | No |
+| `agent-metrics.json` | `invocations` | Agent lifecycle hooks and metrics | Yes |
+
+:::info[Optional Files]
+Files marked as optional (`architecture.json`, `agent-metrics.json`) are skipped by default when `skipOptional: true` is set in `validateAllState()`. They are only created when needed by specific commands.
+:::
+
+## Error Handling
+
+### Validation Errors and Recovery Actions
+
+The validator provides three types of recovery actions:
+
+#### 1. Initialize (File Not Found)
+
+**Error:**
+```
+❌ state.json: File not found: /path/to/.agentful/state.json
+```
+
+**Action:** `initialize`
+
+**Recovery:**
+```javascript
+recoverStateFile(filePath, defaults, 'initialize');
+// ✅ Created state.json with default values
+```
+
+Creates a new file with default values.
+
+---
+
+#### 2. Backup and Reset (Invalid JSON)
+
+**Error:**
+```
+❌ state.json: Invalid JSON in /path/to/.agentful/state.json: Unexpected token
+```
+
+**Action:** `backup_and_reset`
+
+**Recovery:**
+```javascript
+recoverStateFile(filePath, defaults, 'backup_and_reset');
+// ⚠️ Corrupted state.json backed up to state.json.backup-1234567890 and reset
+```
+
+Backs up the corrupted file and creates a fresh one with defaults.
+
+---
+
+#### 3. Add Field (Missing Required Field)
+
+**Error:**
+```
+❌ state.json: Missing required field 'version' in /path/to/.agentful/state.json
+```
+
+**Action:** `add_field`
+
+**Recovery:**
+```javascript
+recoverStateFile(filePath, defaults, 'add_field', 'version');
+// ✅ Added missing field 'version' to state.json
+```
+
+Adds the missing field to the existing file without losing other data.
+
+### Error Messages Reference
+
+| Error Type | Message Pattern | Action | Auto-Recovery |
+|------------|----------------|--------|---------------|
+| Missing file | `File not found: {path}` | `initialize` | Creates file with defaults |
+| Invalid JSON | `Invalid JSON in {path}: {error}` | `backup_and_reset` | Backs up and resets |
+| Missing field | `Missing required field '{field}' in {path}` | `add_field` | Adds field with default value |
+| Unknown file | `Unknown state file: {fileName}` | N/A | Cannot recover |
+| Invalid update | `Update would remove required field '{field}'` | N/A | Rejects update |
+
+## Migration Guide
+
+### From Manual JSON.parse to getStateFile()
+
+**Before:**
+```javascript
+import fs from 'fs';
+import path from 'path';
+
+const statePath = path.join(process.cwd(), '.agentful', 'completion.json');
+
+if (!fs.existsSync(statePath)) {
+  fs.writeFileSync(statePath, JSON.stringify({
+    features: {},
+    gates: {
+      tests_passing: null,
+      no_type_errors: null,
+      coverage_80: null,
+      no_lint_errors: null,
+      no_security_issues: null,
+      no_dead_code: null
+    },
+    overall_progress: 0
+  }));
+}
+
+let completion;
+try {
+  completion = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+} catch (e) {
+  console.error('Failed to parse completion.json:', e.message);
+  process.exit(1);
+}
+
+// Check required fields manually
+if (!completion.features || !completion.gates || !completion.overall_progress) {
+  console.error('completion.json is missing required fields');
+  process.exit(1);
+}
+```
+
+**After:**
+```javascript
+import { getStateFile } from '@itz4blitz/agentful';
+
+const result = getStateFile(process.cwd(), 'completion.json', {
+  autoRecover: true
+});
+
+if (!result.valid) {
+  console.error('Failed to load completion.json:', result.error);
+  process.exit(1);
+}
+
+const completion = result.data;
+```
+
+**Benefits:**
+- 90% less code
+- Automatic validation
+- Auto-recovery from corruption
+- Consistent error handling
+- No manual field checking
+
+---
+
+### From Manual Validation to validateAllState()
+
+**Before:**
+```javascript
+import fs from 'fs';
+import path from 'path';
+
+const agentfulDir = path.join(process.cwd(), '.agentful');
+const requiredFiles = [
+  'state.json',
+  'completion.json',
+  'decisions.json',
+  'conversation-state.json',
+  'conversation-history.json'
+];
+
+for (const file of requiredFiles) {
+  const filePath = path.join(agentfulDir, file);
+
+  if (!fs.existsSync(filePath)) {
+    console.error(`Missing required file: ${file}`);
+    process.exit(1);
+  }
+
+  try {
+    JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+  } catch (e) {
+    console.error(`Invalid JSON in ${file}:`, e.message);
+    process.exit(1);
+  }
+}
+```
+
+**After:**
+```javascript
+import { validateAllState, formatValidationResults } from '@itz4blitz/agentful';
+
+const validation = validateAllState(process.cwd(), {
+  autoRecover: true,
+  skipOptional: true
+});
+
+if (!validation.valid) {
+  console.error(formatValidationResults(validation));
+  process.exit(1);
+}
+```
+
+**Benefits:**
+- Validates all files in one call
+- Automatic recovery
+- Schema validation (checks required fields)
+- Formatted error messages
+- Handles optional files correctly
+
+---
+
+### Before/After Examples
+
+#### Example 1: Command Initialization
+
+**Before:**
+```javascript
+// Duplicated in every command
+if (!fs.existsSync('.agentful')) {
+  fs.mkdirSync('.agentful', { recursive: true });
+}
+
+const statePath = path.join('.agentful', 'state.json');
+if (!fs.existsSync(statePath)) {
+  fs.writeFileSync(statePath, JSON.stringify({
+    initialized: new Date().toISOString(),
+    version: '1.0.0',
+    agents: [],
+    skills: []
+  }));
+}
+
+const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+```
+
+**After:**
+```javascript
+import { getStateFile } from '@itz4blitz/agentful';
+
+const state = getStateFile(process.cwd(), 'state.json', {
+  autoRecover: true
+}).data;
+```
+
+---
+
+#### Example 2: Updating State
+
+**Before:**
+```javascript
+const statePath = path.join('.agentful', 'state.json');
+const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+
+state.agents.push('new-agent');
+state.skills.push('new-skill');
+
+fs.writeFileSync(statePath, JSON.stringify(state, null, 2));
+```
+
+**After:**
+```javascript
+import { updateStateFile } from '@itz4blitz/agentful';
+
+updateStateFile(process.cwd(), 'state.json', (current) => ({
+  ...current,
+  agents: [...current.agents, 'new-agent'],
+  skills: [...current.skills, 'new-skill']
+}));
+```
+
+---
+
+#### Example 3: Health Check
+
+**Before:**
+```javascript
+const files = ['state.json', 'completion.json', 'decisions.json'];
+let allValid = true;
+
+for (const file of files) {
+  const filePath = path.join('.agentful', file);
+
+  if (!fs.existsSync(filePath)) {
+    console.error(`❌ Missing: ${file}`);
+    allValid = false;
+    continue;
+  }
+
+  try {
+    JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    console.log(`✅ Valid: ${file}`);
+  } catch (e) {
+    console.error(`❌ Invalid JSON in ${file}`);
+    allValid = false;
+  }
+}
+
+if (!allValid) process.exit(1);
+```
+
+**After:**
+```javascript
+import { validateAllState, formatValidationResults } from '@itz4blitz/agentful';
+
+const results = validateAllState(process.cwd(), { verbose: true });
+console.log(formatValidationResults(results));
+
+if (!results.valid) process.exit(1);
+```
+
+## Best Practices
+
+### 1. Always Use Auto-Recovery in Commands
+
+Set `autoRecover: true` when calling `validateAllState()` or `getStateFile()` in user-facing commands.
+
+```javascript
+// ✅ Good - user-facing command
+const validation = validateAllState(process.cwd(), {
+  autoRecover: true
+});
+
+// ❌ Bad - forces users to manually fix state
+const validation = validateAllState(process.cwd(), {
+  autoRecover: false
+});
+```
+
+---
+
+### 2. Skip Optional Files by Default
+
+Set `skipOptional: true` unless you specifically need to validate `architecture.json` or `agent-metrics.json`.
+
+```javascript
+// ✅ Good - only validate required state
+const validation = validateAllState(process.cwd(), {
+  skipOptional: true
+});
+
+// ❌ Bad - fails if optional files missing
+const validation = validateAllState(process.cwd(), {
+  skipOptional: false
+});
+```
+
+---
+
+### 3. Use Verbose Mode for Debugging
+
+Set `verbose: true` when troubleshooting state issues to see detailed validation info.
+
+```javascript
+// Debugging command
+const validation = validateAllState(process.cwd(), {
+  verbose: true
+});
+
+console.log(formatValidationResults(validation));
+```
+
+---
+
+### 4. Update State Safely
+
+Always use `updateStateFile()` instead of direct JSON.parse/stringify to ensure required fields aren't removed.
+
+```javascript
+// ✅ Good - validates updates
+updateStateFile(projectRoot, 'state.json', {
+  agents: ['orchestrator']
+});
+
+// ❌ Bad - might corrupt state
+const state = JSON.parse(fs.readFileSync('.agentful/state.json'));
+delete state.version; // Removes required field!
+fs.writeFileSync('.agentful/state.json', JSON.stringify(state));
+```
+
+---
+
+### 5. Check Validation Results
+
+Never assume validation succeeded - always check the `valid` flag.
+
+```javascript
+// ✅ Good - handles failure
+const result = getStateFile(projectRoot, 'state.json');
+if (!result.valid) {
+  console.error('Failed to load state:', result.error);
+  return;
+}
+const state = result.data;
+
+// ❌ Bad - crashes if validation fails
+const state = getStateFile(projectRoot, 'state.json').data; // Throws if data is null
+```
+
+---
+
+### 6. Format Error Messages
+
+Use `formatValidationResults()` to display user-friendly error messages.
+
+```javascript
+// ✅ Good - formatted output
+const results = validateAllState(projectRoot);
+console.log(formatValidationResults(results));
+
+// ❌ Bad - raw error dump
+const results = validateAllState(projectRoot);
+console.log(JSON.stringify(results.errors));
+```
+
+## See Also
+
+- [State Schema Reference](/reference/state-schema) - Detailed state file schemas
+- [Product Tracking](/guides/product-tracking) - Using completion.json
+- [Decision Tracking](/guides/decisions) - Using decisions.json

@@ -1,17 +1,28 @@
-# State Schema Reference
+# State Files Reference
 
-This document describes the structure of `.agentful/state.json`, the core state file used by agentful.
+This document describes the structure of all 7 state files used by agentful in the `.agentful/` directory.
 
 ## Overview
 
-The `state.json` file tracks the current execution state of agentful, including:
-- Current task and phase
-- Iteration count
-- Blocking decisions
+Agentful uses multiple state files to track different aspects of product development:
 
-## Schema
+1. **state.json** - Current task and development phase
+2. **completion.json** - Feature completion tracking and quality gates
+3. **decisions.json** - Pending and resolved decisions
+4. **architecture.json** - Tech stack detection and generated agents (optional)
+5. **conversation-state.json** - Natural language conversation context
+6. **conversation-history.json** - Message history for context tracking
+7. **agent-metrics.json** - Agent lifecycle hooks and metrics (optional)
 
-### Complete Example
+All state files are managed automatically by agentful and stored in the `.agentful/` directory (gitignored by default).
+
+---
+
+## state.json
+
+Tracks the current execution state of the development loop.
+
+### Schema
 
 ```json
 {
@@ -24,7 +35,7 @@ The `state.json` file tracks the current execution state of agentful, including:
 }
 ```
 
-## Field Reference
+### Field Reference
 
 #### `version`
 - **Type**: `string`
@@ -63,60 +74,555 @@ The `state.json` file tracks the current execution state of agentful, including:
 - **Description**: List of decision IDs blocking progress
 - **Example**: `["decision-001", "decision-002"]` or `[]`
 
-## Usage
+---
 
-### Reading State
+## completion.json
 
-```javascript
-const state = JSON.parse(Read(".agentful/state.json"));
-const currentTask = state.current_task;
-const phase = state.current_phase;
-const isBlocked = state.blocked_on.length > 0;
-```
+Tracks feature completion progress and quality gate status.
 
-### Updating State
+### Schema
 
-```javascript
-// Read current state
-const state = JSON.parse(Read(".agentful/state.json"));
-
-// Update fields
-state.current_task = "authentication/login";
-state.current_phase = "implementing";
-state.iterations += 1;
-state.last_updated = new Date().toISOString();
-
-// Write back
-Write(".agentful/state.json", JSON.stringify(state, null, 2));
-```
-
-### Checking for Blockers
-
-```javascript
-const state = JSON.parse(Read(".agentful/state.json"));
-if (state.blocked_on.length > 0) {
-  console.log(`Blocked on decisions: ${state.blocked_on.join(", ")}`);
-  // User should run /agentful-decide to resolve
+```json
+{
+  "initialized": "2026-01-20T10:30:00.000Z",
+  "version": "1.0.0",
+  "structure": "flat",
+  "domains": {},
+  "features": {
+    "authentication/login": {
+      "status": "complete",
+      "progress": 100,
+      "subtasks_complete": 5,
+      "subtasks_total": 5
+    }
+  },
+  "gates": {
+    "tests_passing": true,
+    "no_type_errors": true,
+    "coverage_80": true,
+    "no_lint_errors": true,
+    "no_security_issues": true,
+    "no_dead_code": false
+  },
+  "overall_progress": 75,
+  "features_complete": 3,
+  "features_total": 4,
+  "last_updated": "2026-01-20T10:30:00.000Z"
 }
 ```
 
+### Field Reference
+
+#### `features`
+- **Type**: `object`
+- **Required**: Yes
+- **Description**: Map of feature IDs to completion status
+- **Example**: `{ "auth/login": { "status": "complete", "progress": 100 } }`
+
+#### `gates`
+- **Type**: `object`
+- **Required**: Yes
+- **Description**: Quality gate results (true/false/null)
+- **Fields**:
+  - `tests_passing` - All tests pass
+  - `no_type_errors` - No TypeScript/Flow errors
+  - `coverage_80` - 80%+ code coverage
+  - `no_lint_errors` - No linting errors
+  - `no_security_issues` - No known vulnerabilities
+  - `no_dead_code` - No unused exports or files
+
+#### `overall_progress`
+- **Type**: `number`
+- **Required**: Yes
+- **Description**: Overall completion percentage (0-100)
+
+#### `features_complete` / `features_total`
+- **Type**: `number`
+- **Required**: Yes
+- **Description**: Number of completed features vs total features
+
+---
+
+## decisions.json
+
+Tracks pending and resolved user decisions.
+
+### Schema
+
+```json
+{
+  "decisions": [
+    {
+      "id": "decision-001",
+      "question": "Should we use JWT or session-based auth?",
+      "context": "Authentication implementation",
+      "options": ["JWT tokens", "Session cookies"],
+      "created_at": "2026-01-20T10:30:00.000Z",
+      "status": "pending"
+    }
+  ],
+  "lastUpdated": "2026-01-20T10:30:00.000Z"
+}
+```
+
+### Field Reference
+
+#### `decisions`
+- **Type**: `array<object>`
+- **Required**: Yes
+- **Description**: List of all decisions (pending and resolved)
+- **Decision fields**:
+  - `id` - Unique identifier
+  - `question` - The decision question
+  - `context` - Where this decision came from
+  - `options` - Array of possible choices
+  - `status` - `"pending"` or `"resolved"`
+  - `resolution` - User's answer (only when resolved)
+  - `created_at` / `resolved_at` - Timestamps
+
+---
+
+## architecture.json (Optional)
+
+Tech stack detection results and generated agents. Created by `/agentful-generate`.
+
+### Schema
+
+```json
+{
+  "version": "1.0",
+  "techStack": {
+    "languages": ["TypeScript", "JavaScript"],
+    "runtime": {
+      "name": "Node.js",
+      "version": "20.x"
+    },
+    "testing": {
+      "framework": "Vitest"
+    },
+    "linting": {
+      "tool": "ESLint"
+    },
+    "dependencies": {
+      "react": "^18.0.0",
+      "next": "^14.0.0"
+    }
+  },
+  "domains": ["authentication", "user-management"],
+  "generatedAgents": ["backend", "frontend"],
+  "generatedSkills": ["validation"],
+  "analyzedAt": "2026-01-20T10:30:00.000Z",
+  "detectionMethod": "automatic"
+}
+```
+
+### Field Reference
+
+#### `techStack`
+- **Type**: `object`
+- **Required**: Yes
+- **Description**: Detected technology stack information
+
+#### `generatedAgents` / `generatedSkills`
+- **Type**: `array<string>`
+- **Required**: Yes
+- **Description**: List of agents/skills generated for this stack
+
+---
+
+## conversation-state.json
+
+Natural language conversation context for the `/agentful` command.
+
+### Schema
+
+```json
+{
+  "current_phase": "implementing",
+  "last_message_time": "2026-01-20T10:30:00.000Z",
+  "active_feature": "authentication/login",
+  "unresolved_references": [],
+  "context_history": [
+    {
+      "phase": "analyzing",
+      "timestamp": "2026-01-20T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Field Reference
+
+#### `current_phase`
+- **Type**: `string`
+- **Required**: Yes
+- **Description**: Current conversation phase
+- **Values**: `"idle"`, `"analyzing"`, `"implementing"`, `"testing"`, etc.
+
+#### `active_feature`
+- **Type**: `string | null`
+- **Required**: Yes
+- **Description**: Feature being discussed
+
+#### `unresolved_references`
+- **Type**: `array<string>`
+- **Required**: Yes
+- **Description**: Ambiguous references that need clarification
+
+---
+
+## conversation-history.json
+
+Complete message history with full context tracking.
+
+### Schema
+
+```json
+{
+  "version": "1.0",
+  "schema": "conversation-history",
+  "session": {
+    "id": "session-123",
+    "started_at": "2026-01-20T10:00:00.000Z",
+    "last_updated": "2026-01-20T10:30:00.000Z",
+    "message_count": 5,
+    "active": true,
+    "mode": "interactive"
+  },
+  "conversation": {
+    "messages": [
+      {
+        "id": "msg-001",
+        "timestamp": "2026-01-20T10:00:00.000Z",
+        "role": "user",
+        "content": "Start implementing login",
+        "intent": "start_task",
+        "entities": ["login"]
+      }
+    ],
+    "summary": "User requested login implementation",
+    "key_topics": ["authentication", "login"],
+    "user_goals": ["implement-login"]
+  },
+  "context": {
+    "current_feature": "authentication/login",
+    "current_phase": "implementing",
+    "current_agent": "backend",
+    "last_action": "code_generation",
+    "last_action_time": "2026-01-20T10:30:00.000Z",
+    "active_files": ["/src/auth/login.ts"],
+    "active_branch": "feature/login"
+  },
+  "state_integration": {
+    "_comment": "References to external state files",
+    "state_file": ".agentful/state.json",
+    "completion_file": ".agentful/completion.json",
+    "decisions_file": ".agentful/decisions.json"
+  },
+  "product_context": {
+    "structure": "flat",
+    "current_feature_path": "authentication/login",
+    "domain": "authentication",
+    "all_features": ["authentication/login", "authentication/register"],
+    "feature_dependencies": {}
+  },
+  "user": {
+    "preferences": {
+      "verbosity": "normal",
+      "auto_approve": false,
+      "show_thinking": false,
+      "save_intermediate": false,
+      "confirmation_style": "explicit",
+      "error_handling": "interactive",
+      "output_format": "markdown"
+    },
+    "goals": ["implement-authentication"],
+    "constraints": ["use-jwt", "no-sessions"],
+    "avoidances": ["passport.js"],
+    "tech_preferences": ["jose-for-jwt"],
+    "architecture_notes": ["use-middleware-pattern"]
+  },
+  "agents": {
+    "active": "backend",
+    "history": [
+      {
+        "agent": "orchestrator",
+        "invoked_at": "2026-01-20T10:00:00.000Z",
+        "action": "analyze"
+      }
+    ]
+  },
+  "skills_invoked": {
+    "conversation": { "count": 2, "last_invoked": "2026-01-20T10:00:00.000Z" },
+    "product": { "count": 1, "last_invoked": "2026-01-20T09:00:00.000Z" },
+    "architecture": { "count": 0, "last_invoked": null },
+    "development": { "count": 3, "last_invoked": "2026-01-20T10:30:00.000Z" },
+    "testing": { "count": 0, "last_invoked": null },
+    "documentation": { "count": 0, "last_invoked": null },
+    "review": { "count": 0, "last_invoked": null }
+  },
+  "metadata": {
+    "created_at": "2026-01-20T10:00:00.000Z",
+    "created_by": "agentful-cli",
+    "environment": {
+      "platform": "darwin",
+      "node_version": "v20.0.0",
+      "agentful_version": "1.0.0"
+    },
+    "git_info": {
+      "branch": "feature/login",
+      "commit": "abc123",
+      "remote": "origin"
+    },
+    "project_root": "/path/to/project"
+  }
+}
+```
+
+### Field Reference
+
+This is the most comprehensive state file with 14 top-level sections. Key fields:
+
+#### `session`
+- **Type**: `object`
+- **Description**: Session metadata and status
+
+#### `conversation`
+- **Type**: `object`
+- **Description**: Message history and conversation summary
+
+#### `context`
+- **Type**: `object`
+- **Description**: Current execution context (feature, phase, agent, files)
+
+#### `user`
+- **Type**: `object`
+- **Description**: User preferences, goals, constraints, and architecture notes
+
+#### `metadata`
+- **Type**: `object`
+- **Description**: Environment, git, and project information
+
+---
+
+## agent-metrics.json (Optional)
+
+Agent lifecycle hooks and invocation metrics. Created on first agent invocation.
+
+### Schema
+
+```json
+{
+  "invocations": {
+    "orchestrator": {
+      "count": 5,
+      "last_invoked": "2026-01-20T10:30:00.000Z",
+      "average_duration_ms": 1250
+    }
+  },
+  "last_invocation": {
+    "agent": "backend",
+    "timestamp": "2026-01-20T10:30:00.000Z",
+    "feature": "authentication/login"
+  },
+  "feature_hooks": [
+    {
+      "feature": "authentication/login",
+      "hook": "pre_implementation",
+      "executed_at": "2026-01-20T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+### Field Reference
+
+#### `invocations`
+- **Type**: `object`
+- **Description**: Map of agent names to invocation statistics
+
+#### `feature_hooks`
+- **Type**: `array<object>`
+- **Description**: Lifecycle hooks executed during feature development
+
+---
+
+## State Validation
+
+Agentful provides a centralized state validator module that all commands use.
+
+### Modern Validation Pattern
+
+```javascript
+import { getStateFile, updateStateFile, validateAllState } from '@itz4blitz/agentful';
+
+// Get state file with automatic recovery
+const result = getStateFile(process.cwd(), 'completion.json', {
+  autoRecover: true
+});
+
+if (result.valid) {
+  console.log('Progress:', result.data.overall_progress);
+  if (result.recovered) {
+    console.log('File was auto-recovered');
+  }
+}
+
+// Update state safely
+updateStateFile(process.cwd(), 'completion.json', {
+  overall_progress: 85,
+  features_complete: 3
+});
+
+// Validate all state files
+const validation = validateAllState(process.cwd(), {
+  autoRecover: true,
+  skipOptional: true,
+  verbose: false
+});
+
+if (!validation.valid) {
+  console.error('State validation failed');
+  validation.errors.forEach(err => console.error(err));
+}
+```
+
+### Available Functions
+
+- `validateStateFile(path, schema)` - Validate single file
+- `recoverStateFile(path, defaults, action)` - Recover corrupted file
+- `validateAllState(root, options)` - Validate all state files
+- `getStateFile(root, fileName, options)` - Get file with validation
+- `updateStateFile(root, fileName, updates)` - Update file safely
+- `isStateFileValid(root, fileName)` - Quick validation check
+- `getDefaultState(fileName)` - Get default state for a file
+- `formatValidationResults(results)` - Format validation output
+
+See `/Users/blitz/Development/agentful/lib/state-validator.js` for complete API documentation.
+
+---
+
+## Auto-Recovery
+
+The state validator automatically recovers from common issues:
+
+### File Not Found
+**Action**: `initialize` - Creates file with default values
+
+```
+✅ Created completion.json with default values
+```
+
+### Invalid JSON
+**Action**: `backup_and_reset` - Backs up corrupted file and creates fresh one
+
+```
+⚠️  Corrupted state.json backed up to state.json.backup-1234567890 and reset
+```
+
+### Missing Field
+**Action**: `add_field` - Adds missing field with default value
+
+```
+✅ Added missing field 'version' to decisions.json
+```
+
+---
+
 ## Best Practices
 
-1. **Always validate state exists** before reading
-2. **Update `last_updated`** when modifying state
-3. **Use ISO 8601 timestamps** for all time fields
-4. **Increment `iterations`** when completing a development loop
-5. **Clear `blocked_on`** when decisions are resolved
-6. **Set `current_task` to null** when no active task
+### 1. Always Use the Centralized Validator
+
+**Don't do this:**
+```javascript
+// Manual validation (outdated)
+const state = JSON.parse(fs.readFileSync('.agentful/state.json', 'utf-8'));
+```
+
+**Do this:**
+```javascript
+// Centralized validation (modern)
+import { getStateFile } from '@itz4blitz/agentful';
+
+const result = getStateFile(process.cwd(), 'state.json', {
+  autoRecover: true
+});
+const state = result.data;
+```
+
+### 2. Enable Auto-Recovery in Commands
+
+```javascript
+const validation = validateAllState(process.cwd(), {
+  autoRecover: true,  // Fix issues automatically
+  skipOptional: true  // Don't require architecture.json
+});
+```
+
+### 3. Update State Safely
+
+```javascript
+// Use updateStateFile to preserve required fields
+updateStateFile(process.cwd(), 'state.json', {
+  current_phase: 'implementing',
+  last_updated: new Date().toISOString()
+});
+
+// Or use a function for complex updates
+updateStateFile(process.cwd(), 'completion.json', (current) => ({
+  ...current,
+  overall_progress: current.overall_progress + 10,
+  last_updated: new Date().toISOString()
+}));
+```
+
+### 4. Check Validation Results
+
+```javascript
+if (!validation.valid) {
+  console.error(formatValidationResults(validation));
+  process.exit(1);
+}
+```
+
+### 5. Use ISO 8601 Timestamps
+
+All timestamp fields should use `new Date().toISOString()`:
+
+```javascript
+{
+  "last_updated": "2026-01-20T10:30:00.000Z",  // ✅ Correct
+  "last_updated": "2026-01-20 10:30:00"        // ❌ Wrong
+}
+```
+
+---
+
+## Summary
+
+Agentful manages 7 state files automatically:
+
+| File | Purpose | Required | Created By |
+|------|---------|----------|------------|
+| `state.json` | Current task and phase | Yes | `agentful init` |
+| `completion.json` | Feature progress and gates | Yes | `agentful init` |
+| `decisions.json` | Pending decisions | Yes | `agentful init` |
+| `architecture.json` | Tech stack detection | No | `/agentful-generate` |
+| `conversation-state.json` | NLP context | Yes | `agentful init` |
+| `conversation-history.json` | Message history | Yes | `agentful init` |
+| `agent-metrics.json` | Agent metrics | No | First agent invocation |
+
+**Key Takeaway**: Use the centralized state validator (`@itz4blitz/agentful`) for all state file operations. It handles validation, recovery, and ensures consistency across your codebase.
 
 ## Related Files
 
-- `.agentful/completion.json` - Feature completion tracking
-- `.agentful/decisions.json` - Pending user decisions
-- `.agentful/architecture.json` - Detected tech stack
+- `/Users/blitz/Development/agentful/lib/state-validator.js` - Centralized state validator
+- `/Users/blitz/Development/agentful/lib/state-validator.README.md` - Validator documentation
+- `/Users/blitz/Development/agentful/lib/init.js` - State file initialization
 
 ## See Also
 
-- [/agentful-start command](/commands/agentful-start)
-- [/agentful-status command](/commands/agentful-status)
-- [Orchestrator Agent](/agents/orchestrator)
+- [/agentful-start command](/commands/agentful-start) - Start development loop
+- [/agentful-status command](/commands/agentful-status) - Check progress
+- [/agentful-validate command](/commands/agentful-validate) - Run quality gates
+- [Orchestrator Agent](/agents/orchestrator) - Main orchestration agent

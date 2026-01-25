@@ -277,52 +277,41 @@ When analysis exists with unresolved blocking issues.
 
 ### Validation
 
-Before reading analysis, validate the file:
+Use centralized validator to check product-analysis.json (note: this is not a core state file):
 
 ```javascript
-function validate_state_file(file_path, required_fields) {
-  // Check file exists
-  if (!exists(file_path)) {
-    return { valid: false, error: `File not found: ${file_path}`, action: "not_found" };
+// product-analysis.json is not in STATE_SCHEMAS (it's product-specific)
+// Use manual validation or extend state-validator if needed
+const analysisPath = '.agentful/product-analysis.json';
+
+if (!exists(analysisPath)) {
+  console.log("❌ No analysis found. Re-running analysis...");
+  goto ANALYSIS_MODE;
+}
+
+let analysis;
+try {
+  analysis = JSON.parse(Read(analysisPath));
+
+  // Validate required fields
+  if (!analysis.issues || !analysis.readiness_score) {
+    throw new Error("Missing required fields");
+  }
+} catch (e) {
+  console.log(`❌ Corrupted or incomplete analysis file: ${e.message}`);
+  console.log("Re-running analysis...");
+
+  // Backup corrupted file
+  if (exists(analysisPath)) {
+    const timestamp = Math.floor(Date.now() / 1000);
+    Bash(`cp ${analysisPath} ${analysisPath}.backup-${timestamp}`);
   }
 
-  // Check file is valid JSON
-  let content;
-  try {
-    content = JSON.parse(Read(file_path));
-  } catch (e) {
-    return { valid: false, error: `Invalid JSON in ${file_path}`, action: "corrupted" };
-  }
-
-  // Check required fields exist
-  for (const field of required_fields) {
-    if (!(field in content)) {
-      return { valid: false, error: `Missing field '${field}' in ${file_path}`, action: "incomplete" };
-    }
-  }
-
-  return { valid: true, content };
+  goto ANALYSIS_MODE;
 }
 ```
 
-```bash
-# Validate product-analysis.json
-validation = validate_state_file(".agentful/product-analysis.json", ["issues", "readiness_score"])
-
-if !validation.valid:
-  if validation.action == "not_found":
-    console.log("❌ No analysis found. Re-running analysis...")
-    # Fall back to ANALYSIS mode
-    goto ANALYSIS_MODE
-  else if validation.action == "corrupted":
-    console.log("❌ Corrupted analysis file. Re-running analysis...")
-    # Backup and re-analyze
-    Bash("cp .agentful/product-analysis.json .agentful/product-analysis.json.backup-$(date +%s)")
-    goto ANALYSIS_MODE
-  else if validation.action == "incomplete":
-    console.log("❌ Incomplete analysis file. Re-running analysis...")
-    goto ANALYSIS_MODE
-```
+Note: product-analysis.json is not included in the core state validator because it's product-specific and optional. If this file becomes critical, consider adding it to `lib/state-validator.js` STATE_SCHEMAS.
 
 ### Process
 

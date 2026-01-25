@@ -9,6 +9,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node bin/hooks/session-start.js",
+            "timeout": 3,
+            "description": "Intelligent context awareness - shows project status and suggests next steps"
+          },
+          {
+            "type": "command",
             "command": "node bin/hooks/health-check.js",
             "timeout": 5,
             "description": "Quick agentful health check"
@@ -25,6 +31,17 @@
             "command": "node bin/hooks/block-random-docs.js",
             "timeout": 3,
             "description": "Block random markdown file creation (disable with AGENTFUL_ALLOW_RANDOM_DOCS=true)"
+          }
+        ]
+      },
+      {
+        "tools": ["Write"],
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node bin/hooks/block-file-creation.js",
+            "timeout": 3,
+            "description": "Block arbitrary file creation outside approved directories"
           }
         ]
       }

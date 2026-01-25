@@ -29,6 +29,7 @@ import {
   mergePresetWithFlags,
   validateConfiguration
 } from '../lib/presets.js';
+import {  detectTeammateTool, enableTeammateTool } from '../lib/parallel-execution.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -353,6 +354,34 @@ async function init(args) {
     result.files.forEach(file => {
       log(colors.green, `  ${file}`);
     });
+    console.log('');
+
+    // Enable parallel execution
+    log(colors.dim, 'Checking parallel execution support...');
+    const detection = detectTeammateTool();
+
+    if (detection.available) {
+      if (detection.autoEnabled) {
+        log(colors.green, '✓ Parallel execution enabled (TeammateTool auto-patched)');
+      } else {
+        log(colors.green, '✓ Parallel execution available');
+      }
+    } else if (detection.canEnable) {
+      log(colors.yellow, '⚡ Enabling parallel execution...');
+      const result = enableTeammateTool();
+      if (result.success) {
+        log(colors.green, '✓ Parallel execution enabled successfully');
+        log(colors.dim, `  Backup created: ${result.backupPath}`);
+      } else {
+        log(colors.yellow, '⚠ Could not enable parallel execution');
+        log(colors.dim, `  Reason: ${result.error}`);
+        log(colors.dim, '  Agents will run sequentially (still works, just slower)');
+      }
+    } else {
+      log(colors.yellow, '⚠ Parallel execution not available');
+      log(colors.dim, `  Reason: ${detection.reason}`);
+      log(colors.dim, '  Agents will run sequentially (still works, just slower)');
+    }
     console.log('');
   } catch (error) {
     log(colors.red, `Failed to initialize: ${error.message}`);

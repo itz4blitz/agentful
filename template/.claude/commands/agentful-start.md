@@ -109,134 +109,49 @@ to begin development.
 
 ### 1. State File Validation
 
-Before processing any state files, validate their existence and structure. This prevents corrupted or missing state from causing failures.
-
-#### Validation Pattern
+Use centralized state validator to validate and recover all state files before starting:
 
 ```javascript
-function validate_state_file(file_path, required_fields) {
-  // Check file exists
-  if (!exists(file_path)) {
-    return { valid: false, error: `File not found: ${file_path}`, action: "initialize" };
-  }
+import { validateAllState, getStateFile, formatValidationResults } from './lib/state-validator.js';
 
-  // Check file is valid JSON
-  let content;
-  try {
-    content = JSON.parse(Read(file_path));
-  } catch (e) {
-    return { valid: false, error: `Invalid JSON in ${file_path}`, action: "backup_and_reset" };
-  }
+// Validate all state files with automatic recovery
+const validationResults = validateAllState(process.cwd(), {
+  autoRecover: true,      // Auto-fix corrupted or missing files
+  skipOptional: true,     // Don't fail on missing optional files
+  verbose: false          // Only show errors/warnings
+});
 
-  // Check required fields exist
-  for (const field of required_fields) {
-    if (!(field in content)) {
-      return { valid: false, error: `Missing field '${field}' in ${file_path}`, action: "add_field", missing_field: field };
-    }
-  }
-
-  return { valid: true };
+// Check if critical validation failed (should rarely happen with autoRecover: true)
+if (!validationResults.valid) {
+  console.error('❌ Critical state validation failed:');
+  console.error(formatValidationResults(validationResults));
+  console.error('\nUnable to start development. Please check state files manually.');
+  return;
 }
-```
 
-#### Validate Core State Files
+// Show recovery messages if any files were repaired
+if (validationResults.recovered.length > 0) {
+  console.log('State files repaired:');
+  validationResults.recovered.forEach(msg => console.log(`  ${msg}`));
+  console.log('');
+}
 
-```bash
-# Validate state.json
-validation = validate_state_file(".agentful/state.json", ["current_task", "current_phase", "iterations", "blocked_on", "last_updated"])
+// Get individual state files for use
+const stateResult = getStateFile(process.cwd(), 'state.json', { autoRecover: true });
+const completionResult = getStateFile(process.cwd(), 'completion.json', { autoRecover: true });
+const decisionsResult = getStateFile(process.cwd(), 'decisions.json', { autoRecover: true });
+const architectureResult = getStateFile(process.cwd(), 'architecture.json', { autoRecover: false });
 
-if !validation.valid:
-  if validation.action == "initialize":
-    # Create default state.json
-    Write(".agentful/state.json", JSON.stringify({
-      version: "1.0",
-      current_task: null,
-      current_phase: "idle",
-      iterations: 0,
-      last_updated: new Date().toISOString(),
-      blocked_on: []
-    }))
-  else if validation.action == "backup_and_reset":
-    # Backup corrupted file
-    Bash("cp .agentful/state.json .agentful/state.json.backup-$(date +%s)")
-    # Create fresh file
-    Write(".agentful/state.json", JSON.stringify({
-      version: "1.0",
-      current_task: null,
-      current_phase: "idle",
-      iterations: 0,
-      last_updated: new Date().toISOString(),
-      blocked_on: []
-    }))
-    console.log("⚠️  Corrupted state.json backed up and reset")
-  else if validation.action == "add_field":
-    # Read, add field, write back
-    content = JSON.parse(Read(".agentful/state.json"))
-    if validation.missing_field == "blocked_on":
-      content.blocked_on = []
-    else if validation.missing_field == "iterations":
-      content.iterations = 0
-    else if validation.missing_field == "last_updated":
-      content.last_updated = new Date().toISOString()
-    Write(".agentful/state.json", JSON.stringify(content))
+// Warn if architecture is missing or corrupted (optional file)
+if (!architectureResult.valid) {
+  console.warn('⚠️  Architecture not detected. Run /agentful-generate to set up specialized agents.');
+  console.warn('');
+}
 
-# Validate completion.json
-validation = validate_state_file(".agentful/completion.json", ["features", "gates"])
-
-if !validation.valid:
-  if validation.action == "initialize":
-    # Create default completion.json
-    Write(".agentful/completion.json", JSON.stringify({
-      features: {},
-      gates: {
-        tests_passing: false,
-        no_type_errors: false,
-        no_dead_code: false,
-        coverage_80: false,
-        security_clean: false
-      },
-      overall_progress: 0
-    }))
-  else if validation.action == "backup_and_reset":
-    # Backup corrupted file
-    Bash("cp .agentful/completion.json .agentful/completion.json.backup-$(date +%s)")
-    # Create fresh file
-    Write(".agentful/completion.json", JSON.stringify({
-      features: {},
-      gates: {
-        tests_passing: false,
-        no_type_errors: false,
-        no_dead_code: false,
-        coverage_80: false,
-        security_clean: false
-      },
-      overall_progress: 0
-    }))
-    console.log("⚠️  Corrupted completion.json backed up and reset")
-  else if validation.action == "add_field":
-    content = JSON.parse(Read(".agentful/completion.json"))
-    if validation.missing_field == "features":
-      content.features = {}
-    else if validation.missing_field == "gates":
-      content.gates = {
-        tests_passing: false,
-        no_type_errors: false,
-        no_dead_code: false,
-        coverage_80: false,
-        security_clean: false
-      }
-    else if validation.missing_field == "overall_progress":
-      content.overall_progress = 0
-    Write(".agentful/completion.json", JSON.stringify(content))
-
-# Validate architecture.json (if exists - not required)
-if exists(".agentful/architecture.json"):
-  validation = validate_state_file(".agentful/architecture.json", ["language", "framework"])
-
-  if !validation.valid && validation.action == "backup_and_reset":
-    # Architecture is critical - backup and warn
-    Bash("cp .agentful/architecture.json .agentful/architecture.json.backup-$(date +%s)")
-    console.log("❌ Corrupted architecture.json backed up. Run /agentful-analyze to regenerate")
+const state = stateResult.data;
+const completion = completionResult.data;
+const decisions = decisionsResult.data;
+const architecture = architectureResult.valid ? architectureResult.data : null;
 ```
 
 ### 1. Detect User Intent
