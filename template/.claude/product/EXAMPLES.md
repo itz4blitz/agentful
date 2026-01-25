@@ -18,7 +18,7 @@ agentful supports two product specification formats.
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, TypeScript, Tailwind
+- **Frontend**: Next.js 15, TypeScript, Tailwind
 - **Backend**: Node.js, Prisma, PostgreSQL
 - **Testing**: Vitest, Playwright
 
@@ -98,7 +98,7 @@ agentful supports two product specification formats.
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, TypeScript, Tailwind
+- **Frontend**: Next.js 15, TypeScript, Tailwind
 - **Backend**: Node.js, Prisma, PostgreSQL
 
 ## Domains

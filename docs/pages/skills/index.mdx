@@ -14,17 +14,31 @@ description: Reusable knowledge that agents use to perform specialized tasks
 
 Example: The validation skill contains knowledge about running tests, type checking, and linting. The reviewer agent uses this skill to actually validate code.
 
-## Built-in Skills
+## Three-Tier Architecture
+
+Like [agents](/agents#three-tier-architecture), skills are organized into three categories:
+
+1. **Core Skills** (included) - Universal knowledge like validation, testing, research. Same for all projects.
+2. **Domain Skills** (generated) - Tech-specific knowledge like Next.js patterns, Prisma schemas, Tailwind conventions. Created by Architect based on your codebase.
+3. **Ephemeral Skills** (temporary) - Task-specific knowledge for one-off tasks or longer-term work, then removed when done (migration-procedures for a 2-hour task, legacy-api-docs for a multi-week migration).
+
+**Skills are shared across all agents** - any agent can reference any skill. See [our philosophy](/#our-philosophy) for details.
+
+## Core Skills
 
 | Skill | Knowledge Provided | Used By |
 |-------|-------------------|---------|
 | **[conversation](/skills/conversation)** | Intent classification, context management patterns | `/agentful` command |
+| **Deployment** | Deployment procedures, production readiness checks | Orchestrator, deployment workflows |
+| **[product-planning](/skills/product-planning)** | Specification analysis, gap identification | `/agentful-product`, product-analyzer |
 | **[product-tracking](/skills/product-tracking)** | Progress calculation methods, state tracking | `/agentful-status`, orchestrator |
+| **[research](/skills/research)** | Best practices research via Context7/WebSearch | `/agentful-generate`, orchestrator |
+| **[testing](/skills/testing)** | Test strategy, coverage optimization | Tester agent, reviewer agent |
 | **[validation](/skills/validation)** | Quality gate checks, tool detection | `/agentful-validate`, reviewer |
 
-## Technology Skills
+## Domain Skills
 
-Technology-specific skills (React, Express, Prisma, etc.) are generated from your codebase using:
+Domain skills are tech-specific knowledge (Next.js, Prisma, Tailwind, etc.) generated from your codebase using:
 
 ```bash
 /agentful-generate
@@ -35,7 +49,23 @@ This analyzes your project and creates skills containing:
 - Tech stack conventions you're using
 - Project-specific architectural decisions
 
+**Examples:**
+- `.claude/skills/nextjs-patterns/` - App Router, Server Components, Server Actions
+- `.claude/skills/prisma-schemas/` - Models, migrations, relations
+- `.claude/skills/tailwind-conventions/` - Design system, spacing, colors
+
 These generated skills ensure agents follow your existing patterns instead of imposing generic templates.
+
+## Ephemeral Skills
+
+Temporary skills for one-off tasks (hours) or longer-term work (weeks/months), then deleted:
+
+**Examples:**
+- `db-migration/` - Procedures for a 2-hour PostgreSQL to MySQL migration
+- `legacy-api-docs/` - Documentation for old API during multi-week migration
+- `performance-profiling/` - Profiling procedures during optimization work
+
+Create in `.claude/skills/ephemeral/` and delete when the task is complete.
 
 ## Skill Structure
 
@@ -84,9 +114,9 @@ Create custom skills in `.claude/skills/`:
 
 ```bash
 .claude/skills/
-├── my-deployment/
+├── staging-workflow/
 │   └── SKILL.md
-└── my-monitoring/
+└── monitoring/
     └── SKILL.md
 ```
 
@@ -94,18 +124,18 @@ Example custom skill:
 
 ```markdown
 ---
-name: deployment
-description: Deployment procedures for our infrastructure
+name: staging-workflow
+description: Custom staging deployment workflow for our infrastructure
 model: sonnet
 tools: Read, Bash
 ---
 
-# Deployment Skill
+# Staging Workflow Skill
 
 ## Deployment Targets
-- Production: AWS ECS
-- Staging: Vercel
-- Preview: Netlify
+- Staging: Vercel Preview
+- Pre-production: AWS ECS
+- Demo: Netlify
 
 ## Pre-deployment Checklist
 1. All tests passing
@@ -115,16 +145,16 @@ tools: Read, Bash
 
 ## Deployment Commands
 \`\`\`bash
-# Production
-npm run deploy:prod
-
-# Staging
+# Deploy to staging
 npm run deploy:staging
+
+# Deploy to pre-production
+npm run deploy:preprod
 \`\`\`
 
 ## Rollback Procedure
 \`\`\`bash
-npm run rollback -- --version <previous-version>
+npm run rollback:staging -- --version <previous-version>
 \`\`\`
 ```
 
@@ -133,6 +163,9 @@ Agents will reference this skill when deploying your application.
 ## Next Steps
 
 - **[Conversation Skill](/skills/conversation)** - Intent classification and context management
+- **[Product-Planning Skill](/skills/product-planning)** - Product specification analysis and refinement
 - **[Product-Tracking Skill](/skills/product-tracking)** - Progress calculation and state tracking
+- **[Research Skill](/skills/research)** - Best practices research via Context7/WebSearch
+- **[Testing Skill](/skills/testing)** - Test strategy and coverage optimization
 - **[Validation Skill](/skills/validation)** - Quality gate checks and tool detection
 - **[Custom Agents](/agents/custom-agents)** - Create agents that use skills

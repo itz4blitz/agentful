@@ -3,13 +3,13 @@ title: Agent Architecture
 description: Visual guide to agentful's agent coordination system and how specialists collaborate.
 ---
 
-import { DiagramModal } from '../../components/DiagramModal'
+
 
 # Agent Architecture
 
 agentful's architecture centers around a **hub-and-spoke model** where the Orchestrator coordinates all specialist agents. Each agent has clear boundaries, knows when to delegate, and communicates status back to the Orchestrator.
 
-<DiagramModal title="Agent Architecture - Hub and Spoke Model">
+<div className="mermaid-diagram">
 
 ```mermaid
 graph TD
@@ -43,7 +43,7 @@ graph TD
     style Custom fill:#64748b,stroke:#475569,color:#fff
 ```
 
-</DiagramModal>
+</div>
 
 ## Core Principles
 
@@ -208,7 +208,7 @@ This creates a feedback loop that keeps work flowing while maintaining quality.
 
 Here's how agents collaborate to implement a new feature:
 
-<DiagramModal title="Agent Workflow - Feature Implementation Sequence">
+<div className="mermaid-diagram">
 
 ```mermaid
 sequenceDiagram
@@ -237,9 +237,13 @@ sequenceDiagram
     Fix->>O: Errors fixed
     O->>R: Re-validate
     R->>O: All gates passed ✓
+
+    Note over O,PA: Planning Phase
+    Note over B,T: Implementation Phase
+    Note over R,Fix: Validation Phase
 ```
 
-</DiagramModal>
+</div>
 
 ---
 

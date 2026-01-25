@@ -103,7 +103,7 @@ Use the project analyzer to scan the codebase and show detected domains:
 
 Tech Stack detected:
   Language:    TypeScript
-  Framework:   Next.js 14
+  Framework:   Next.js 15
   Database:    PostgreSQL with Prisma
 
 Generate product spec? (y/n): > _______________________________

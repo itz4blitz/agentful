@@ -3,11 +3,11 @@ title: Git Worktrees
 description: Using agentful with git worktrees for parallel development workflows.
 ---
 
-import { DiagramModal } from '../../components/DiagramModal'
+
 
 # Git Worktrees
 
-agentful supports git worktrees for parallel development workflows. Each worktree maintains independent state while sharing the git repository.
+Git worktrees let you run multiple agentful agents locally in parallel branches. Each worktree maintains independent state while sharing the git repository, enabling true parallel local development.
 
 ## How It Works
 
@@ -17,7 +17,7 @@ Git worktrees allow you to check out multiple branches simultaneously in differe
 - **Branch-specific specs** - Product specifications in `.claude/product/` are git-tracked and branch-specific
 - **No coordination** - Worktrees don't coordinate with each other, enabling true parallel work
 
-<DiagramModal title="Git Worktree Structure">
+<div className="mermaid-diagram">
 
 ```mermaid
 graph TB
@@ -54,7 +54,7 @@ graph TB
     style DashWT fill:#1e293b,stroke:#475569
 ```
 
-</DiagramModal>
+</div>
 
 ## Use Cases
 
@@ -149,12 +149,12 @@ git worktree add ../repo-2 -b temp/parallel-work main
 
 ### No Shared State
 
-Worktrees operate independently - there's no coordination between them. If you need:
-- Shared progress tracking across worktrees
-- Coordination of which worktree handles which feature
-- Lock mechanisms to prevent conflicts
+Worktrees operate independently - there's no coordination between them. This is by design for true isolation:
+- Each worktree has its own `.agentful/state.json` and progress tracking
+- No locks or coordination needed - work proceeds in parallel
+- When ready, merge branches to combine work
 
-Consider using [remote execution](/remote-execution) instead.
+This independence is what makes worktrees powerful for parallel local development.
 
 ### Branch-Based Isolation
 
@@ -183,28 +183,6 @@ git worktree remove -f ../repo-dashboard
 git worktree list
 ```
 
-## Alternative: Remote Execution
-
-For long-running parallel development that requires coordination, consider [`agentful serve`](/remote-execution):
-
-```bash
-# Run agentful server on VPS or background process
-agentful serve --port 3000
-
-# Trigger work from anywhere
-agentful remote start "Build authentication feature"
-agentful remote start "Build dashboard feature"
-
-# Check progress
-agentful remote status
-```
-
-Remote execution provides:
-- **Centralized state** - Single source of truth for progress
-- **True parallelism** - Multiple agents working simultaneously
-- **Coordination** - Server coordinates which features are being built
-- **Remote access** - Trigger from any machine
-
 ## Best Practices
 
 ### 1. Use Descriptive Worktree Names
@@ -227,7 +205,7 @@ Worktrees are best for short-term parallel work:
 - Quick experiments or prototypes
 - Urgent hotfixes during feature work
 
-For long-term parallel development, use the remote execution server.
+For long-term development, merge completed branches back to main and continue with normal git workflow.
 
 ### 3. Clean Up Regularly
 
@@ -254,7 +232,7 @@ repo-review:     Reviewing PR #123
 
 **"State seems out of sync between worktrees"**
 
-This is expected - each worktree has independent state. If you want shared state, use remote execution instead.
+This is expected - each worktree has independent state by design. Worktrees enable true parallel development without coordination or conflicts.
 
 **"Can't create worktree on current branch"**
 

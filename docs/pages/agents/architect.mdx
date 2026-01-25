@@ -12,7 +12,7 @@ Analyzes tech stack and generates framework-specific agents dynamically.
 
 1. **Reads .claude/product/index.md** - Identifies tech stack
 2. **Detects existing code** - Analyzes package.json, source files
-3. **Generates agents** - Creates framework-specific agents in `.claude/agents/generated/`
+3. **Generates agents** - Creates framework-specific agents in `.claude/agents/generated/` (created on first generation)
 4. **Updates on changes** - Regenerates when stack changes
 
 ## How to Use
@@ -34,7 +34,7 @@ Reads `.claude/product/index.md` or analyzes existing code:
 
 ```markdown
 ## Tech Stack
-- Framework: Next.js 14
+- Framework: Next.js 15
 - Language: TypeScript
 - Database: PostgreSQL + Prisma
 - Auth: JWT
@@ -49,7 +49,7 @@ Creates `.agentful/architecture.json`:
   "detected_stack": {
     "frontend": {
       "framework": "Next.js",
-      "version": "14",
+      "version": "15",
       "language": "TypeScript"
     },
     "backend": {
@@ -134,7 +134,7 @@ Generated agents follow this structure:
 ```markdown
 ---
 name: nextjs-specialist
-description: Next.js 14 App Router patterns
+description: Next.js 15 App Router patterns
 model: sonnet
 tools: Read, Write, Edit, Glob, Grep, Bash
 ---
@@ -205,7 +205,7 @@ Adds to `decisions.json`:
 
 **Option 3:** Use defaults
 
-Next.js 14 + TypeScript + Prisma + Tailwind
+Next.js 15 + TypeScript + Prisma + Tailwind
 
 ## Self-Healing Updates
 
@@ -234,7 +234,7 @@ Task("tailwind-agent", "Style the login form")
 ## File Locations
 
 ```
-.claude/agents/generated/
+.claude/agents/generated/   (created on first generation)
 ├── nextjs-specialist.md
 ├── prisma-agent.md
 ├── tailwind-agent.md

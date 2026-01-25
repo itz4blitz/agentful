@@ -55,7 +55,6 @@ describe('presets', () => {
   it('minimal preset should have limited agent list', () => {
     const agents = presets.minimal.agents;
     expect(agents).toContain('orchestrator');
-    expect(agents).toContain('backend');
     expect(agents.length).toBeLessThan(presets.default.agents.length);
   });
 

@@ -162,7 +162,7 @@ From analyzing this project:
   "project_type": "new",
   "analysis_source": "declared",
   "declared_stack": {
-    "frontend": "Next.js 14",
+    "frontend": "Next.js 15",
     "backend": "Node.js",
     "database": "PostgreSQL"
   },
@@ -179,7 +179,7 @@ From analyzing this project:
   "project_type": "existing",
   "analysis_source": "detected",
   "detected_patterns": {
-    "framework": "Next.js 14 (App Router)",
+    "framework": "Next.js 15 (App Router)",
     "language": "TypeScript",
     "database": "PostgreSQL via Prisma",
     "component_style": "Functional with hooks",

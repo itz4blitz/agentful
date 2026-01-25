@@ -43,7 +43,10 @@ claude
 # 3. Define product spec (interactive)
 /agentful-product
 
-# 4. Start development
+# 4. Generate specialized agents
+/agentful-generate
+
+# 5. Start development
 /agentful-start
 ```
 

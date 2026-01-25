@@ -7,11 +7,13 @@ description: Install and initialize agentful in your project.
 
 ## Prerequisites
 
-- Claude Code - [Install here](https://code.anthropic.com)
+- Claude Code - [Install here](https://www.claude.com/product/claude-code)
 - Node.js 22+
 - A project directory
 
 ## Installation Options
+
+> **Note**: These options are for **first-time installation only**. If you already have agentful installed, use `/agentful-update` instead. See [When to Use What](#when-to-use-what) below.
 
 ### Option 1: Web Configurator (Recommended)
 
@@ -24,7 +26,6 @@ Use the interactive web configurator to customize your installation:
 3. Generate installation command
 4. Copy and run in your project
 
-See the [Web Configurator Guide](/getting-started/configurator) for detailed instructions.
 
 ### Option 2: Default Installation (CLI)
 
@@ -84,7 +85,7 @@ This installs:
 your-project/
 ├── CLAUDE.md               # Project instructions
 ├── .claude/
-│   ├── agents/             # 7 specialized agents
+│   ├── agents/             # 8 specialized agents
 │   ├── commands/           # 5 slash commands
 │   ├── skills/             # Domain skills
 │   ├── product/            # Product specification
@@ -180,9 +181,69 @@ agentful init --preset=minimal
 
 Note: `npx` always uses the latest version.
 
-## Updating
+## When to Use What
 
-After initial installation, use the `/agentful-update` command to update your agentful configuration:
+<div className="bg-blue-50 border-l-4 border-blue-500 p-4 my-6">
+
+### `npx @itz4blitz/agentful init` - First-Time Installation
+
+Use this when:
+- ✅ Setting up agentful for the **first time** in a project
+- ✅ You don't have `.claude/` directory yet
+- ✅ Starting a fresh project or adding agentful to an existing codebase
+
+**What it does**:
+- Creates `.claude/` directory structure
+- Generates agents, commands, skills based on your tech stack
+- Initializes `.agentful/` runtime state
+- Creates product specification templates
+- Adds `CLAUDE.md` project instructions
+
+**Example**:
+```bash
+# First-time setup
+npx @itz4blitz/agentful init
+```
+
+</div>
+
+<div className="bg-green-50 border-l-4 border-green-500 p-4 my-6">
+
+### `/agentful-update` - Update Existing Installation
+
+Use this when:
+- ✅ You **already have** agentful installed (`.claude/` exists)
+- ✅ Want to update to the latest agent/command/skill templates
+- ✅ Need to pull in new features from agentful updates
+
+**What it does**:
+- Updates agents, commands, and skills to latest versions
+- Preserves your customizations via intelligent 3-way merge
+- Creates automatic backups before updating
+- Safely handles configuration conflicts
+- **Does NOT** overwrite your product specs or state
+
+**Example**:
+```bash
+# In Claude Code
+/agentful-update
+```
+
+</div>
+
+<div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 my-6">
+
+### ⚠️ Important
+
+**DO NOT** re-run `npx @itz4blitz/agentful init` to update an existing installation. This will overwrite your customizations.
+
+**Always use** `/agentful-update` for updates after initial installation.
+
+</div>
+
+## Updating Your Installation
+
+After initial installation, use the `/agentful-update` command to get the latest templates:
 
 ```bash
 # In Claude Code
@@ -190,12 +251,27 @@ After initial installation, use the `/agentful-update` command to update your ag
 ```
 
 This command:
-- Updates agents, commands, and skills to the latest version
-- Preserves your customizations via 3-way merge
-- Creates automatic backups before updating
-- Safely handles configuration conflicts
+- 🔄 Updates agents, commands, and skills to the latest version
+- 💾 Preserves your customizations via 3-way merge
+- 📦 Creates automatic backups before updating
+- 🔒 Safely handles configuration conflicts
+- ✨ Adds new features from agentful updates
 
-**Important**: Do NOT re-run `npx @itz4blitz/agentful init` for updates. Use `/agentful-update` instead to avoid overwriting your customizations.
+### Update Process
+
+1. **Backup**: Automatically backs up current configuration
+2. **Fetch**: Downloads latest templates from registry
+3. **Merge**: Intelligently merges changes with your customizations
+4. **Verify**: Validates merged configuration
+5. **Apply**: Updates files if validation passes
+
+### When to Update
+
+Run `/agentful-update` when:
+- A new version of agentful is released
+- You want new agent capabilities or commands
+- Bug fixes are available for existing templates
+- You need to sync with upstream improvements
 
 ## Troubleshooting
 
@@ -240,23 +316,19 @@ rm -rf .claude .agentful CLAUDE.md
 
 ## Next Steps
 
-1. Edit your product spec ([Quick Start](/getting-started/quick-start))
+After installation:
+
+1. Edit your product spec: `.claude/product/index.md` ([Quick Start](/getting-started/quick-start))
 2. Start Claude Code: `claude`
-3. Begin development: `/agentful-generate`
+3. Begin development: `/agentful-start`
+
+To update agentful later, use `/agentful-update` (not `npx init`)
 
 ---
 
 ## What's Next
 
 <div className="grid gap-4 md:grid-cols-2 mt-8">
-
-<div>
-
-### Web Configurator
-Customize your installation visually
-[Configurator Guide](/getting-started/configurator)
-
-</div>
 
 <div>
 

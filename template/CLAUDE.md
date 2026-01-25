@@ -26,7 +26,7 @@ npx @itz4blitz/agentful presets
 
 1. Edit `.claude/product/index.md` to define your product requirements
 2. Run: `claude`
-3. Type: `/agentful-start`
+3. Type: `/agentful-generate`
 
 For extended sessions:
 ```bash
@@ -68,9 +68,6 @@ claude --dangerously-skip-permissions
 **Want to add features?**
 → Edit `.claude/product/index.md`, then run `/agentful-start` (picks up changes automatically)
 
-**Need remote execution?**
-→ Run `agentful serve` on a VPS, then use `agentful remote` CLI to trigger agents from anywhere
-
 ## File Structure
 
 **Product Specification** (you edit these):
@@ -81,7 +78,9 @@ claude --dangerously-skip-permissions
 - `.agentful/state.json` - Current work phase and progress
 - `.agentful/completion.json` - Feature completion % and quality gates
 - `.agentful/decisions.json` - Pending and resolved decisions
-- `.agentful/last-validation.json` - Most recent validation report
+- `.agentful/conversation-state.json` - Natural language conversation context
+- `.agentful/conversation-history.json` - Message history for context tracking
+- `.agentful/agent-metrics.json` - Agent lifecycle hooks and metrics
 - `.agentful/architecture.json` - Detected tech stack and generated agents
 
 **Configuration** (auto-generated, customizable):
@@ -129,7 +128,7 @@ The `reviewer` agent runs these checks automatically. The `fixer` agent resolves
 → Edit completion % in `.agentful/completion.json` for specific feature, then run `/agentful-start`.
 
 **"Want to work on multiple features in parallel?"**
-→ Use git worktrees for branch-based parallel development, or `agentful serve` for coordinated remote execution.
+→ Use git worktrees for branch-based parallel development.
 
 ## Getting Help
 

@@ -3,24 +3,75 @@ title: Overview - What is agentful?
 description: Understanding the agentful architecture, workflow, and how it transforms product specs into working code.
 ---
 
-import { DiagramModal } from '../../components/DiagramModal'
+
 
 # What is agentful?
 
-**agentful** is a Claude Code configuration that adds specialized agents, quality gates, and structured workflows to your development process. It transforms how you build software by providing autonomous development capabilities while keeping you in control of key decisions.
+**agentful** is a local development toolkit that runs specialized agents in Claude Code.
 
 **[Configure Your Installation →](/)**
 
+## What You Get
+
+When you run `npx @itz4blitz/agentful init`, you get:
+- **8 specialized agents** - Files in `.claude/agents/` that give Claude Code specific instructions
+- **Slash commands** - `/agentful-start`, `/agentful-status`, etc.
+- **Product tracking** - `.agentful/` folder with state, progress, decisions
+- **Protective hooks** - Prevents Claude from littering your codebase with random files
+
+**This runs locally in Claude Code on your machine.**
+
 ## Core Capabilities
 
-agentful extends Claude Code with four key capabilities:
+agentful provides four key capabilities that transform autonomous agent coordination:
 
-1. **Specialized Agents** - Backend, frontend, testing, review, orchestration
-2. **Quality Gates** - Type checking, linting, test coverage, dead code detection
-3. **Product Tracking** - Feature status, completion percentage, blocking decisions
-4. **Smart Analysis** - Tech stack detection, pattern recognition, domain discovery
+### 1. Multi-Agent Orchestration
 
-It's a `.claude/` directory structure with agents, commands, and skills that Claude Code loads automatically.
+Eight specialized agents work together on your codebase:
+- **Orchestrator** - Coordinates all work, delegates to specialists, never writes code directly
+- **Architect** - Analyzes your tech stack and code patterns, generates domain-specific agents
+- **Backend** - Implements server-side logic, APIs, database schemas, authentication
+- **Frontend** - Builds UI components, pages, state management, client-side routing
+- **Tester** - Writes unit, integration, and E2E tests targeting 80% coverage
+- **Reviewer** - Validates code quality, finds dead code, runs security checks
+- **Fixer** - Automatically fixes validation failures and test errors
+- **Product Analyzer** - Analyzes product specs for gaps, ambiguities, and readiness
+
+Each agent has explicit boundaries and knows when to delegate work outside their scope.
+
+### 2. Automated Quality Gates
+
+Six core quality gates validate every change before it's marked complete:
+- **Type Checking** - Zero TypeScript/Flow errors
+- **Linting** - ESLint, Biome, Ruff compliance
+- **Tests** - All test suites passing
+- **Coverage** - Minimum 80% code coverage
+- **Security** - No vulnerable dependencies or hardcoded secrets
+- **Dead Code** - No unused exports, files, or dependencies
+
+Gates automatically adapt to your tech stack. When failures occur, the **Fixer** agent auto-remediates and re-validates.
+
+### 3. Product-Driven Development
+
+agentful works from structured product specifications:
+- Hierarchical feature organization (domains → features → subtasks)
+- Priority levels (CRITICAL, HIGH, MEDIUM, LOW)
+- Acceptance criteria with checkboxes
+- Progress tracking with completion percentages
+- Automatic feature status updates
+
+The orchestrator picks the highest-priority incomplete feature and works until 100% complete.
+
+### 4. Tech Stack Intelligence
+
+Automatically detects and adapts to your technology stack:
+- **Languages**: TypeScript, JavaScript, Python, Go, Rust, Java, C#, PHP, Ruby, Elixir
+- **Frameworks**: React, Next.js, Vue, Angular, Svelte, Express, NestJS, Django, Flask, FastAPI
+- **Databases**: PostgreSQL, MySQL, SQLite, MongoDB, Redis
+- **ORMs**: Prisma, Drizzle, TypeORM, Mongoose, SQLAlchemy
+- **Testing**: Jest, Vitest, Playwright, Cypress, Pytest, JUnit
+
+Generates domain-specific agents based on your actual code patterns, not generic templates.
 
 ## Agent Architecture
 
@@ -51,30 +102,30 @@ Each agent knows when to delegate to others and when a task is outside their sco
 
 The orchestrator acts as the central coordinator, analyzing tasks and delegating to specialist agents based on the work required:
 
-<DiagramModal title="Multi-Agent Distribution">
+<div className="mermaid-diagram">
 
 ```mermaid
 graph TD
-    User[👤 Developer] -->|/agentful-start| Orchestrator[🎯 Orchestrator<br/>Coordinates & Delegates]
+    User["👤 Developer"] -->|/agentful-start| Orchestrator["🎯 Orchestrator<br/>Coordinates & Delegates"]
 
-    Orchestrator -->|Analyze| Architect[🏗️ Architect<br/>Tech Stack Detection]
-    Orchestrator -->|APIs| Backend[⚙️ Backend<br/>Server Logic]
-    Orchestrator -->|UI| Frontend[🎨 Frontend<br/>Components & State]
-    Orchestrator -->|Tests| Tester[🧪 Tester<br/>80% Coverage]
-    Orchestrator -->|Validate| Reviewer[✅ Reviewer<br/>6 Quality Gates]
+    Orchestrator -->|Analyze| Architect["🏗️ Architect<br/>Tech Stack Detection"]
+    Orchestrator -->|APIs| Backend["⚙️ Backend<br/>Server Logic"]
+    Orchestrator -->|UI| Frontend["🎨 Frontend<br/>Components & State"]
+    Orchestrator -->|Tests| Tester["🧪 Tester<br/>80% Coverage"]
+    Orchestrator -->|Validate| Reviewer["✅ Reviewer<br/>6 Quality Gates"]
 
-    Architect -->|Generates| Domain[📦 Domain Agents<br/>Auth, Payment, etc]
+    Architect -->|Generates| Domain["📦 Domain Agents<br/>Auth, Payment, etc"]
 
     Backend -.-> Orchestrator
     Frontend -.-> Orchestrator
     Tester -.-> Orchestrator
 
     Reviewer -->|Pass| Orchestrator
-    Reviewer --> Fixer[🔧 Fixer<br/>Auto-remediation]
+    Reviewer --> Fixer["🔧 Fixer<br/>Auto-remediation"]
     Fixer -.-> Reviewer
 
-    Orchestrator --> Progress[📊 Progress Tracking<br/>completion.json]
-    Orchestrator --> Decisions[⚠️ Pending Decisions<br/>decisions.json]
+    Orchestrator --> Progress["📊 Progress Tracking<br/>completion.json"]
+    Orchestrator --> Decisions["⚠️ Pending Decisions<br/>decisions.json"]
 
     style Orchestrator fill:#5e6ad2,stroke:#4c5ab8,color:#fff
     style Backend fill:#6366f1,stroke:#4f46e5,color:#fff
@@ -86,9 +137,15 @@ graph TD
     style Domain fill:#06b6d4,stroke:#0891b2,color:#fff
     style Progress fill:#22c55e,stroke:#16a34a,color:#fff
     style Decisions fill:#ef4444,stroke:#dc2626,color:#fff
+
+    linkStyle 0,1,2,3,4,5 stroke:#4f46e5,stroke-width:2px
+    linkStyle 6,7,8,9 stroke:#10b981,stroke-width:2px
+    linkStyle 10 stroke:#22c55e,stroke-width:3px
+    linkStyle 11 stroke:#ef4444,stroke-width:2px
+    linkStyle 12 stroke:#f59e0b,stroke-width:2px
 ```
 
-</DiagramModal>
+</div>
 
 **How it works:**
 1. You invoke `/agentful-start` with a task
@@ -112,7 +169,7 @@ Create a structured product spec in `.claude/product/`:
 Task management for distributed teams
 
 ## Tech Stack
-- Next.js 14 + TypeScript
+- Next.js 15 + TypeScript
 - Prisma + PostgreSQL
 - Vitest + Playwright
 
@@ -122,49 +179,63 @@ Task management for distributed teams
 3. Task assignment (MEDIUM)
 ```
 
-### 2. Detect Tech Stack & Generate Agents
+### 2. Generate Specialized Agents
 
-agentful automatically detects your tech stack and generates:
-- Domain-specific agents based on your business logic
-- Tech stack skills for framework patterns
-- Pattern-matched instructions from your actual code
+Run `/agentful-generate` to analyze your codebase:
+
+**For new projects** (no code yet):
+- Prompts you to define tech stack and product requirements first
+- Can use `/agentful-init` for guided setup
+- Generates agents from product spec + best practices
+
+**For existing projects**:
+- Scans code to discover business domains and patterns
+- Detects tech stack from package files and imports
+- Generates domain-specific agents (e.g., `@auth`, `@billing`) based on actual code
+- Creates tech skills (e.g., React patterns, Prisma patterns) from your conventions
 
 ### 3. Start Structured Development
 
-Run `/agentful-start` to begin the automated development workflow.
+Run `/agentful-start` to begin the autonomous work workflow:
+- Orchestrator reads product specification
+- Picks highest-priority incomplete feature
+- Delegates to specialist agents
+- Validates through quality gates
+- Updates progress tracking
+- Repeats until all features are 100% complete
 
 ### Workflow Pipeline
 
 The workflow follows these stages with automatic progression:
 
-<DiagramModal title="Development Workflow Pipeline">
+<div className="mermaid-diagram">
 
 ```mermaid
 graph LR
-    A[📝 Product Spec] -->|Analyze| B[🔍 Requirements Check]
-    B -->|Complete| C[💻 Implementation]
-    B -->|Gaps found| D[❓ Ask Human]
+    A["📄 Product Spec"] -->|Analyze| B["🔍 Requirements Check"]
+    B -->|Complete| C["💻 Implementation"]
+    B -->|Gaps found| D["❓ Ask Human"]
     D --> C
 
-    C -->|Backend| E1[⚙️ API Development]
-    C -->|Frontend| E2[🎨 UI Development]
-    C -->|Database| E3[🗄️ Schema Changes]
+    C -->|Backend| E1["⚙️ API Development"]
+    C -->|Frontend| E2["🖥️ UI Development"]
+    C -->|Database| E3["🗄️ Schema Changes"]
 
-    E1 --> F[🧪 Test Generation]
+    E1 --> F["🧪 Test Generation"]
     E2 --> F
     E3 --> F
 
-    F -->|Generate| G[📊 80% Coverage]
-    G --> H{✅ Quality Gates}
+    F -->|Generate| G["📊 80% Coverage"]
+    G --> H{"🛡️ Quality Gates"}
 
-    H -->|Pass| I[🚀 Complete]
-    H -->|Fail| J[🔧 Auto-Fix]
+    H -->|Pass| I["🚀 Complete"]
+    H -->|Fail| J["🔧 Auto-Fix"]
     J --> H
 
-    I --> K[📈 Update Progress]
+    I --> K["📈 Update Progress"]
     K --> L{More Features?}
     L -->|Yes| C
-    L -->|No| M[✨ Done]
+    L -->|No| M["✅ Done"]
 
     style A fill:#3b82f6,stroke:#2563eb,color:#fff
     style B fill:#8b5cf6,stroke:#7c3aed,color:#fff
@@ -177,7 +248,7 @@ graph LR
     style D fill:#ef4444,stroke:#dc2626,color:#fff
 ```
 
-</DiagramModal>
+</div>
 
 ### 4. Human Checkpoints
 
@@ -198,35 +269,26 @@ All implementations are validated against six automated quality gates before dep
 
 Every feature must pass all six gates:
 
-<DiagramModal title="Quality Gates Validation Flow">
+<div className="mermaid-diagram">
 
 ```mermaid
-graph TB
-    subgraph Quality Gates
-        G1[🔷 Type Checking<br/>Zero TS/Flow errors]
-        G2[📏 Linting<br/>Style guide compliance]
-        G3[✅ Tests<br/>All suites passing]
-        G4[📊 Coverage<br/>Minimum 80%]
-        G5[🔒 Security<br/>No vulnerabilities]
-        G6[🗑️ Dead Code<br/>No unused exports]
-    end
+%%{init: {'theme':'dark', 'themeVariables': { 'edgeLabelBackground':'transparent'}}}%%
+graph LR
+    Code["💻 Code"] --> G1["✓ Types"]
+    G1 -->|✓| G2["📏 Lint"]
+    G2 -->|✓| G3["🧪 Tests"]
+    G3 -->|✓| G4["📊 Coverage"]
+    G4 -->|✓| G5["🔒 Security"]
+    G5 -->|✓| G6["🧹 Dead Code"]
+    G6 -->|✓| Ship["🚀 Ship"]
 
-    Code[📝 Your Code] --> G1
-    G1 -->|Pass| G2
-    G2 -->|Pass| G3
-    G3 -->|Pass| G4
-    G4 -->|Pass| G5
-    G5 -->|Pass| G6
-    G6 -->|Pass| Ship[🚀 Ship It!]
-
-    G1 -->|Fail| Fixer[🔧 Auto-Fix]
-    G2 -->|Fail| Fixer
-    G3 -->|Fail| Fixer
-    G4 -->|Fail| Fixer
-    G5 -->|Fail| Fixer
-    G6 -->|Fail| Fixer
-
-    Fixer --> G1
+    G1 -.->|✗| Fixer["🔧 Fixer"]
+    G2 -.->|✗| Fixer
+    G3 -.->|✗| Fixer
+    G4 -.->|✗| Fixer
+    G5 -.->|✗| Fixer
+    G6 -.->|✗| Fixer
+    Fixer -.-> G1
 
     style G1 fill:#3b82f6,stroke:#2563eb,color:#fff
     style G2 fill:#8b5cf6,stroke:#7c3aed,color:#fff
@@ -236,9 +298,12 @@ graph TB
     style G6 fill:#f59e0b,stroke:#d97706,color:#fff
     style Ship fill:#22c55e,stroke:#16a34a,color:#fff
     style Fixer fill:#f97316,stroke:#ea580c,color:#fff
+
+    linkStyle 1,2,3,4,5,6 stroke:#22c55e,stroke-width:3px,color:#22c55e
+    linkStyle 7,8,9,10,11,12 stroke:#ef4444,stroke-width:2px,color:#ef4444
 ```
 
-</DiagramModal>
+</div>
 
 **Gate Details:**
 - **Type Checking** - Zero TypeScript/Flow errors
@@ -250,7 +315,76 @@ graph TB
 
 Gates adapt to your stack. The framework detects available tools and runs appropriate checks. When gates fail, the **Fixer** agent automatically attempts remediation.
 
-## How It Works
+## How It All Works Together
+
+agentful creates a complete autonomous agent system through several interconnected components:
+
+### Installation & Setup
+
+See the [Installation Guide](/getting-started/installation) for setup details.
+
+### Agent Generation (`/agentful-generate`)
+
+The **Architect** agent analyzes your project and generates specialized agents:
+
+1. **Tech Stack Detection** - Reads package.json, imports, config files
+2. **Domain Discovery** - Scans code structure to find business domains (auth, billing, etc.)
+3. **Pattern Recognition** - Samples your actual code to learn conventions
+4. **Agent Generation** - Creates domain agents (e.g., `@auth`, `@payments`) with context-specific instructions
+5. **Skill Creation** - Generates tech skills (e.g., React patterns, Prisma patterns) from your code
+
+Domain agents only generate if confidence >= 75% based on evidence (directories, API routes, services, models).
+
+### Development Loop (`/agentful-start`)
+
+The **Orchestrator** manages the complete development cycle:
+
+1. **Read Product Spec** - Loads `.claude/product/index.md` and domain features
+2. **Prioritize Work** - Picks highest-priority incomplete feature (CRITICAL > HIGH > MEDIUM > LOW)
+3. **Classify Work Type** - Determines if this is a feature, bugfix, enhancement, or refactor
+4. **Delegate to Specialists**:
+   - Backend work → `@backend` agent
+   - Frontend work → `@frontend` agent
+   - Database changes → `@backend` agent
+   - Testing → `@tester` agent
+5. **Validate Quality** - `@reviewer` runs all 6 quality gates
+6. **Auto-Fix Failures** - `@fixer` remediates any validation errors
+7. **Update Progress** - Writes to `.agentful/completion.json`
+8. **Handle Decisions** - Blocks on questions needing human input, adds to `decisions.json`
+9. **Repeat** - Continues until all features are 100% complete
+
+### Human Checkpoints
+
+The orchestrator pauses for your input on:
+- **Architectural decisions** - "Should we use REST or GraphQL?"
+- **Library selection** - "Which auth library: NextAuth, Clerk, or custom?"
+- **Security configs** - "What CORS policy should we use?"
+- **Database schemas** - "Confirm this migration adds the right indexes"
+
+You answer via `/agentful-decide`, and development continues.
+
+### Progress Tracking
+
+Real-time tracking through `.agentful/completion.json`:
+```json
+{
+  "domains": {
+    "authentication": {
+      "status": "complete",
+      "score": 100,
+      "features": {
+        "login": { "status": "complete", "score": 100 },
+        "register": { "status": "in-progress", "score": 65 }
+      }
+    }
+  },
+  "overall_progress": 82
+}
+```
+
+Run `/agentful-status` anytime to see visual progress breakdown.
+
+## How It Works (Technical Details)
 
 ### File Structure
 
@@ -349,32 +483,7 @@ Works best with:
 
 ## Common Workflows
 
-### New Project from Scratch
-
-```bash
-npx @itz4blitz/agentful init
-claude
-/agentful-product          # Interactive spec creation
-/agentful-start            # Begin development (auto-detects tech stack)
-/agentful-status           # Check progress
-/agentful-decide           # Answer blocking decisions
-```
-
-### Existing Codebase
-
-```bash
-npx @itz4blitz/agentful init
-claude
-/agentful-product          # Reverse-engineer spec
-/agentful-start            # Continue development (auto-detects tech stack)
-```
-
-### Ad-hoc Questions
-
-```bash
-claude
-/agentful "Should I use REST or GraphQL for this API?"
-```
+For step-by-step usage instructions, see the [Quick Start Guide](/getting-started/quick-start) or [First Project Tutorial](/getting-started/first-project).
 
 ## Next Steps
 
@@ -395,4 +504,4 @@ Now that you understand how agentful works:
 
 ---
 
-Built on [Claude Code](https://code.anthropic.com) by Anthropic.
+Built on [Claude Code](https://www.claude.com/product/claude-code) by Anthropic.

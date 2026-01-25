@@ -1,9 +1,10 @@
 ---
-title: agentful - Pre-configured AI Agent Toolkit with Self-hosted Remote Execution
-description: Run Claude Code agents on your infrastructure. Auto-generates domain specialists with multi-platform CI/CD support (GitHub Actions, GitLab, Jenkins, CircleCI).
+title: agentful - Pre-configured AI Agent Toolkit for Claude Code
+description: Local-first AI development toolkit that auto-generates domain specialists for your tech stack. Works with Claude Code, any LLM, any platform.
 ---
 
 import { ConfigWizard } from '../components/configurator/ConfigWizard'
+import { SystemVisualization } from '../components/SystemVisualization'
 
 <div style={{
   textAlign: 'center',
@@ -50,7 +51,7 @@ import { ConfigWizard } from '../components/configurator/ConfigWizard'
     marginLeft: 'auto',
     marginRight: 'auto',
   }}>
-    Pre-configured AI toolkit with self-hosted execution
+    AI development toolkit for Claude Code
   </p>
   <p style={{
     fontSize: '1.125rem',
@@ -61,9 +62,33 @@ import { ConfigWizard } from '../components/configurator/ConfigWizard'
     marginRight: 'auto',
     marginTop: '0.5rem',
   }}>
-    Works with any LLM, any tech stack, any platform
+    Parallel agent execution • Three-tier architecture • Auto-generated specialists
   </p>
 </div>
+
+<SystemVisualization />
+
+## What is agentful?
+
+AI development toolkit that coordinates specialized agents in Claude Code to build software from product specs.
+
+**Key capabilities:**
+- **[Parallel execution](/concepts/background-agents)** - Multiple agents work simultaneously in isolated git worktrees (frontend + backend + tests running concurrently)
+- **[Three-tier architecture](/agents#three-tier-architecture)** - Core (pre-built), domain (generated for your stack), ephemeral (temporary, task-specific)
+- **[Shared skills](/skills/validation)** - Reusable capabilities like validation, testing, and research across all agents
+- **Custom hooks** - Intercept and modify agent behavior at key lifecycle points
+- **Quality gates** - Automated validation for every change (tests, types, coverage, security)
+- **Human checkpoints** - You decide, agents execute
+
+## Our Philosophy
+
+Every software project needs [three tiers of agents and skills](/agents#three-tier-architecture):
+
+1. **[Core](/agents#1-core-agents)** (included) - Universal agents ([orchestrator](/agents/orchestrator), [reviewer](/agents/reviewer), [fixer](/agents/fixer)) + shared [skills](/skills) ([validation](/skills/validation), [testing](/skills/testing), [research](/skills/research)). Same for every project.
+2. **[Domain](/agents#2-domain-agents)** (generated) - Stack-specific agents (backend, frontend for web; extractor, transformer for pipelines) + tech skills (Next.js, Postgres, Tailwind). [Architect](/agents/architect) creates these based on your codebase.
+3. **[Ephemeral](/agents#3-ephemeral-agents)** (temporary) - Task-specific agents/skills created for one-off tasks or longer-term work, then removed when done (migration-agent for a 2-hour DB migration, performance-profiling for a multi-week optimization project).
+
+**Skills are shared across agents.** Any agent can use validation, research, etc. Our OOTB setup works for all software projects, but use the [custom installer](/getting-started/installation#custom) to tweak what you need.
 
 ## Configure Your Installation
 
@@ -71,76 +96,43 @@ Use this interactive configurator to customize your agentful installation. Choos
 
 <ConfigWizard />
 
-## Quick Installation
+## Get Started
 
-**Prerequisites:**
-- [Claude Code](https://code.anthropic.com)
-- Node.js 22+
+Ready to install? See the [Installation Guide](/getting-started/installation) for all options, or get running in 5 minutes with the [Quick Start Guide](/getting-started/quick-start).
 
-**Install in your project:**
+## Learn More
 
-```bash
-npx @itz4blitz/agentful init
-```
+<div className="grid gap-4 md:grid-cols-2 mt-6">
 
-This creates:
-- `.claude/` - Agents, commands, skills (version control this)
-- `.agentful/` - Runtime state (gitignored)
-- `.claude/product/` - Product specification structure
+<div style={{ paddingTop: '1rem' }}>
+### Quick Start
+Get agentful running in 5 minutes with a simple tutorial.
 
-## Why agentful?
+[Quick Start Guide →](/getting-started/quick-start)
+</div>
 
-Building software with AI agents is powerful, but comes with challenges:
+<div style={{ paddingTop: '1rem' }}>
+### How It Works
+Understand the architecture, agents, and workflow.
 
-**❌ The Problems:**
-- **Generic agents** that don't understand your tech stack or patterns
-- **Manual orchestration** - you're the glue between frontend, backend, and testing agents
-- **No quality enforcement** - agents write code without validation gates
-- **Lost context** - agents forget decisions and duplicate work
-- **Local-only execution** - can't run agents on CI/CD or remote infrastructure
+[Overview →](/getting-started/overview)
+</div>
 
-**✅ agentful solves this by:**
-- **Auto-generating specialists** that match your exact stack and patterns
-- **Orchestrating work** across backend, frontend, testing, and review agents
-- **Enforcing quality gates** - type checking, linting, tests, coverage, security
-- **Tracking state** - remembers decisions, progress, and blocking issues
-- **Running anywhere** - local dev, CI/CD pipelines, self-hosted servers
+<div style={{ paddingTop: '1rem' }}>
+### Your First Project
+Step-by-step tutorial building a complete app.
 
-Think of it as a **pre-configured Claude Code setup** that transforms chaotic AI-assisted development into a structured, quality-enforced workflow.
+[First Project →](/getting-started/first-project)
+</div>
 
-## What is agentful?
+<div style={{ paddingTop: '1rem' }}>
+### Installation Options
+Customize presets, agents, skills, and quality gates.
 
-**agentful** is a self-hosted AI agent server that runs Claude Code agents on your infrastructure:
+[Installation Guide →](/getting-started/installation)
+</div>
 
-- **Self-Hosted Server** - Deploy with `agentful serve` on your own infrastructure (Oracle Cloud free tier, AWS, GCP, on-prem)
-- **Multi-Platform CI/CD** - Native support for GitHub Actions, GitLab CI, Jenkins, CircleCI, Bitbucket Pipelines
-- **Auto-Generated Agents** - Architect analyzes your stack and generates specialized agents for your frameworks
-- **Complete Agent Toolkit** - 8 core agents, 6 extensible skills, custom hooks, adaptive quality gates
-- **Human-in-the-Loop** - You control decisions while agents handle implementation
-
-[Learn more about how it works →](/getting-started/overview)
-
-## After Installation
-
-Once agentful is installed:
-
-1. **Define your product**: Edit `.claude/product/index.md` to describe what you're building
-2. **Start Claude Code**: Run `claude` in your project directory
-3. **Begin development**: Type `/agentful-start` to start structured development
-4. **Check progress**: Use `/agentful-status` to see completion percentage
-
-For more details, see the [Quick Start Guide](/getting-started/quick-start).
-
-## Advanced Installation Options
-
-For custom installations, see the [Installation Guide](/getting-started/installation) to configure:
-
-- **Presets** - Minimal, full-stack, backend-only configurations
-- **Agents** - Choose which specialized agents to install
-- **Skills** - Add portable expertise modules
-- **Hooks** - Session start commands and health checks
-- **Quality Gates** - Configure automated validation rules
-- **Tech Stack** - Explicitly specify your technology stack
+</div>
 
 ## Resources
 

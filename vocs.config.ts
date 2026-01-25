@@ -2,7 +2,7 @@ import { defineConfig } from 'vocs'
 
 export default defineConfig({
   title: 'agentful',
-  description: 'Pre-configured AI agent toolkit with self-hosted remote execution. The Swiss Army Knife of AI Agents - works with any LLM, any tech stack, any platform.',
+  description: 'Local-first AI development toolkit for Claude Code. Works with any LLM, any tech stack, any platform.',
 
   logoUrl: '/logo.svg',
   iconUrl: '/logo-icon.svg',
@@ -31,7 +31,10 @@ export default defineConfig({
         items: [
           { text: 'Overview', link: '/skills' },
           { text: 'Conversation', link: '/skills/conversation' },
+          { text: 'Product Planning', link: '/skills/product-planning' },
           { text: 'Product Tracking', link: '/skills/product-tracking' },
+          { text: 'Research', link: '/skills/research' },
+          { text: 'Testing', link: '/skills/testing' },
           { text: 'Validation', link: '/skills/validation' },
         ],
       },
@@ -44,20 +47,11 @@ export default defineConfig({
         ],
       },
       {
-        text: 'Architecture',
-        items: [
-          { text: 'Distributed MCP', link: '/architecture/distributed-mcp' },
-          { text: 'HTTP/SSE Transport', link: '/architecture/http-transport' },
-          { text: 'OAuth 2.1 Flow', link: '/architecture/oauth-flow' },
-          { text: 'Client Pool', link: '/architecture/client-pool' },
-          { text: 'Work Distribution', link: '/architecture/work-distribution' },
-        ],
-      },
-      {
         text: 'Agents',
         items: [
           { text: 'Agent Overview', link: '/agents' },
           { text: 'Orchestrator', link: '/agents/orchestrator' },
+          { text: 'Product Analyzer', link: '/agents/product-analyzer' },
           { text: 'Architect', link: '/agents/architect' },
           { text: 'Backend', link: '/agents/backend' },
           { text: 'Frontend', link: '/agents/frontend' },
@@ -91,12 +85,9 @@ export default defineConfig({
         ],
       },
       {
-        text: 'Server & Infrastructure',
+        text: 'Infrastructure',
         items: [
-          { text: 'Self-Hosted Server', link: '/server' },
-          { text: 'Remote Execution', link: '/remote-execution' },
           { text: 'CI/CD Integration', link: '/ci-integration' },
-          { text: 'Pipelines', link: '/pipelines/overview' },
         ],
       },
       {
@@ -128,6 +119,25 @@ export default defineConfig({
     colorScheme: 'dark',
   },
 
+  vite: {
+    css: {
+      preprocessorOptions: {
+        css: {
+          additionalData: `
+            .vocs_Sidebar_sectionTitle {
+              background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%) !important;
+              -webkit-background-clip: text !important;
+              -webkit-text-fill-color: transparent !important;
+              background-clip: text !important;
+              color: transparent !important;
+              font-weight: 600 !important;
+            }
+          `
+        }
+      }
+    }
+  },
+
   socials: [
     {
       icon: 'github',
@@ -140,16 +150,59 @@ export default defineConfig({
   ],
 
   head: {
-    link: [
+    tags: [
       {
-        rel: 'stylesheet',
-        href: '/custom.css',
+        tagName: 'style',
+        children: `
+          .vocs_Sidebar_sectionTitle {
+            background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            color: transparent !important;
+            font-weight: 600 !important;
+          }
+        `,
       },
-    ],
-    script: [
       {
-        src: '/animate-favicon.js',
-        async: true,
+        tagName: 'link',
+        attributes: {
+          rel: 'stylesheet',
+          href: '/custom.css',
+        },
+      },
+      {
+        tagName: 'link',
+        attributes: {
+          rel: 'stylesheet',
+          href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+          integrity: 'sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==',
+          crossorigin: 'anonymous',
+        },
+      },
+      {
+        tagName: 'script',
+        attributes: {
+          src: '/animate-favicon.js',
+          async: true,
+        },
+      },
+      {
+        tagName: 'script',
+        children: `
+          (function() {
+            const style = document.createElement('style');
+            style.textContent = \`.vocs_Sidebar_sectionTitle {
+              background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%) !important;
+              -webkit-background-clip: text !important;
+              -webkit-text-fill-color: transparent !important;
+              background-clip: text !important;
+              color: transparent !important;
+              font-weight: 600 !important;
+            }\`;
+            document.head.appendChild(style);
+          })();
+        `,
       },
     ],
   },

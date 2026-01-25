@@ -133,6 +133,32 @@ else:
     capabilities = ["feature_development", "bugfixes", "enhancements"]
 ```
 
+### Step 2.5: Ensure Architecture Analysis (First Run Only)
+
+**Before any development work**, ensure architect has analyzed the project:
+
+```bash
+# Check if architecture.json exists
+if NOT exists(".agentful/architecture.json"):
+    # First run - trigger architect
+    Task("architect", "Analyze project stack, patterns, and generate skills")
+    # Architect creates architecture.json and necessary skills
+    # Continue to Step 3 after architect completes
+
+# Check if re-analysis needed
+if exists(".agentful/architecture.json"):
+    arch = Read(".agentful/architecture.json")
+
+    if arch.needs_reanalysis == true:
+        Task("architect", "Re-analyze project with updated patterns")
+        # Continue after architect updates skills
+```
+
+**This ensures:**
+- Backend/frontend/tester agents have architecture.json to reference
+- Project-specific skills exist in `.claude/skills/`
+- Core agents can use base knowledge + project patterns
+
 ### Step 3: Route to Workflow
 
 | Work Type | Loop? | Key Steps |
@@ -327,17 +353,50 @@ else:
 
 ## Delegation Pattern
 
-**NEVER implement yourself.** Always use Task tool:
+**NEVER implement yourself.** Always use Task tool.
+
+### Parallel Delegation (Preferred)
+
+When tasks are independent (no file conflicts, no dependencies), delegate in parallel for 2-3x speed:
 
 ```bash
-# Reference specific product files
+# Parallel execution (backend, frontend, tester work simultaneously)
+"Launch these agents in parallel:
+1. backend: Implement JWT login API per .claude/product/domains/authentication/features/login.md
+2. frontend: Create login form UI per .claude/product/domains/authentication/features/login.md
+3. tester: Write test fixtures for login feature
+
+Use the Task tool to spawn all agents in parallel."
+
+# After parallel work completes, run sequential validation
+Task("reviewer agent", "Review all changes in src/auth/")
+```
+
+### Sequential Delegation (Fallback)
+
+When tasks have dependencies or file conflicts, use sequential:
+
+```bash
+# Sequential execution (one after another)
 Task("backend agent", "Implement JWT login API per .claude/product/domains/authentication/features/login.md")
 Task("frontend agent", "Create login form UI per .claude/product/domains/authentication/features/login.md")
 Task("tester agent", "Write tests for login feature")
-
-# ALWAYS run reviewer after implementation
 Task("reviewer agent", "Review all changes in src/auth/")
 ```
+
+### When to Use Parallel vs Sequential
+
+**Use Parallel:**
+- ✅ Backend + Frontend (different files: src/api/* vs src/components/*)
+- ✅ Multiple test types (unit tests, integration tests, fixtures)
+- ✅ Independent features (auth + dashboard)
+- ✅ Analysis tasks (architect analyzing patterns while backend codes)
+
+**Use Sequential:**
+- ❌ Frontend needs API response shape from backend first
+- ❌ Tester needs implementation complete before writing integration tests
+- ❌ Fixer needs reviewer results before fixing issues
+- ❌ Quality gates (must validate sequentially)
 
 ## Decision Handling
 

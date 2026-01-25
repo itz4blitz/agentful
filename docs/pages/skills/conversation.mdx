@@ -118,6 +118,31 @@ Action: Update authentication approach to use NextAuth
 - Write (update conversation history)
 - Glob (find relevant files)
 - Grep (search for context)
+- Task (delegate to specialized handlers)
+
+## Task Delegation Mechanism
+
+The conversation skill routes classified intents to different handlers using the `Task()` function:
+
+```typescript
+// Delegate to orchestrator agent for feature development
+Task('orchestrator', `Add user authentication
+Work Type: FEATURE_DEVELOPMENT
+Feature: authentication`)
+
+// Delegate to product-tracking for status queries
+Task('product-tracking', `Show status and progress.
+Filter: feature authentication`)
+
+// Delegate to validation for quality checks
+Task('validation', `Run quality gates. Scope: all`)
+```
+
+**Routing Logic:**
+- `feature_request` or `bug_report` → `Task('orchestrator', ...)`
+- `status_update` → `Task('product-tracking', ...)`
+- Validation requests → `Task('validation', ...)`
+- Questions and clarifications → Handled inline (no delegation)
 
 ## Common Patterns
 

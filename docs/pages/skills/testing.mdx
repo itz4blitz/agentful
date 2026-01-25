@@ -1,0 +1,351 @@
+---
+title: Testing Skill
+description: Test strategy, patterns, and coverage optimization
+sidebar_position: 7
+---
+
+# Testing Skill
+
+Provides test strategy patterns, coverage optimization techniques, and quality assurance procedures for ensuring code quality.
+
+## What It Provides
+
+**Testing Pyramid**
+- Test distribution ratios (70/20/10 rule)
+- Unit, integration, and E2E test strategies
+- Test scope and isolation patterns
+
+**Test Structure**
+- AAA pattern (Arrange-Act-Assert)
+- Test organization conventions
+- Naming and clarity standards
+
+**Coverage Requirements**
+- Minimum coverage thresholds
+- Critical path coverage standards
+- Coverage analysis procedures
+
+**Mocking Strategy**
+- When to mock vs test real interactions
+- Test data management patterns
+- Fixture creation approaches
+
+## Used By
+
+**Tester Agent:**
+- Planning test strategy
+- Writing comprehensive tests
+- Achieving coverage thresholds
+- Following testing best practices
+
+**Reviewer Agent:**
+- Validates tests are passing
+- Checks coverage meets 80% threshold
+- Verifies no skipped tests without justification
+
+**Validation Workflow:**
+- Ensures tests pass before marking features complete
+- Validates coverage requirements
+- Checks test quality standards
+
+## Tools Available
+
+- Read (test files, coverage reports)
+- Write (new tests)
+- Edit (update existing tests)
+- Glob (find test files)
+- Grep (search for test patterns)
+- Bash (run tests, generate coverage)
+
+## Testing Pyramid
+
+Distribute tests following the 70/20/10 rule:
+- **70% Unit Tests** - Fast, isolated, test individual functions/methods
+- **20% Integration Tests** - Test component interactions, APIs, database operations
+- **10% E2E Tests** - Test complete user workflows end-to-end
+
+## Test Structure: AAA Pattern
+
+**Arrange - Act - Assert**
+
+```javascript
+test('should create user with valid data', () => {
+  // ARRANGE: Set up test data and dependencies
+  const userData = { email: 'test@example.com', password: 'secure123' };
+  const mockRepository = createMockRepository();
+  const service = new UserService(mockRepository);
+
+  // ACT: Execute the function under test
+  const result = service.createUser(userData);
+
+  // ASSERT: Verify expected outcomes
+  expect(result.email).toBe(userData.email);
+  expect(mockRepository.save).toHaveBeenCalled();
+});
+```
+
+## Coverage Requirements
+
+**Minimum Thresholds:**
+- Overall coverage: 80%
+- Statements: 80%
+- Branches: 75%
+- Functions: 80%
+- Lines: 80%
+
+**Critical code requires 95%+ coverage:**
+- Authentication and authorization
+- Payment processing
+- Security functions
+- Data encryption/decryption
+- Financial calculations
+- Access control logic
+
+## What to Test
+
+### High Priority (Must Cover)
+- Business logic and algorithms
+- Authentication and authorization flows
+- Data validation and sanitization
+- API endpoints and request handlers
+- Database operations and queries
+- Error handling and edge cases
+- Security-sensitive operations
+
+### Medium Priority (Should Cover)
+- Utility functions and helpers
+- State management logic
+- Form validation
+- UI component behavior
+- Caching logic
+- External service integrations
+
+### Low Priority (Nice to Cover)
+- Simple getters/setters
+- Configuration loaders
+- Logging statements
+- Trivial formatting functions
+
+## Mocking Strategy
+
+### When to Mock
+- External API calls (third-party services)
+- Database connections (for unit tests)
+- File system operations
+- Email/SMS services
+- Payment gateways
+- Time-dependent code (dates, timers)
+- Random number generation
+
+### When NOT to Mock
+- The code under test
+- Pure functions without side effects
+- Simple data transformations
+- Integration tests (test real interactions)
+- Domain models
+
+## Test Data Management
+
+**Use Fixtures for Consistent Test Data:**
+```
+fixtures/
+├── users.js         # Standard user test data
+├── products.js      # Product test data
+└── orders.js        # Order test data
+```
+
+**Create Data Factories:**
+```javascript
+function createUserFixture(overrides = {}) {
+  return {
+    id: generateId(),
+    email: 'test@example.com',
+    name: 'Test User',
+    role: 'user',
+    ...overrides
+  };
+}
+```
+
+## Test Organization
+
+```
+project/
+├── src/
+│   ├── services/
+│   │   ├── userService.js
+│   │   └── userService.test.js      # Co-located with source
+│   └── utils/
+│       ├── validators.js
+│       └── validators.test.js
+├── tests/
+│   ├── integration/                  # Integration tests
+│   │   ├── api/
+│   │   └── database/
+│   ├── e2e/                          # End-to-end tests
+│   ├── fixtures/                     # Shared test data
+│   └── setup.js                      # Global test setup
+└── test.config.js
+```
+
+## Common Test Frameworks by Language
+
+**JavaScript/TypeScript:**
+- Jest, Vitest, Mocha, Jasmine
+- E2E: Playwright, Cypress, Puppeteer
+
+**Python:**
+- pytest, unittest, nose
+- E2E: Selenium, Playwright
+
+**Go:**
+- testing package, testify
+- E2E: chromedp, Selenium
+
+**Java:**
+- JUnit 5, TestNG
+- E2E: Selenium, Playwright
+
+**Rust:**
+- Built-in test framework
+- E2E: headless_chrome
+
+**Ruby:**
+- RSpec, Minitest
+- E2E: Capybara
+
+Consult your test framework's documentation for specific commands.
+
+## Coverage Analysis
+
+**Identify Coverage Gaps:**
+1. Run coverage report
+2. Find uncovered lines/branches
+3. Assess criticality of uncovered code
+4. Write tests for critical uncovered code
+5. Accept lower coverage for non-critical paths
+
+**Coverage is a metric, not a goal:**
+- 80% coverage with good tests > 100% coverage with bad tests
+- Focus on testing critical paths thoroughly
+- Some code is too trivial to test
+
+## Examples
+
+### Unit Test Example
+```javascript
+// Test: User validation
+test('validates email format', () => {
+  // Arrange
+  const validator = new EmailValidator();
+  const validEmail = 'user@example.com';
+  const invalidEmail = 'not-an-email';
+
+  // Act
+  const validResult = validator.validate(validEmail);
+  const invalidResult = validator.validate(invalidEmail);
+
+  // Assert
+  expect(validResult.isValid).toBe(true);
+  expect(invalidResult.isValid).toBe(false);
+});
+```
+
+### Integration Test Example
+```javascript
+// Test: API endpoint with database
+test('POST /users creates user in database', async () => {
+  // Arrange
+  const userData = { email: 'test@example.com', name: 'Test User' };
+
+  // Act
+  const response = await request(app)
+    .post('/users')
+    .send(userData);
+
+  // Assert
+  expect(response.status).toBe(201);
+  const user = await db.users.findOne({ email: userData.email });
+  expect(user).toBeDefined();
+  expect(user.name).toBe(userData.name);
+});
+```
+
+### E2E Test Example
+```javascript
+// Test: Complete user workflow
+test('user can sign up and log in', async ({ page }) => {
+  // Arrange
+  await page.goto('/signup');
+
+  // Act: Sign up
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.fill('[name="password"]', 'secure123');
+  await page.click('button[type="submit"]');
+
+  // Assert: Redirected to dashboard
+  await expect(page).toHaveURL('/dashboard');
+  await expect(page.locator('h1')).toContainText('Welcome');
+
+  // Act: Log out and log back in
+  await page.click('button:has-text("Logout")');
+  await page.goto('/login');
+  await page.fill('[name="email"]', 'test@example.com');
+  await page.fill('[name="password"]', 'secure123');
+  await page.click('button[type="submit"]');
+
+  // Assert: Back on dashboard
+  await expect(page).toHaveURL('/dashboard');
+});
+```
+
+## Rules
+
+### DO
+- Write tests before marking features complete
+- Test behavior, not implementation details
+- Test error cases and edge cases
+- Use descriptive test names
+- Keep tests independent (no shared state)
+- Mock external dependencies
+- Test critical paths with high coverage
+- Clean up test data after each test
+
+### DON'T
+- Skip tests to speed up development
+- Test implementation details
+- Share mutable state between tests
+- Commit commented-out tests
+- Leave TODOs in test files
+- Test private methods directly
+- Write tests that depend on execution order
+- Hardcode dates or random values
+- Ignore flaky tests (fix or remove them)
+- Test framework code or third-party libraries
+
+## Implementation Details
+
+**Location:** `.claude/skills/testing/SKILL.md`
+
+**Model:** Sonnet
+
+**Tools Used:**
+- Read (test files, coverage reports)
+- Write (new tests)
+- Edit (update tests)
+- Glob (find test files)
+- Grep (search patterns)
+- Bash (run tests, coverage)
+
+**Files:**
+- Test framework config (vitest.config.ts, jest.config.js)
+- Test files (*.test.js, *.spec.js)
+- Coverage reports (coverage/)
+- Fixtures (tests/fixtures/)
+
+## See Also
+
+- **[/agentful-validate](/commands/agentful-validate)** - Runs test suite and coverage checks
+- **[Validation Skill](/skills/validation)** - Quality gate definitions including test validation
+- **[Tester Agent](/agents/tester)** - Uses this skill to write comprehensive tests
+- **[Reviewer Agent](/agents/reviewer)** - Validates test coverage and quality

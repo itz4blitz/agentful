@@ -16,7 +16,7 @@ Build a task management app from scratch.
 - Filter by status
 
 **Tech Stack**:
-- Next.js 14 + TypeScript
+- Next.js 15 + TypeScript
 - Tailwind CSS
 - Local state (no database)
 - Vitest for testing
@@ -30,208 +30,12 @@ mkdir task-manager
 cd task-manager
 npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
 npx @itz4blitz/agentful init
-```
-
-agentful initializes your project structure:
-1. Creates `.claude/` directory
-2. Generates product template at `.claude/product/index.md`
-3. Sets up core agents (orchestrator, backend, frontend, tester, reviewer, fixer)
-4. Configures hooks and permissions
-
-Now start Claude Code:
-
-```bash
 claude
 ```
 
-You'll see the welcome message:
+## Step 2: Define Product Specification
 
-```text
-✅ Agentful ready
-```
-
-## Step 2: Interactive Setup (NEW!)
-
-Instead of manually editing the product spec, use the guided setup:
-
-```bash
-/agentful-init
-```
-
-This launches an interactive setup that asks 7 quick questions (5 minutes):
-
-### Question 1/7: Product Description
-
-```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Question 1/7: Product Description
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-What are you building?
-
-Describe your product in 1-3 sentences:
-- What problem does it solve?
-- Who is it for?
-- What makes it unique?
-
-Example: "A task management app for remote teams..."
-```
-
-**Your answer**:
-```
-A simple task management app for personal productivity.
-Users can add, complete, and delete tasks, with filtering by status.
-```
-
-### Question 2/7: Tech Stack
-
-```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Question 2/7: Tech Stack
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-I detected this tech stack:
-
-- Language: TypeScript
-- Framework: Next.js 16.1.4 (App Router)
-- Runtime: React 19.2.3
-- Styling: Tailwind CSS 4
-
-Is this correct?
-
-Options:
-1. Yes, correct
-2. No, let me specify manually
-```
-
-**Select**: `Yes, correct`
-
-### Question 3/7: Key Features
-
-```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Question 3/7: Key Features
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-What are the main features you want to build?
-
-List 3-10 key features, one per line.
-```
-
-**Your answer**:
-```
-Add tasks with validation
-Toggle task completion with visual feedback
-Delete tasks
-Filter tasks by status (All, Active, Completed)
-Task counter showing remaining tasks
-```
-
-### Question 4/7: Priorities
-
-```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Question 4/7: Feature Priorities
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Should I:
-
-Options:
-1. Auto-assign priorities based on typical MVP (recommended)
-2. Let me set priorities for each feature manually
-```
-
-**Select**: `Auto-assign priorities based on typical MVP (recommended)`
-
-### Question 5/7: Testing
-
-```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Question 5/7: Testing Strategy
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-How should agentful handle testing?
-
-Options:
-1. Comprehensive (unit + integration + E2E)
-2. Standard (unit + integration)
-3. Minimal (unit tests only)
-```
-
-**Select**: `Standard (unit + integration)`
-
-### Question 6/7: Deployment
-
-```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Question 6/7: Deployment
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Where will this be deployed?
-
-Options:
-1. Vercel
-2. AWS (EC2, Lambda, etc.)
-3. Not sure yet / Multiple targets
-```
-
-**Select**: `Vercel`
-
-### Question 7/7: Experience Level
-
-```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Question 7/7: Your Experience
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-What's your experience level with Next.js?
-
-Options:
-1. Expert - I know the internals
-2. Proficient - I build with it regularly
-3. Intermediate - I know the basics
-4. Beginner - First time using this stack
-```
-
-**Select**: `Intermediate - I know the basics`
-
-### Setup Complete!
-
-After answering the questions, agentful:
-
-1. **Generates Product Spec** → `.claude/product/index.md`
-2. **Researches Best Practices** → Uses Context7 or WebSearch
-3. **Creates Specialized Agents** → Tailored to your stack + domains
-4. **Sets Up Skills** → Next.js, React, TypeScript, Tailwind patterns
-
-```text
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   ✅ Setup Complete!
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Your agentful project is ready for autonomous development.
-
-What was created:
-  📄 .claude/product/index.md (5 features)
-  🤖 Specialized agents (tasks domain)
-  📚 Tech skills (Next.js 16, React 19, etc.)
-  ⚙️  Quality gates (tests, linting, security)
-
-Next steps:
-
-1. Review your product spec:
-   cat .claude/product/index.md
-
-2. Start development:
-   /agentful-start
-
-3. Monitor progress:
-   /agentful-status
-```
-
-## Alternative: Manual Setup
-
-If you prefer to manually define your product spec instead of using `/agentful-init`, edit `.claude/product/index.md`:
+Edit `.claude/product/index.md` to define what you want to build:
 
 ```markdown
 # Product Specification
@@ -249,7 +53,7 @@ A simple task management application for personal productivity.
 ## Tech Stack
 
 ### Frontend
-- Framework: Next.js 14
+- Framework: Next.js 15
 - Language: TypeScript
 - Styling: Tailwind CSS
 - State Management: React useState
@@ -360,29 +164,22 @@ src/
 
 ## Step 3: Start Development
 
-Now that setup is complete, start the development loop:
+With your product spec defined, start the development loop:
 
 ```bash
 /agentful-start
 ```
 
-agentful detects this is the first run and automatically:
-1. Loads your product spec
-2. Detects specialized agents were already generated
-3. Begins implementing features in priority order
+agentful will:
+1. Analyze your product spec
+2. Generate specialized agents for your stack
+3. Begin implementing features in priority order
 
 ## Step 4: Watch agentful Work
 
-agentful follows this loop:
+agentful now works through your features automatically. Watch the terminal for progress updates. See the [Overview](/getting-started/overview) for detailed workflow information.
 
-**Phase 1: Architecture Analysis**
-```
-Architect analyzing tech stack...
-Detected: Next.js 14, TypeScript, Tailwind CSS, Vitest
-Generated 5 specialized agents
-```
-
-**Phase 2: Planning**
+**You'll see:**
 ```
 Orchestrator planning work...
 Feature queue:
