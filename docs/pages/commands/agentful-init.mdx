@@ -1,0 +1,266 @@
+# /agentful-init
+
+Interactive onboarding wizard that guides you through agentful setup with 7 questions.
+
+## Overview
+
+The `/agentful-init` command provides a guided, interactive setup experience for first-time agentful users. It asks 7 focused questions to understand your project and automatically generates your product specification.
+
+**When to use:**
+- First time using agentful
+- New project with no product spec
+- Want guided setup instead of manual editing
+
+**What it creates:**
+- `.claude/product/index.md` - Your product specification
+- Auto-triggers `/agentful-generate` to create specialized agents
+- `.agentful/setup-progress.json` - Tracks setup state
+
+## Usage
+
+```bash
+/agentful-init
+```
+
+The command will:
+1. Check if already initialized (offers to continue or restart)
+2. Auto-detect your tech stack
+3. Ask 7 guided questions
+4. Generate product specification
+5. Automatically generate specialized agents
+6. Prepare for `/agentful-start`
+
+## The 7 Questions
+
+### Question 1: Product Description
+```
+What are you building?
+
+Describe your product in 1-3 sentences:
+- What problem does it solve?
+- Who is it for?
+- What makes it unique?
+```
+
+**Example**: "A task management app for remote teams that integrates with Slack and automatically prioritizes work based on deadlines and dependencies."
+
+### Question 2: Tech Stack Confirmation
+```
+I detected this tech stack:
+- Language: TypeScript
+- Framework: Next.js 15
+- Database: PostgreSQL with Prisma
+- Testing: Vitest
+
+Is this correct?
+```
+
+Options:
+- Yes, correct
+- No, let me specify manually
+
+### Question 3: Key Features
+```
+What are the main features you want to build?
+
+List 3-10 key features, one per line.
+```
+
+**Example**:
+```
+User authentication with email/password
+Task creation and assignment
+Real-time notifications
+Calendar integration
+Team collaboration spaces
+```
+
+### Question 4: Feature Priorities
+```
+Should I:
+- Auto-assign priorities based on typical MVP (recommended)
+- Let me set priorities for each feature manually
+```
+
+Auto-assignment logic:
+- First 30% of features → CRITICAL
+- Next 40% → HIGH
+- Remaining → MEDIUM
+
+### Question 5: Testing Strategy
+```
+What level of testing do you want?
+- Comprehensive (unit + integration + E2E)
+- Standard (unit + integration)
+- Minimal (unit tests only)
+```
+
+Sets coverage target:
+- Comprehensive: 85%
+- Standard/Minimal: 80%
+
+### Question 6: Deployment Target
+```
+Where will this be deployed?
+- Vercel
+- AWS (EC2, Lambda, etc.)
+- Google Cloud
+- Docker/Self-hosted
+- Not sure yet / Multiple targets
+```
+
+Helps optimize build configs and suggest best practices.
+
+### Question 7: Experience Level
+```
+What's your experience level with [detected framework]?
+- Expert - I know the internals
+- Proficient - I build with it regularly
+- Intermediate - I know the basics
+- Beginner - First time using this stack
+```
+
+Adjusts verbosity of agent explanations:
+- Expert → Concise
+- Proficient/Intermediate → Moderate
+- Beginner → Detailed
+
+## Generated Product Spec
+
+The command creates `.claude/product/index.md` with this structure:
+
+```markdown
+# [Your Product Name]
+
+[Product description from Q1]
+
+## Tech Stack
+
+- **Language**: TypeScript
+- **Framework**: Next.js 15
+- **Database**: PostgreSQL with Prisma
+- **Testing**: Vitest
+- **Deployment**: Vercel
+
+## Features
+
+### 1. User Authentication - CRITICAL
+[Auto-generated description based on feature name]
+
+**Acceptance Criteria**:
+- [ ] Email/password registration
+- [ ] Login with session management
+- [ ] Password reset flow
+- [ ] Email verification
+
+**Priority**: CRITICAL
+**Status**: Not started
+
+---
+
+### 2. Task Creation - CRITICAL
+...
+
+[Continues for all features]
+```
+
+## Resume Support
+
+If interrupted, `/agentful-init` can resume where you left off:
+
+```
+Found incomplete setup from 2026-01-25T10:30:00Z.
+
+Completed so far:
+✓ Product description
+✓ Tech stack
+✓ Feature list
+✗ Priority assignment
+
+Would you like to:
+- Resume where I left off
+- Start over from beginning
+```
+
+Progress is saved to `.agentful/setup-progress.json`.
+
+## After Completion
+
+Once setup completes, you'll see:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ✅ Setup Complete!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Your agentful project is ready for autonomous development.
+
+What was created:
+  📄 .claude/product/index.md (8 features)
+  🤖 Specialized agents (generated for your domains)
+  📚 Tech skills (Next.js, Prisma, etc.)
+  ⚙️  Quality gates (tests, linting, security)
+
+Next steps:
+
+1. Review your product spec:
+   cat .claude/product/index.md
+
+2. Start development:
+   /agentful-start
+
+3. Monitor progress:
+   /agentful-status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+## vs /agentful-product
+
+| Feature | /agentful-init | /agentful-product |
+|---------|----------------|-------------------|
+| **Best for** | First-time users | Existing projects |
+| **Interaction** | 7 guided questions | Auto-detects workflow |
+| **Creates spec** | Yes | Yes (if missing) |
+| **Analyzes spec** | No | Yes |
+| **Refinement mode** | No | Yes |
+| **Q&A mode** | No | Yes |
+| **Tech detection** | Yes | Yes |
+
+**Recommendation**: Use `/agentful-init` for your first project, then use `/agentful-product` for analysis and refinement.
+
+## Comparison with Other Commands
+
+```bash
+# For brand new users
+/agentful-init         # Start here - guided setup
+
+# After setup is complete
+/agentful-start        # Begin development (auto-generates agents on first run)
+
+# To analyze existing spec
+/agentful-product      # Check readiness, find gaps
+
+# To check if setup is healthy
+/agentful-analyze      # Validate configuration
+```
+
+## Troubleshooting
+
+**Setup fails mid-way**
+→ Run `/agentful-init` again - it will offer to resume
+
+**Want to start over**
+→ Delete `.agentful/setup-progress.json`, then run `/agentful-init`
+
+**Already initialized, ran by mistake**
+→ Choose "Continue with existing setup" when prompted
+
+**Questions too basic/advanced**
+→ Your answer to Q7 (experience level) adjusts future agent verbosity
+
+## See Also
+
+- [/agentful-product](./agentful-product) - Product spec analysis and refinement
+- [/agentful-generate](./agentful-generate) - Agent generation (runs automatically after init)
+- [/agentful-start](./agentful-start) - Begin development
+- [Quick Start Guide](/getting-started/quick-start)

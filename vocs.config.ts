@@ -70,6 +70,7 @@ export default defineConfig({
         items: [
           { text: 'Commands Overview', link: '/commands' },
           { text: '/agentful', link: '/commands/agentful' },
+          { text: '/agentful-init', link: '/commands/agentful-init' },
           { text: '/agentful-product', link: '/commands/agentful-product' },
           { text: '/agentful-start', link: '/commands/agentful-start' },
           { text: '/agentful-status', link: '/commands/agentful-status' },
