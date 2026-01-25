@@ -68,9 +68,6 @@ claude --dangerously-skip-permissions
 **Want to add features?**
 → Edit `.claude/product/index.md`, then run `/agentful-start` (picks up changes automatically)
 
-**Need remote execution?**
-→ Run `agentful serve` on a VPS, then use `agentful remote` CLI to trigger agents from anywhere
-
 ## File Structure
 
 **Product Specification** (you edit these):
@@ -131,7 +128,7 @@ The `reviewer` agent runs these checks automatically. The `fixer` agent resolves
 → Edit completion % in `.agentful/completion.json` for specific feature, then run `/agentful-start`.
 
 **"Want to work on multiple features in parallel?"**
-→ Use git worktrees for branch-based parallel development, or `agentful serve` for coordinated remote execution.
+→ Use git worktrees for branch-based parallel development.
 
 ## Getting Help
 

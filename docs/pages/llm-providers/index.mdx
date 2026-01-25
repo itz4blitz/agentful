@@ -5,34 +5,10 @@ agentful works with any LLM that supports function calling and 128K+ context.
 ## Supported Providers
 
 - **[GLM-4.7](/llm-providers/glm)** - 10x cheaper than Claude, native Anthropic-compatible API
-- **[DeepSeek](/llm-providers/deepseek)** - 8x cheaper, strong reasoning mode
-- **[Gemini](/llm-providers/gemini)** - 1M context window, multimodal
-- **[OpenAI](/llm-providers/openai)** - Requires LiteLLM proxy
 - **[Local Models](/llm-providers/local)** - Ollama, vLLM, self-hosted
-
-## Quick Start
-
-Configure Claude Code with environment variables:
-
-```bash
-# GLM (easiest)
-export ANTHROPIC_BASE_URL=https://api.z.ai/api/anthropic
-export ANTHROPIC_AUTH_TOKEN=your_zai_api_key
-claude
-
-# OpenAI (requires proxy)
-litellm --model gpt-4o --port 4000
-export ANTHROPIC_BASE_URL=http://localhost:4000
-export ANTHROPIC_API_KEY=$OPENAI_API_KEY
-claude
-```
-
-All agentful commands work identically once configured.
 
 ## When to Use What
 
-- **Cheaper alternative** → GLM-4.7 or DeepSeek
-- **Math/algorithms** → GLM-4.7
-- **Long context (1M tokens)** → Gemini
+- **Cheaper alternative** → GLM-4.7
 - **Privacy** → Local models
 - **Best quality** → Claude (default)

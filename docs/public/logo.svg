@@ -5,6 +5,12 @@
       <stop offset="100%" stop-color="#06b6d4"/>
     </linearGradient>
 
+    <linearGradient id="text-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="50%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+
     <radialGradient id="particle-gradient">
       <stop offset="0%" stop-color="#06b6d4" stop-opacity="1"/>
       <stop offset="50%" stop-color="#10b981" stop-opacity="0.6"/>
@@ -74,7 +80,7 @@
   </g>
 
   <!-- Text -->
-  <text x="56" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="600" fill="#e2e8f0" letter-spacing="-0.02em">
+  <text x="56" y="30" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="600" fill="url(#text-gradient)" letter-spacing="-0.02em">
     agentful
   </text>
 

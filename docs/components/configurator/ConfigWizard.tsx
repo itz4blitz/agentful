@@ -3,6 +3,7 @@ import { AgentSelector } from './AgentSelector'
 import { FeatureSelector } from './FeatureSelector'
 import { HookConfigurator } from './HookConfigurator'
 import { CommandGenerator } from './CommandGenerator'
+import { fullConfig } from './config'
 import './configurator.css'
 
 export interface ConfigState {
@@ -10,14 +11,6 @@ export interface ConfigState {
   skills: string[]
   hooks: string[]
   gates: string[]
-}
-
-// Default: EVERYTHING enabled (full agentful installation)
-const fullConfig: ConfigState = {
-  agents: ['orchestrator', 'architect', 'backend', 'frontend', 'tester', 'reviewer', 'fixer', 'product-analyzer'],
-  skills: ['product-tracking', 'validation', 'conversation', 'product-planning', 'testing', 'deployment'],
-  hooks: ['health-check', 'block-random-docs', 'typescript-validation', 'notifications', 'format-on-save'],
-  gates: ['types', 'tests', 'coverage', 'lint', 'security', 'dead-code'],
 }
 
 export const ConfigWizard: React.FC = () => {
@@ -46,84 +39,71 @@ export const ConfigWizard: React.FC = () => {
 
         {/* Tab-style Buttons */}
         <div style={{
-          display: 'flex',
-          gap: '0.5rem',
-          justifyContent: 'center',
+          display: 'inline-flex',
+          background: 'rgba(16, 185, 129, 0.05)',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
+          padding: '0.25rem',
+          gap: '0.25rem',
           marginBottom: '1.5rem',
-          flexWrap: 'wrap',
         }}>
           <button
             onClick={resetToFull}
             style={{
-              padding: '1rem 2rem',
-              background: !isCustomizing ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'transparent',
-              color: !isCustomizing ? '#000000' : '#cbd5e1',
-              border: !isCustomizing ? 'none' : '2px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: '0.75rem',
-              fontSize: '1.125rem',
-              fontWeight: !isCustomizing ? '700' : '600',
+              padding: '0.75rem 2rem',
+              background: !isCustomizing ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+              color: !isCustomizing ? '#10b981' : '#94a3b8',
+              border: 'none',
+              fontSize: '1rem',
+              fontWeight: !isCustomizing ? '600' : '500',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: !isCustomizing ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
-              opacity: !isCustomizing ? 1 : 0.6,
             }}
             onMouseEnter={(e) => {
               if (!isCustomizing) {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)'
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.3)'
               } else {
-                e.currentTarget.style.opacity = '1'
-                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.6)'
+                e.currentTarget.style.color = '#cbd5e1'
               }
             }}
             onMouseLeave={(e) => {
               if (!isCustomizing) {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'
               } else {
-                e.currentTarget.style.opacity = '0.6'
-                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)'
+                e.currentTarget.style.color = '#94a3b8'
               }
             }}
           >
-            ✨ Install agentful
+            Install agentful
           </button>
 
           <button
             onClick={() => setIsCustomizing(true)}
             style={{
-              padding: '1rem 2rem',
-              background: isCustomizing ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'transparent',
-              color: isCustomizing ? '#000000' : '#cbd5e1',
-              border: isCustomizing ? 'none' : '2px solid rgba(16, 185, 129, 0.3)',
-              borderRadius: '0.75rem',
-              fontSize: '1.125rem',
-              fontWeight: isCustomizing ? '700' : '600',
+              padding: '0.75rem 2rem',
+              background: isCustomizing ? 'rgba(16, 185, 129, 0.2)' : 'transparent',
+              color: isCustomizing ? '#10b981' : '#94a3b8',
+              border: 'none',
+              fontSize: '1rem',
+              fontWeight: isCustomizing ? '600' : '500',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: isCustomizing ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none',
-              opacity: isCustomizing ? 1 : 0.6,
             }}
             onMouseEnter={(e) => {
               if (isCustomizing) {
-                e.currentTarget.style.transform = 'translateY(-2px)'
-                e.currentTarget.style.boxShadow = '0 6px 16px rgba(16, 185, 129, 0.4)'
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.3)'
               } else {
-                e.currentTarget.style.opacity = '1'
-                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.6)'
+                e.currentTarget.style.color = '#cbd5e1'
               }
             }}
             onMouseLeave={(e) => {
               if (isCustomizing) {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.3)'
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'
               } else {
-                e.currentTarget.style.opacity = '0.6'
-                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)'
+                e.currentTarget.style.color = '#94a3b8'
               }
             }}
           >
-            ⚙️ Customize Installation
+            Customize Installation
           </button>
         </div>
 
@@ -142,12 +122,12 @@ export const ConfigWizard: React.FC = () => {
           {isFullInstall ? (
             <>
               <span style={{ color: '#10b981', fontWeight: '600' }}>Full Installation:</span>
-              <span>8 agents, 6 skills, all automation</span>
+              <span>8 agents, 7 skills, 5 hooks, 6 quality gates</span>
             </>
           ) : (
             <>
               <span style={{ color: '#10b981', fontWeight: '600' }}>Custom Installation:</span>
-              <span>{config.agents.length} agents, {config.skills.length} skills, {config.hooks.length + config.gates.length} automation rules</span>
+              <span>{config.agents.length} agents, {config.skills.length} skills, {config.hooks.length} hooks, {config.gates.length} quality gates</span>
             </>
           )}
         </div>
@@ -158,9 +138,9 @@ export const ConfigWizard: React.FC = () => {
         <div style={{
           marginBottom: '2rem',
           padding: '2rem',
-          border: '2px solid var(--vocs-color_border)',
-          borderRadius: '1rem',
-          background: 'var(--vocs-color_background)',
+          border: '1px solid rgba(16, 185, 129, 0.2)',
+          background: 'rgba(16, 185, 129, 0.03)',
+          backdropFilter: 'blur(8px)',
         }}>
           <div style={{
             display: 'flex',
@@ -169,9 +149,12 @@ export const ConfigWizard: React.FC = () => {
             marginBottom: '1.5rem',
           }}>
             <h3 style={{
-              fontSize: '1.5rem',
+              fontSize: '1.25rem',
               fontWeight: '600',
-              color: 'var(--vocs-color_text)',
+              background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 60%, #8b5cf6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
             }}>
               Customize Components
             </h3>
@@ -179,21 +162,21 @@ export const ConfigWizard: React.FC = () => {
               onClick={resetToFull}
               style={{
                 padding: '0.5rem 1rem',
-                background: 'transparent',
-                border: '1px solid var(--vocs-color_border)',
-                borderRadius: '0.375rem',
-                color: 'var(--vocs-color_textAccent)',
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                color: '#10b981',
                 fontSize: '0.875rem',
+                fontWeight: '500',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = '#10b981'
-                e.currentTarget.style.color = '#10b981'
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)'
+                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = 'var(--vocs-color_border)'
-                e.currentTarget.style.color = 'var(--vocs-color_textAccent)'
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)'
+                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)'
               }}
             >
               Reset to Full
@@ -235,12 +218,7 @@ export const ConfigWizard: React.FC = () => {
       )}
 
       {/* Command Generator (Always visible) */}
-      <div style={{
-        position: 'sticky',
-        top: '1rem',
-      }}>
-        <CommandGenerator config={config} />
-      </div>
+      <CommandGenerator config={config} />
     </div>
   )
 }

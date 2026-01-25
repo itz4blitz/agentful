@@ -71,7 +71,7 @@ AI development toolkit that coordinates specialized agents in Claude Code to bui
 
 **Key capabilities:**
 - **[Parallel execution](/concepts/background-agents)** - Multiple agents work simultaneously in isolated git worktrees (frontend + backend + tests running concurrently)
-- **[Three-tier architecture](/getting-started/overview#agent-system)** - Core (pre-built), domain (generated for your stack), ephemeral (temporary, task-specific)
+- **[Three-tier architecture](/agents#three-tier-architecture)** - Core (pre-built), domain (generated for your stack), ephemeral (temporary, task-specific)
 - **[Shared skills](/skills/validation)** - Reusable capabilities like validation, testing, and research across all agents
 - **[Custom hooks](/hooks)** - Intercept and modify agent behavior at key lifecycle points
 - **[Quality gates](/concepts/quality-gates)** - Automated validation for every change (tests, types, coverage, security)
@@ -79,13 +79,13 @@ AI development toolkit that coordinates specialized agents in Claude Code to bui
 
 ## Our Philosophy
 
-Every software project has three tiers of agents and skills:
+Every software project needs [three tiers of agents and skills](/agents#three-tier-architecture):
 
-1. **Core** (included) - Universal agents like orchestrator, reviewer, fixer + shared skills like validation, testing
-2. **Domain** (generated) - Custom agents for your stack (backend, frontend) + project-specific skills
-3. **Ephemeral** (temporary) - Short-term agents/skills for specific tasks that get deleted after use
+1. **[Core](/agents#1-core-agents)** (included) - Universal agents ([orchestrator](/agents/orchestrator), [reviewer](/agents/reviewer), [fixer](/agents/fixer)) + shared [skills](/skills) ([validation](/skills/validation), [testing](/skills/testing), [research](/skills/research)). Same for every project.
+2. **[Domain](/agents#2-domain-agents)** (generated) - Stack-specific agents (backend, frontend for web; extractor, transformer for pipelines) + tech skills (Next.js, Postgres, Tailwind). [Architect](/agents/architect) creates these based on your codebase.
+3. **[Ephemeral](/agents#3-ephemeral-agents)** (temporary) - Task-specific agents/skills created for one-off tasks or longer-term work, then removed when done (migration-agent for a 2-hour DB migration, performance-profiling for a multi-week optimization project).
 
-**Skills are shared across agents** - any agent can use validation, testing, research, etc. This gives you ready-to-use components out-of-the-box while adapting to your project's unique patterns. For custom workflows, start with just the orchestrator and add only what you need.
+**Skills are shared across agents.** Any agent can use validation, research, etc. Our OOTB setup works for all software projects, but use the [custom installer](/getting-started/installation#custom) to tweak what you need.
 
 ## Configure Your Installation
 

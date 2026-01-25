@@ -1,19 +1,13 @@
 import React, { useState } from 'react'
 import { ConfigState } from './ConfigWizard'
 import { ShareModal } from './ShareModal'
+import { fullConfig } from './config'
 
 interface CommandGeneratorProps {
   config: ConfigState
 }
 
 type ShareState = 'idle' | 'loading' | 'success' | 'error'
-
-const fullConfig = {
-  agents: ['orchestrator', 'architect', 'backend', 'frontend', 'tester', 'reviewer', 'fixer', 'product-analyzer'],
-  skills: ['product-tracking', 'validation', 'conversation', 'product-planning', 'testing', 'deployment'],
-  hooks: ['health-check', 'block-random-docs', 'typescript-validation', 'notifications', 'format-on-save'],
-  gates: ['types', 'tests', 'coverage', 'lint', 'security', 'dead-code'],
-}
 
 export const CommandGenerator: React.FC<CommandGeneratorProps> = ({ config }) => {
   const [copied, setCopied] = useState(false)
@@ -109,250 +103,69 @@ export const CommandGenerator: React.FC<CommandGeneratorProps> = ({ config }) =>
   return (
     <>
       <div style={{
-        border: '1px solid var(--vocs-color_border)',
-        borderRadius: '0.5rem',
+        background: 'rgba(16, 185, 129, 0.05)',
+        backdropFilter: 'blur(12px)',
+        border: '1px solid rgba(16, 185, 129, 0.2)',
         overflow: 'hidden',
       }}>
         <div style={{
           padding: '1rem',
-          background: 'var(--vocs-color_backgroundAccent)',
-          borderBottom: '1px solid var(--vocs-color_border)',
+          background: 'rgba(16, 185, 129, 0.08)',
+          backdropFilter: 'blur(8px)',
+          borderBottom: '1px solid rgba(16, 185, 129, 0.2)',
         }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '0.5rem',
           }}>
             <h3 style={{
               fontSize: '1rem',
               fontWeight: '600',
-              color: '#000000',
+              background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 60%, #8b5cf6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
             }}>
               {isFullInstall ? 'Installation Command' : 'Custom Installation Command'}
             </h3>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={handleShare}
-                disabled={shareState === 'loading'}
-                style={{
-                  padding: '0.375rem 0.75rem',
-                  background: shareState === 'success' ? '#10b981' : 'var(--vocs-color_background)',
-                  border: '1px solid var(--vocs-color_border)',
-                  borderRadius: '0.375rem',
-                  color: shareState === 'success' ? '#000000' : 'var(--vocs-color_text)',
-                  fontSize: '0.8125rem',
-                  fontWeight: '600',
-                  cursor: shareState === 'loading' ? 'wait' : 'pointer',
-                  transition: 'all 0.2s',
-                  opacity: shareState === 'loading' ? 0.7 : 1,
-                }}
-              >
-                {shareState === 'loading' ? 'Sharing...' : shareState === 'success' ? '✓ Shared!' : 'Share'}
-              </button>
-              <button
-                onClick={handleCopy}
-                style={{
-                  padding: '0.375rem 0.75rem',
-                  background: copied ? '#10b981' : 'var(--vocs-color_background)',
-                  border: '1px solid var(--vocs-color_border)',
-                  borderRadius: '0.375rem',
-                  color: copied ? '#000000' : 'var(--vocs-color_text)',
-                  fontSize: '0.8125rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {copied ? '✓ Copied!' : 'Copy'}
-              </button>
-            </div>
+            <button
+              onClick={handleCopy}
+              style={{
+                padding: '0.375rem 0.75rem',
+                background: copied ? '#10b981' : 'rgba(16, 185, 129, 0.15)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                color: copied ? '#ffffff' : '#cbd5e1',
+                fontSize: '0.8125rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              {copied ? '✓ Copied!' : 'Copy'}
+            </button>
           </div>
-          {isFullInstall && (
-            <div style={{
-              fontSize: '0.875rem',
-              color: '#000000',
-            }}>
-              Complete setup with all agents, skills, and automation
-            </div>
-          )}
         </div>
 
-        <div style={{
-          padding: '1rem',
-          background: '#1e293b',
-          fontFamily: 'var(--vocs-font_mono)',
-          fontSize: '0.875rem',
-          lineHeight: '1.7',
+        <pre className="command-output" style={{
+          margin: 0,
+          padding: '1rem 1rem 1rem 1.5rem',
+          background: 'rgba(16, 185, 129, 0.05) !important',
+          backdropFilter: 'blur(8px)',
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          fontSize: '0.9375rem',
+          lineHeight: 1.7,
           overflowX: 'auto',
-          borderRadius: '0.375rem',
+          whiteSpace: 'pre',
+          color: '#10b981',
+          fontWeight: '500',
+          border: 'none !important',
+          borderRadius: '0 !important',
+          boxShadow: 'none !important',
         }}>
-          <pre style={{
-            margin: 0,
-            whiteSpace: 'pre',
-            color: '#cbd5e1',
-          }}>
-            {command}
-          </pre>
-        </div>
-
-        <div style={{
-          padding: '1rem',
-          background: 'var(--vocs-color_background)',
-          borderTop: '1px solid var(--vocs-color_border)',
-        }}>
-          <h4 style={{
-            fontSize: '0.875rem',
-            fontWeight: '600',
-            marginBottom: '0.75rem',
-            color: 'var(--vocs-color_text)',
-          }}>
-            What gets installed:
-          </h4>
-          <div style={{
-            display: 'grid',
-            gap: '0.5rem',
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.8125rem',
-              color: 'var(--vocs-color_text)',
-            }}>
-              <span style={{ fontSize: '1.125rem' }}>🤖</span>
-              <span style={{ fontWeight: '500' }}>Agents:</span>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '0.125rem 0.5rem',
-                background: 'rgba(16, 185, 129, 0.15)',
-                color: '#10b981',
-                borderRadius: '12px',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-              }}>
-                {config.agents.length}
-              </span>
-              <span style={{ color: 'var(--vocs-color_textAccent)', fontSize: '0.75rem' }}>
-                ({config.agents.join(', ')})
-              </span>
-            </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.8125rem',
-              color: 'var(--vocs-color_text)',
-            }}>
-              <span style={{ fontSize: '1.125rem' }}>📚</span>
-              <span style={{ fontWeight: '500' }}>Skills:</span>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '0.125rem 0.5rem',
-                background: 'rgba(16, 185, 129, 0.15)',
-                color: '#10b981',
-                borderRadius: '12px',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-              }}>
-                {config.skills.length}
-              </span>
-              <span style={{ color: 'var(--vocs-color_textAccent)', fontSize: '0.75rem' }}>
-                {config.skills.length > 0 ? `(${config.skills.join(', ')})` : '(none)'}
-              </span>
-            </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.8125rem',
-              color: 'var(--vocs-color_text)',
-            }}>
-              <span style={{ fontSize: '1.125rem' }}>🔗</span>
-              <span style={{ fontWeight: '500' }}>Hooks:</span>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '0.125rem 0.5rem',
-                background: 'rgba(16, 185, 129, 0.15)',
-                color: '#10b981',
-                borderRadius: '12px',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-              }}>
-                {config.hooks.length}
-              </span>
-              <span style={{ color: 'var(--vocs-color_textAccent)', fontSize: '0.75rem' }}>
-                {config.hooks.length > 0 ? `(${config.hooks.join(', ')})` : '(none)'}
-              </span>
-            </div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.8125rem',
-              color: 'var(--vocs-color_text)',
-            }}>
-              <span style={{ fontSize: '1.125rem' }}>✅</span>
-              <span style={{ fontWeight: '500' }}>Quality Gates:</span>
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                padding: '0.125rem 0.5rem',
-                background: 'rgba(16, 185, 129, 0.15)',
-                color: '#10b981',
-                borderRadius: '12px',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-              }}>
-                {config.gates.length}
-              </span>
-              <span style={{ color: 'var(--vocs-color_textAccent)', fontSize: '0.75rem' }}>
-                {config.gates.length > 0 ? `(${config.gates.join(', ')})` : '(none)'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          padding: '1rem',
-          background: 'rgba(16, 185, 129, 0.1)',
-          borderTop: '1px solid rgba(16, 185, 129, 0.3)',
-        }}>
-          <div style={{
-            fontSize: '0.8125rem',
-            color: 'var(--vocs-color_textAccent)',
-            lineHeight: '1.5',
-          }}>
-            <strong style={{ color: '#10b981' }}>Next steps:</strong>
-            <ol style={{ margin: '0.5rem 0 0', paddingLeft: '1.25rem' }}>
-              <li>Run the command in your project directory</li>
-              <li>Edit <code style={{
-                padding: '0.125rem 0.375rem',
-                background: 'var(--vocs-color_codeBackground)',
-                borderRadius: '0.25rem',
-                fontSize: '0.75rem',
-                fontFamily: 'var(--vocs-font_mono)',
-              }}>.claude/product/index.md</code> to define your product</li>
-              <li>Start Claude Code: <code style={{
-                padding: '0.125rem 0.375rem',
-                background: 'var(--vocs-color_codeBackground)',
-                borderRadius: '0.25rem',
-                fontSize: '0.75rem',
-                fontFamily: 'var(--vocs-font_mono)',
-              }}>claude</code></li>
-              <li>Type: <code style={{
-                padding: '0.125rem 0.375rem',
-                background: 'var(--vocs-color_codeBackground)',
-                borderRadius: '0.25rem',
-                fontSize: '0.75rem',
-                fontFamily: 'var(--vocs-font_mono)',
-              }}>/agentful-start</code></li>
-            </ol>
-          </div>
-        </div>
+          {command}
+        </pre>
       </div>
 
       {shareState === 'error' && errorMessage && (

@@ -1,48 +1,10 @@
 import React from 'react'
+import { skills } from './config'
 
 interface FeatureSelectorProps {
   selected: string[]
   onChange: (selected: string[]) => void
 }
-
-const skills = [
-  {
-    id: 'product-tracking',
-    name: 'Product Tracking',
-    description: 'Track feature completion, blocking decisions, and progress.',
-    icon: '📊',
-  },
-  {
-    id: 'validation',
-    name: 'Validation',
-    description: 'Quality gates for type checking, tests, coverage, security.',
-    icon: '✅',
-  },
-  {
-    id: 'conversation',
-    name: 'Conversation',
-    description: 'Natural language interface for ad-hoc questions and tasks.',
-    icon: '💬',
-  },
-  {
-    id: 'product-planning',
-    name: 'Product Planning',
-    description: 'Guided product specification creation and analysis.',
-    icon: '📝',
-  },
-  {
-    id: 'testing',
-    name: 'Testing',
-    description: 'Test generation patterns and execution strategies.',
-    icon: '🧪',
-  },
-  {
-    id: 'deployment',
-    name: 'Deployment',
-    description: 'Deployment workflows and CI/CD configuration.',
-    icon: '🚀',
-  },
-]
 
 export const FeatureSelector: React.FC<FeatureSelectorProps> = ({ selected, onChange }) => {
   const toggleSkill = (skillId: string) => {
@@ -61,7 +23,7 @@ export const FeatureSelector: React.FC<FeatureSelectorProps> = ({ selected, onCh
         marginBottom: '0.5rem',
         color: 'var(--vocs-color_text)'
       }}>
-        Skills
+        Skills <span style={{ color: 'var(--vocs-color_textAccent)', fontWeight: '400' }}>({selected.length}/{skills.length})</span>
       </h4>
       <p style={{
         fontSize: '0.875rem',
@@ -81,9 +43,8 @@ export const FeatureSelector: React.FC<FeatureSelectorProps> = ({ selected, onCh
               onClick={() => toggleSkill(skill.id)}
               style={{
                 padding: '0.875rem',
-                border: `2px solid ${isSelected ? '#10b981' : 'var(--vocs-color_border)'}`,
-                borderRadius: '0.5rem',
-                background: isSelected ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                border: `1px solid ${isSelected ? 'rgba(16, 185, 129, 0.4)' : 'rgba(148, 163, 184, 0.2)'}`,
+                background: isSelected ? 'rgba(16, 185, 129, 0.05)' : 'transparent',
                 textAlign: 'left',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
@@ -91,14 +52,13 @@ export const FeatureSelector: React.FC<FeatureSelectorProps> = ({ selected, onCh
             >
               <div style={{ display: 'flex', alignItems: 'start', gap: '0.75rem' }}>
                 <div style={{
-                  width: '1.75rem',
-                  height: '1.75rem',
+                  width: '2rem',
+                  height: '2rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  borderRadius: '0.375rem',
-                  background: isSelected ? 'rgba(16, 185, 129, 0.2)' : 'var(--vocs-color_backgroundAccent)',
-                  fontSize: '1rem',
+                  background: isSelected ? 'rgba(16, 185, 129, 0.1)' : 'rgba(148, 163, 184, 0.1)',
+                  fontSize: '1.25rem',
                   flexShrink: 0,
                 }}>
                   {skill.icon}
@@ -107,7 +67,7 @@ export const FeatureSelector: React.FC<FeatureSelectorProps> = ({ selected, onCh
                   <div style={{
                     fontWeight: '600',
                     fontSize: '0.875rem',
-                    color: isSelected ? '#10b981' : 'var(--vocs-color_text)',
+                    color: isSelected ? '#10b981' : '#cbd5e1',
                     marginBottom: '0.25rem'
                   }}>
                     {skill.name}

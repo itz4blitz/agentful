@@ -96,7 +96,7 @@ html {
 
 /* Enhance heading typography */
 .vocs_Content h1 {
-  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 50%, var(--color-accent-cyan) 100%);
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 60%, #8b5cf6 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -107,7 +107,10 @@ html {
 }
 
 .vocs_Content h2 {
-  color: var(--color-text-primary);
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 60%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   font-weight: 700;
   letter-spacing: -0.01em;
   margin-top: 3rem;
@@ -121,9 +124,9 @@ html {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 3rem;
+  width: 8rem;
   height: 3px;
-  background: linear-gradient(90deg, var(--color-primary) 0%, transparent 100%);
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%);
   border-radius: var(--radius-full);
 }
 
@@ -186,6 +189,16 @@ html {
   overflow: hidden;
 }
 
+/* Override for command output */
+.vocs_Content pre.command-output {
+  background: rgba(16, 185, 129, 0.05) !important;
+  backdrop-filter: blur(8px) !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+
 .vocs_Content pre::before {
   content: '';
   position: absolute;
@@ -194,6 +207,10 @@ html {
   right: 0;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--color-primary-glow), transparent);
+}
+
+.vocs_Content pre.command-output::before {
+  display: none !important;
 }
 
 /* Inline code */
@@ -349,38 +366,7 @@ html {
    BUTTON ENHANCEMENTS
    ============================================ */
 
-/* Primary button style */
-.vocs_Content a[href*="quick-start"],
-.vocs_Content a[href*="installation"] {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
-  color: white !important;
-  font-weight: 600;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md), 0 0 0 0 var(--color-primary-glow);
-  transition: all var(--transition-base);
-  border: 1px solid transparent;
-  text-decoration: none !important;
-}
-
-.vocs_Content a[href*="quick-start"]::after,
-.vocs_Content a[href*="installation"]::after {
-  display: none;
-}
-
-.vocs_Content a[href*="quick-start"]:hover,
-.vocs_Content a[href*="installation"]:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
-}
-
-.vocs_Content a[href*="quick-start"]:active,
-.vocs_Content a[href*="installation"]:active {
-  transform: translateY(0);
-}
+/* Remove button styling - keep all links consistent */
 
 /* ============================================
    CARD COMPONENTS
@@ -474,8 +460,47 @@ html {
 
 .vocs_SidebarItem[data-active="true"] {
   background: var(--color-surface-glass-strong);
-  color: var(--color-primary-light);
   border-left: 3px solid var(--color-primary);
+}
+
+.vocs_SidebarItem[data-active="true"] a,
+.vocs_Sidebar a[data-active="true"],
+.vocs_Sidebar a[aria-current="page"] {
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 60%, #8b5cf6 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  font-weight: 600 !important;
+  position: relative !important;
+}
+
+.vocs_SidebarItem[data-active="true"] a::before,
+.vocs_Sidebar a[data-active="true"]::before,
+.vocs_Sidebar a[aria-current="page"]::before {
+  content: '' !important;
+  position: absolute !important;
+  left: -1rem !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  width: 3px !important;
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 60%, #8b5cf6 100%) !important;
+  border-radius: 0 2px 2px 0 !important;
+}
+
+.vocs_Sidebar a:focus,
+.vocs_Sidebar a:focus-visible {
+  outline: none !important;
+}
+
+/* Gradient text for sidebar section titles */
+div.vocs_Sidebar_sectionTitle,
+.vocs_Sidebar div.vocs_Sidebar_sectionTitle {
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+  font-weight: 600 !important;
 }
 
 /* ============================================
@@ -524,24 +549,24 @@ html {
    SCROLL INDICATORS
    ============================================ */
 
-/* Custom scrollbar */
+/* Custom scrollbar - subtle green accent */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-bg-secondary);
+  background: rgba(30, 41, 59, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-bg-tertiary);
-  border-radius: var(--radius-full);
-  border: 2px solid var(--color-bg-secondary);
+  background: rgba(16, 185, 129, 0.4);
+  border-radius: 5px;
+  border: 2px solid rgba(30, 41, 59, 0.5);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
+  background: rgba(16, 185, 129, 0.6);
 }
 
 /* ============================================
