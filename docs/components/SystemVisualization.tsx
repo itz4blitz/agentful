@@ -421,7 +421,11 @@ export function SystemVisualization() {
           textAlign: 'center',
         }}>Why Parallel Execution Matters</h3>
 
-        <div className="comparison-grid">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))',
+          gap: '1.5rem',
+        }}>
           <div style={{
             padding: '1.75rem',
             background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%)',
@@ -453,7 +457,7 @@ export function SystemVisualization() {
             <div style={{
               background: 'rgba(0, 0, 0, 0.3)',
               borderRadius: '8px',
-              padding: '1rem',
+              padding: '0.75rem',
               marginBottom: '1rem',
             }}>
               <WaitingAgent name="Backend" active={true} />
@@ -502,7 +506,7 @@ export function SystemVisualization() {
             <div style={{
               background: 'rgba(0, 0, 0, 0.3)',
               borderRadius: '8px',
-              padding: '1rem',
+              padding: '0.75rem',
               marginBottom: '1rem',
             }}>
               <WaitingAgent name="Backend" active={false} />
@@ -696,8 +700,8 @@ function WaitingAgent({ name, active, waiting = false }: {
     <div style={{
       display: 'flex',
       alignItems: 'center',
-      gap: '0.75rem',
-      padding: '0.75rem',
+      gap: '0.5rem',
+      padding: '0.5rem',
       marginBottom: '0.5rem',
       borderRadius: '6px',
       background: isActive
@@ -709,40 +713,37 @@ function WaitingAgent({ name, active, waiting = false }: {
         ? '1px solid rgba(16, 185, 129, 0.4)'
         : `1px solid ${waiting ? 'rgba(100, 116, 139, 0.2)' : 'rgba(100, 116, 139, 0.3)'}`,
       opacity: waiting ? 0.5 : 1,
-      flexWrap: 'wrap',
     }}>
       <div style={{
-        fontSize: '0.875rem',
+        fontSize: '0.8rem',
         color: isActive ? '#10b981' : waiting ? '#64748b' : '#94a3b8',
         fontWeight: '600',
-        flex: '1 1 auto',
-        minWidth: 'fit-content',
+        flex: 1,
+        minWidth: 0,
       }}>
         {name}
       </div>
       {waiting ? (
         <div style={{
-          fontSize: '0.75rem',
+          fontSize: '0.7rem',
           color: '#64748b',
           fontStyle: 'italic',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem',
-          flex: '0 0 auto',
+          gap: '0.35rem',
           whiteSpace: 'nowrap',
         }}>
           <span>⏸️</span>
-          waiting...
+          waiting
         </div>
       ) : (
         <div style={{
-          fontSize: '0.75rem',
+          fontSize: '0.7rem',
           color: isActive ? '#10b981' : '#94a3b8',
           fontWeight: '600',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem',
-          flex: '0 0 auto',
+          gap: '0.35rem',
           whiteSpace: 'nowrap',
         }}>
           <span>{isActive ? '▶️' : '▶️'}</span>

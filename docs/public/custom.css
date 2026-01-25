@@ -172,7 +172,7 @@ SYSTEM VISUALIZATION STYLES
   gap: 1.5rem;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 480px) {
   .comparison-grid {
     grid-template-columns: 1fr !important;
     gap: 2rem !important;
