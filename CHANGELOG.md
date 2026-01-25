@@ -1,3 +1,19 @@
+# [1.4.0](https://github.com/itz4blitz/agentful/compare/v1.3.0...v1.4.0) (2026-01-25)
+
+
+### Bug Fixes
+
+* improve responsiveness of comparison grid for smaller screens ([050e955](https://github.com/itz4blitz/agentful/commit/050e955716616a12afa42c2c841f3763cd95ce7e))
+* update module description for clarity and accuracy ([531a837](https://github.com/itz4blitz/agentful/commit/531a837d39780a4e502976eee02ccfa87676e464))
+* update references in state validator documentation for clarity ([c42239f](https://github.com/itz4blitz/agentful/commit/c42239fc70daa154d609ec55356c12740b5add06))
+
+
+### Features
+
+* add documentation for /agentful-init command and update navigation links ([ef1c6c5](https://github.com/itz4blitz/agentful/commit/ef1c6c500278b1a057db4ea743cd1f5cd0b8efc0))
+* enhance onboarding and command structure in documentation; add hooks for file creation and health checks ([ee7316d](https://github.com/itz4blitz/agentful/commit/ee7316d105b6c5fcf567832f97e07ec190527d70))
+* enhance responsiveness of comparison and decision grids in CSS ([03cd6b5](https://github.com/itz4blitz/agentful/commit/03cd6b583a17992fcb04e609f29eedb495ba3892))
+
 # [1.3.0](https://github.com/itz4blitz/agentful/compare/v1.2.1...v1.3.0) (2026-01-25)
 
 
