@@ -110,7 +110,7 @@ if (!fs.existsSync(architecturePath)) {
   try {
     const archContent = fs.readFileSync(architecturePath, 'utf8');
     const arch = JSON.parse(archContent);
-    if (!arch.techStack || !arch.domains) {
+    if ((!arch.tech_stack && !arch.techStack) || !arch.domains) {
       console.log('⚠️  .agentful/architecture.json is malformed');
       console.log('   Run /agentful-generate to regenerate');
       warnings++;
