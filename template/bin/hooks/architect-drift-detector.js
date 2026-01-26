@@ -3,13 +3,17 @@
 /**
  * Architect Drift Detector Hook
  *
- * Detects when project changes require architect to re-analyze and update skills/agents.
+ * Intelligently detects when project changes require architect re-analysis.
  *
- * Triggers re-analysis when:
- * - New dependencies added (package.json, requirements.txt, go.mod, etc.)
- * - Tech stack changes (switched frameworks)
- * - New patterns emerge (5+ files violating existing conventions)
- * - Skills are stale (last analysis > 7 days old)
+ * Triggers re-analysis ONLY when:
+ * - Tech stack fundamentally changed (switched frameworks)
+ * - Significant new patterns (20%+ file growth AND 50+ new files)
+ * - Analysis is very stale (>30 days old)
+ *
+ * Does NOT trigger on:
+ * - Minor dependency updates (version bumps)
+ * - Small file additions
+ * - Recent analysis (<30 days ago)
  *
  * Run: After any Write/Edit operation by agents
  * Action: Updates .agentful/architecture.json with needs_reanalysis: true
@@ -53,20 +57,15 @@ function detectArchitectDrift() {
       driftReasons.push('new_patterns_detected');
     }
 
-    // If drift detected, silently mark for re-analysis
-    // Only warn if it's been >7 days since last analysis
+    // If drift detected, evaluate if it's meaningful
     if (driftReasons.length > 0) {
-      markForReanalysis(arch, driftReasons);
-
-      // Only show warning if analysis is stale (>7 days)
-      if (analysisIsStale(arch)) {
-        console.log(`⚠️  Architecture analysis is stale (>7 days old)`);
+      // Only trigger if the drift is significant
+      if (isMeaningfulDrift(driftReasons, arch)) {
+        markForReanalysis(arch, driftReasons);
+        console.log(`⚠️  Architecture changed: ${formatDriftReasons(driftReasons)}`);
         console.log('   Run /agentful-generate to update skills and agents');
         return true;
       }
-
-      // Otherwise just silently update the marker
-      return false;
     }
 
     return false;
@@ -226,6 +225,80 @@ function countFilesRecursive(dir) {
 function hashFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
   return crypto.createHash('md5').update(content).digest('hex');
+}
+
+/**
+ * Determine if drift is meaningful enough to trigger re-analysis
+ *
+ * Meaningful changes:
+ * - New tech stack files (switched frameworks)
+ * - Significant new patterns (20%+ file growth AND 50+ new files)
+ * - Stale analysis (>30 days)
+ *
+ * NOT meaningful:
+ * - Minor dependency updates (version bumps)
+ * - Small file additions
+ * - Recent analysis (<7 days ago)
+ */
+function isMeaningfulDrift(reasons, arch) {
+  // If analysis is stale (>30 days), any drift is meaningful
+  if (analysisIsStale(arch)) {
+    const daysSinceAnalysis = getDaysSinceAnalysis(arch);
+    if (daysSinceAnalysis > 30) {
+      return true;
+    }
+  }
+
+  // Tech stack changes are always meaningful
+  if (reasons.includes('tech_stack_modified')) {
+    return true;
+  }
+
+  // New patterns are meaningful if significant growth
+  if (reasons.includes('new_patterns_detected')) {
+    const currentFileCount = countSourceFiles();
+    const previousFileCount = arch.file_count || 0;
+    const growthRatio = (currentFileCount - previousFileCount) / Math.max(previousFileCount, 1);
+
+    // Only if >20% growth AND at least 50 new files
+    const newFileCount = currentFileCount - previousFileCount;
+    if (growthRatio > 0.2 && newFileCount > 50) {
+      return true;
+    }
+  }
+
+  // Dependency changes alone are NOT meaningful
+  // (version bumps, new libraries don't require architect re-run)
+  if (reasons.includes('dependencies_changed') && reasons.length === 1) {
+    return false;
+  }
+
+  // Combination of factors might be meaningful
+  return false;
+}
+
+/**
+ * Get days since last analysis
+ */
+function getDaysSinceAnalysis(arch) {
+  if (!arch.last_analysis) return 999;
+
+  const lastAnalysis = new Date(arch.last_analysis);
+  return (Date.now() - lastAnalysis.getTime()) / (1000 * 60 * 60 * 24);
+}
+
+/**
+ * Format drift reasons for display
+ */
+function formatDriftReasons(reasons) {
+  const labels = {
+    'dependencies_changed': 'dependencies updated',
+    'tech_stack_modified': 'tech stack changed',
+    'analysis_stale': 'analysis outdated',
+    'new_patterns_detected': 'new code patterns detected'
+  };
+
+  return reasons.map(r => labels[r] || r).join(', ');
 }
 
 /**
