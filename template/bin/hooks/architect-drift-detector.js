@@ -53,12 +53,20 @@ function detectArchitectDrift() {
       driftReasons.push('new_patterns_detected');
     }
 
-    // If drift detected, mark for re-analysis
+    // If drift detected, silently mark for re-analysis
+    // Only warn if it's been >7 days since last analysis
     if (driftReasons.length > 0) {
       markForReanalysis(arch, driftReasons);
-      console.log(`⚠️  Architect drift detected: ${driftReasons.join(', ')}`);
-      console.log('   Run /agentful-generate to update skills and agents');
-      return true;
+
+      // Only show warning if analysis is stale (>7 days)
+      if (analysisIsStale(arch)) {
+        console.log(`⚠️  Architecture analysis is stale (>7 days old)`);
+        console.log('   Run /agentful-generate to update skills and agents');
+        return true;
+      }
+
+      // Otherwise just silently update the marker
+      return false;
     }
 
     return false;
