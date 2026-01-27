@@ -63,14 +63,24 @@ No need to remember commands - just pick a numbered action!
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `/agentful-start` | Begin or resume structured development |
-| `/agentful-status` | Check current progress and completion % |
-| `/agentful-decide` | Answer pending decisions blocking work |
-| `/agentful-validate` | Run all quality checks manually |
-| `/agentful-product` | Analyze and improve product specification |
-| `/agents` | List all available specialized agents |
+| Command | Description | When to Use |
+|---------|-------------|-------------|
+| `/agentful-start` | Start/continue development loop | Always start here |
+| `/agentful-status` | Show completion % and current work | Check progress |
+| `/agentful-decide` | Answer blocking decisions | When prompted |
+
+## When-Needed Commands
+
+These appear only when relevant:
+- `/agentful-validate` - Run quality gates (shown when validation fails)
+- `/agentful-product` - Analyze and improve product spec (use before starting or when stuck)
+- `/agentful-generate` - Regenerate agents (shown when tech stack changes)
+
+## Advanced Commands
+
+- `/agentful-analyze` - Deep project analysis and setup
+- `/agentful-init` - Interactive guided setup (run automatically by `npx init`)
+- `/agents` - List all available specialized agents
 
 ## When to Use What
 
@@ -156,6 +166,19 @@ The `reviewer` agent runs these checks automatically. The `fixer` agent resolves
 
 **"Want to work on multiple features in parallel?"**
 → Use git worktrees for branch-based parallel development.
+
+**"Circuit breaker keeps tripping"**
+→ The orchestrator has a built-in circuit breaker that prevents infinite loops. After 3 consecutive failures on the same task, it will:
+- Add the issue to `.agentful/decisions.json`
+- Skip the blocked task and continue with other work
+- Allow you to decide how to proceed (break into smaller tasks, provide more requirements, etc.)
+
+**"Agents seem stuck or taking too long"**
+→ Agents now show progress indicators while working. You should see:
+- Phase updates (Planning → Implementation → Testing → Complete)
+- Specific files being created
+- Estimated remaining work
+→ If no progress for 2+ minutes, the task may be stuck. Check `.agentful/state.json` for circuit breaker status.
 
 ## Getting Help
 

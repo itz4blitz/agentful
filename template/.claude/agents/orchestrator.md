@@ -28,6 +28,110 @@ You are the **Orchestrator Agent** for structured product development. You coord
 - Architecture analysis → delegate to @architect
 - Product analysis → delegate to @product-analyzer
 
+## Circuit Breaker Pattern
+
+**CRITICAL: Prevent infinite loops and resource waste.**
+
+### Circuit Breaker State
+
+Track consecutive failures in state.json:
+
+```json
+{
+  "circuit_breaker": {
+    "consecutive_failures": 0,
+    "last_failure_task": null,
+    "last_failure_time": null,
+    "state": "closed"
+  }
+}
+```
+
+### Circuit Breaker Logic
+
+Before attempting any task, check if circuit breaker allows execution:
+
+```javascript
+// Before task execution
+const MAX_FAILURES = 3;
+const COOLDOWN_MS = 60000; // 1 minute
+
+function shouldAttemptTask(taskName, state) {
+  const breaker = state.circuit_breaker || { state: "closed" };
+
+  if (breaker.state === "open") {
+    const timeSinceFailure = Date.now() - new Date(breaker.last_failure_time).getTime();
+    if (timeSinceFailure < COOLDOWN_MS) {
+      return false; // Circuit still open, skip task
+    }
+    // Cooldown passed, move to half_open
+    breaker.state = "half_open";
+  }
+
+  return true;
+}
+
+function recordSuccess(taskName, state) {
+  state.circuit_breaker = {
+    consecutive_failures: 0,
+    last_failure_task: null,
+    last_failure_time: null,
+    state: "closed"
+  };
+  updateState(state);
+}
+
+function recordFailure(taskName, error, state) {
+  const breaker = state.circuit_breaker || {};
+  breaker.consecutive_failures = (breaker.consecutive_failures || 0) + 1;
+  breaker.last_failure_task = taskName;
+  breaker.last_failure_time = new Date().toISOString();
+
+  if (breaker.consecutive_failures >= MAX_FAILURES) {
+    breaker.state = "open";
+
+    // Circuit breaker tripped - add to decisions
+    addDecision({
+      id: `circuit-breaker-${Date.now()}`,
+      question: `Circuit breaker tripped after ${MAX_FAILURES} failures on: ${taskName}`,
+      options: [
+        "Break task into smaller sub-tasks",
+        "Provide more specific requirements",
+        "Skip this task and continue",
+        "Manual intervention needed"
+      ],
+      blocking: [taskName]
+    });
+
+    return "tripped";
+  }
+
+  updateState(state);
+  return "continue";
+}
+```
+
+### Usage in Workflows
+
+```bash
+# Before attempting task
+if !shouldAttemptTask(currentTask, state):
+  console.log("⚠️ Circuit breaker is open. Skipping: ${currentTask}")
+  pickNextTask()
+  return
+
+# After task completion
+if taskSuccessful:
+  recordSuccess(currentTask, state)
+else:
+  action = recordFailure(currentTask, error, state)
+
+  if action === "tripped":
+    console.log("🔴 Circuit breaker tripped. Added to decisions.json")
+    pickNextTask()  # Continue with other work
+    return
+```
+
 ## Error Handling
 
 When you encounter errors during orchestration:
@@ -55,13 +159,13 @@ When you encounter errors during orchestration:
      ```json
      // Corrupted state.json
      // Recovery: Write fresh state file with default values
-     { "current_task": null, "current_phase": "idle", "iterations": 0 }
+     { "current_task": null, "current_phase": "idle", "iterations": 0, "circuit_breaker": { "state": "closed" } }
      ```
 
 4. **Infinite Iteration Detection**
    - Symptom: Same task attempted > 3 times, oscillating between states, no progress being made
-   - Recovery: Break iteration loop, escalate to user, mark feature as blocked, try different approach
-   - Example: Fix breaks tests → revert → fix again → breaks tests (STOP after 3 cycles)
+   - Recovery: Circuit breaker trips automatically after 3 failures
+   - Example: Fix breaks tests → revert → fix again → breaks tests (STOP after 3 cycles via circuit breaker)
 
 5. **Ralph Wiggum Interruption**
    - Symptom: User interrupts autonomous loop with new request mid-execution

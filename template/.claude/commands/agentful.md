@@ -170,14 +170,23 @@ npx @itz4blitz/agentful init
 
 ## Commands
 
-| Command | What It Does |
-|---------|--------------|
-| `/agentful-start` | Start structured development loop |
-| `/agentful-status` | Show completion percentage, current work |
-| `/agentful-validate` | Run quality gates (tests, lint, security) |
-| `/agentful-decide` | Answer blocking decisions |
-| `/agentful-product` | Smart product requirements planning and analysis |
-| `/agentful` | Show this reference |
+| Command | What It Does | When to Use |
+|---------|--------------|-------------|
+| `/agentful-start` | Start/continue development loop | Always start here |
+| `/agentful-status` | Show completion % and current work | Check progress |
+| `/agentful-decide` | Answer blocking decisions | When prompted |
+
+## When-Needed Commands
+
+These appear only when relevant:
+- `/agentful-validate` - Run quality gates (shown when validation fails)
+- `/agentful-product` - Analyze and improve product spec (use before starting or when stuck)
+- `/agentful-generate` - Regenerate agents (shown when tech stack changes)
+
+## Advanced Commands
+
+- `/agentful-analyze` - Deep project analysis and setup
+- `/agentful-init` - Interactive guided setup (run automatically by `npx init`)
 
 ### Product Planning (Optional)
 
