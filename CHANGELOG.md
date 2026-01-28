@@ -1,3 +1,23 @@
+# [1.5.0](https://github.com/itz4blitz/agentful/compare/v1.4.1...v1.5.0) (2026-01-28)
+
+
+### Bug Fixes
+
+* add language specifiers to MCP code blocks in agent files ([a6a9edd](https://github.com/itz4blitz/agentful/commit/a6a9edd4af15d2b4a841a1a8956c5b0305a37a96))
+* add missing hooks to template directory ([f304e06](https://github.com/itz4blitz/agentful/commit/f304e0692773cce9989a1c6c94ecbee80576ffa1))
+* include schema.sql in MCP server build ([28a4433](https://github.com/itz4blitz/agentful/commit/28a4433c8272485fd159221252bcd22313768f2a))
+* support both snake_case and camelCase in architecture.json health check ([1b6cd4d](https://github.com/itz4blitz/agentful/commit/1b6cd4d21c8637da6e401f1372b28ed7e3435537))
+
+
+### Features
+
+* add circuit breaker pattern and UX improvements ([5789487](https://github.com/itz4blitz/agentful/commit/5789487537cc17a6c59491b244f3ef213932e254))
+* Add integration and unit tests for MCP server and related components ([57b71eb](https://github.com/itz4blitz/agentful/commit/57b71eb9a5967089b83c322c2b188e177fabe2b7))
+* detect NEW libraries (not just version changes) for skill generation ([fcd8f86](https://github.com/itz4blitz/agentful/commit/fcd8f86ef35a1a2f9f9ba26796b6bb39fdb58867))
+* integrate MCP server with agentful agents ([d9d7943](https://github.com/itz4blitz/agentful/commit/d9d794346b15419221c37662022aa3947c432211))
+* make architect drift detector smarter and less noisy ([9dcd18e](https://github.com/itz4blitz/agentful/commit/9dcd18e14d68a6ec421c1dfb4d7f0ee3ccc78bd5))
+* make architect drift detector truly useful with smart filtering ([80d36b7](https://github.com/itz4blitz/agentful/commit/80d36b71bc6782832fe8e5b2000bda0c5cf4fa99))
+
 ## [1.4.1](https://github.com/itz4blitz/agentful/compare/v1.4.0...v1.4.1) (2026-01-28)
 
 
