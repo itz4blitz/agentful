@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/itz4blitz/agentful/compare/v1.5.0...v1.5.1) (2026-01-28)
+
+
+### Bug Fixes
+
+* correct hook paths from .claude/hooks to bin/hooks ([c616f2a](https://github.com/itz4blitz/agentful/commit/c616f2a91c5c2f69a7f32c0a936a94141b956cb2))
+
 # [1.5.0](https://github.com/itz4blitz/agentful/compare/v1.4.1...v1.5.0) (2026-01-28)
 
 
