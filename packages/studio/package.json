@@ -1,0 +1,50 @@
+{
+  "name": "@agentful/studio",
+  "version": "0.0.1",
+  "description": "Agentful Studio - VS Code Extension",
+  "main": "./extension.ts",
+  "publisher": "agentful",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "activationEvents": [
+    "onCommand:agentful.openStudio"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentful.openStudio",
+        "title": "Open Agentful Studio",
+        "category": "Agentful"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "agentfulStudio",
+          "title": "Agentful Studio",
+          "icon": "media/agentful-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "agentfulStudio": [
+        {
+          "type": "webview",
+          "id": "agentfulStudioView",
+          "name": "Studio",
+          "contextualTitle": "Agentful Studio"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  }
+}
