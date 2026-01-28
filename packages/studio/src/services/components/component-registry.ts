@@ -5,11 +5,15 @@
 
 import type { ComponentTemplate, ComponentCategory } from '@/types/components';
 import { CATEGORY_INFO } from '@/types/components';
+import { SHADCN_COMPONENTS } from './shadcn-registry';
 
 /**
  * Pre-defined component templates
  */
 const COMPONENT_TEMPLATES: ComponentTemplate[] = [
+  // ShadCN UI Components
+  ...SHADCN_COMPONENTS,
+
   // Layout Components
   {
     id: 'container',
@@ -148,94 +152,6 @@ const COMPONENT_TEMPLATES: ComponentTemplate[] = [
 </blockquote>`,
   },
 
-  // Form Components
-  {
-    id: 'input-text',
-    name: 'Text Input',
-    description: 'Standard text input field',
-    category: 'forms',
-    tags: ['input', 'form', 'text'],
-    icon: 'type',
-    html: `<input type="text" placeholder="Enter text..." style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; width: 100%; box-sizing: border-box;" />`,
-  },
-  {
-    id: 'input-email',
-    name: 'Email Input',
-    description: 'Email input field',
-    category: 'forms',
-    tags: ['input', 'form', 'email'],
-    icon: 'mail',
-    html: `<input type="email" placeholder="your@email.com" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; width: 100%; box-sizing: border-box;" />`,
-  },
-  {
-    id: 'textarea',
-    name: 'Textarea',
-    description: 'Multi-line text input',
-    category: 'forms',
-    tags: ['textarea', 'form', 'text'],
-    icon: 'align-left',
-    html: `<textarea placeholder="Enter your message..." rows="4" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; width: 100%; box-sizing: border-box; font-family: inherit; resize: vertical;"></textarea>`,
-  },
-  {
-    id: 'select',
-    name: 'Select',
-    description: 'Dropdown select field',
-    category: 'forms',
-    tags: ['select', 'dropdown', 'form'],
-    icon: 'chevron-down',
-    html: `<select style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; width: 100%; box-sizing: border-box;">
-  <option>Option 1</option>
-  <option>Option 2</option>
-  <option>Option 3</option>
-</select>`,
-  },
-  {
-    id: 'checkbox',
-    name: 'Checkbox',
-    description: 'Checkbox input',
-    category: 'forms',
-    tags: ['checkbox', 'form', 'input'],
-    icon: 'square',
-    html: `<label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-  <input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;" />
-  <span>Check this option</span>
-</label>`,
-  },
-  {
-    id: 'radio',
-    name: 'Radio Button',
-    description: 'Radio button input',
-    category: 'forms',
-    tags: ['radio', 'form', 'input'],
-    icon: 'circle',
-    html: `<label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-  <input type="radio" name="radio-group" style="width: 18px; height: 18px; cursor: pointer;" />
-  <span>Radio option</span>
-</label>`,
-  },
-  {
-    id: 'button-primary',
-    name: 'Primary Button',
-    description: 'Primary action button',
-    category: 'forms',
-    tags: ['button', 'form', 'action'],
-    icon: 'mouse-pointer-2',
-    html: `<button type="button" style="background-color: #0066cc; color: white; padding: 10px 20px; border: none; border-radius: 4px; font-size: 1rem; cursor: pointer; transition: background-color 0.2s;">
-  Click Me
-</button>`,
-  },
-  {
-    id: 'button-secondary',
-    name: 'Secondary Button',
-    description: 'Secondary action button',
-    category: 'forms',
-    tags: ['button', 'form', 'action'],
-    icon: 'mouse-pointer-2',
-    html: `<button type="button" style="background-color: #f0f0f0; color: #333; padding: 10px 20px; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; cursor: pointer; transition: background-color 0.2s;">
-  Cancel
-</button>`,
-  },
-
   // Navigation Components
   {
     id: 'navbar',
@@ -287,24 +203,6 @@ const COMPONENT_TEMPLATES: ComponentTemplate[] = [
   </ol>
 </nav>`,
   },
-  {
-    id: 'tabs',
-    name: 'Tabs',
-    description: 'Tab navigation',
-    category: 'navigation',
-    tags: ['tabs', 'nav', 'navigation'],
-    icon: 'columns',
-    html: `<div>
-  <div style="display: flex; gap: 4px; border-bottom: 1px solid #ddd;">
-    <button style="padding: 10px 20px; border: none; background-color: #0066cc; color: white; cursor: pointer; border-radius: 4px 4px 0 0;">Tab 1</button>
-    <button style="padding: 10px 20px; border: none; background-color: #f0f0f0; color: #333; cursor: pointer;">Tab 2</button>
-    <button style="padding: 10px 20px; border: none; background-color: #f0f0f0; color: #333; cursor: pointer;">Tab 3</button>
-  </div>
-  <div style="padding: 20px;">
-    Tab content goes here
-  </div>
-</div>`,
-  },
 
   // Data Display Components
   {
@@ -350,29 +248,6 @@ const COMPONENT_TEMPLATES: ComponentTemplate[] = [
 </ul>`,
   },
   {
-    id: 'card',
-    name: 'Card',
-    description: 'Content card with shadow',
-    category: 'data-display',
-    tags: ['card', 'container', 'box'],
-    icon: 'square',
-    html: `<div style="background-color: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-  <h3 style="margin: 0 0 10px 0; font-size: 1.2rem;">Card Title</h3>
-  <p style="margin: 0; color: #666;">Card content goes here.</p>
-</div>`,
-  },
-  {
-    id: 'badge',
-    name: 'Badge',
-    description: 'Small status badge',
-    category: 'data-display',
-    tags: ['badge', 'tag', 'label'],
-    icon: 'badge',
-    html: `<span style="display: inline-block; padding: 4px 12px; background-color: #0066cc; color: white; border-radius: 12px; font-size: 0.85rem; font-weight: 500;">
-  Badge
-</span>`,
-  },
-  {
     id: 'avatar',
     name: 'Avatar',
     description: 'User avatar image',
@@ -382,86 +257,6 @@ const COMPONENT_TEMPLATES: ComponentTemplate[] = [
     html: `<div style="width: 40px; height: 40px; border-radius: 50%; background-color: #ddd; display: flex; align-items: center; justify-content: center; overflow: hidden;">
   <img src="https://via.placeholder.com/40" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" />
 </div>`,
-  },
-
-  // Feedback Components
-  {
-    id: 'alert-info',
-    name: 'Info Alert',
-    description: 'Informational alert',
-    category: 'feedback',
-    tags: ['alert', 'info', 'message'],
-    icon: 'info',
-    html: `<div style="padding: 16px; background-color: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px; margin: 16px 0;">
-  <p style="margin: 0; color: #0d47a1;">
-    <strong>Info:</strong> This is an informational message.
-  </p>
-</div>`,
-  },
-  {
-    id: 'alert-success',
-    name: 'Success Alert',
-    description: 'Success alert message',
-    category: 'feedback',
-    tags: ['alert', 'success', 'message'],
-    icon: 'check-circle',
-    html: `<div style="padding: 16px; background-color: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 4px; margin: 16px 0;">
-  <p style="margin: 0; color: #1b5e20;">
-    <strong>Success:</strong> Your changes have been saved.
-  </p>
-</div>`,
-  },
-  {
-    id: 'alert-warning',
-    name: 'Warning Alert',
-    description: 'Warning alert message',
-    category: 'feedback',
-    tags: ['alert', 'warning', 'message'],
-    icon: 'alert-triangle',
-    html: `<div style="padding: 16px; background-color: #fff3e0; border-left: 4px solid #ff9800; border-radius: 4px; margin: 16px 0;">
-  <p style="margin: 0; color: #e65100;">
-    <strong>Warning:</strong> Please review before proceeding.
-  </p>
-</div>`,
-  },
-  {
-    id: 'alert-error',
-    name: 'Error Alert',
-    description: 'Error alert message',
-    category: 'feedback',
-    tags: ['alert', 'error', 'message'],
-    icon: 'alert-circle',
-    html: `<div style="padding: 16px; background-color: #ffebee; border-left: 4px solid #f44336; border-radius: 4px; margin: 16px 0;">
-  <p style="margin: 0; color: #b71c1c;">
-    <strong>Error:</strong> Something went wrong.
-  </p>
-</div>`,
-  },
-  {
-    id: 'progress-bar',
-    name: 'Progress Bar',
-    description: 'Progress indicator',
-    category: 'feedback',
-    tags: ['progress', 'loading', 'bar'],
-    icon: 'bar-chart',
-    html: `<div style="width: 100%; height: 8px; background-color: #f0f0f0; border-radius: 4px; overflow: hidden; margin: 16px 0;">
-  <div style="width: 60%; height: 100%; background-color: #0066cc; transition: width 0.3s;"></div>
-</div>`,
-  },
-  {
-    id: 'spinner',
-    name: 'Spinner',
-    description: 'Loading spinner',
-    category: 'feedback',
-    tags: ['spinner', 'loading', 'animation'],
-    icon: 'loader',
-    html: `<div style="display: inline-block; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #0066cc; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-<style>
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-</style>`,
   },
 
   // Media Components
@@ -498,64 +293,6 @@ const COMPONENT_TEMPLATES: ComponentTemplate[] = [
   <img src="https://via.placeholder.com/150" alt="Gallery 2" style="width: 100%; border-radius: 4px;" />
   <img src="https://via.placeholder.com/150" alt="Gallery 3" style="width: 100%; border-radius: 4px;" />
   <img src="https://via.placeholder.com/150" alt="Gallery 4" style="width: 100%; border-radius: 4px;" />
-</div>`,
-  },
-
-  // Overlay Components
-  {
-    id: 'modal',
-    name: 'Modal',
-    description: 'Modal dialog overlay',
-    category: 'overlays',
-    tags: ['modal', 'dialog', 'overlay'],
-    icon: 'square',
-    html: `<div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
-  <div style="background-color: white; padding: 24px; border-radius: 8px; max-width: 500px; width: 90%; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-    <h2 style="margin: 0 0 16px 0; font-size: 1.5rem;">Modal Title</h2>
-    <p style="margin: 0 0 20px 0;">Modal content goes here.</p>
-    <div style="display: flex; gap: 10px; justify-content: flex-end;">
-      <button style="padding: 8px 16px; border: 1px solid #ccc; background-color: white; border-radius: 4px; cursor: pointer;">Cancel</button>
-      <button style="padding: 8px 16px; border: none; background-color: #0066cc; color: white; border-radius: 4px; cursor: pointer;">Confirm</button>
-    </div>
-  </div>
-</div>`,
-  },
-  {
-    id: 'tooltip',
-    name: 'Tooltip',
-    description: 'Hover tooltip',
-    category: 'overlays',
-    tags: ['tooltip', 'popover', 'hint'],
-    icon: 'help-circle',
-    html: `<div style="display: inline-block; position: relative;">
-  <button style="padding: 8px 16px; background-color: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer;">
-    Hover me
-  </button>
-  <div style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background-color: #333; color: white; padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; white-space: nowrap; margin-bottom: 8px;">
-    Tooltip text
-    <div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: #333;"></div>
-  </div>
-</div>`,
-  },
-  {
-    id: 'dropdown',
-    name: 'Dropdown',
-    description: 'Dropdown menu',
-    category: 'overlays',
-    tags: ['dropdown', 'menu', 'select'],
-    icon: 'chevron-down',
-    html: `<div style="display: inline-block; position: relative;">
-  <button style="padding: 10px 16px; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-    Options
-    <svg width="12" height="12" viewBox="0 0 12 12">
-      <path d="M2 4l4 4 4-4" stroke="currentColor" fill="none" stroke-width="2"/>
-    </svg>
-  </button>
-  <div style="position: absolute; top: 100%; left: 0; margin-top: 4px; background-color: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 150px; z-index: 100;">
-    <a href="#" style="display: block; padding: 10px 16px; text-decoration: none; color: #333; transition: background-color 0.2s;">Option 1</a>
-    <a href="#" style="display: block; padding: 10px 16px; text-decoration: none; color: #333; transition: background-color 0.2s;">Option 2</a>
-    <a href="#" style="display: block; padding: 10px 16px; text-decoration: none; color: #333; transition: background-color 0.2s;">Option 3</a>
-  </div>
 </div>`,
   },
 ];
