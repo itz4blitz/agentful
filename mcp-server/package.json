@@ -8,7 +8,7 @@
     "agentful-mcp-server": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc && cp node_modules/sql.js/dist/sql-wasm.wasm dist/infrastructure/",
+    "build": "tsc && cp node_modules/sql.js/dist/sql-wasm.wasm dist/infrastructure/ && cp schema.sql dist/",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
