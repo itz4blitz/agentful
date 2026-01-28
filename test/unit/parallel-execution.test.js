@@ -39,6 +39,36 @@ describe('Parallel Execution', () => {
       expect(result.reason).toContain('binary not found');
     });
 
+    it('should detect native Mach-O binary and skip patching', () => {
+      execSync.mockImplementation((cmd) => {
+        if (cmd.includes('npm root -g')) {
+          return '/usr/local/lib/node_modules\n';
+        }
+        if (cmd.includes('which') || cmd.includes('where')) {
+          return '/usr/local/bin/claude\n';
+        }
+        throw new Error('Unexpected command');
+      });
+
+      fs.existsSync.mockReturnValue(true);
+      fs.realpathSync.mockImplementation((p) => p);
+      fs.openSync.mockReturnValue(42);
+      fs.readSync.mockImplementation((fd, buffer) => {
+        buffer[0] = 0xcf;
+        buffer[1] = 0xfa;
+        buffer[2] = 0xed;
+        buffer[3] = 0xfe;
+        return 4;
+      });
+      fs.closeSync.mockReturnValue(undefined);
+
+      const result = detectTeammateTool();
+
+      expect(result.available).toBe(false);
+      expect(result.reason).toContain('Native binary');
+      expect(result.isNative).toBe(true);
+    });
+
     it('should detect when TeammateTool code is not present (old version)', () => {
       // Mock execSync completely - no real calls
       execSync.mockImplementation((cmd) => {
@@ -127,6 +157,35 @@ describe('Parallel Execution', () => {
   });
 
   describe('enableTeammateTool', () => {
+    it('should reject native Mach-O binary', () => {
+      execSync.mockImplementation((cmd) => {
+        if (cmd.includes('npm root -g')) {
+          return '/usr/local/lib/node_modules\n';
+        }
+        if (cmd.includes('which') || cmd.includes('where')) {
+          return '/usr/local/bin/claude\n';
+        }
+        throw new Error('Unexpected command');
+      });
+
+      fs.existsSync.mockReturnValue(true);
+      fs.realpathSync.mockImplementation((p) => p);
+      fs.openSync.mockReturnValue(42);
+      fs.readSync.mockImplementation((fd, buffer) => {
+        buffer[0] = 0xcf;
+        buffer[1] = 0xfa;
+        buffer[2] = 0xed;
+        buffer[3] = 0xfe;
+        return 4;
+      });
+      fs.closeSync.mockReturnValue(undefined);
+
+      const result = enableTeammateTool();
+
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Native binary');
+    });
+
     it('should create backup before patching', () => {
       execSync.mockReturnValue('/usr/local/lib/node_modules');
       fs.existsSync.mockReturnValue(true);
