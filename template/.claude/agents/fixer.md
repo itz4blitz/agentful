@@ -166,8 +166,18 @@ Read issues from `.agentful/last-validation.json`:
 
 1. **Detect stack** (see Step 1)
 2. **Read validation report** from `.agentful/last-validation.json`
-3. **Categorize issues** by type (dead code, coverage, security, etc.)
-4. **Fix issues in order of safety**:
+3. **Check MCP Vector DB for known fixes** (if available):
+   ```
+   Try MCP tool: find_patterns
+   - query: <exact error message from validation report>
+   - tech_stack: <detected tech stack>
+   - limit: 3
+   ```
+   - Review patterns with success_rate > 0.7
+   - Select highest success_rate fix
+   - If no results or tool unavailable: Continue to manual fix
+4. **Categorize issues** by type (dead code, coverage, security, etc.)
+5. **Fix issues in order of safety**:
    - Remove debug statements (safest)
    - Fix lint errors (safe)
    - Remove unused imports (safe)
@@ -175,11 +185,27 @@ Read issues from `.agentful/last-validation.json`:
    - Remove unused exports (higher risk - verify usage)
    - Add tests for coverage (safe but time-consuming)
    - Remove unused files (highest risk - verify carefully)
-5. **After each fix, verify**:
+6. **After each fix, verify**:
    - Code still compiles
    - Tests still pass (if applicable)
    - No new issues introduced
-6. **Report to orchestrator**:
+7. **Store successful fixes** (if MCP available):
+   ```
+   Try MCP tool: store_pattern
+   - code: <fix code that worked>
+   - tech_stack: <detected tech stack>
+   - error: <error message that was fixed>
+   ```
+   - Stores as error fix for future matching
+   - If tool unavailable: Continue (MCP is optional)
+8. **Provide feedback** (if MCP available):
+   ```
+   Try MCP tool: add_feedback
+   - pattern_id: <id from step 3 or 7>
+   - success: true/false
+   ```
+   - Updates success rate of used patterns
+9. **Report to orchestrator**:
    - Issues fixed
    - Issues unable to fix (escalate)
    - Recommendation to re-run @reviewer

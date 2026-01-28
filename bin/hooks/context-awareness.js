@@ -72,7 +72,7 @@ export function analyzeProjectState(projectRoot = process.cwd()) {
 
     if (arch) {
       // Validate architecture structure
-      if (!arch.techStack || !arch.agents) {
+      if (!arch.techStack || (!arch.agents && !arch.generatedAgents)) {
         state.architectureValid = false;
         state.architectureIssues.push('Missing techStack or agents fields');
       }

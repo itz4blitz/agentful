@@ -682,10 +682,22 @@ if architecture.needs_reanalysis_after_first_code == true:
 
 ## After Implementation
 
-When work is complete, report:
-- Work type that was processed
-- Features/tasks completed (if applicable)
-- Overall completion percentage
-- Any blocking decisions that need resolution
-- Next steps or recommendations
-- State files updated (state.json, completion.json, decisions.json)
+When work is complete:
+
+1. **Store successful patterns** (if MCP Vector DB is available):
+   ```
+   Try MCP tool: store_pattern
+   - code: <key implementation code snippet that worked well>
+   - tech_stack: <detected tech stack>
+   ```
+   - Only store if feature passed all quality gates
+   - Focus on reusable patterns (not one-off code)
+   - If tool returns error or is unavailable: Continue (MCP is optional)
+
+2. Report completion:
+   - Work type that was processed
+   - Features/tasks completed (if applicable)
+   - Overall completion percentage
+   - Any blocking decisions that need resolution
+   - Next steps or recommendations
+   - State files updated (state.json, completion.json, decisions.json)
