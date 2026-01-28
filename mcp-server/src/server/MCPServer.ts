@@ -21,8 +21,9 @@ import {
 
 /**
  * MCP Server for agentful Pattern Learning
- * - 3 tools: store_pattern, find_patterns, add_feedback
+ * - 6 tools: store_pattern, find_patterns, add_feedback, get_canvas_state, get_element_context, broadcast_canvas
  * - Unified storage for patterns and error fixes
+ * - Canvas state management for visual editor
  * - Graceful error handling
  */
 export class AgentfulMCPServer {
@@ -120,6 +121,48 @@ export class AgentfulMCPServer {
             }
           },
           required: ['pattern_id', 'success']
+        }
+      },
+      {
+        name: 'get_canvas_state',
+        description: 'Get current canvas state for a project',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectId: {
+              type: 'string',
+              description: 'Project identifier'
+            }
+          },
+          required: ['projectId']
+        }
+      },
+      {
+        name: 'get_element_context',
+        description: 'Get specific element context from canvas',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            elementId: {
+              type: 'string',
+              description: 'Element identifier'
+            }
+          },
+          required: ['elementId']
+        }
+      },
+      {
+        name: 'broadcast_canvas',
+        description: 'Broadcast canvas changes to connected clients',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            canvasState: {
+              type: 'object',
+              description: 'Current canvas state to broadcast'
+            }
+          },
+          required: ['canvasState']
         }
       }
     ];
@@ -235,6 +278,36 @@ export class AgentfulMCPServer {
         case 'add_feedback': {
           const input = this.validateAddFeedbackInput(args);
           const result = await this.handleAddFeedback(input);
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify(result)
+            }]
+          };
+        }
+
+        case 'get_canvas_state': {
+          const result = await this.handleGetCanvasState(args);
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify(result)
+            }]
+          };
+        }
+
+        case 'get_element_context': {
+          const result = await this.handleGetElementContext(args);
+          return {
+            content: [{
+              type: 'text',
+              text: JSON.stringify(result)
+            }]
+          };
+        }
+
+        case 'broadcast_canvas': {
+          const result = await this.handleBroadcastCanvas(args);
           return {
             content: [{
               type: 'text',
@@ -411,6 +484,70 @@ export class AgentfulMCPServer {
    */
   async stop(): Promise<void> {
     await this.server.close();
+  }
+
+  /**
+   * Handle get_canvas_state tool
+   */
+  private async handleGetCanvasState(args: Record<string, unknown>): Promise<{
+    elements: unknown[];
+    selectedElement: unknown;
+    theme: unknown;
+  }> {
+    const { projectId } = args;
+
+    if (typeof projectId !== 'string') {
+      throw new Error('projectId must be a string');
+    }
+
+    // TODO: Implement actual canvas state retrieval
+    return {
+      elements: [],
+      selectedElement: null,
+      theme: null
+    };
+  }
+
+  /**
+   * Handle get_element_context tool
+   */
+  private async handleGetElementContext(args: Record<string, unknown>): Promise<{
+    element: unknown;
+    props: unknown;
+    styles: unknown;
+    position: unknown;
+  }> {
+    const { elementId } = args;
+
+    if (typeof elementId !== 'string') {
+      throw new Error('elementId must be a string');
+    }
+
+    // TODO: Implement actual element context retrieval
+    return {
+      element: null,
+      props: {},
+      styles: {},
+      position: null
+    };
+  }
+
+  /**
+   * Handle broadcast_canvas tool
+   */
+  private async handleBroadcastCanvas(args: Record<string, unknown>): Promise<{
+    success: boolean;
+  }> {
+    const { canvasState } = args;
+
+    if (!canvasState || typeof canvasState !== 'object') {
+      throw new Error('canvasState must be an object');
+    }
+
+    // TODO: Implement actual canvas broadcasting
+    return {
+      success: true
+    };
   }
 
   /**

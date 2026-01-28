@@ -1,0 +1,3 @@
+# agentful Monorepo Workspace Configuration
+packages:
+  - 'packages/*'
