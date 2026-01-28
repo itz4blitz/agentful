@@ -129,6 +129,65 @@ The `reviewer` agent runs these checks. The `fixer` agent resolves failures.
 
 ## Configuration
 
+### MCP Server (Highly Recommended ⭐)
+
+The **agentful MCP Server** enables pattern learning and error fix reuse across all your projects. It's **highly recommended** for optimal performance.
+
+**What it does:**
+- 🔄 Stores successful code patterns for reuse
+- 🧠 Learns from error fixes across projects
+- 📈 Improves over time with feedback
+- ⚡ Faster fixes by finding known solutions
+
+**Enable MCP Server (Simple Method):**
+
+Run this command to add the MCP server to Claude Code:
+
+```bash
+# For Claude Desktop
+claude mcp add npx @itz4blitz/agentful-mcp-server
+
+# Or for Cline (VS Code)
+# Add to MCP settings: npx @itz4blitz/agentful-mcp-server
+```
+
+**Enable MCP Server (Manual Method):**
+
+If the simple method doesn't work, configure manually:
+
+1. **Find your Claude Code config:**
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+   - Linux: `~/.config/Claude/claude_desktop_config.json`
+
+2. **Add the MCP server:**
+   ```json
+   {
+     "mcpServers": {
+       "agentful": {
+         "command": "npx",
+         "args": ["-y", "@itz4blitz/agentful-mcp-server"]
+       }
+     }
+   }
+   ```
+
+3. **Restart Claude Code** to load the MCP server
+
+4. **Verify it's working:**
+   - Start a new Claude Code session
+   - You should see MCP tools available in agent interactions
+
+**Benefits:**
+- Fixer agent finds known error fixes instantly
+- Backend/frontend agents reuse successful patterns
+- Continuous learning from all your projects
+- Reduces repetitive problem-solving
+
+**Without MCP:** Agents work normally but can't learn from past solutions.
+
+**With MCP:** Agents get smarter with every project.
+
 ### File Creation Protection Hooks
 
 By default, agentful blocks creation of random files to keep your codebase clean and prevent littering.
