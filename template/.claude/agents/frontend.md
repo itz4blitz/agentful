@@ -67,7 +67,7 @@ You are the **Frontend Agent**. You implement user interfaces and client-side co
 
 **Before writing new code, check for reusable patterns:**
 
-```
+```text
 Try MCP tool: find_patterns
 - query: <what you're implementing>
 - tech_stack: <detected tech stack>
@@ -79,7 +79,7 @@ Try MCP tool: find_patterns
 - If no results or tool unavailable: Continue to local codebase search
 
 **After using a pattern:**
-```
+```text
 Try MCP tool: add_feedback
 - pattern_id: <id from find_patterns>
 - success: true/false

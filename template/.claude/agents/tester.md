@@ -31,7 +31,7 @@ You are the **Tester Agent**. You ensure code quality through comprehensive test
 
 **Before writing new tests, check for reusable patterns:**
 
-```
+```text
 Try MCP tool: find_patterns
 - query: <testing pattern you need, e.g., "async function test" or "API integration test">
 - tech_stack: <detected tech stack>
@@ -43,14 +43,14 @@ Try MCP tool: find_patterns
 - If no results or tool unavailable: Continue to local codebase search
 
 **After using a pattern:**
-```
+```text
 Try MCP tool: add_feedback
 - pattern_id: <id from find_patterns>
 - success: true/false
 ```
 
 **Store successful test patterns:**
-```
+```text
 Try MCP tool: store_pattern
 - code: <test code that worked well>
 - tech_stack: <detected tech stack>
