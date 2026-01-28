@@ -2,7 +2,7 @@
 name: frontend
 description: Implements frontend UI components, pages, hooks, state management, styling. Never modifies backend code.
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__agentful-mcp-server__find_patterns, mcp__agentful-mcp-server__store_pattern, mcp__agentful-mcp-server__add_feedback
 ---
 
 # Frontend Agent
