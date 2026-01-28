@@ -15,20 +15,50 @@ This MCP server enables Claude Code to learn from successful code patterns and e
 
 ## Installation
 
+### Option 1: Via Claude Code MCP (Recommended)
+
+```bash
+/mcp add npx @itz4blitz/agentful-mcp-server
+```
+
+### Option 2: Manual Installation
+
 ```bash
 npm install @itz4blitz/agentful-mcp-server
 ```
 
 ## Configuration
 
-Add to your Claude Code MCP configuration (`.claude/settings.json`):
+### Automatic Configuration (Recommended)
 
+When using with agentful, the MCP server is automatically configured during `npx @itz4blitz/agentful init`.
+
+### Manual Configuration
+
+Add to your Claude Code MCP configuration (`.claude/config.json`):
+
+**Using npx (easiest):**
+```json
+{
+  "mcpServers": {
+    "agentful-patterns": {
+      "command": "npx",
+      "args": ["-y", "@itz4blitz/agentful-mcp-server"],
+      "env": {
+        "AGENTFUL_LOG_LEVEL": "debug"
+      }
+    }
+  }
+}
+```
+
+**Using local installation:**
 ```json
 {
   "mcpServers": {
     "agentful-patterns": {
       "command": "node",
-      "args": ["/path/to/node_modules/@itz4blitz/agentful-mcp-server/dist/index.js"],
+      "args": ["./node_modules/@itz4blitz/agentful-mcp-server/dist/index.js"],
       "env": {
         "AGENTFUL_LOG_LEVEL": "debug"
       }
