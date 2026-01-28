@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/itz4blitz/agentful/compare/v1.4.0...v1.4.1) (2026-01-28)
+
+
+### Bug Fixes
+
+* prevent corruption of native Claude Code binary on macOS ([29d1573](https://github.com/itz4blitz/agentful/commit/29d157337df04e6914e92fe1c14fef89e53ac8b3))
+
 # [1.4.0](https://github.com/itz4blitz/agentful/compare/v1.3.0...v1.4.0) (2026-01-25)
 
 
