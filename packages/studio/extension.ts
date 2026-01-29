@@ -116,6 +116,33 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.window.showInformationMessage('Agentful Studio webviews reloaded');
     });
 
+    // Setup hot reload in development mode
+    const isDevMode = context.extensionMode === vscode.ExtensionMode.Development;
+    if (isDevMode) {
+      outputChannel.appendLine('🔥 Hot reload enabled (development mode)');
+      
+      // Watch dist folder for changes
+      const distWatcher = vscode.workspace.createFileSystemWatcher(
+        new vscode.RelativePattern(context.extensionUri, 'dist/assets/*.{js,css}')
+      );
+      
+      let reloadTimeout: NodeJS.Timeout | undefined;
+      
+      const triggerReload = () => {
+        // Debounce reloads
+        if (reloadTimeout) clearTimeout(reloadTimeout);
+        reloadTimeout = setTimeout(() => {
+          outputChannel.appendLine('🔄 Assets changed, reloading webviews...');
+          vscode.commands.executeCommand('agentful.studio.reloadWebview');
+        }, 300);
+      };
+      
+      distWatcher.onDidChange(triggerReload);
+      distWatcher.onDidCreate(triggerReload);
+      
+      context.subscriptions.push(distWatcher);
+    }
+
     context.subscriptions.push(openCommand, openIntegrationHubCommand, rescanCommand, reloadCommand);
     context.subscriptions.push(outputChannel);
 

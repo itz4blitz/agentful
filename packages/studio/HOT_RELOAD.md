@@ -1,120 +1,132 @@
 # Hot Reload Development Guide
 
+## Overview
+
+For VS Code extension development, you work across **two VS Code windows**:
+1. **Main Window** - Where you edit code (the workspace)
+2. **Extension Host** - The new VS Code window that opens when you debug (where the extension runs)
+
+Hot reload works by watching the `dist/` folder and auto-reloading webviews when files change.
+
 ## Quick Start (Recommended)
 
-### Option 1: VS Code Launch Configurations (Easiest)
+### Option 1: Using the Workspace (Easiest)
 
-1. Open VS Code in the `packages/studio` folder
-2. Press `F5` or go to **Run & Debug** panel
-3. Select **"Run Extension (Debug + Watch)"**
-4. This will:
-   - Start TypeScript watch mode for extension code
-   - Start Vite watch mode for webview (React) code
-   - Launch Extension Development Host
+1. **Open the workspace** from project root:
+   ```bash
+   code agentful.code-workspace
+   ```
 
-### Option 2: Manual Watch Mode
+2. **In the workspace VS Code**, open a terminal and run:
+   ```bash
+   cd packages/studio
+   npm run watch:dev
+   ```
+   This builds the extension once, then watches webview files for changes.
 
+3. **Press F5** to start debugging (or Run → Start Debugging)
+   - This opens a NEW VS Code window (Extension Development Host)
+   - The extension is now running in this new window
+
+4. **Make edits** to files in `packages/studio/src/`
+   - Vite automatically rebuilds
+   - Extension auto-reloads webviews (debounced 300ms)
+
+### Option 2: Manual Steps
+
+**Terminal 1** - Watch webview files:
 ```bash
 cd packages/studio
-
-# Terminal 1: Watch extension TypeScript
-npm run watch:extension
-
-# Terminal 2: Watch webview React
 npm run watch:webview
-
-# Terminal 3: Launch VS Code with extension
-npm run dev:extension
 ```
 
-## Reloading Changes
+**VS Code** - Launch debugger:
+- Press F5 (or Run → Start Debugging)
 
-### Webview (React) Changes
-When you save a `.tsx` file in `src/`:
-- Vite automatically rebuilds
-- Press **Cmd+Shift+R** (or run `Agentful: Reload Webview` command)
-- Webview refreshes instantly - no IDE restart needed!
+## How It Works
 
-### Extension (TypeScript) Changes  
-When you save a `.ts` file in `vscode/` or `extension.ts`:
-- TypeScript watch rebuilds automatically
-- **Extension Development Host needs restart** (Cmd+R or Stop/Start debug)
-- This is a VS Code limitation - extension code requires restart
+```
+You edit → Vite rebuilds → Extension detects change → Webview reloads
+     ↓              ↓                    ↓                  ↓
+src/*.tsx    dist/assets/*.js    FileSystemWatcher    webview.html = ...
+```
+
+The extension watches `dist/assets/*.{js,css}` for changes and automatically calls `reloadWebview`.
 
 ## Keyboard Shortcuts
 
-| Key | Command |
-|-----|---------|
-| `Cmd+Shift+R` | Reload Webview |
-| `F5` | Start Debugging |
-| `Shift+Cmd+F5` | Restart Debugging |
+In the **Extension Development Host** (the new VS Code window):
+
+| Key | Action |
+|-----|--------|
+| `Cmd+Shift+R` | Manual reload webview |
+| `Cmd+R` | Restart Extension Host |
 
 ## Available Commands
 
-Open Command Palette (`Cmd+Shift+P`) and type "Agentful":
+In the Command Palette (`Cmd+Shift+P`):
 
-- **Open agentful studio** - Opens main panel
-- **Open Integration Hub** - Opens integration hub directly
-- **Reload Webview** - Refreshes webview without restart
-- **Rescan Components** - Rescans for user components
-
-## Development Workflow
-
-### For UI/React Changes:
-1. Edit files in `src/components/`
-2. Save (Vite rebuilds automatically)
-3. Press `Cmd+Shift+R` to reload webview
-4. See changes instantly!
-
-### For Extension Logic Changes:
-1. Edit files in `vscode/` or `extension.ts`
-2. Save (TypeScript rebuilds)
-3. Press `Cmd+R` to restart Extension Host
-4. Or click the Restart button in debug toolbar
-
-### For Both:
-1. Run the "Extension + Webview Watch" compound launch config
-2. Edit any file
-3. Reload as needed (Cmd+Shift+R for webview, Cmd+R for extension)
+- **Agentful: Reload Webview** - Force refresh without restart
+- **Agentful: Open Studio** - Opens main panel
+- **Agentful: Open Integration Hub** - Opens integration hub
 
 ## Troubleshooting
 
 ### "Changes not showing up"
-- Check the Output panel → "Agentful Studio" for build errors
-- Make sure watch mode is running (check terminal for rebuild messages)
-- Try Cmd+Shift+R to reload webview
 
-### "Extension not loading"
-- Check `dist/` folder exists with compiled files
-- Run `npm run build` first if needed
-- Check VS Code Debug Console for errors
+1. Check the **Output panel** → "agentful Studio" for rebuild messages:
+   ```
+   🔄 Assets changed, reloading webviews...
+   ```
 
-### "Port already in use"
-- Kill all node processes: `pkill -f node`
-- Or restart VS Code
+2. Check that `npm run watch:dev` is running in Terminal
 
-## VS Code Debug Configuration
+3. Try manual reload: `Cmd+Shift+P` → "Agentful: Reload Webview"
 
-The `.vscode/launch.json` includes:
+### "Extension Development Host not opening"
 
-1. **Run Extension (with Hot Reload)** - Standard debug with build
-2. **Run Extension (Debug + Watch)** - With file watchers
-3. **Extension + Webview Watch** - Compound config with both watchers
+1. Make sure you pressed F5 in the **main VS Code window** (not the extension host)
+2. Check Debug Console for errors
 
-## Tips
-
-1. **Use the Debug Console** - See extension logs in real-time
-2. **Watch the Output Panel** - Build status and errors
-3. **Status Bar** - Shows reload command when extension is active
-4. **Source Maps** - Set breakpoints in TypeScript/TSX files directly
-
-## Alternative: Browser Development
-
-For rapid UI iteration without VS Code:
+### "Build errors"
 
 ```bash
 cd packages/studio
-npm run dev
+npm run build
 ```
 
-Opens at `http://localhost:5173` - but note this won't have VS Code API access.
+### "Port already in use"
+
+Kill all node processes:
+```bash
+pkill -f node
+```
+
+## File Structure
+
+```
+packages/studio/
+├── src/              ← Edit these files
+├── dist/             ← Auto-generated (don't edit)
+│   ├── extension.js  ← Extension code
+│   ├── assets/       ← Webview code
+│   └── index.html    ← Webview HTML
+├── extension.ts      ← Extension entry point
+└── vite.config.ts    ← Build config
+```
+
+## Workflow Summary
+
+1. **Start**: `npm run watch:dev` in terminal + F5 in VS Code
+2. **Edit**: Change files in `src/`
+3. **Wait**: Vite rebuilds (~1-2 seconds)
+4. **See**: Webview auto-reloads
+5. **Repeat**: Edit → Wait → See
+
+## Tips
+
+- **Don't close** the terminal running `npm run watch:dev`
+- **Extension Host** is the new VS Code window - look for the Agentful icon in sidebar
+- **Main Window** is where you edit code
+- Changes to `extension.ts` require restart (Cmd+R in Extension Host)
+- Changes to `.tsx` files auto-reload via file watcher

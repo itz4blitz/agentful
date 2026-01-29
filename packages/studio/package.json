@@ -67,10 +67,12 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:full": "npm run build && npm run dev:extension",
     "dev:extension": "code --extensionDevelopmentPath=${PWD}",
     "watch": "npm run watch:extension & npm run watch:webview",
     "watch:extension": "tsc -b tsconfig.extension.json --watch",
     "watch:webview": "vite build --watch --mode development",
+    "watch:dev": "npm run build:extension && npm run watch:webview",
     "build": "npm run build:extension && npm run build:webview",
     "build:webview": "vite build",
     "build:extension": "tsc -b tsconfig.extension.json",
