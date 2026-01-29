@@ -92,9 +92,9 @@ const TOOL_DEFINITIONS: Omit<CLITool, 'version' | 'isInstalled' | 'isRunning' | 
     command: 'cursor',
     configPath: '.cursor/mcp.json',
     mcpFormat: 'cursor',
-    description: 'AI-first editor with agent mode and hooks',
+    description: 'AI-first editor with agent mode, skills and hooks',
     website: 'https://cursor.com/',
-    supports: { mcp: true, skills: false, agents: true, hooks: true },
+    supports: { mcp: true, skills: true, agents: true, hooks: true },
   },
   {
     id: 'cline',
