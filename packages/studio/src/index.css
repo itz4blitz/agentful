@@ -50,36 +50,21 @@
   --color-sidebar-border: hsl(var(--sidebar-border));
   --color-sidebar-ring: hsl(var(--sidebar-ring));
 
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
-
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
-  }
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
 }
-
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
   looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
 */
 @layer base {
   *,
@@ -87,7 +72,7 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--border, currentColor);
+    border-color: var(--color-gray-200, currentColor);
   }
 }
 
@@ -417,6 +402,59 @@ html,
   transition-property: background-color, border-color, color, box-shadow, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 250ms;
+}
+
+/* ============================================================================
+   VS CODE SIDEBAR SPECIFIC STYLES
+   ============================================================================ */
+
+/* Ensure the webview takes full height */
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* VS Code sidebar specific styles */
+.vscode-sidebar {
+  /* Ensure full height in the constrained sidebar */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.vscode-sidebar .card {
+  /* More compact cards in sidebar */
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.vscode-sidebar .card-header {
+  padding: 0.75rem;
+}
+
+.vscode-sidebar .card-content {
+  padding: 0.75rem;
+}
+
+/* Custom scrollbar for sidebar */
+.vscode-sidebar ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.vscode-sidebar ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vscode-sidebar ::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+.vscode-sidebar ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
 }
 
 /* ============================================================================

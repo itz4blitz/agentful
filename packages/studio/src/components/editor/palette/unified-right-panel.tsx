@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ComponentPalette } from './component-palette';
-import { PropertyInspector } from '../inspector/property-inspector';
+import { EnhancedPropertyInspector } from '../inspector/enhanced-property-inspector';
 import { ElementTree } from '@/components/editor/canvas/element-tree';
 
 export interface UnifiedRightPanelProps {
@@ -110,7 +110,7 @@ export const UnifiedRightPanel = React.memo(
                 <Boxes className="h-3.5 w-3.5 mr-1.5" />
                 Components
               </TabsTrigger>
-              <TabsTrigger value="properties" className="text-xs" disabled={!selectedElement?.elementId}>
+              <TabsTrigger value="properties" className="text-xs">
                 <Settings2 className="h-3.5 w-3.5 mr-1.5" />
                 Properties
               </TabsTrigger>
@@ -130,9 +130,27 @@ export const UnifiedRightPanel = React.memo(
             </div>
           ) : null}
           
-          {selectedElement?.elementId && activeTab === 'properties' && (
+          {activeTab === 'properties' && (
             <div className="h-full">
-              <PropertyInspector />
+              {selectedElement?.elementId ? (
+                <EnhancedPropertyInspector />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                  <Settings2 className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+                  <h3 className="text-sm font-medium mb-2">No Element Selected</h3>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    Click on an element in the canvas or DOM tree to edit its properties
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setActiveTab('components')}
+                  >
+                    <Boxes className="h-3.5 w-3.5 mr-1.5" />
+                    Browse Components
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 

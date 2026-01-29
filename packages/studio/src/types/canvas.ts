@@ -17,6 +17,9 @@ export interface CanvasElement {
   locked?: boolean;
   hidden?: boolean;
   zIndex?: number;
+  // Component system support
+  componentId?: string; // Reference to shadcn/user component
+  props?: Record<string, any>; // Component props
 }
 
 /**

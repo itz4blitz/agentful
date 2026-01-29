@@ -10,6 +10,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Don't empty the dist directory - we need extension.js there too
+    emptyOutDir: false,
+  },
   server: {
     // Configure fallback for SPA routing
   },

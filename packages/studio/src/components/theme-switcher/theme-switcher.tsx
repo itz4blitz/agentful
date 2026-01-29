@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { getAllThemes, applyTheme, type Theme } from '@/lib/themes'
 import { ThemePreviewCard } from './theme-preview-card'
 import { useTheme } from 'next-themes'
+import { isRunningInVSCode, saveThemeColor, onThemeChange } from '@/services/vscode'
 
 export function ThemeSwitcher() {
   const { theme: mode, resolvedTheme } = useTheme()
@@ -39,15 +40,47 @@ export function ThemeSwitcher() {
     setCurrentThemeId(savedTheme)
   }, [])
 
-  // Update current theme ID when mode changes (theme might have changed)
+  // Listen for theme changes from VS Code (from other webviews)
   useEffect(() => {
-    if (mounted) {
-      const savedTheme = localStorage.getItem('selected-theme') || 'default'
-      setCurrentThemeId(savedTheme)
+    console.log('[ThemeSwitcher] Setting up listeners')
+    
+    // Direct window message listener
+    const handleWindowMessage = (event: MessageEvent) => {
+      const message = event.data
+      console.log('[ThemeSwitcher] Window message received:', message)
+      
+      if (message && message.command === 'themeChanged' && message.color) {
+        console.log('[ThemeSwitcher] Direct handler - applying theme:', message.color)
+        
+        const isDark = document.documentElement.classList.contains('dark')
+        const currentMode = isDark ? 'dark' : 'light'
+        
+        const newTheme = getAllThemes(currentMode).find(t => t.id === message.color)
+        if (newTheme) {
+          applyTheme(newTheme)
+          setCurrentThemeId(message.color)
+          localStorage.setItem('selected-theme', message.color)
+          console.log('[ThemeSwitcher] Theme applied from direct handler!')
+        }
+      }
     }
-  }, [mode, resolvedTheme, mounted])
+    
+    window.addEventListener('message', handleWindowMessage)
+    
+    // Also use the VS Code API service
+    const unsubscribe = onThemeChange((message: any) => {
+      console.log('[ThemeSwitcher] onThemeChange callback:', message)
+    })
+
+    return () => {
+      window.removeEventListener('message', handleWindowMessage)
+      unsubscribe()
+    }
+  }, [])
 
   const handleThemeSelect = (theme: Theme) => {
+    console.log('[ThemeSwitcher] Selecting theme:', theme.id)
+    
     // Apply theme with smooth transition
     applyTheme(theme)
 
@@ -56,6 +89,12 @@ export function ThemeSwitcher() {
 
     // Store selected theme ID in localStorage
     localStorage.setItem('selected-theme', theme.id)
+
+    // Save to VS Code for sync across webviews
+    if (isRunningInVSCode()) {
+      console.log('[ThemeSwitcher] Broadcasting to VS Code:', theme.id)
+      saveThemeColor(theme.id)
+    }
 
     // Close popover
     setOpen(false)

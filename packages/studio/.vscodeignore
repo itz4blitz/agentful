@@ -1,0 +1,71 @@
+# VS Code Extension Package Ignore
+
+# Source files
+src/
+vscode/
+extension.ts
+tsconfig*.json
+.eslintrc.json
+.prettierrc*
+vite.config.ts
+vitest.config.ts
+playwright.config.ts
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Tests
+test/
+e2e/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Development files
+.env*
+.env.example
+.git/
+.github/
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Misc
+*.log
+.DS_Store
+coverage/
+.nyc_output/
+
+# VS Code specific
+.vscode/
+.vscode-test/
+.code-workspace
+
+# Agentful specific
+.agentful/
+.claude/
+.gemini/
+
+# Root config files not needed for extension
+claude_code_zai_env.sh
+components.json
+eslint.config.js
+postcss.config.js
+test-layout.html
+
+# Keep dist for extension files
+!dist/
+
+# Keep public assets for webview
+!public/
+
+# Keep assets folder (icons)
+!assets/
+
+# Keep package.json and README
+!package.json
+!README.md

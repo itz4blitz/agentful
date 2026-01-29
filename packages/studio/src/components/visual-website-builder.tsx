@@ -10,7 +10,7 @@ import { ProjectManager } from '@/components/editor/project/project-manager'
 import { ExportDialog } from '@/components/editor/project/export-dialog'
 import { useLayoutInitializer } from '@/components/editor/layout/layout-initializer'
 import { Button } from '@/components/ui/button'
-import { Box, Save, Download, LayoutGrid, RotateCcw, Boxes, Monitor, Sun, Moon, Check, PanelLeft, PanelRight } from 'lucide-react'
+import { Box, Save, Download, LayoutGrid, RotateCcw, Boxes, Monitor, Sun, Moon, Check, PanelLeft, PanelRight, Puzzle } from 'lucide-react'
 import { useState, useRef } from 'react'
 
 type SidebarPosition = 'left' | 'right'
@@ -41,7 +41,7 @@ export function VisualWebsiteBuilder() {
     <DndContext>
       <div className="h-screen flex flex-col bg-background min-w-0">
         {/* Header */}
-        <header className="min-h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 flex-wrap gap-2 py-2">
+        <header className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -84,6 +84,13 @@ export function VisualWebsiteBuilder() {
               <Button variant="ghost" size="sm" className="gap-2">
                 <LayoutGrid className="h-4 w-4" />
                 <span className="hidden sm:inline">Components</span>
+              </Button>
+            </Link>
+
+            <Link to="/integrations">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Puzzle className="h-4 w-4" />
+                <span className="hidden sm:inline">Integrations</span>
               </Button>
             </Link>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
+import { HashRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { env } from '@/lib/env'
 import { FormsShowcase, FeedbackShowcase, NavigationShowcase, OverlaysShowcase, DataDisplayShowcase, MiscShowcase } from '@/components/showcase'
 import { VisualWebsiteBuilder } from '@/components/visual-website-builder'
-import { Palette, Box, MessageSquare, Navigation, Layers, Table, Grid } from 'lucide-react'
+import { StudioSidebar } from '@/components/studio-sidebar'
+import { IntegrationHub } from '@/components/integrations/integration-hub'
+import { Palette, Box, MessageSquare, Navigation, Layers, Table, Grid, Puzzle } from 'lucide-react'
+
+// Hook to detect if we're in sidebar mode (narrow viewport)
+function useSidebarMode() {
+  const [isSidebarMode, setIsSidebarMode] = useState(false)
+
+  useEffect(() => {
+    const checkWidth = () => {
+      // VS Code sidebar is typically 250-300px wide
+      setIsSidebarMode(window.innerWidth < 400)
+    }
+
+    checkWidth()
+    window.addEventListener('resize', checkWidth)
+    return () => window.removeEventListener('resize', checkWidth)
+  }, [])
+
+  return isSidebarMode
+}
 
 function ComponentShowcase() {
   const location = useLocation()
@@ -57,6 +77,12 @@ function ComponentShowcase() {
             </Link>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
+            <Link to="/integrations">
+              <Button variant="ghost" size="sm" className="gap-2 hidden md:flex">
+                <Puzzle className="h-4 w-4" />
+                Integrations
+              </Button>
+            </Link>
             <ThemeSwitcher />
             <ThemeToggle />
           </div>
@@ -81,10 +107,10 @@ function ComponentShowcase() {
           </p>
 
           <div className="mt-4 sm:mt-6 flex flex-wrap justify-center gap-2 sm:gap-3 px-4">
-            <Button size="default" sm:size="lg" asChild className="min-h-[2.5rem] sm:min-h-[2.75rem]">
+            <Button size="default" className="min-h-[2.5rem] sm:min-h-[2.75rem]">
               <a href="#showcase">Explore Components</a>
             </Button>
-            <Button size="default" sm:size="lg" variant="outline" asChild className="min-h-[2.5rem] sm:min-h-[2.75rem]">
+            <Button size="default" variant="outline" className="min-h-[2.5rem] sm:min-h-[2.75rem]">
               <a href="https://ui.shadcn.com" target="_blank" rel="noopener noreferrer">
                 View Documentation
               </a>
@@ -261,15 +287,84 @@ function ComponentShowcase() {
   )
 }
 
-function App() {
+function IntegrationHubView() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<VisualWebsiteBuilder />} />
-        <Route path="/c/:tab" element={<ComponentShowcase />} />
-      </Routes>
-    </BrowserRouter>
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-sm">
+        <div className="container flex h-14 items-center justify-between px-4">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80">
+            <Box className="h-5 w-5" />
+            <span className="font-semibold">Agentful</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeSwitcher />
+            <ThemeToggle />
+          </div>
+        </div>
+      </header>
+      <main className="h-[calc(100vh-3.5rem)]">
+        <IntegrationHub />
+      </main>
+    </div>
   )
+}
+
+function MainView() {
+  const isSidebarMode = useSidebarMode()
+
+  // In sidebar mode (narrow viewport), render the sidebar UI
+  // In fullscreen mode (wide viewport), render the visual builder
+  if (isSidebarMode) {
+    return <StudioSidebar />
+  }
+
+  return <VisualWebsiteBuilder />
+}
+
+function App() {
+  // Check for initial route from VS Code extension
+  const getInitialRoute = () => {
+    if (typeof window !== 'undefined' && (window as any).__INITIAL_ROUTE__) {
+      return (window as any).__INITIAL_ROUTE__;
+    }
+    return '/';
+  };
+
+  return (
+    <HashRouter>
+      <AppRoutes />
+    </HashRouter>
+  )
+}
+
+function AppRoutes() {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Handle initial route from VS Code
+    const initialRoute = (window as any).__INITIAL_ROUTE__;
+    if (initialRoute) {
+      navigate(initialRoute);
+    }
+    
+    // Listen for navigation messages from VS Code
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.command === 'navigate' && event.data?.route) {
+        navigate(event.data.route);
+      }
+    };
+    
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [navigate]);
+
+  return (
+    <Routes>
+      <Route path="/" element={<MainView />} />
+      <Route path="/c/:tab" element={<ComponentShowcase />} />
+      <Route path="/integrations" element={<IntegrationHubView />} />
+    </Routes>
+  );
 }
 
 export default App

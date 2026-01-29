@@ -3,6 +3,7 @@ import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { getTheme, applyTheme } from '@/lib/themes'
 import { useEffect, useState, useCallback } from 'react'
+import { isRunningInVSCode, saveTheme, onThemeChange } from '@/services/vscode'
 
 export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme()
@@ -12,6 +13,39 @@ export function ThemeToggle() {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Listen for theme changes from other webviews (VS Code sync)
+  useEffect(() => {
+    if (!isRunningInVSCode()) return
+
+    const unsubscribe = onThemeChange((newTheme) => {
+      console.log('[ThemeToggle] Received theme change from VS Code:', newTheme)
+      
+      // Update the theme mode
+      if (newTheme === 'light' || newTheme === 'dark' || newTheme === 'system') {
+        setTheme(newTheme)
+        
+        // Re-apply the selected theme with the new mode
+        const selectedThemeId = localStorage.getItem('selected-theme') || 'default'
+        const updatedTheme = getTheme(selectedThemeId, newTheme as 'light' | 'dark')
+        applyTheme(updatedTheme)
+        
+        // Update dark class on html element
+        const root = document.documentElement
+        const resolvedMode = newTheme === 'system' 
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : newTheme
+        
+        if (resolvedMode === 'dark') {
+          root.classList.add('dark')
+        } else {
+          root.classList.remove('dark')
+        }
+      }
+    })
+
+    return unsubscribe
+  }, [setTheme])
 
   const handleToggle = useCallback(() => {
     // Determine current and new theme
@@ -34,6 +68,11 @@ export function ThemeToggle() {
       root.classList.add('dark')
     } else {
       root.classList.remove('dark')
+    }
+
+    // Save to VS Code state for sync across webviews
+    if (isRunningInVSCode()) {
+      saveTheme(newTheme as 'light' | 'dark')
     }
   }, [resolvedTheme, theme, setTheme])
 

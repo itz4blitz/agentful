@@ -1,10 +1,9 @@
 {
-  "name": "@itz4blitz/agentful-studio",
+  "name": "agentful-studio",
   "displayName": "agentful Studio",
   "description": "AI-powered visual development environment for agentful",
   "private": true,
   "version": "0.0.1",
-  "type": "module",
   "publisher": "agentful",
   "repository": {
     "type": "git",
@@ -12,29 +11,67 @@
   },
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onCommand:agentful.studio.open"
+    "*"
   ],
   "contributes": {
+    "keybindings": [
+      {
+        "command": "agentful.studio.reloadWebview",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "agentful.studio.active"
+      }
+    ],
     "commands": [
       {
         "command": "agentful.studio.open",
-        "title": "Open agentful Studio",
+        "title": "Open agentful studio",
+        "category": "agentful"
+      },
+      {
+        "command": "agentful.studio.openIntegrationHub",
+        "title": "Open Integration Hub",
+        "category": "agentful"
+      },
+      {
+        "command": "agentful.studio.reloadWebview",
+        "title": "Reload Webview",
+        "category": "agentful",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "agentful.studio.rescanComponents",
+        "title": "Rescan Components",
         "category": "agentful"
       }
     ],
-    "icons": {
-      "agentful-icon": {
-        "description": "agentful Studio icon",
-        "default": {
-          "iconPath": "./assets/icon.png",
-          "fontCharacter": "\\u9001"
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "agentful-studio-sidebar",
+          "title": "agentful Studio",
+          "icon": "assets/agentful-icon.svg"
         }
-      }
+      ]
+    },
+    "views": {
+      "agentful-studio-sidebar": [
+        {
+          "type": "webview",
+          "id": "agentful.studio.sidebar",
+          "name": "Studio",
+          "contextualTitle": "agentful Studio"
+        }
+      ]
     }
   },
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:webview && npm run build:extension",
+    "dev:extension": "code --extensionDevelopmentPath=${PWD}",
+    "watch": "npm run watch:extension & npm run watch:webview",
+    "watch:extension": "tsc -b tsconfig.extension.json --watch",
+    "watch:webview": "vite build --watch --mode development",
+    "build": "npm run build:extension && npm run build:webview",
     "build:webview": "vite build",
     "build:extension": "tsc -b tsconfig.extension.json",
     "build:analyze": "tsc -b && vite build --mode analyze",
@@ -119,8 +156,8 @@
     "vscode": "^1.96.0"
   },
   "devDependencies": {
-    "@types/vscode": "^1.96.0",
     "@axe-core/playwright": "^4.11.0",
+    "@clerk/backend": "^2.29.6",
     "@eslint/js": "^9.39.1",
     "@faker-js/faker": "^10.2.0",
     "@playwright/test": "^1.58.0",
@@ -134,9 +171,11 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@types/vscode": "^1.96.0",
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/coverage-v8": "^4.0.18",
     "@vitest/ui": "^4.0.18",
+    "@vscode/vsce": "^3.7.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-eslint-plugin": "^7.3.0",
