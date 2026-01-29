@@ -9,6 +9,7 @@ import type {
   PaletteState,
   ComponentTemplate,
   ComponentCategory,
+  ComponentFilter,
 } from '@/types/components';
 import { DEFAULT_PALETTE_STATE } from '@/types/components';
 import { componentRegistry } from '@/services/components/component-registry';

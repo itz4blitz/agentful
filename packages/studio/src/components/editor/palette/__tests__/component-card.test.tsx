@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ComponentCard } from '../component-card';
 import { componentRegistry } from '@/services/components/component-registry';
+import { DndContext } from '@dnd-kit/core';
 
 describe('ComponentCard', () => {
   const mockComponent = componentRegistry.getComponent('container')!;

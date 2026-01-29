@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -80,10 +81,10 @@ function ComponentShowcase() {
           </p>
 
           <div className="mt-4 sm:mt-6 flex flex-wrap justify-center gap-2 sm:gap-3 px-4">
-            <Button size="default" asChild className="min-h-[2.5rem] sm:min-h-[2.75rem]">
+            <Button size="default" sm:size="lg" asChild className="min-h-[2.5rem] sm:min-h-[2.75rem]">
               <a href="#showcase">Explore Components</a>
             </Button>
-            <Button size="default" variant="outline" asChild className="min-h-[2.5rem] sm:min-h-[2.75rem]">
+            <Button size="default" sm:size="lg" variant="outline" asChild className="min-h-[2.5rem] sm:min-h-[2.75rem]">
               <a href="https://ui.shadcn.com" target="_blank" rel="noopener noreferrer">
                 View Documentation
               </a>

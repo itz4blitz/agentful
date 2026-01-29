@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { getTheme, applyTheme, getAllThemes, getThemeIds, hslToCss, getThemeColorCss } from './themes'
+import type { Theme } from './themes'
 
 // Mock document.documentElement
 const mockStyle = {

@@ -28,7 +28,7 @@ export function useLayoutInitializer() {
         console.table(layout);
 
         // Check if layout is corrupted (missing panels or invalid sizes)
-        const issues: string[] = [];
+        const issues = [];
         const isCorrupted =
           !Array.isArray(layout) ||
           layout.length !== 3 ||

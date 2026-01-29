@@ -18,44 +18,39 @@ vi.mock('@/stores/canvas-store', () => ({
 import { useInspectorStore } from '@/stores/inspector-store';
 import { useCanvasStore } from '@/stores/canvas-store';
 
-// Factory function to create a fresh mock for each test
-const createMockInspectorStore = () => ({
-  selectedElementId: 'test-1' as string | null,
-  elementData: {
-    id: 'test-1',
-    tagName: 'DIV',
-    attributes: { id: 'test-div', class: 'container' },
-    styles: { display: 'flex', padding: '16px' },
-    children: [],
-  } as import('@/types/canvas').CanvasElement | null,
-  groups: [] as import('@/types/inspector').PropertyGroup[],
-  expandedGroups: new Set<string>(['layout', 'typography', 'appearance', 'attributes']),
-  activeTab: 'styles' as const,
-  hasChanges: false,
-  setActiveTab: vi.fn(),
-  applyChanges: vi.fn(),
-  discardChanges: vi.fn(),
-  resetAll: vi.fn(),
-  setSelectedElement: vi.fn(),
-});
-
-const mockCanvasStore = {
-  updateElement: vi.fn(),
-};
-
 describe('PropertyInspector', () => {
-  let mockInspectorStore: ReturnType<typeof createMockInspectorStore>;
+  const mockInspectorStore = {
+    selectedElementId: 'test-1',
+    elementData: {
+      id: 'test-1',
+      tagName: 'DIV',
+      attributes: { id: 'test-div', class: 'container' },
+      styles: { display: 'flex', padding: '16px' },
+      children: [],
+    },
+    groups: [],
+    activeTab: 'styles',
+    hasChanges: false,
+    setActiveTab: vi.fn(),
+    applyChanges: vi.fn(),
+    discardChanges: vi.fn(),
+    resetAll: vi.fn(),
+    setSelectedElement: vi.fn(),
+  };
+
+  const mockCanvasStore = {
+    updateElement: vi.fn(),
+  };
 
   beforeEach(() => {
-    mockInspectorStore = createMockInspectorStore();
     vi.mocked(useInspectorStore).mockReturnValue(mockInspectorStore);
     vi.mocked(useCanvasStore).mockReturnValue(mockCanvasStore);
   });
 
   describe('Empty State', () => {
     it('should render empty state when no element is selected', () => {
-      mockInspectorStore.selectedElementId = null as any;
-      mockInspectorStore.elementData = null as any;
+      mockInspectorStore.selectedElementId = null;
+      mockInspectorStore.elementData = null;
 
       render(<PropertyInspector />);
 
@@ -74,7 +69,7 @@ describe('PropertyInspector', () => {
         id: 'test-1',
         tagName: 'DIV',
         attributes: { id: 'test-div', class: 'container' },
-        styles: { display: 'flex', padding: '16px' },
+        styles: { display: 'flex' },
         children: [],
       };
     });
@@ -125,16 +120,14 @@ describe('PropertyInspector', () => {
 
   describe('Changes Actions', () => {
     beforeEach(() => {
-      // Create fresh mock for this describe block
-      mockInspectorStore = createMockInspectorStore();
+      mockInspectorStore.selectedElementId = 'test-1';
       mockInspectorStore.elementData = {
         id: 'test-1',
         tagName: 'DIV',
-        attributes: { id: '', class: '' },
-        styles: { display: 'flex', padding: '16px' },
+        attributes: {},
+        styles: { display: 'flex' },
         children: [],
       };
-      vi.mocked(useInspectorStore).mockReturnValue(mockInspectorStore);
     });
 
     it('should show action buttons when there are changes', () => {
@@ -181,16 +174,16 @@ describe('PropertyInspector', () => {
 
     it('should apply changes to canvas store when Apply is clicked', () => {
       mockInspectorStore.hasChanges = true;
-
-      const mockPropertyGroup: import('@/types/inspector').PropertyGroup = {
-        id: 'layout',
-        label: 'Layout',
-        icon: 'Layout',
-        properties: [
-          { id: 'display', label: 'Display', type: 'text', value: 'grid', defaultValue: 'block' },
-        ],
-      };
-      mockInspectorStore.groups = [mockPropertyGroup];
+      mockInspectorStore.groups = [
+        {
+          id: 'layout',
+          label: 'Layout',
+          icon: 'Layout',
+          properties: [
+            { id: 'display', label: 'Display', type: 'text', value: 'grid', defaultValue: 'block' },
+          ],
+        },
+      ];
 
       render(<PropertyInspector />);
 
@@ -204,16 +197,14 @@ describe('PropertyInspector', () => {
 
   describe('Accessibility', () => {
     beforeEach(() => {
-      // Create fresh mock for this describe block
-      mockInspectorStore = createMockInspectorStore();
+      mockInspectorStore.selectedElementId = 'test-1';
       mockInspectorStore.elementData = {
         id: 'test-1',
         tagName: 'DIV',
-        attributes: { id: '', class: '' },
-        styles: { display: 'flex', padding: '16px' },
+        attributes: {},
+        styles: { display: 'flex' },
         children: [],
       };
-      vi.mocked(useInspectorStore).mockReturnValue(mockInspectorStore);
     });
 
     it('should have proper aria-label', () => {
@@ -233,16 +224,14 @@ describe('PropertyInspector', () => {
 
   describe('Responsive Design', () => {
     beforeEach(() => {
-      // Create fresh mock for this describe block
-      mockInspectorStore = createMockInspectorStore();
+      mockInspectorStore.selectedElementId = 'test-1';
       mockInspectorStore.elementData = {
         id: 'test-1',
         tagName: 'DIV',
-        attributes: { id: '', class: '' },
-        styles: { display: 'flex', padding: '16px' },
+        attributes: {},
+        styles: { display: 'flex' },
         children: [],
       };
-      vi.mocked(useInspectorStore).mockReturnValue(mockInspectorStore);
     });
 
     it('should show full tab labels on larger screens', () => {

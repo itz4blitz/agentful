@@ -43,7 +43,7 @@ describe('PropertyGroup', () => {
 
   const mockStore = {
     expandedGroups: new Set(['test-group']),
-    changes: [] as import('@/types/inspector').PropertyChange[],
+    changes: [],
     toggleGroup: vi.fn(),
     updateProperty: vi.fn(),
     resetProperty: vi.fn(),
@@ -87,15 +87,9 @@ describe('PropertyGroup', () => {
   });
 
   it('should show changed count badge when there are changes', () => {
-    const mockChange: import('@/types/inspector').PropertyChange = {
-      groupId: 'test-group',
-      fieldId: 'field1',
-      property: 'style',
-      propertyKey: 'field1',
-      oldValue: 'old',
-      newValue: 'new',
-    };
-    mockStore.changes = [mockChange];
+    mockStore.changes = [
+      { groupId: 'test-group', fieldId: 'field1', property: 'style' as const, propertyKey: 'field1', oldValue: 'old', newValue: 'new' },
+    ];
 
     render(<PropertyGroup group={mockGroup} />);
 
@@ -112,15 +106,9 @@ describe('PropertyGroup', () => {
   });
 
   it('should call resetProperty when field is reset', () => {
-    const mockChange: import('@/types/inspector').PropertyChange = {
-      groupId: 'test-group',
-      fieldId: 'field1',
-      property: 'style',
-      propertyKey: 'field1',
-      oldValue: 'old',
-      newValue: 'new',
-    };
-    mockStore.changes = [mockChange];
+    mockStore.changes = [
+      { groupId: 'test-group', fieldId: 'field1', property: 'style' as const, propertyKey: 'field1', oldValue: 'old', newValue: 'new' },
+    ];
 
     render(<PropertyGroup group={mockGroup} />);
 

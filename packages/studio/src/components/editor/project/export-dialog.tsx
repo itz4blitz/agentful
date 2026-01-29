@@ -40,10 +40,11 @@ import { Progress } from '@/components/ui/progress';
 export interface ExportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  className?: string;
 }
 
 export const ExportDialog = React.memo(
-  ({ open, onOpenChange }: ExportDialogProps) => {
+  ({ open, onOpenChange, className }: ExportDialogProps) => {
     const { currentProject, exportProject } = useProjectStore();
 
     const [format, setFormat] = React.useState<ExportFormat>('html');

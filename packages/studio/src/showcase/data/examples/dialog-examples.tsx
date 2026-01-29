@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { User } from 'lucide-react'
+import { Settings, Trash2, User } from 'lucide-react'
 import type { ComponentMeta } from '../types'
 
 export const dialogData: ComponentMeta = {

@@ -8,7 +8,6 @@ import { useDraggable } from '@dnd-kit/core';
 import type { ComponentTemplate } from '@/types/components';
 import { cn } from '@/lib/utils';
 import * as LucideIcons from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
 
 export interface ComponentCardProps {
   component: ComponentTemplate;
@@ -17,7 +16,7 @@ export interface ComponentCardProps {
   isDraggable?: boolean;
 }
 
-const IconMap: Record<string, LucideIcon> = LucideIcons as unknown as Record<string, LucideIcon>;
+const IconMap: Record<string, React.ComponentType<{ className?: string }>> = LucideIcons;
 
 export const ComponentCard = React.memo(
   ({ component, viewMode, onSelect, isDraggable = true }: ComponentCardProps) => {

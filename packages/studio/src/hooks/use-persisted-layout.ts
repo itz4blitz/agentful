@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { useLayoutStore } from '@/stores/layout-store';
 import { layoutPersistenceService } from '@/services/layout/layout-persistence-service';
 import type { LayoutState } from '@/types/layout';
+import { DEFAULT_LAYOUT_STATE } from '@/types/layout';
 
 export function usePersistedLayout() {
   const {

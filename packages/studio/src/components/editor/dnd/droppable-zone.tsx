@@ -36,7 +36,7 @@ export const DroppableZone = React.forwardRef<HTMLDivElement, DroppableZoneProps
   ) => {
     const internalRef = React.useRef<HTMLDivElement>(null);
 
-    const { setNodeRef, isOver: isOverLocal } = useDroppable({
+    const { setNodeRef, isOverCurrent } = useDroppable({
       id,
       disabled,
       data: {
@@ -56,10 +56,10 @@ export const DroppableZone = React.forwardRef<HTMLDivElement, DroppableZoneProps
 
     // Handle drop
     React.useEffect(() => {
-      if (isOver && isOverLocal) {
+      if (isOver && !isOverCurrent) {
         onDrop?.();
       }
-    }, [isOver, isOverLocal, onDrop]);
+    }, [isOver, isOverCurrent, onDrop]);
 
     return (
       <div

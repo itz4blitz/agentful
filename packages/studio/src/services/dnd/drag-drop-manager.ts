@@ -8,9 +8,9 @@ import type {
   DropTarget,
   DropPosition,
   DndEvent,
-} from '@/types/dnd';
-import type { ComponentTemplate } from '@/types/components';
-import type { CanvasElement } from '@/types/canvas';
+  ComponentTemplate,
+  CanvasElement,
+} from '@/types';
 import { useDndStore } from '@/stores/dnd-store';
 import { useCanvasStore } from '@/stores/canvas-store';
 import { nanoid } from 'nanoid';
@@ -51,11 +51,13 @@ export const componentToCanvasElement = (
 export const calculateDropPosition = (
   targetElement: HTMLElement,
   pointerY: number,
-  _pointerX: number
+  pointerX: number
 ): DropPosition => {
   const rect = targetElement.getBoundingClientRect();
   const relativeY = pointerY - rect.top;
+  const relativeX = pointerX - rect.left;
   const height = rect.height;
+  const width = rect.width;
 
   // Check if element is a container (has children or is a block element)
   const isContainer =

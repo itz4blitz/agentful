@@ -1,29 +1,25 @@
 import * as vscode from 'vscode';
-import { WebViewProvider } from './src/vscode/WebViewProvider';
+import { StudioPanelProvider } from './vscode/studio-panel';
+
+let studioPanelProvider: StudioPanelProvider;
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Agentful Studio extension is now active!');
+  console.log('agentful Studio is now active!');
 
-  // Register the WebViewProvider
-  const provider = new WebViewProvider(context.extensionUri);
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      'agentfulStudioView',
-      provider
-    )
-  );
+  // Create the studio panel provider
+  studioPanelProvider = new StudioPanelProvider(context);
 
-  // Register command to open the studio
-  const openStudioCommand = vscode.commands.registerCommand(
-    'agentful.openStudio',
-    () => {
-      vscode.commands.executeCommand('agentfulStudioView.focus');
-    }
-  );
+  // Register the command to open the studio
+  let disposable = vscode.commands.registerCommand('agentful.studio.open', () => {
+    studioPanelProvider.show();
+  });
 
-  context.subscriptions.push(openStudioCommand);
+  context.subscriptions.push(disposable);
+
+  // Also open studio automatically on activation (optional)
+  // studioPanelProvider.show();
 }
 
 export function deactivate() {
-  console.log('Agentful Studio extension is now deactivated!');
+  studioPanelProvider?.dispose();
 }

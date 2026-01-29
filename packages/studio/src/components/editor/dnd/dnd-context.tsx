@@ -16,7 +16,6 @@ import type {
   DragEndEvent,
   DragOverEvent,
   DragStartEvent,
-  PointerActivationConstraint,
 } from '@dnd-kit/core';
 import { useDndStore } from '@/stores/dnd-store';
 import {
@@ -33,7 +32,11 @@ export interface DndContextProps {
   onDragStart?: (event: DragStartEvent) => void;
   onDragOver?: (event: DragOverEvent) => void;
   onDragEnd?: (event: DragEndEvent) => void;
-  activationConstraint?: PointerActivationConstraint;
+  activationConstraint?: {
+    distance?: number;
+    delay?: number;
+    tolerance?: number;
+  };
   className?: string;
 }
 
@@ -156,7 +159,7 @@ export const DndContext = React.forwardRef<HTMLDivElement, DndContextProps>(
       coordinateGetter: (event, { context }) => {
         const { over } = context;
         if (!over) {
-          return undefined;
+          return null;
         }
 
         // Keyboard navigation support

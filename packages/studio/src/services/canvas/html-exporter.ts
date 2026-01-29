@@ -167,7 +167,7 @@ const htmlToJSX = (html: string): string => {
   jsx = jsx.replace(/<input\s*([^>]*?)>/g, '<input $1 />');
 
   // Replace style attribute
-  jsx = jsx.replace(/style="([^"]*)"/g, (_, styles) => {
+  jsx = jsx.replace(/style="([^"]*)"/g, (match, styles) => {
     const styleObject = styles
       .split(';')
       .filter((s: string) => s.trim())

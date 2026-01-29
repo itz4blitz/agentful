@@ -44,6 +44,7 @@ export class LayoutPersistenceService {
 
         // Validate that we have all required fields
         if (
+          typeof parsed.chatPanel === 'number' &&
           typeof parsed.canvasPanel === 'number' &&
           typeof parsed.componentsPanel === 'number'
         ) {

@@ -30,15 +30,15 @@ export function FormsShowcase() {
         </CardHeader>
         <CardContent className="px-4 sm:px-6">
           <div className="flex flex-wrap gap-2 sm:gap-3">
-            <Button>Default</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="destructive">Destructive</Button>
-            <Button variant="outline">Outline</Button>
-            <Button variant="ghost">Ghost</Button>
-            <Button variant="link">Link</Button>
+            <Button size="sm" sm:size="default">Default</Button>
+            <Button size="sm" sm:size="default" variant="secondary">Secondary</Button>
+            <Button size="sm" sm:size="default" variant="destructive">Destructive</Button>
+            <Button size="sm" sm:size="default" variant="outline">Outline</Button>
+            <Button size="sm" sm:size="default" variant="ghost">Ghost</Button>
+            <Button size="sm" sm:size="default" variant="link">Link</Button>
             <Button size="sm">Small</Button>
             <Button size="lg">Large</Button>
-            <Button disabled>Disabled</Button>
+            <Button size="sm" sm:size="default" disabled>Disabled</Button>
           </div>
         </CardContent>
       </Card>

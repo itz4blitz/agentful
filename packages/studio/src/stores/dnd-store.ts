@@ -65,9 +65,8 @@ export const useDndStore = create<DndStore>()(
       }),
 
     setDraggedElement: (element) =>
-      set(() => {
-        // Use return statement to avoid Immer draft type issues with HTMLElement
-        return { draggedElement: element };
+      set((state) => {
+        state.draggedElement = element;
       }),
 
     setPointerCoordinates: (coordinates) =>

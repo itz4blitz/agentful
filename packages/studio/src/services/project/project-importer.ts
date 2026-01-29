@@ -4,7 +4,8 @@
  */
 
 import JSZip from 'jszip';
-import type { ImportResult, ProjectValidationResult } from '@/types/project';
+import { nanoid } from 'nanoid';
+import type { Project, ImportResult, ProjectValidationResult } from '@/types/project';
 import { DEFAULT_PROJECT_SETTINGS } from '@/types/project';
 import { projectStorageService } from './project-storage';
 

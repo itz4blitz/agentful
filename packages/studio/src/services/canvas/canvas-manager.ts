@@ -9,9 +9,6 @@ import type {
   CanvasPostMessage,
 } from '@/types/canvas';
 
-// Re-export CanvasPostMessage for use in other modules
-export type { CanvasPostMessage };
-
 /**
  * Convert DOM element to CanvasElement
  */
@@ -390,7 +387,7 @@ export const updateElementInIframe = (
   // Update styles
   if (updates.styles) {
     Object.entries(updates.styles).forEach(([key, value]) => {
-      (element.style as unknown as Record<string, string>)[key] = value;
+      (element.style as CSSStyleDeclaration)[key] = value;
     });
   }
 

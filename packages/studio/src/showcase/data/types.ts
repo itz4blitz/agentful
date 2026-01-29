@@ -2,7 +2,7 @@
  * Type definitions for the component showcase system
  */
 
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 /**
  * Available component categories
