@@ -10,10 +10,11 @@ import { ProjectManager } from '@/components/editor/project/project-manager'
 import { ExportDialog } from '@/components/editor/project/export-dialog'
 import { useLayoutInitializer } from '@/components/editor/layout/layout-initializer'
 import { Button } from '@/components/ui/button'
-import { Box, Save, Download, LayoutGrid, RotateCcw, Boxes, Monitor, Sun, Moon, Check, PanelLeft, PanelRight, Puzzle } from 'lucide-react'
+import { Box, Save, Download, LayoutGrid, RotateCcw, Boxes, Monitor, Sun, Moon, Check, PanelLeft, PanelRight, Puzzle, Smartphone, Tablet, Laptop } from 'lucide-react'
 import { useState, useRef } from 'react'
 
 type SidebarPosition = 'left' | 'right'
+type ViewportSize = 'desktop' | 'tablet' | 'mobile'
 
 // import { useProjectStore } from '@/stores/project-store'
 
@@ -22,6 +23,7 @@ export function VisualWebsiteBuilder() {
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [canvasThemeMode, setCanvasThemeMode] = useState<CanvasThemeMode>('auto')
   const [sidebarPosition, setSidebarPosition] = useState<SidebarPosition>('right')
+  const [viewportSize, setViewportSize] = useState<ViewportSize>('desktop')
   const layoutRef = useRef<ResizableLayoutHandle>(null)
   useLayoutInitializer()
 
@@ -127,8 +129,42 @@ export function VisualWebsiteBuilder() {
 
             <div className="w-px h-6 bg-border" />
 
+            {/* Viewport Size Toggles */}
             <div className="relative flex items-center gap-1 rounded-lg border bg-background/80 px-1 py-1">
-              <span className="hidden lg:inline text-[10px] text-muted-foreground px-1">Canvas</span>
+              <span className="hidden lg:inline text-[10px] text-muted-foreground px-1">Viewport</span>
+              <Button
+                variant={viewportSize === 'mobile' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setViewportSize('mobile')}
+                title="Mobile view (375px)"
+              >
+                <Smartphone className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant={viewportSize === 'tablet' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setViewportSize('tablet')}
+                title="Tablet view (768px)"
+              >
+                <Tablet className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant={viewportSize === 'desktop' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setViewportSize('desktop')}
+                title="Desktop view (100%)"
+              >
+                <Laptop className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+
+            <div className="w-px h-6 bg-border hidden sm:block" />
+
+            <div className="relative flex items-center gap-1 rounded-lg border bg-background/80 px-1 py-1">
+              <span className="hidden lg:inline text-[10px] text-muted-foreground px-1">Theme</span>
               <Button
                 variant={canvasThemeMode === 'auto' ? 'secondary' : 'ghost'}
                 size="icon"
@@ -175,7 +211,7 @@ export function VisualWebsiteBuilder() {
           sidebarPosition={sidebarPosition}
           canvasPanel={
             <CanvasContextMenu>
-              <EditorCanvas canvasThemeMode={canvasThemeMode} sidebarPosition={sidebarPosition} />
+              <EditorCanvas canvasThemeMode={canvasThemeMode} sidebarPosition={sidebarPosition} viewportSize={viewportSize} />
             </CanvasContextMenu>
           }
           rightPanel={<UnifiedRightPanel />}

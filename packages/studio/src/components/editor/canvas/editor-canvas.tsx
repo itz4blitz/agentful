@@ -34,6 +34,7 @@ export interface EditorCanvasProps {
   onElementHover?: (elementId: string | null) => void;
   canvasThemeMode?: CanvasThemeMode;
   sidebarPosition?: 'left' | 'right';
+  viewportSize?: 'desktop' | 'tablet' | 'mobile';
 }
 
 // Canvas theme mode: 'auto' follows app theme, 'light'/'dark' are manual overrides
@@ -404,11 +405,15 @@ export const EditorCanvas = React.forwardRef<HTMLIFrameElement, EditorCanvasProp
       [iframeRef, isLoaded, setElements, setHTML, setInspectorSelectedElement, setSelectedElement]
     );
 
+    // Viewport width constraints
+    const viewportWidth = viewportSize === 'mobile' ? '375px' : viewportSize === 'tablet' ? '768px' : '100%';
+    const isConstrained = viewportSize !== 'desktop';
+
     return (
       <div 
         ref={setNodeRef}
         className={cn(
-          'relative h-full w-full bg-background transition-colors',
+          'relative h-full w-full bg-muted/30 transition-colors overflow-auto',
           isOver && 'bg-primary/5 ring-2 ring-primary ring-inset',
           className
         )}
@@ -430,13 +435,25 @@ export const EditorCanvas = React.forwardRef<HTMLIFrameElement, EditorCanvasProp
           </div>
         )}
 
-        <iframe
-          ref={iframeRef}
-          className="h-full w-full border-0"
-          title="Canvas Editor"
-          onLoad={handleLoad}
-          aria-label="Live website preview canvas"
-        />
+        {/* Canvas container with optional width constraint */}
+        <div 
+          className={cn(
+            'h-full transition-all duration-300 ease-in-out',
+            isConstrained ? 'mx-auto shadow-2xl' : 'w-full'
+          )}
+          style={{ 
+            width: viewportWidth,
+            maxWidth: '100%'
+          }}
+        >
+          <iframe
+            ref={iframeRef}
+            className="h-full w-full border-0 bg-background"
+            title="Canvas Editor"
+            onLoad={handleLoad}
+            aria-label="Live website preview canvas"
+          />
+        </div>
         <CanvasOverlay
           key={`overlay-${sidebarPosition}`}
           iframeRef={iframeRef}
