@@ -1,11 +1,11 @@
 /**
  * Coding CLI Tool Detection Service
- * Detects installed AI coding CLI tools (Claude Code, Gemini CLI, etc.)
+ * Detects installed AI agent CLI tools (not IDE extensions)
  */
 
 import { postMessage, onMessage, isRunningInVSCode } from '@/services/vscode';
 
-export type ToolFormat = 'claude' | 'gemini' | 'codex' | 'aider' | 'kiro' | 'cursor' | 'roo' | 'cline' | 'kilo';
+export type ToolFormat = 'claude' | 'gemini' | 'codex' | 'kiro' | 'cursor' | 'cline';
 
 export interface CLITool {
   id: ToolFormat;
@@ -44,7 +44,7 @@ export interface MCPServerStatus {
   requestCount?: number;
 }
 
-// Major AI-powered CLI tools with MCP support
+// AI Agent CLI tools (not IDE extensions)
 const TOOL_DEFINITIONS: Omit<CLITool, 'version' | 'isInstalled' | 'isRunning' | 'installPath'>[] = [
   {
     id: 'claude',
@@ -52,9 +52,9 @@ const TOOL_DEFINITIONS: Omit<CLITool, 'version' | 'isInstalled' | 'isRunning' | 
     command: 'claude',
     configPath: '~/.claude/settings.json',
     mcpFormat: 'claude',
-    description: 'Anthropic\'s official CLI coding assistant',
+    description: 'Anthropic\'s official CLI coding agent',
     website: 'https://docs.anthropic.com/en/docs/agents-and-tools/claude-code',
-    supports: { mcp: true, skills: true, agents: true, hooks: false },
+    supports: { mcp: true, skills: false, agents: true, hooks: false },
   },
   {
     id: 'gemini',
@@ -62,7 +62,7 @@ const TOOL_DEFINITIONS: Omit<CLITool, 'version' | 'isInstalled' | 'isRunning' | 
     command: 'gemini',
     configPath: '~/.gemini/config.json',
     mcpFormat: 'gemini',
-    description: 'Google\'s AI coding agent with hooks support',
+    description: 'Google\'s AI CLI with hooks support',
     website: 'https://ai.google.dev/gemini-api/docs/cli',
     supports: { mcp: true, skills: true, agents: true, hooks: true },
   },
@@ -77,45 +77,24 @@ const TOOL_DEFINITIONS: Omit<CLITool, 'version' | 'isInstalled' | 'isRunning' | 
     supports: { mcp: true, skills: false, agents: true, hooks: false },
   },
   {
-    id: 'aider',
-    name: 'Aider',
-    command: 'aider',
-    configPath: '~/.aider/config.yml',
-    mcpFormat: 'aider',
-    description: 'AI pair programming with git integration',
-    website: 'https://aider.chat/',
-    supports: { mcp: true, skills: false, agents: true, hooks: false },
-  },
-  {
     id: 'kiro',
     name: 'Kiro',
     command: 'kiro',
     configPath: '~/.kiro/config.yaml',
     mcpFormat: 'kiro',
-    description: 'AI coding assistant',
+    description: 'AI coding agent with hooks',
     website: 'https://kiro.dev/',
-    supports: { mcp: false, skills: false, agents: true, hooks: false },
+    supports: { mcp: false, skills: false, agents: true, hooks: true },
   },
-  // IDE-based tools (for completeness)
   {
     id: 'cursor',
     name: 'Cursor',
     command: 'cursor',
     configPath: '.cursor/mcp.json',
     mcpFormat: 'cursor',
-    description: 'AI-first code editor',
+    description: 'AI-first editor with agent mode and hooks',
     website: 'https://cursor.com/',
-    supports: { mcp: true, skills: true, agents: true, hooks: false },
-  },
-  {
-    id: 'roo',
-    name: 'Roo Code',
-    command: 'code',
-    configPath: '.vscode/settings.json',
-    mcpFormat: 'roo',
-    description: 'VS Code extension for AI coding',
-    website: 'https://github.com/RooVetGit/Roo-Code',
-    supports: { mcp: true, skills: true, agents: true, hooks: false },
+    supports: { mcp: true, skills: false, agents: true, hooks: true },
   },
   {
     id: 'cline',
@@ -123,19 +102,9 @@ const TOOL_DEFINITIONS: Omit<CLITool, 'version' | 'isInstalled' | 'isRunning' | 
     command: 'code',
     configPath: '.vscode/settings.json',
     mcpFormat: 'cline',
-    description: 'VS Code extension with autonomous coding',
+    description: 'VS Code extension with skills and hooks',
     website: 'https://cline.bot/',
-    supports: { mcp: true, skills: false, agents: true, hooks: false },
-  },
-  {
-    id: 'kilo',
-    name: 'Kilo Code',
-    command: 'code',
-    configPath: '.vscode/settings.json',
-    mcpFormat: 'kilo',
-    description: 'VS Code extension with MCP marketplace',
-    website: 'https://kilo.ai/',
-    supports: { mcp: true, skills: true, agents: true, hooks: false },
+    supports: { mcp: true, skills: true, agents: true, hooks: true },
   },
 ];
 
@@ -150,14 +119,12 @@ export class ToolDetectionService {
   async detectInstalledTools(): Promise<CLITool[]> {
     if (!isRunningInVSCode()) {
       console.log('[ToolDetection] Not running in VS Code, returning cached/mock tools');
-      // Return mock data for development
       return [];
     }
 
     console.log('[ToolDetection] Requesting tool detection from extension...');
     
     return new Promise((resolve, reject) => {
-      // Set up one-time handler for response
       const unsubscribe = onMessage('toolsDetected', (message) => {
         console.log('[ToolDetection] Received toolsDetected response:', message);
         unsubscribe();
@@ -172,13 +139,11 @@ export class ToolDetectionService {
         resolve(tools);
       });
 
-      // Set timeout
       setTimeout(() => {
         unsubscribe();
         reject(new Error('Tool detection timed out after 10 seconds'));
       }, 10000);
 
-      // Send request
       postMessage('detectTools', {});
     });
   }
@@ -252,6 +217,13 @@ export class ToolDetectionService {
    */
   getToolsWithHooksSupport(): typeof TOOL_DEFINITIONS {
     return TOOL_DEFINITIONS.filter(t => t.supports.hooks);
+  }
+
+  /**
+   * Get all tools with skills support
+   */
+  getToolsWithSkillsSupport(): typeof TOOL_DEFINITIONS {
+    return TOOL_DEFINITIONS.filter(t => t.supports.skills);
   }
 }
 

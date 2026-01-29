@@ -11,12 +11,9 @@ export {
   ClaudeIcon, 
   GeminiIcon, 
   CodexIcon, 
-  AiderIcon,
   KiroIcon, 
   CursorIcon, 
-  RooIcon,
   ClineIcon,
-  KiloIcon,
   getToolIconComponent 
 } from './tool-icons';
 export {
