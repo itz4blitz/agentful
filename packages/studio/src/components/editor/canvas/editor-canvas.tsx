@@ -112,7 +112,7 @@ const applyThemeToIframe = (iframe: HTMLIFrameElement, isDark: boolean) => {
 };
 
 export const EditorCanvas = React.forwardRef<HTMLIFrameElement, EditorCanvasProps>(
-  ({ initialHTML = '', className, onElementSelect, onElementHover, canvasThemeMode = 'auto', sidebarPosition = 'right' }, ref) => {
+  ({ initialHTML = '', className, onElementSelect, onElementHover, canvasThemeMode = 'auto', sidebarPosition = 'right', viewportSize = 'desktop' }, ref) => {
     const internalRef = React.useRef<HTMLIFrameElement>(null);
     const iframeRef = (ref as React.RefObject<HTMLIFrameElement>) || internalRef;
     const {
