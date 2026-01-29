@@ -9,8 +9,9 @@ import { useDndStore } from '@/stores/dnd-store';
 import type { DragData } from '@/types/dnd';
 import { cn } from '@/lib/utils';
 import * as LucideIcons from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
-const IconMap: Record<string, React.ComponentType<{ className?: string }>> = LucideIcons;
+const IconMap: Record<string, LucideIcon> = LucideIcons as unknown as Record<string, LucideIcon>;
 
 export interface DragOverlayProps {
   className?: string;
@@ -109,10 +110,10 @@ const DragOverlayContent = React.memo(({ dragData }: { dragData: DragData | null
 DragOverlayContent.displayName = 'DragOverlayContent';
 
 /**
- * GlobalDragOverlay Component
+ * DragOverlay Component (alias for GlobalDragOverlay)
  * Uses DndKit's DragOverlay to show a preview during drag operations
  */
-export const GlobalDragOverlay = React.forwardRef<HTMLDivElement, DragOverlayProps>(
+export const DragOverlay = React.forwardRef<HTMLDivElement, DragOverlayProps>(
   ({ className }, ref) => {
     const { dragData } = useDndStore();
     const { active } = useDndContext();
@@ -138,6 +139,26 @@ export const GlobalDragOverlay = React.forwardRef<HTMLDivElement, DragOverlayPro
   }
 );
 
-GlobalDragOverlay.displayName = 'GlobalDragOverlay';
+DragOverlay.displayName = 'DragOverlay';
 
+/**
+ * GlobalDragOverlay Component (deprecated alias)
+ * @deprecated Use DragOverlay instead
+ */
+export const GlobalDragOverlay = DragOverlay;
+
+/**
+ * useDragOverlay Hook
+ * Hook to access drag overlay state
+ */
+export const useDragOverlay = () => {
+  const { dragData } = useDndStore();
+  const { active } = useDndContext();
+
+  return {
+    active,
+    dragData,
+    isDragging: !!active,
+  };
+};
 

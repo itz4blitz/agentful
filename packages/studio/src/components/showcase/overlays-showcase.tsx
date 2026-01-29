@@ -69,7 +69,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { MoreHorizontal, Plus, Trash2, Info, CalendarDays, Maximize2, AlertTriangle, SidebarOpen, PanelBottom, ChevronDown, MousePointer2, MousePointerClick, MessageSquare } from 'lucide-react'
+import { MoreHorizontal, Plus, Trash2, CalendarDays, Maximize2, AlertTriangle, SidebarOpen, PanelBottom, ChevronDown, MousePointer2, MousePointerClick, MessageSquare } from 'lucide-react'
 
 export function OverlaysShowcase() {
   return (

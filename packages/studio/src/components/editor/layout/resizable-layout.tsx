@@ -156,8 +156,7 @@ export const ResizableLayout = React.forwardRef<ResizableLayoutHandle, Resizable
       <PanelCollapseContext.Provider value={contextValue}>
         <ResizablePanelGroup
           className={cn('h-[calc(100vh-3.5rem)] w-full overflow-hidden flex min-w-0 relative', className)}
-          autoSaveId={LAYOUT_STORAGE_KEY}
-          direction="horizontal"
+          orientation="horizontal"
         >
           {/* Sidebar Panel (when on left) */}
           {sidebarOnLeft && (
@@ -172,7 +171,7 @@ export const ResizableLayout = React.forwardRef<ResizableLayoutHandle, Resizable
                 collapsedSize={0}
                 className="min-w-0 overflow-hidden"
                 style={{ minWidth: 0 }}
-                onResize={(size) => setIsSidebarCollapsed(size <= 0.1)}
+                onResize={(size) => setIsSidebarCollapsed(size.asPercentage <= 0.1)}
               >
                 {rightPanel}
               </ResizablePanel>
@@ -207,7 +206,7 @@ export const ResizableLayout = React.forwardRef<ResizableLayoutHandle, Resizable
                 collapsedSize={0}
                 className="min-w-0 overflow-hidden"
                 style={{ minWidth: 0 }}
-                onResize={(size) => setIsSidebarCollapsed(size <= 0.1)}
+                onResize={(size) => setIsSidebarCollapsed(size.asPercentage <= 0.1)}
               >
                 {rightPanel}
               </ResizablePanel>

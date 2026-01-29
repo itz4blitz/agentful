@@ -11,7 +11,6 @@ import type {
   ExportOptions,
   ProjectStorageStats,
 } from '@/types/project';
-import { DEFAULT_PROJECT_SETTINGS } from '@/types/project';
 import {
   projectStorageService,
   projectExporterService,

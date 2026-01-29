@@ -1,4 +1,4 @@
-import type { ComponentTemplate } from './component-registry'
+import type { ComponentTemplate } from '@/types/components'
 
 /**
  * ShadCN UI component registry

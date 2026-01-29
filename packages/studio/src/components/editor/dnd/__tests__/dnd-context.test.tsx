@@ -69,10 +69,8 @@ describe('DndContext', () => {
   });
 
   it('should cancel drag on Escape key', () => {
-    const onDragCancel = vi.fn();
-
     render(
-      <DndContext onDragCancel={onDragCancel}>
+      <DndContext>
         <div>Test</div>
       </DndContext>
     );

@@ -15,6 +15,10 @@ import { DEFAULT_CANVAS_STATE } from '@/types/canvas';
 import { nanoid } from 'nanoid';
 
 interface CanvasStore extends CanvasState {
+  // Computed properties
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+
   // Actions
   setElements: (elements: CanvasElement[]) => void;
   setSelectedElement: (selection: CanvasSelection | null) => void;
@@ -49,9 +53,13 @@ interface CanvasStore extends CanvasState {
 }
 
 export const useCanvasStore = create<CanvasStore>()(
-  immer((set) => ({
+  immer((set, get) => ({
     // Initial state
     ...DEFAULT_CANVAS_STATE,
+
+    // Computed properties
+    canUndo: () => get().historyIndex >= 0,
+    canRedo: () => get().historyIndex < get().history.length - 1,
 
     // Actions
     setElements: (elements) =>
@@ -293,19 +301,21 @@ export const useCanvasStore = create<CanvasStore>()(
         findAndRemove(state.elements);
 
         if (elementToMove) {
+          const element = elementToMove;
+
           // Add to new parent
           const addToParent = (elements: CanvasElement[]): boolean => {
-            for (const element of elements) {
-              if (element.id === newParentId) {
+            for (const el of elements) {
+              if (el.id === newParentId) {
                 if (index !== undefined) {
-                  element.children.splice(index, 0, elementToMove!);
+                  el.children.splice(index, 0, element);
                 } else {
-                  element.children.push(elementToMove);
+                  el.children.push(element);
                 }
                 return true;
               }
-              if (element.children.length > 0) {
-                if (addToParent(element.children)) {
+              if (el.children.length > 0) {
+                if (addToParent(el.children)) {
                   return true;
                 }
               }
@@ -340,7 +350,7 @@ export const useCanvasStore = create<CanvasStore>()(
     wrapElement: (elementId, wrapperTag = 'div') =>
       set((state) => {
         let elementToWrap: CanvasElement | null = null;
-        let parent: CanvasElement | null = null;
+        let parentRef: { element: CanvasElement | null; index: number } | null = null;
         let elementIndex = -1;
         let isRoot = false;
 
@@ -352,7 +362,9 @@ export const useCanvasStore = create<CanvasStore>()(
           for (let i = 0; i < elements.length; i++) {
             if (elements[i].id === elementId) {
               elementToWrap = elements[i];
-              parent = parentElement;
+              if (parentElement) {
+                parentRef = { element: parentElement, index: i };
+              }
               elementIndex = i;
               isRoot = parentElement === null;
               return true;
@@ -369,24 +381,32 @@ export const useCanvasStore = create<CanvasStore>()(
         findElement(state.elements);
 
         if (elementToWrap) {
+          const wrapperId = nanoid();
+
           // Create wrapper element
           const wrapper: CanvasElement = {
-            id: nanoid(),
+            id: wrapperId,
             tagName: wrapperTag,
             attributes: {
               'data-wrapper': 'true',
               class: 'canvas-wrapper',
             },
             styles: {},
-            children: [elementToWrap],
+            children: [],
           };
 
+          // Create wrapped element copy
+          const wrappedElement: CanvasElement = JSON.parse(JSON.stringify(elementToWrap));
+          wrappedElement.parentId = wrapperId;
+          wrapper.children.push(wrappedElement);
+
           // Record history before wrapping
+          const originalElement: CanvasElement = JSON.parse(JSON.stringify(elementToWrap));
           const change: ElementChange = {
             type: 'structure',
             elementId,
-            oldValue: { ...elementToWrap, parentId: parent?.id },
-            newValue: { wrapperId: wrapper.id },
+            oldValue: originalElement,
+            newValue: { wrapperId },
             timestamp: new Date(),
           };
           state.history = state.history.slice(0, state.historyIndex + 1);
@@ -396,21 +416,36 @@ export const useCanvasStore = create<CanvasStore>()(
           // Replace element with wrapper in parent or root
           if (isRoot) {
             state.elements[elementIndex] = wrapper;
-          } else if (parent) {
-            parent.children[elementIndex] = wrapper;
+          // @ts-ignore - Immer draft type inference issue
+          } else if (parentRef && parentRef.element) {
+            // @ts-ignore - Immer draft type inference issue
+            const parentId = parentRef.element.id;
+            // @ts-ignore - Immer draft type inference issue
+            const pIndex = parentRef.index;
+            const findAndUpdateParent = (elements: CanvasElement[]): boolean => {
+              for (const el of elements) {
+                if (el.id === parentId) {
+                  el.children[pIndex] = wrapper;
+                  return true;
+                }
+                if (el.children.length > 0) {
+                  if (findAndUpdateParent(el.children)) {
+                    return true;
+                  }
+                }
+              }
+              return false;
+            };
+            findAndUpdateParent(state.elements);
           }
 
-          // Update wrapped element's parent reference
-          elementToWrap.parentId = wrapper.id;
           state.isDirty = true;
         }
       }),
 
     unwrapElement: (elementId) =>
       set((state) => {
-        let parent: CanvasElement | null = null;
-        let grandParent: CanvasElement | null = null;
-        let parentIndex = -1;
+        let parentRef: { element: CanvasElement; index: number; gpId?: string } | null = null;
         let isRoot = false;
 
         // Find the parent wrapper and its parent
@@ -422,9 +457,11 @@ export const useCanvasStore = create<CanvasStore>()(
             if (elements[i].children.length > 0) {
               for (let j = 0; j < elements[i].children.length; j++) {
                 if (elements[i].children[j].id === elementId) {
-                  parent = elements[i].children[j];
-                  grandParent = elements[i];
-                  parentIndex = j;
+                  parentRef = {
+                    element: elements[i].children[j],
+                    index: j,
+                    gpId: grandParentElement?.id,
+                  };
                   isRoot = false;
                   return true;
                 }
@@ -440,27 +477,28 @@ export const useCanvasStore = create<CanvasStore>()(
         // Also check root level
         for (let i = 0; i < state.elements.length; i++) {
           if (state.elements[i].id === elementId) {
-            parent = state.elements[i];
-            grandParent = null;
-            parentIndex = i;
+            parentRef = { element: state.elements[i], index: i };
             isRoot = true;
             break;
           }
         }
 
-        if (!parent && !isRoot) {
+        if (!parentRef && !isRoot) {
           findWrapper(state.elements);
         }
 
-        if (parent && parent.attributes['data-wrapper'] === 'true') {
+        if (parentRef && parentRef.element.attributes['data-wrapper'] === 'true') {
           // Get all children to promote
-          const childrenToPromote = [...parent.children];
+          const childrenToPromote: CanvasElement[] = parentRef.element.children.map(
+            child => JSON.parse(JSON.stringify(child))
+          );
 
           // Record history before unwrapping
+          const wrapperCopy: CanvasElement = JSON.parse(JSON.stringify(parentRef.element));
           const change: ElementChange = {
             type: 'structure',
             elementId,
-            oldValue: { wrapper: { ...parent } },
+            oldValue: { wrapper: wrapperCopy },
             newValue: { unwrapped: true },
             timestamp: new Date(),
           };
@@ -469,28 +507,56 @@ export const useCanvasStore = create<CanvasStore>()(
           state.historyIndex = state.history.length - 1;
 
           // Remove wrapper and promote children
-          if (grandParent) {
-            // Remove wrapper from grandparent
-            grandParent.children.splice(parentIndex, 1);
-            // Add all children at the wrapper's position
-            grandParent.children.splice(parentIndex, 0, ...childrenToPromote);
+          if (!isRoot && parentRef.gpId) {
+            // Need to find the grandparent again to modify it
+            const findAndUpdateGrandParent = (
+              elements: CanvasElement[],
+            ): boolean => {
+              for (let i = 0; i < elements.length; i++) {
+                if (elements[i].id === parentRef!.gpId) {
+                  // Remove wrapper from grandparent
+                  elements[i].children.splice(parentRef!.index, 1);
+                  // Add all children at the wrapper's position
+                  elements[i].children.splice(parentRef!.index, 0, ...childrenToPromote);
+                  return true;
+                }
+                if (elements[i].children.length > 0) {
+                  if (findAndUpdateGrandParent(elements[i].children)) {
+                    return true;
+                  }
+                }
+              }
+              return false;
+            };
+            findAndUpdateGrandParent(state.elements);
+
+            // Update parentId for promoted children
+            const updateParentIds = (elements: CanvasElement[], parentId: string | undefined) => {
+              for (const child of elements) {
+                child.parentId = parentId;
+                if (child.children.length > 0) {
+                  updateParentIds(child.children, child.id);
+                }
+              }
+            };
+            updateParentIds(childrenToPromote, parentRef.gpId);
           } else if (isRoot) {
             // Remove wrapper from root
-            state.elements.splice(parentIndex, 1);
+            state.elements.splice(parentRef.index, 1);
             // Add all children at the wrapper's position
-            state.elements.splice(parentIndex, 0, ...childrenToPromote);
-          }
+            state.elements.splice(parentRef.index, 0, ...childrenToPromote);
 
-          // Update parentId for promoted children
-          const updateParentIds = (elements: CanvasElement[], newParentId: string | undefined) => {
-            for (const child of elements) {
-              child.parentId = newParentId;
-              if (child.children.length > 0) {
-                updateParentIds(child.children, child.id);
+            // Update parentId for promoted children (no parent)
+            const updateParentIds = (elements: CanvasElement[], parentId: string | undefined) => {
+              for (const child of elements) {
+                child.parentId = parentId;
+                if (child.children.length > 0) {
+                  updateParentIds(child.children, child.id);
+                }
               }
-            }
-          };
-          updateParentIds(childrenToPromote, grandParent?.id);
+            };
+            updateParentIds(childrenToPromote, undefined);
+          }
 
           state.isDirty = true;
         }
@@ -498,10 +564,12 @@ export const useCanvasStore = create<CanvasStore>()(
 
     reorderElement: (elementId, direction) =>
       set((state) => {
-        let elementToReorder: CanvasElement | null = null;
-        let parent: CanvasElement | null = null;
-        let currentIndex = -1;
-        let isRoot = false;
+        let elementInfo: {
+          element: CanvasElement;
+          parentId: string | null;
+          index: number;
+          isRoot: boolean;
+        } | null = null;
 
         // Find element and its parent
         const findElement = (
@@ -510,10 +578,12 @@ export const useCanvasStore = create<CanvasStore>()(
         ): boolean => {
           for (let i = 0; i < elements.length; i++) {
             if (elements[i].id === elementId) {
-              elementToReorder = elements[i];
-              parent = parentElement;
-              currentIndex = i;
-              isRoot = parentElement === null;
+              elementInfo = {
+                element: elements[i],
+                parentId: parentElement?.id || null,
+                index: i,
+                isRoot: parentElement === null,
+              };
               return true;
             }
             if (elements[i].children.length > 0) {
@@ -527,35 +597,64 @@ export const useCanvasStore = create<CanvasStore>()(
 
         findElement(state.elements);
 
-        if (elementToReorder && parent) {
-          const siblings = parent.children;
-          const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+        if (elementInfo) {
+          // Extract values to avoid draft type issues
+          // @ts-ignore - Immer draft type inference issue
+          const infoIsRoot = elementInfo.isRoot;
+          // @ts-ignore - Immer draft type inference issue
+          const infoParentId = elementInfo.parentId;
+          // @ts-ignore - Immer draft type inference issue
+          const infoIndex = elementInfo.index;
+          // @ts-ignore - Immer draft type inference issue
+          const infoElement = elementInfo.element;
 
-          // Validate bounds
-          if (newIndex < 0 || newIndex >= siblings.length) {
-            return; // Invalid move, would go out of bounds
-          }
+          if (!infoIsRoot && infoParentId) {
+            // Find parent and reorder
+            const findAndReorderInParent = (elements: CanvasElement[]): boolean => {
+            for (const el of elements) {
+              if (el.id === infoParentId) {
+                const siblings = el.children;
+                const currentIndex = infoIndex;
+                const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
-          // Record history before reordering
-          const change: ElementChange = {
-            type: 'structure',
-            elementId,
-            oldValue: { oldIndex: currentIndex },
-            newValue: { newIndex },
-            timestamp: new Date(),
+                // Validate bounds
+                if (newIndex < 0 || newIndex >= siblings.length) {
+                  return true; // Invalid move, handled
+                }
+
+                // Record history before reordering
+                const change: ElementChange = {
+                  type: 'structure',
+                  elementId,
+                  oldValue: { oldIndex: currentIndex },
+                  newValue: { newIndex },
+                  timestamp: new Date(),
+                };
+                state.history = state.history.slice(0, state.historyIndex + 1);
+                state.history.push(change);
+                state.historyIndex = state.history.length - 1;
+
+                // Remove from current position
+                siblings.splice(currentIndex, 1);
+                // Insert at new position
+                siblings.splice(newIndex, 0, infoElement);
+
+                state.isDirty = true;
+                return true;
+              }
+              if (el.children.length > 0) {
+                if (findAndReorderInParent(el.children)) {
+                  return true;
+                }
+              }
+            }
+            return false;
           };
-          state.history = state.history.slice(0, state.historyIndex + 1);
-          state.history.push(change);
-          state.historyIndex = state.history.length - 1;
 
-          // Remove from current position
-          siblings.splice(currentIndex, 1);
-          // Insert at new position
-          siblings.splice(newIndex, 0, elementToReorder);
-
-          state.isDirty = true;
-        } else if (elementToReorder && isRoot) {
+          findAndReorderInParent(state.elements);
+        } else if (infoIsRoot) {
           const siblings = state.elements;
+          const currentIndex = infoIndex;
           const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
 
           // Validate bounds
@@ -578,9 +677,10 @@ export const useCanvasStore = create<CanvasStore>()(
           // Remove from current position
           siblings.splice(currentIndex, 1);
           // Insert at new position
-          siblings.splice(newIndex, 0, elementToReorder);
+          siblings.splice(newIndex, 0, infoElement);
 
           state.isDirty = true;
+          }
         }
       }),
 

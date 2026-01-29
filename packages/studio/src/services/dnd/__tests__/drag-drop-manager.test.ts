@@ -9,14 +9,11 @@ import {
   findClosestDroppable,
   getDropIndex,
   handleDragStart,
-  handleDragOver,
-  handleDrop,
   handleDragCancel,
   validateDropTarget,
 } from '@/services/dnd/drag-drop-manager';
 import { useDndStore } from '@/stores/dnd-store';
-import { useCanvasStore } from '@/stores/canvas-store';
-import type { ComponentTemplate, CanvasElement } from '@/types';
+import type { ComponentTemplate } from '@/types';
 
 // Mock stores
 vi.mock('@/stores/dnd-store');

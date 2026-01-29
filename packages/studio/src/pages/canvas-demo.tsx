@@ -24,6 +24,10 @@ export const CanvasDemo = () => {
     reset,
   } = useCanvasStore();
 
+  // Computed values
+  const canUndoValue = canUndo();
+  const canRedoValue = canRedo();
+
   const handleExport = React.useCallback(() => {
     const htmlContent = html || '<div>No content</div>';
     const blob = new Blob([htmlContent], { type: 'text/html' });
@@ -53,7 +57,7 @@ export const CanvasDemo = () => {
             variant="outline"
             size="sm"
             onClick={undo}
-            disabled={!canUndo}
+            disabled={!canUndoValue}
             aria-label="Undo"
           >
             <Undo2 className="h-4 w-4" />
@@ -62,7 +66,7 @@ export const CanvasDemo = () => {
             variant="outline"
             size="sm"
             onClick={redo}
-            disabled={!canRedo}
+            disabled={!canRedoValue}
             aria-label="Redo"
           >
             <Redo2 className="h-4 w-4" />

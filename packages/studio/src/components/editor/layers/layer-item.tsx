@@ -119,8 +119,6 @@ export const LayerItem = React.memo(
         )}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
-        role="button"
-        tabIndex={0}
         aria-label={`Select ${getElementName(element)}`}
         aria-selected={isSelected}
         {...listeners}

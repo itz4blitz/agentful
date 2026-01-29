@@ -55,16 +55,15 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b && tsc -p tsconfig.extension.json --noEmit",
     "ci": "npm run typecheck && npm run lint && npm run test:run && npm run test:e2e && npm run build",
     "security": "npm audit && npm outdated",
-    "vscode:prepublish": "tsc -p ./",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "vscode:prepublish": "tsc -p ./tsconfig.extension.json",
+    "compile": "tsc -p ./tsconfig.extension.json",
+    "watch": "tsc -watch -p ./tsconfig.extension.json"
   },
   "dependencies": {
     "@itz4blitz/agentful-shared": "workspace:*",
-    "@itz4blitz/agentful-mcp-server": "workspace:*",
     "@ai-sdk/react": "^1.2.4",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",

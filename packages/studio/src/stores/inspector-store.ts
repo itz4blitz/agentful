@@ -14,8 +14,8 @@ import type {
   PropertyGroup,
   PropertyChange,
   InspectorTab,
-  CanvasElement,
 } from '@/types/inspector';
+import type { CanvasElement } from '@/types/canvas';
 import {
   FONT_FAMILIES,
   FONT_SIZES,
@@ -616,12 +616,12 @@ export const useInspectorStore = create<InspectorStore>()(
             if (!state.elementData!.styles) {
               state.elementData!.styles = {};
             }
-            state.elementData!.styles[change.propertyKey] = change.newValue;
+            state.elementData!.styles[change.propertyKey] = change.newValue as string;
           } else if (change.property === 'attribute') {
             if (!state.elementData!.attributes) {
               state.elementData!.attributes = {};
             }
-            state.elementData!.attributes[change.propertyKey] = change.newValue;
+            state.elementData!.attributes[change.propertyKey] = change.newValue as string;
           }
         });
 

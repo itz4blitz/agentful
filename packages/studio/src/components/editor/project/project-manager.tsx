@@ -12,11 +12,9 @@ import {
   Search,
   Calendar,
   Copy,
-  Download,
 } from 'lucide-react';
 import { useProjectStore } from '@/stores/project-store';
 import type { ProjectListItem } from '@/types/project';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -50,11 +48,10 @@ export interface ProjectManagerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onProjectOpen?: (projectId: string) => void;
-  className?: string;
 }
 
 export const ProjectManager = React.memo(
-  ({ open, onOpenChange, onProjectOpen, className }: ProjectManagerProps) => {
+  ({ open, onOpenChange, onProjectOpen }: ProjectManagerProps) => {
     const {
       projects,
       createProject,

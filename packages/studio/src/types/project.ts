@@ -3,7 +3,7 @@
  * Type definitions for the Project Management feature
  */
 
-import type { CanvasState, CanvasElement } from './canvas';
+import type { CanvasState } from './canvas';
 import type { Theme } from './theme';
 
 /**

@@ -59,7 +59,7 @@ export const PropertyField = React.memo(
           return (
             <Input
               type="text"
-              value={value}
+              value={value as string}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={field.placeholder}
               className={cn(
@@ -73,7 +73,7 @@ export const PropertyField = React.memo(
           return (
             <Input
               type="number"
-              value={typeof value === 'number' ? value : parseFloat(value) || 0}
+              value={typeof value === 'number' ? value : parseFloat(String(value)) || 0}
               onChange={(e) => handleChange(parseFloat(e.target.value) || 0)}
               min={field.min}
               max={field.max}
@@ -88,7 +88,7 @@ export const PropertyField = React.memo(
         case 'textarea':
           return (
             <Textarea
-              value={value}
+              value={value as string}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={field.placeholder}
               rows={3}
@@ -132,8 +132,8 @@ export const PropertyField = React.memo(
         case 'checkbox':
           return (
             <Switch
-              checked={value}
-              onCheckedChange={handleChange}
+              checked={value as boolean}
+              onCheckedChange={(checked) => handleChange(checked)}
               className={hasChange ? 'data-[state=checked]:bg-primary' : ''}
             />
           );
@@ -151,7 +151,7 @@ export const PropertyField = React.memo(
                 className="flex-1"
               />
               <span className="text-xs text-muted-foreground w-12 text-right">
-                {typeof value === 'number' ? value.toFixed(2) : value}
+                {typeof value === 'number' ? value.toFixed(2) : String(value)}
                 {field.unit}
               </span>
             </div>
@@ -207,7 +207,7 @@ export const PropertyField = React.memo(
 
         case 'font':
           return (
-            <Select value={value} onValueChange={handleChange}>
+            <Select value={String(value ?? '')} onValueChange={handleChange}>
               <SelectTrigger
                 className={cn(
                   'h-8 text-sm',
@@ -231,7 +231,7 @@ export const PropertyField = React.memo(
           return (
             <Input
               type="text"
-              value={value}
+              value={value as string}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={field.placeholder || '0, 8px, 1rem'}
               className={cn(
@@ -246,7 +246,7 @@ export const PropertyField = React.memo(
           return (
             <Input
               type="text"
-              value={value}
+              value={value as string}
               onChange={(e) => handleChange(e.target.value)}
               placeholder={field.placeholder || '0'}
               className={cn(
@@ -260,7 +260,7 @@ export const PropertyField = React.memo(
           return (
             <Input
               type="text"
-              value={value}
+              value={value as string}
               onChange={(e) => handleChange(e.target.value)}
               className={cn(
                 'h-8 text-sm',

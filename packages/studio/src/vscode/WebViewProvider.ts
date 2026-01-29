@@ -3,18 +3,15 @@ import * as vscode from 'vscode';
 export class WebViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'agentfulStudioView';
 
-  private _view?: vscode.WebviewView;
-
   constructor(
     private readonly _extensionUri: vscode.Uri
   ) {}
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext,
+    _context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken
-  ) {
-    this._view = webviewView;
+  ): void {
 
     webviewView.webview.options = {
       enableScripts: true,
@@ -25,11 +22,10 @@ export class WebViewProvider implements vscode.WebviewViewProvider {
 
     // Handle messages from the webview
     webviewView.webview.onDidReceiveMessage(
-      message => {
+      (message: unknown) => {
         console.log('Received message from webview:', message);
         // Message handling will be implemented later
-      },
-      undefined
+      }
     );
   }
 

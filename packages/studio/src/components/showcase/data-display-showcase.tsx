@@ -8,7 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { AspectRatio } from '@/components/ui/aspect-ratio'
-import { Layout, Table as TableIcon, User, Minus, ChevronDown, UnfoldVertical, Scroll, Columns, Image, CreditCard } from 'lucide-react'
+import { Layout, Table as TableIcon, User, Minus, ChevronDown, UnfoldVertical, Scroll, Columns, Image } from 'lucide-react'
 
 export function DataDisplayShowcase() {
   return (
@@ -281,7 +281,7 @@ export function DataDisplayShowcase() {
           <CardDescription>Accessible resizable panel groups.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ResizablePanelGroup direction="horizontal" className="min-h-[200px] max-w-full rounded-lg border">
+          <ResizablePanelGroup orientation="horizontal" className="min-h-[200px] max-w-full rounded-lg border">
             <ResizablePanel defaultSize={50}>
               <div className="flex h-full items-center justify-center p-6">
                 <span className="font-semibold">One</span>
@@ -289,7 +289,7 @@ export function DataDisplayShowcase() {
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={50}>
-              <ResizablePanelGroup direction="vertical">
+              <ResizablePanelGroup orientation="vertical">
                 <ResizablePanel defaultSize={25}>
                   <div className="flex h-full items-center justify-center p-6">
                     <span className="font-semibold">Two</span>

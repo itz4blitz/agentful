@@ -14,13 +14,33 @@ export interface LayoutSeparatorProps extends React.ComponentProps<typeof Resiza
 }
 
 export const LayoutSeparator = React.forwardRef<HTMLDivElement, LayoutSeparatorProps>(
-  ({ withHandle = true, direction = 'horizontal', className, ...props }, ref) => {
+  ({ withHandle = true, direction = 'horizontal', className, elementRef, ...props }, ref) => {
     const [isDragging, setIsDragging] = React.useState(false);
+
+    // Combine refs to support both forwardRef and elementRef
+    const combinedRef = React.useMemo(
+      () => (node: HTMLDivElement | null) => {
+        // Handle the forwardRef from React.forwardRef
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref) {
+          ref.current = node;
+        }
+        // Handle the elementRef from react-resizable-panels
+        if (typeof elementRef === 'function') {
+          elementRef(node);
+        } else if (elementRef) {
+          elementRef.current = node;
+        }
+      },
+      [ref, elementRef]
+    );
 
     return (
       <ResizableHandle
-        ref={ref}
+        {...props}
         withHandle={withHandle}
+        elementRef={combinedRef}
         className={cn(
           'relative flex',
           // Background and border
@@ -44,9 +64,6 @@ export const LayoutSeparator = React.forwardRef<HTMLDivElement, LayoutSeparatorP
         onPointerUp={() => setIsDragging(false)}
         onPointerLeave={() => setIsDragging(false)}
         aria-label="Resize panel"
-        role="separator"
-        aria-orientation={direction === 'horizontal' ? 'vertical' : 'horizontal'}
-        {...props}
       >
         {withHandle && (
           <div

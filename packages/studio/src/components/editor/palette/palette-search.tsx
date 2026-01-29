@@ -5,7 +5,6 @@
 
 import * as React from 'react';
 import { Search, X, Tag, Plus } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';

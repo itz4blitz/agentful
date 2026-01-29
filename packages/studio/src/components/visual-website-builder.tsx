@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { ThemeToggle } from '@/components/theme-toggle'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import { ResizableLayout, type ResizableLayoutHandle } from '@/components/editor/layout/resizable-layout'
 import { EditorCanvas, type CanvasThemeMode } from '@/components/editor/canvas/editor-canvas'

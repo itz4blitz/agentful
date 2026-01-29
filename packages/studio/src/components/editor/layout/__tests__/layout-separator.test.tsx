@@ -2,6 +2,7 @@
  * LayoutSeparator Tests
  */
 
+import { describe, it, expect } from 'vitest';
 import { render, screen } from '@/test/setup';
 import { LayoutSeparator } from '../layout-separator';
 
