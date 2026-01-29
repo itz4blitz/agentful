@@ -1,3 +1,20 @@
+# [1.6.0](https://github.com/itz4blitz/agentful/compare/v1.5.1...v1.6.0) (2026-01-29)
+
+
+### Features
+
+* add AI provider abstraction layer ([b583d4e](https://github.com/itz4blitz/agentful/commit/b583d4e45ac344e9ea4b2763c1b2ac13bfb3d927))
+* add MCP canvas resources and monorepo structure ([5c593f5](https://github.com/itz4blitz/agentful/commit/5c593f5f7b43dc2d397e41fe1fecde1cd92680c4))
+* add ShadCN component registry ([722c92a](https://github.com/itz4blitz/agentful/commit/722c92af9764be6933249ef38020569759c84d50))
+* add VS Code extension infrastructure ([4a5b33f](https://github.com/itz4blitz/agentful/commit/4a5b33fc0b8acad1adee676f1a5a0185e1a944f0))
+* convert studio package to VS Code extension with webview ([4fa4c1d](https://github.com/itz4blitz/agentful/commit/4fa4c1d3894d97bf7b7df99d476e2ff82333a640))
+* fix all remaining TypeScript errors and achieve successful build ([778b030](https://github.com/itz4blitz/agentful/commit/778b03078d6ebe01d14334e8cb08421d2c2fe52e))
+* fix TypeScript errors in studio package ([fa2105b](https://github.com/itz4blitz/agentful/commit/fa2105b5058425e820da650eacffedf067e3c0a3))
+* merge VS Code extension infra ([3676a43](https://github.com/itz4blitz/agentful/commit/3676a4391aae795705efe5b98cb7ecb957c8d3bb))
+* remove chat panel and update layout system ([ffb499b](https://github.com/itz4blitz/agentful/commit/ffb499bdf3ba9b3ad28477b0980805aebd3eb445))
+* **studio:** merge studio into monorepo and add Integration Hub ([06b6d2f](https://github.com/itz4blitz/agentful/commit/06b6d2f6d9b7b2d8ee892fb4d2e7875be41f43d1))
+* **studio:** update extension with theme sync, hot reload, and Integration Hub ([8845863](https://github.com/itz4blitz/agentful/commit/884586385786eb08421c3572271032886a2b1953))
+
 ## [1.5.1](https://github.com/itz4blitz/agentful/compare/v1.5.0...v1.5.1) (2026-01-28)
 
 
