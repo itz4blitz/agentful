@@ -54,7 +54,7 @@ const TOOL_DEFINITIONS: Omit<CLITool, 'version' | 'isInstalled' | 'isRunning' | 
     mcpFormat: 'claude',
     description: 'Anthropic\'s official CLI coding agent',
     website: 'https://docs.anthropic.com/en/docs/agents-and-tools/claude-code',
-    supports: { mcp: true, skills: false, agents: true, hooks: false },
+    supports: { mcp: true, skills: true, agents: true, hooks: true },
   },
   {
     id: 'gemini',
@@ -74,7 +74,7 @@ const TOOL_DEFINITIONS: Omit<CLITool, 'version' | 'isInstalled' | 'isRunning' | 
     mcpFormat: 'codex',
     description: 'OpenAI\'s coding agent',
     website: 'https://platform.openai.com/docs/codex',
-    supports: { mcp: true, skills: false, agents: true, hooks: false },
+    supports: { mcp: true, skills: true, agents: true, hooks: false },
   },
   {
     id: 'kiro',
@@ -82,9 +82,9 @@ const TOOL_DEFINITIONS: Omit<CLITool, 'version' | 'isInstalled' | 'isRunning' | 
     command: 'kiro',
     configPath: '~/.kiro/config.yaml',
     mcpFormat: 'kiro',
-    description: 'AI coding agent with hooks',
+    description: 'AI coding agent with MCP and Powers (skills)',
     website: 'https://kiro.dev/',
-    supports: { mcp: false, skills: false, agents: true, hooks: true },
+    supports: { mcp: true, skills: true, agents: true, hooks: true },
   },
   {
     id: 'cursor',
