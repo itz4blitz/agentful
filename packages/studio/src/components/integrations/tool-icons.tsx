@@ -29,19 +29,28 @@ const TOOL_ICON_URLS: Record<string, { default: string; light?: string; dark?: s
     default: `${CDN_BASE}/codex.svg`,
     light: `${CDN_BASE}/codex-light.svg`,
   },
+  aider: {
+    default: `${CDN_BASE}/code.svg`, // Fallback to generic code icon
+  },
   kiro: {
     default: `${CDN_BASE}/code.svg`, // Fallback to generic code icon
   },
   cursor: {
-    default: `${CDN_BASE}/github-copilot.svg`, // Fallback to copilot icon
+    default: `${CDN_BASE}/github-copilot.svg`, // Similar AI assistant icon
   },
   roo: {
-    default: `${CDN_BASE}/vscode.svg`, // Fallback to VS Code icon
+    default: `${CDN_BASE}/vscode.svg`, // VS Code extension
+  },
+  cline: {
+    default: `${CDN_BASE}/vscode.svg`, // VS Code extension
+  },
+  kilo: {
+    default: `${CDN_BASE}/vscode.svg`, // VS Code extension
   },
 };
 
-// Generic tool fallback - using code icon as fallback
-const GENERIC_ICON = `${CDN_BASE}/code.svg`;
+// Generic tool fallback
+const GENERIC_ICON = `${CDN_BASE}/terminal.svg`;
 
 function DashboardIcon({ 
   url, 
@@ -64,7 +73,7 @@ function DashboardIcon({
       onError={(e) => {
         // Fallback to generic icon if load fails
         const target = e.target as HTMLImageElement;
-        if (!target.src.includes('/code.svg')) {
+        if (!target.src.includes('/terminal.svg')) {
           target.src = GENERIC_ICON;
         }
       }}
@@ -90,8 +99,34 @@ export function CodexIcon({ className, size = 20, theme = 'light' }: ToolIconPro
   return <DashboardIcon url={url} alt="Codex CLI" size={size} className={className} />;
 }
 
+export function AiderIcon({ className, size = 20 }: ToolIconProps) {
+  // Custom Aider icon (Aider doesn't have a dashboard-icon yet)
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <rect width="32" height="32" rx="6" fill="#4F46E5" />
+      <text
+        x="16"
+        y="22"
+        textAnchor="middle"
+        fill="white"
+        fontSize="14"
+        fontWeight="bold"
+        fontFamily="monospace"
+      >
+        {'</>'}
+      </text>
+    </svg>
+  );
+}
+
 export function KiroIcon({ className, size = 20 }: ToolIconProps) {
-  // Custom K icon since no specific icon exists
   return (
     <svg
       width={size}
@@ -118,7 +153,6 @@ export function KiroIcon({ className, size = 20 }: ToolIconProps) {
 }
 
 export function CursorIcon({ className, size = 20 }: ToolIconProps) {
-  // Custom Cursor icon since no specific icon exists
   return (
     <svg
       width={size}
@@ -138,7 +172,6 @@ export function CursorIcon({ className, size = 20 }: ToolIconProps) {
 }
 
 export function RooIcon({ className, size = 20 }: ToolIconProps) {
-  // Custom Roo icon (Roo is a VS Code extension)
   return (
     <svg
       width={size}
@@ -164,6 +197,58 @@ export function RooIcon({ className, size = 20 }: ToolIconProps) {
   );
 }
 
+export function ClineIcon({ className, size = 20 }: ToolIconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <rect width="32" height="32" rx="6" fill="#6366F1" />
+      <text
+        x="16"
+        y="22"
+        textAnchor="middle"
+        fill="white"
+        fontSize="14"
+        fontWeight="bold"
+        fontFamily="system-ui, sans-serif"
+      >
+        C
+      </text>
+    </svg>
+  );
+}
+
+export function KiloIcon({ className, size = 20 }: ToolIconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+    >
+      <rect width="32" height="32" rx="6" fill="#EC4899" />
+      <text
+        x="16"
+        y="22"
+        textAnchor="middle"
+        fill="white"
+        fontSize="14"
+        fontWeight="bold"
+        fontFamily="system-ui, sans-serif"
+      >
+        K
+      </text>
+    </svg>
+  );
+}
+
 export function GenericToolIcon({ className, size = 20 }: ToolIconProps) {
   return <DashboardIcon url={GENERIC_ICON} alt="Tool" size={size} className={className} />;
 }
@@ -177,12 +262,18 @@ export function getToolIconComponent(toolId: string, size?: number, theme: 'ligh
       return <GeminiIcon size={size} />;
     case 'codex':
       return <CodexIcon size={size} theme={theme} />;
+    case 'aider':
+      return <AiderIcon size={size} />;
     case 'kiro':
       return <KiroIcon size={size} />;
     case 'cursor':
       return <CursorIcon size={size} />;
     case 'roo':
       return <RooIcon size={size} />;
+    case 'cline':
+      return <ClineIcon size={size} />;
+    case 'kilo':
+      return <KiloIcon size={size} />;
     default:
       return <GenericToolIcon size={size} />;
   }
@@ -197,3 +288,6 @@ export function getToolIconUrl(toolId: string, theme: 'light' | 'dark' = 'light'
          theme === 'light' && urls.light ? urls.light :
          urls.default;
 }
+
+// Export icon mapping for tool selector
+export { TOOL_ICON_URLS };
