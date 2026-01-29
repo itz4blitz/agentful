@@ -1,17 +1,48 @@
 /**
  * MCP Server Icons
- * Custom SVG icons for each MCP server type
+ * Using dashboard-icons from https://github.com/homarr-labs/dashboard-icons
+ * CDN: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/
  */
 
 import { 
-  FolderOpen, Github, Database, Globe, 
+  FolderOpen, Database, Globe, 
   Search, Map, Bug, MessageSquare, FileCode
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// CDN Base URL
+const CDN_BASE = 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg';
+
 interface MCPIconProps {
   className?: string;
   size?: number;
+}
+
+function DashboardIcon({ 
+  url, 
+  alt, 
+  size = 20, 
+  className 
+}: { 
+  url: string; 
+  alt: string; 
+  size?: number; 
+  className?: string;
+}) {
+  return (
+    <img
+      src={url}
+      alt={alt}
+      width={size}
+      height={size}
+      className={cn("inline-block object-contain", className)}
+      onError={(e) => {
+        // Hide image on error, parent will show fallback
+        const target = e.target as HTMLImageElement;
+        target.style.display = 'none';
+      }}
+    />
+  );
 }
 
 // Filesystem icon
@@ -19,12 +50,12 @@ export function FilesystemIcon({ className, size = 20 }: MCPIconProps) {
   return <FolderOpen className={cn("text-blue-500", className)} style={{ width: size, height: size }} />;
 }
 
-// GitHub icon
+// GitHub icon - using dashboard-icons
 export function GitHubIcon({ className, size = 20 }: MCPIconProps) {
-  return <Github className={cn("text-gray-900 dark:text-white", className)} style={{ width: size, height: size }} />;
+  return <DashboardIcon url={`${CDN_BASE}/github.svg`} alt="GitHub" size={size} className={className} />;
 }
 
-// PostgreSQL icon (elephant/database)
+// PostgreSQL icon
 export function PostgresIcon({ className, size = 20 }: MCPIconProps) {
   return <Database className={cn("text-blue-600", className)} style={{ width: size, height: size }} />;
 }
@@ -58,14 +89,14 @@ export function FetchIcon({ className, size = 20 }: MCPIconProps) {
   return <Globe className={cn("text-cyan-500", className)} style={{ width: size, height: size }} />;
 }
 
-// Brave Search icon
+// Brave Search icon - using dashboard-icons
 export function BraveSearchIcon({ className, size = 20 }: MCPIconProps) {
-  return <Search className={cn("text-orange-500", className)} style={{ width: size, height: size }} />;
+  return <DashboardIcon url={`${CDN_BASE}/brave.svg`} alt="Brave" size={size} className={className} />;
 }
 
-// Google Maps icon
+// Google Maps icon - using dashboard-icons
 export function GoogleMapsIcon({ className, size = 20 }: MCPIconProps) {
-  return <Map className={cn("text-green-500", className)} style={{ width: size, height: size }} />;
+  return <DashboardIcon url={`${CDN_BASE}/google-maps.svg`} alt="Google Maps" size={size} className={className} />;
 }
 
 // Sentry icon
