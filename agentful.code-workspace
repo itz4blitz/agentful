@@ -1,0 +1,151 @@
+{
+  "folders": [
+    {
+      "name": "🚀 Root",
+      "path": "."
+    },
+    {
+      "name": "📦 CLI",
+      "path": "packages/cli"
+    },
+    {
+      "name": "🔌 MCP Server",
+      "path": "packages/mcp-server"
+    },
+    {
+      "name": "📦 Shared",
+      "path": "packages/shared"
+    },
+    {
+      "name": "🎨 VS Code Extension (Studio)",
+      "path": "packages/studio"
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/.git": true,
+      "**/.DS_Store": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/pnpm-lock.yaml": true,
+      "**/package-lock.json": true
+    },
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit"
+    },
+    "debug.toolBarLocation": "floating"
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "bradlc.vscode-tailwindcss",
+      "vitest.explorer",
+      "ms-vscode.vscode-typescript-next"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "🎨 Studio Extension (Hot Reload)",
+        "type": "extensionHost",
+        "request": "launch",
+        "args": [
+          "--extensionDevelopmentPath=${workspaceFolder:🎨 VS Code Extension (Studio)}"
+        ],
+        "outFiles": [
+          "${workspaceFolder:🎨 VS Code Extension (Studio)}/dist/**/*.js"
+        ],
+        "preLaunchTask": "npm: build - 🎨 VS Code Extension (Studio)",
+        "presentation": {
+          "group": "studio",
+          "order": 1
+        }
+      },
+      {
+        "name": "🎨 Studio Extension (Watch Mode)",
+        "type": "extensionHost",
+        "request": "launch",
+        "args": [
+          "--extensionDevelopmentPath=${workspaceFolder:🎨 VS Code Extension (Studio)}"
+        ],
+        "outFiles": [
+          "${workspaceFolder:🎨 VS Code Extension (Studio)}/dist/**/*.js"
+        ],
+        "preLaunchTask": "npm: watch - 🎨 VS Code Extension (Studio)",
+        "presentation": {
+          "group": "studio",
+          "order": 2
+        }
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "type": "npm",
+        "script": "build",
+        "path": "packages/studio",
+        "label": "📦 Build Studio",
+        "detail": "Build the VS Code extension",
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "shared"
+        }
+      },
+      {
+        "type": "npm",
+        "script": "watch",
+        "path": "packages/studio",
+        "label": "👀 Watch Studio",
+        "detail": "Watch mode for Studio (extension + webview)",
+        "isBackground": true,
+        "problemMatcher": {
+          "pattern": {
+            "regexp": "^(.*):(\d+):\s+(.*)$",
+            "file": 1,
+            "line": 2,
+            "message": 3
+          },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "^(.*)building.*",
+            "endsPattern": "^(.*)built in.*"
+          }
+        },
+        "group": "build"
+      },
+      {
+        "type": "npm",
+        "script": "build:all",
+        "path": ".",
+        "label": "📦 Build All Packages",
+        "detail": "Build all packages in the monorepo",
+        "group": "build"
+      },
+      {
+        "type": "npm",
+        "script": "install:all",
+        "path": ".",
+        "label": "📦 Install All Dependencies",
+        "detail": "Run npm install in all packages",
+        "group": "build"
+      }
+    ]
+  }
+}
