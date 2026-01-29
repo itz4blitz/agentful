@@ -7,14 +7,16 @@ export { IntegrationHub } from './integration-hub';
 export { ToolSelector } from './tool-selector';
 export { MCPServerList } from './mcp-server-list';
 export { MCPServerInstallDialog } from './mcp-server-install-dialog';
-export { 
-  ClaudeIcon, 
-  GeminiIcon, 
-  CodexIcon, 
-  KiroIcon, 
-  CursorIcon, 
+export { ToolCapabilityBadges } from './tool-capability-badges';
+export type { ToolCapabilityBadgesProps } from './tool-capability-badges';
+export {
+  ClaudeIcon,
+  GeminiIcon,
+  CodexIcon,
+  KiroIcon,
+  CursorIcon,
   ClineIcon,
-  getToolIconComponent 
+  getToolIconComponent
 } from './tool-icons';
 export {
   FilesystemIcon,

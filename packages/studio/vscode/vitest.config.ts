@@ -1,24 +1,21 @@
 import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [react()],
   test: {
     globals: true,
-    environment: 'jsdom',
-    setupFiles: './src/test/setup.ts',
+    environment: 'node',
+    include: ['__tests__/**/*.test.ts'],
+    setupFiles: ['./vitest.setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
-        'src/test/',
-        'vscode/__tests__/',
+        '../node_modules/',
         '**/*.d.ts',
         '**/*.config.*',
         '**/mockData',
-        'src/main.tsx',
       ],
       all: true,
       lines: 80,
@@ -26,14 +23,19 @@ export default defineConfig({
       branches: 80,
       statements: 80,
     },
-    include: ['src/**/*.{test,spec}.{ts,tsx}', 'src/**/__tests__/**/*.{ts,tsx}'],
-    exclude: ['node_modules/', 'dist/', 'vscode/', 'e2e/'],
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(__dirname, '../src'),
     },
   },
+  // Allow resolving from parent node_modules
+  server: {
+    fs: {
+      allow: ['..'],
+    },
+  },
+  // Configure module resolution
   optimizeDeps: {
     exclude: ['vscode'],
   },

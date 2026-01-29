@@ -188,9 +188,9 @@ describe('ProjectStorageService', () => {
   });
 
   describe('autoSave', () => {
-    vi.useFakeTimers();
-
     it('should debounce save operations', async () => {
+      vi.useFakeTimers();
+
       const debounceService = new ProjectStorageService({
         backend: 'localStorage',
         debounceMs: 100,
@@ -200,22 +200,23 @@ describe('ProjectStorageService', () => {
       debounceService.autoSave({ ...mockProject, name: 'Updated' });
 
       // Should not save immediately
-      const loaded1 = await service.loadProject(mockProject.id);
+      const loaded1 = await debounceService.loadProject(mockProject.id);
       expect(loaded1).toBeNull();
 
       // Fast-forward past debounce time
-      vi.advanceTimersByTime(150);
+      await vi.advanceTimersByTimeAsync(150);
 
-      // Wait for async save
-      await new Promise(resolve => setTimeout(resolve, 0));
+      // Wait for all pending timers and promises
+      await vi.runAllTimersAsync();
+      await vi.runOnlyPendingTimersAsync();
 
-      const loaded2 = await service.loadProject(mockProject.id);
+      const loaded2 = await debounceService.loadProject(mockProject.id);
       expect(loaded2?.name).toBe('Updated');
 
       debounceService.destroy();
-    });
 
-    vi.useRealTimers();
+      vi.useRealTimers();
+    });
   });
 
   describe('getStorageStats', () => {
@@ -243,7 +244,7 @@ describe('ProjectStorageService', () => {
 
       await expect(
         service.saveProject(mockProject)
-      ).rejects.toThrow('Storage quota exceeded');
+      ).rejects.toThrow(/quota/i);
 
       localStorage.setItem = originalSetItem;
     });

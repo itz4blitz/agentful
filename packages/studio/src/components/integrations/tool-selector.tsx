@@ -17,6 +17,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { toolDetection, type CLITool } from '@/services/integrations/tool-detection';
 import { getToolIconComponent } from './tool-icons';
+import { ToolCapabilityBadges } from './tool-capability-badges';
 import { cn } from '@/lib/utils';
 
 interface ToolSelectorProps {
@@ -113,13 +114,14 @@ export function ToolSelector({ selectedTool, onSelectTool }: ToolSelectorProps) 
                 onSelectTool(tool);
                 setIsOpen(false);
               }}
-              className="flex items-center justify-between"
+              className="flex items-center justify-between gap-2"
             >
-              <span className="flex items-center gap-2">
-                <span>{getToolIconComponent(tool.id, 18)}</span>
-                <span>{tool.name}</span>
-              </span>
-              <span className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span className="shrink-0">{getToolIconComponent(tool.id, 18)}</span>
+                <span className="font-medium truncate">{tool.name}</span>
+                <ToolCapabilityBadges supports={tool.supports} size="sm" />
+              </div>
+              <span className="flex items-center gap-2 shrink-0">
                 {tool.version && (
                   <span className="text-xs text-muted-foreground">
                     v{tool.version}

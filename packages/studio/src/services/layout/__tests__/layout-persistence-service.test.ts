@@ -20,7 +20,7 @@ describe('LayoutPersistenceService', () => {
   });
 
   describe('save', () => {
-    it('should save layout state to localStorage', () => {
+    it('should save layout state to localStorage', async () => {
       const state = {
         chatPanel: 30,
         canvasPanel: 50,
@@ -28,6 +28,9 @@ describe('LayoutPersistenceService', () => {
       };
 
       service.save(state);
+
+      // Wait for the debounce timer to execute (even with 0ms, it's async)
+      await new Promise(resolve => setTimeout(resolve, 0));
 
       const stored = localStorage.getItem('test-layout');
       expect(stored).toBe(JSON.stringify(state));
@@ -54,14 +57,12 @@ describe('LayoutPersistenceService', () => {
       }, 100);
     });
 
-    it('should handle save errors gracefully', () => {
-      // Mock localStorage.setItem to throw an error
-      const originalSetItem = localStorage.setItem;
-      localStorage.setItem = vi.fn(() => {
+    it('should handle save errors gracefully', async () => {
+      // Spy on localStorage.setItem to throw an error
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const setItemSpy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
         throw new Error('Storage quota exceeded');
       });
-
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       const state = {
         chatPanel: 30,
@@ -70,9 +71,13 @@ describe('LayoutPersistenceService', () => {
       };
 
       expect(() => service.save(state)).not.toThrow();
+
+      // Wait for the debounce timer
+      await new Promise(resolve => setTimeout(resolve, 0));
+
       expect(consoleSpy).toHaveBeenCalled();
 
-      localStorage.setItem = originalSetItem;
+      setItemSpy.mockRestore();
       consoleSpy.mockRestore();
     });
   });
