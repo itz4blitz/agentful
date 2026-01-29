@@ -37,7 +37,8 @@ if (import.meta.env.DEV) {
 // VS Code Webview Wrapper Component
 function VSCodeWebviewWrapper({ children }: { children: React.ReactNode }) {
   const [isVSCode, setIsVSCode] = useState(false);
-  const [isSidebarMode, setIsSidebarMode] = useState(false);
+  // Default to sidebar mode to avoid flash of wrong content
+  const [isSidebarMode, setIsSidebarMode] = useState(true);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -47,25 +48,34 @@ function VSCodeWebviewWrapper({ children }: { children: React.ReactNode }) {
     
     // Check if we're in sidebar mode (narrow viewport)
     const checkSidebarMode = () => {
-      // VS Code sidebar is typically 250-300px, panel can be larger
-      setIsSidebarMode(window.innerWidth < 500);
+      const width = window.innerWidth;
+      // VS Code sidebar is typically 250-350px
+      const isSidebar = width > 0 && width < 450;
+      console.log('[VSCodeWebviewWrapper] Width:', width, 'Sidebar mode:', isSidebar);
+      setIsSidebarMode(isSidebar);
     };
 
+    // Check immediately and after delay
     checkSidebarMode();
+    const timer = setTimeout(checkSidebarMode, 100);
+    
     window.addEventListener('resize', checkSidebarMode);
     
     if (initialized) {
-      console.log('[App] Running inside VS Code webview');
+      console.log('[App] Running inside VS Code webview, width:', window.innerWidth);
       notifyReady();
       // Initialize component loader for file watching
-      initializeComponentLoader();
+      initializeComponentLoader().catch(console.error);
     } else {
       console.log('[App] Running in standalone browser');
     }
     
     setIsReady(true);
 
-    return () => window.removeEventListener('resize', checkSidebarMode);
+    return () => {
+      window.removeEventListener('resize', checkSidebarMode);
+      clearTimeout(timer);
+    };
   }, []);
 
   if (!isReady) {

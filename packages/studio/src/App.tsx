@@ -14,17 +14,28 @@ import { Palette, Box, MessageSquare, Navigation, Layers, Table, Grid, Puzzle } 
 
 // Hook to detect if we're in sidebar mode (narrow viewport)
 function useSidebarMode() {
-  const [isSidebarMode, setIsSidebarMode] = useState(false)
+  // Default to true (sidebar) to avoid flash of wrong content in narrow sidebar
+  const [isSidebarMode, setIsSidebarMode] = useState(true)
 
   useEffect(() => {
     const checkWidth = () => {
-      // VS Code sidebar is typically 250-300px wide
-      setIsSidebarMode(window.innerWidth < 400)
+      // VS Code sidebar is typically 250-350px wide, panel can be 400+
+      // Use 450px as threshold to be safe
+      const width = window.innerWidth
+      const isSidebar = width > 0 && width < 450
+      console.log('[App] Width check:', width, 'isSidebar:', isSidebar)
+      setIsSidebarMode(isSidebar)
     }
 
+    // Check immediately and after a short delay (VS Code webview sizing)
     checkWidth()
+    const timer = setTimeout(checkWidth, 100)
+    
     window.addEventListener('resize', checkWidth)
-    return () => window.removeEventListener('resize', checkWidth)
+    return () => {
+      window.removeEventListener('resize', checkWidth)
+      clearTimeout(timer)
+    }
   }, [])
 
   return isSidebarMode
