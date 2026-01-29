@@ -317,7 +317,7 @@ describe('Iframe Theme Bridge', () => {
 
       const event = new MessageEvent('message', {
         data: { type: 'THEME_REQUEST' },
-        source: mockIframe.contentWindow,
+        source: mockIframe.contentWindow as any,
       })
 
       window.dispatchEvent(event)
@@ -382,7 +382,7 @@ describe('Iframe Theme Bridge', () => {
       // Send a request message
       const event = new MessageEvent('message', {
         data: { type: 'THEME_REQUEST' },
-        source: mockIframe.contentWindow,
+        source: mockIframe.contentWindow as any,
       })
 
       window.dispatchEvent(event)

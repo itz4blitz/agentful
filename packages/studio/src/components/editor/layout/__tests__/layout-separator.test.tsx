@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@/test/setup';
+import { render, screen } from '@testing-library/react';
 import { LayoutSeparator } from '../layout-separator';
 
 describe('LayoutSeparator', () => {

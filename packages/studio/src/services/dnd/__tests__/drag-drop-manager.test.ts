@@ -13,7 +13,7 @@ import {
   validateDropTarget,
 } from '@/services/dnd/drag-drop-manager';
 import { useDndStore } from '@/stores/dnd-store';
-import type { ComponentTemplate } from '@/types';
+import type { ComponentTemplate } from '@/types/components';
 
 // Mock stores
 vi.mock('@/stores/dnd-store');

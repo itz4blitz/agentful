@@ -61,7 +61,7 @@ export const SHADCN_COMPONENTS: ComponentTemplate[] = [
   {
     id: 'shadcn-dialog',
     name: 'Dialog',
-    category: 'overlay',
+    category: 'overlays',
     description: 'ShadCN Dialog component for modal overlays with triggers',
     tags: ['shadcn', 'dialog', 'modal', 'overlay'],
     icon: 'maximize',
@@ -146,7 +146,7 @@ export const SHADCN_COMPONENTS: ComponentTemplate[] = [
   {
     id: 'shadcn-table',
     name: 'Table',
-    category: 'data',
+    category: 'data-display',
     description: 'ShadCN Table component for displaying tabular data with header and body',
     tags: ['shadcn', 'table', 'data', 'layout'],
     icon: 'table',

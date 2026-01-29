@@ -2,10 +2,11 @@ import * as vscode from 'vscode';
 
 export class WebViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'agentfulStudioView';
+  private readonly _extensionUri: vscode.Uri;
 
-  constructor(
-    private readonly _extensionUri: vscode.Uri
-  ) {}
+  constructor(extensionUri: vscode.Uri) {
+    this._extensionUri = extensionUri;
+  }
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,

@@ -5,7 +5,6 @@
 
 import JSZip from 'jszip';
 import type { Project, ExportOptions, ExportResult } from '@/types/project';
-import type { CanvasElement } from '@/types/canvas';
 
 /**
  * Project Exporter Service
@@ -233,7 +232,7 @@ ${variables}
   /**
    * Generate global styles
    */
-  private generateGlobalStyles(theme: any, options: ExportOptions): string {
+  private generateGlobalStyles(_theme: any, _options: ExportOptions): string {
     return `
 * {
   box-sizing: border-box;
@@ -268,17 +267,18 @@ body {
 ${hasStyles ? `import styles from './${name}.module.css';` : ''}
 
 interface ${componentName}Props {
-  className?: string;
+  className?: string${hasStyles ? `; [key: string]: any` : ''}
 }
 
 export const ${componentName}: React.FC<${componentName}Props> = ({
   className: classNameProp${hasStyles ? `, ...props` : ''}
 }) => {
-  return (
-    <div${hasStyles ? ` className={styles.root}${classNameProp ? ` \${classNameProp}` : ''}` : ` className="${classNameProp || ''}"`}${hasStyles ? ' {...props}' : ''}>
-      ${this.htmlToJSX(html)}
-    </div>
-  );
+  const divProps = {
+    className: "${hasStyles ? 'styles.root' : ''}" + (classNameProp || ""),
+    ${hasStyles ? '...props,' : ''}
+    suppressHydrationWarning: true
+  };
+  return <div {...divProps}>${this.htmlToJSX(html)}</div>;
 };
 
 export default ${componentName};

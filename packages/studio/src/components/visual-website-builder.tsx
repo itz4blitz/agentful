@@ -159,7 +159,6 @@ export function VisualWebsiteBuilder() {
             </div>
 
             <ThemeSwitcher />
-            <ThemeToggle />
           </div>
         </header>
 
