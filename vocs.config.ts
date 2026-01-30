@@ -113,7 +113,7 @@ export default defineConfig({
   topNav: [
     { text: 'Docs', link: '/' },
     { text: 'GitHub', link: 'https://github.com/itz4blitz/agentful' },
-    { text: 'Discord', link: 'https://discord.gg/SMDvJXUe' },
+    { text: 'Discord', link: 'https://discord.gg/X2tCJh76rG' },
   ],
 
   theme: {
@@ -150,7 +150,7 @@ export default defineConfig({
     },
     {
       icon: 'discord',
-      link: 'https://discord.gg/SMDvJXUe',
+      link: 'https://discord.gg/X2tCJh76rG',
     },
   ],
 

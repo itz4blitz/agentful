@@ -11,14 +11,14 @@
 
 [![Downloads](https://img.shields.io/npm/dm/@itz4blitz/agentful.svg)](https://www.npmjs.com/package/@itz4blitz/agentful)
 [![GitHub Stars](https://img.shields.io/github/stars/itz4blitz/agentful?style=social)](https://github.com/itz4blitz/agentful)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289da)](https://discord.gg/SMDvJXUe)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289da)](https://discord.gg/X2tCJh76rG)
 [![Documentation](https://img.shields.io/badge/docs-agentful.app-blue)](https://agentful.app)
 
 **Pre-configured development toolkit for Claude Code**
 
 Orchestrates specialized agents in parallel with inter-agent communication to build features from product specs.
 
-[Quick Start](#quick-start) • [Documentation](https://agentful.app) • [Discord](https://discord.gg/SMDvJXUe)
+[Quick Start](#quick-start) • [Documentation](https://agentful.app) • [Discord](https://discord.gg/X2tCJh76rG)
 
 </div>
 
@@ -104,7 +104,7 @@ Auto-detects and adapts to your stack:
 
 - **Docs**: [agentful.app](https://agentful.app)
 - **GitHub**: [github.com/itz4blitz/agentful](https://github.com/itz4blitz/agentful)
-- **Discord**: [discord.gg/SMDvJXUe](https://discord.gg/SMDvJXUe)
+- **Discord**: [discord.gg/SMDvJXUe](https://discord.gg/X2tCJh76rG)
 - **Issues**: [github.com/itz4blitz/agentful/issues](https://github.com/itz4blitz/agentful/issues)
 - **NPM**: [npmjs.com/package/@itz4blitz/agentful](https://www.npmjs.com/package/@itz4blitz/agentful)
 
