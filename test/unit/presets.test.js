@@ -315,6 +315,34 @@ describe('validateConfiguration', () => {
     const result = validateConfiguration(config);
     expect(result.valid).toBe(true);
   });
+
+  it('should accept research skill (regression test)', () => {
+    // Regression test: research skill was in default preset but missing from availableSkills
+    const config = {
+      agents: ['orchestrator'],
+      skills: ['research'],
+      hooks: [],
+      gates: []
+    };
+
+    const result = validateConfiguration(config);
+    expect(result.valid).toBe(true);
+    expect(result.errors).not.toContain(expect.stringContaining('Invalid skills'));
+  });
+
+  it('default preset skills should all be valid', () => {
+    // Ensure all skills in the default preset pass validation
+    const config = {
+      agents: presets.default.agents,
+      skills: presets.default.skills,
+      hooks: presets.default.hooks,
+      gates: presets.default.gates
+    };
+
+    const result = validateConfiguration(config);
+    const skillErrors = result.errors.filter(e => e.includes('Invalid skills'));
+    expect(skillErrors).toHaveLength(0);
+  });
 });
 
 describe('generateHooksConfig', () => {
