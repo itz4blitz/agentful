@@ -39,7 +39,8 @@ describe('Parallel Execution', () => {
       expect(result.reason).toContain('binary not found');
     });
 
-    it('should detect native Mach-O binary and skip patching', () => {
+    it('should detect native Mach-O binary as having built-in parallel support', () => {
+      // Native Claude Code binaries have built-in Task tool parallel execution
       execSync.mockImplementation((cmd) => {
         if (cmd.includes('npm root -g')) {
           return '/usr/local/lib/node_modules\n';
@@ -64,8 +65,8 @@ describe('Parallel Execution', () => {
 
       const result = detectTeammateTool();
 
-      expect(result.available).toBe(false);
-      expect(result.reason).toContain('Native binary');
+      expect(result.available).toBe(true);
+      expect(result.method).toBe('native');
       expect(result.isNative).toBe(true);
     });
 
@@ -157,7 +158,8 @@ describe('Parallel Execution', () => {
   });
 
   describe('enableTeammateTool', () => {
-    it('should reject native Mach-O binary', () => {
+    it('should report native Mach-O binary as already enabled', () => {
+      // Native binaries have built-in parallel support, no patching needed
       execSync.mockImplementation((cmd) => {
         if (cmd.includes('npm root -g')) {
           return '/usr/local/lib/node_modules\n';
@@ -182,8 +184,8 @@ describe('Parallel Execution', () => {
 
       const result = enableTeammateTool();
 
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Native binary');
+      expect(result.success).toBe(true);
+      expect(result.alreadyEnabled).toBe(true);
     });
 
     it('should create backup before patching', () => {
