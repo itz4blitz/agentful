@@ -1,3 +1,23 @@
+# [1.7.0](https://github.com/itz4blitz/agentful/compare/v1.6.0...v1.7.0) (2026-02-04)
+
+
+### Bug Fixes
+
+* **canvas:** add missing viewportSize destructuring in EditorCanvas ([7a01a8e](https://github.com/itz4blitz/agentful/commit/7a01a8e18b760aad35d7e385ef9877bfc156865f))
+* resolve init warnings for research skill and native binary detection ([0e413ab](https://github.com/itz4blitz/agentful/commit/0e413ab5653bc96ac40842ee4772719fa19ca3f9))
+* **sidebar:** default to sidebar mode to prevent flash of wrong content ([d5e2610](https://github.com/itz4blitz/agentful/commit/d5e261014ffa18c32aa0e28ecfde1b54922d4f5f))
+* **tools:** correct feature flags based on official docs ([1818af3](https://github.com/itz4blitz/agentful/commit/1818af3a4754d3025199bb60d43fc555c371149f))
+* **tools:** Cursor has skills (https://cursor.com/docs/context/skills) ([d4b5864](https://github.com/itz4blitz/agentful/commit/d4b586481c2cd7dc673bc69db5ffe84dd98eef61))
+* use Anchor icon instead of Hook (lucide-react compat) ([4187028](https://github.com/itz4blitz/agentful/commit/418702897b3115bb15a4fc8e5b55c3bad2d4eb25))
+
+
+### Features
+
+* **canvas:** add viewport size toggles (desktop, tablet, mobile) ([4964e23](https://github.com/itz4blitz/agentful/commit/4964e2347dc2e10f4d229d732b194d8c66e34a5b))
+* **dev:** add automatic hot reload for extension development ([b70e34b](https://github.com/itz4blitz/agentful/commit/b70e34bc91f200de3d4b5be0c749dab09c5d4e32))
+* **icons:** use dashboard-icons CDN for tool and MCP icons ([a26f9a6](https://github.com/itz4blitz/agentful/commit/a26f9a6fa11f66d831b5d1d8ba856e6e2df59984))
+* **tools:** add comprehensive AI CLI tool detection with Aider, Cline, Kilo ([38b6f27](https://github.com/itz4blitz/agentful/commit/38b6f2766d350075c68bc1c645dde5364dc4aba0))
+
 # [1.6.0](https://github.com/itz4blitz/agentful/compare/v1.5.1...v1.6.0) (2026-01-29)
 
 
