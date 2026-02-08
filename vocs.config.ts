@@ -46,6 +46,7 @@ export default defineConfig({
         text: 'Concepts',
         items: [
           { text: 'Agent Architecture', link: '/concepts/architecture' },
+          { text: 'Pattern Learning', link: '/concepts/pattern-learning' },
           { text: 'Background Agent Patterns', link: '/concepts/background-agents' },
           { text: 'Git Worktrees', link: '/concepts/git-worktrees' },
         ],

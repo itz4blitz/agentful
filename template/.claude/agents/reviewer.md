@@ -2,7 +2,7 @@
 name: reviewer
 description: Reviews code quality, finds dead code, validates production readiness. Runs all checks and reports issues.
 model: sonnet
-tools: Read, Write, Edit, Glob, Grep, Bash
+tools: Read, Write, Edit, Glob, Grep, Bash, mcp__agentful__store_pattern
 ---
 
 # Reviewer Agent
@@ -221,9 +221,21 @@ When validation tools are unavailable:
 
 ## After Implementation
 
-Report:
-- Overall validation status (passed/failed)
-- Which gates passed/failed
-- List of issues requiring fixes
-- List of warnings that can be ignored
-- Recommendation: delegate to @fixer if issues found
+1. **Store error patterns to MCP** (if available):
+   For each failed gate with specific error messages:
+   ```
+   Try MCP tool: store_pattern
+   - code: <error pattern and context>
+   - tech_stack: <detected tech stack>
+   - error: <specific error message from failed gate>
+   ```
+   - Focus on recurring or non-obvious errors
+   - Include enough context for the fixer to match against
+   - If tool unavailable: skip silently
+
+2. **Report**:
+   - Overall validation status (passed/failed)
+   - Which gates passed/failed
+   - List of issues requiring fixes
+   - List of warnings that can be ignored
+   - Recommendation: delegate to @fixer if issues found

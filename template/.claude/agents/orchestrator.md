@@ -330,8 +330,9 @@ TodoWrite([
 6. Run @reviewer for quality gates
 7. If issues → @fixer → re-validate
 8. Update completion.json
-9. Check if architecture needs re-analysis
-10. LOOP until 100% complete
+9. COMPOUND: Store learnings and patterns
+10. Check if architecture needs re-analysis
+11. LOOP until 100% complete
 ```
 
 ### BUGFIX / ENHANCEMENT / REFACTOR
@@ -501,6 +502,48 @@ Task("reviewer agent", "Review all changes in src/auth/")
 - ❌ Tester needs implementation complete before writing integration tests
 - ❌ Fixer needs reviewer results before fixing issues
 - ❌ Quality gates (must validate sequentially)
+
+### COMPOUND Phase
+
+After a feature passes all quality gates in FEATURE_DEVELOPMENT, run the compound phase:
+
+1. **Store successful patterns to MCP** (if available):
+   ```
+   Try MCP tool: store_pattern
+   - code: <key implementation pattern that worked well>
+   - tech_stack: <detected tech stack>
+   ```
+   - Only store if feature passed all quality gates
+   - Focus on reusable patterns (not one-off code)
+   - If tool unavailable: skip silently
+
+2. **Append retrospective to `.agentful/learnings.json`** (create if missing):
+   ```json
+   {
+     "learnings": [
+       {
+         "feature": "<feature name>",
+         "timestamp": "<ISO 8601>",
+         "review_fix_cycles": <number of review→fix→re-validate cycles>,
+         "gates_failed_initially": ["<gate names that failed on first review>"],
+         "key_learning": "<1-sentence summary of what was learned>"
+       }
+     ]
+   }
+   ```
+
+3. **Track iteration metrics** in `state.json`:
+   ```json
+   {
+     "last_feature_metrics": {
+       "feature": "<feature name>",
+       "cycles": <review/fix cycle count>,
+       "gates_passed_first_try": <boolean>
+     }
+   }
+   ```
+
+**Skip COMPOUND for**: BUGFIX, ENHANCEMENT, REFACTOR workflows and blocked/skipped features.
 
 ## Decision Handling
 

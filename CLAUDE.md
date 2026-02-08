@@ -26,6 +26,23 @@ npx @itz4blitz/agentful presets
 2. Run: `claude`
 3. Type: `/agentful-generate`
 
+## Pattern Learning (MCP Server)
+
+Enable cross-session pattern learning so agents compound knowledge over time:
+
+```bash
+claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server
+```
+
+**What this enables:**
+- **Reviewer** stores error patterns so the fixer can look up known fixes instantly
+- **Fixer** queries known fixes before attempting manual repairs, then stores successful fixes
+- **Orchestrator** stores successful implementation patterns after features pass all quality gates
+
+Without MCP: agents start from scratch every session. With MCP: agents compound across sessions.
+
+See [Configuration](#configuration) below for manual setup or other editors.
+
 ## Commands
 
 | Command | Description |
@@ -73,6 +90,8 @@ npx @itz4blitz/agentful presets
 - `.agentful/conversation-history.json` - Message history for context tracking
 - `.agentful/agent-metrics.json` - Agent lifecycle hooks and metrics
 - `.agentful/architecture.json` - Detected tech stack and generated agents
+- `.agentful/learnings.json` - Compound engineering retrospectives
+- `.agentful/last-validation.json` - Latest validation report from reviewer
 
 **Configuration** (auto-generated, customizable):
 - `.claude/agents/` - Specialized agents for your tech stack
@@ -129,31 +148,9 @@ The `reviewer` agent runs these checks. The `fixer` agent resolves failures.
 
 ## Configuration
 
-### MCP Server (Highly Recommended ⭐)
+### MCP Server (Manual Setup)
 
-The **agentful MCP Server** enables pattern learning and error fix reuse across all your projects. It's **highly recommended** for optimal performance.
-
-**What it does:**
-- 🔄 Stores successful code patterns for reuse
-- 🧠 Learns from error fixes across projects
-- 📈 Improves over time with feedback
-- ⚡ Faster fixes by finding known solutions
-
-**Enable MCP Server (Simple Method):**
-
-Run this command to add the MCP server to Claude Code:
-
-```bash
-# For Claude Desktop
-claude mcp add npx @itz4blitz/agentful-mcp-server
-
-# Or for Cline (VS Code)
-# Add to MCP settings: npx @itz4blitz/agentful-mcp-server
-```
-
-**Enable MCP Server (Manual Method):**
-
-If the simple method doesn't work, configure manually:
+If the quick setup command (`claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server`) from the [Pattern Learning](#pattern-learning-mcp-server) section doesn't work, configure manually:
 
 1. **Find your Claude Code config:**
    - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
@@ -173,20 +170,6 @@ If the simple method doesn't work, configure manually:
    ```
 
 3. **Restart Claude Code** to load the MCP server
-
-4. **Verify it's working:**
-   - Start a new Claude Code session
-   - You should see MCP tools available in agent interactions
-
-**Benefits:**
-- Fixer agent finds known error fixes instantly
-- Backend/frontend agents reuse successful patterns
-- Continuous learning from all your projects
-- Reduces repetitive problem-solving
-
-**Without MCP:** Agents work normally but can't learn from past solutions.
-
-**With MCP:** Agents get smarter with every project.
 
 ### File Creation Protection Hooks
 

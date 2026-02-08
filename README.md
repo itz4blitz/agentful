@@ -49,6 +49,16 @@ claude
 /agentful-start
 ```
 
+## Pattern Learning
+
+Enable agents to learn from every session and reuse successful patterns:
+
+```bash
+claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server
+```
+
+The reviewer stores error patterns, the fixer looks up known fixes, and the orchestrator stores successful implementation patterns - compounding knowledge across sessions.
+
 ## Installation Options
 
 ```bash

@@ -61,6 +61,23 @@ When you start a Claude Code session, agentful automatically:
 
 No need to remember commands - just pick a numbered action!
 
+## Pattern Learning (MCP Server)
+
+Enable cross-session pattern learning so agents compound knowledge over time:
+
+```bash
+claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server
+```
+
+**What this enables:**
+- **Reviewer** stores error patterns so the fixer can look up known fixes instantly
+- **Fixer** queries known fixes before attempting manual repairs, then stores successful fixes
+- **Orchestrator** stores successful implementation patterns after features pass all quality gates
+
+Without MCP: agents start from scratch every session. With MCP: agents compound across sessions.
+
+See [Hooks System](#hooks-system) below for manual setup or other editors.
+
 ## Commands
 
 | Command | Description | When to Use |
@@ -119,6 +136,8 @@ These appear only when relevant:
 - `.agentful/conversation-history.json` - Message history for context tracking
 - `.agentful/agent-metrics.json` - Agent lifecycle hooks and metrics
 - `.agentful/architecture.json` - Detected tech stack and generated agents
+- `.agentful/learnings.json` - Compound engineering retrospectives
+- `.agentful/last-validation.json` - Latest validation report from reviewer
 
 **Configuration** (auto-generated, customizable):
 - `.claude/agents/` - Specialized agents for your tech stack

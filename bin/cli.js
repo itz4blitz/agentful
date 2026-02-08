@@ -411,6 +411,13 @@ async function init(args) {
   }
   log(colors.dim, 'Optional: Edit CLAUDE.md and .claude/product/index.md first to customize.');
   console.log('');
+  log(colors.bright, 'Recommended: Enable Pattern Learning');
+  console.log('');
+  log(colors.dim, '  Agents get smarter when they can store and reuse patterns.');
+  log(colors.dim, '  Run this once to enable:');
+  console.log('');
+  log(colors.cyan, '    claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server');
+  console.log('');
 }
 
 function showStatus() {

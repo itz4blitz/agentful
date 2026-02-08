@@ -176,7 +176,10 @@ if (isInAllowedDir) {
       '.agentful/conversation-state.json',
       '.agentful/conversation-history.json',
       '.agentful/agent-metrics.json',
-      '.agentful/metadata.json'
+      '.agentful/metadata.json',
+      '.agentful/learnings.json',
+      '.agentful/last-validation.json',
+      '.agentful/product-analysis.json'
     ];
 
     if (agentfulFiles.includes(normalizedPath)) {
@@ -198,6 +201,9 @@ Allowed .agentful/ files:
   - conversation-history.json (message history)
   - agent-metrics.json (agent lifecycle hooks)
   - metadata.json (version tracking)
+  - learnings.json (compound engineering retrospectives)
+  - last-validation.json (latest validation report)
+  - product-analysis.json (product spec analysis)
 
 Do NOT create random state snapshots or debug files in .agentful/.
 `);

@@ -1,0 +1,157 @@
+---
+title: Pattern Learning (MCP Server) - agentful
+description: Enable cross-session pattern learning so agents compound knowledge over time using the agentful MCP server.
+---
+
+# Pattern Learning
+
+agentful agents can learn from every session and compound knowledge over time using the optional MCP server.
+
+## The Compound Engineering Loop
+
+Inspired by Compound Engineering methodology (Plan → Work → Assess → **Compound**), agentful's agents follow this loop:
+
+1. **Plan** - Orchestrator reads product spec, picks next feature
+2. **Work** - Specialist agents implement, test, and validate
+3. **Assess** - Reviewer runs quality gates, fixer resolves issues
+4. **Compound** - Store successful patterns and learnings for reuse
+
+Without the MCP server, agents start from scratch every session. With it, they build on past successes.
+
+## Quick Setup
+
+Run this once to enable pattern learning:
+
+```bash
+claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server
+```
+
+That's it. Restart Claude Code and agents will automatically use the MCP tools when available.
+
+## How Agents Use It
+
+### Reviewer → Stores Error Patterns
+
+After running quality gates, the reviewer stores error patterns to MCP so the fixer can look them up later:
+
+```
+# After validation fails
+store_pattern:
+  code: <error pattern and context>
+  tech_stack: <detected stack>
+  error: <specific error message>
+```
+
+### Fixer → Queries Known Fixes
+
+Before attempting manual repairs, the fixer checks if a known fix exists:
+
+```
+# Before fixing
+find_patterns:
+  query: <exact error message>
+  tech_stack: <detected stack>
+  limit: 3
+
+# After fixing
+store_pattern:
+  code: <fix that worked>
+  error: <error that was fixed>
+
+# After applying a known fix
+add_feedback:
+  pattern_id: <id from find_patterns>
+  success: true/false
+```
+
+Patterns with `success_rate > 0.7` are preferred. The feedback loop improves accuracy over time.
+
+### Orchestrator → Stores Implementation Patterns
+
+After a feature passes all quality gates, the orchestrator stores the successful implementation pattern and writes a retrospective:
+
+```
+# Store to MCP
+store_pattern:
+  code: <key implementation pattern>
+  tech_stack: <detected stack>
+
+# Append to .agentful/learnings.json
+{
+  "feature": "user-authentication",
+  "review_fix_cycles": 2,
+  "gates_failed_initially": ["coverage", "lint"],
+  "key_learning": "Auth middleware needed test mocks for JWT verification"
+}
+```
+
+## Graceful Degradation
+
+All MCP interactions use the pattern:
+
+```
+Try MCP tool: X
+If unavailable: skip silently
+```
+
+The MCP server is **optional**. When not configured:
+- MCP tools don't appear in agent tool lists
+- Agents skip MCP steps and work normally
+- No errors, no warnings, no degradation in core functionality
+
+## Manual Setup
+
+If the quick command doesn't work, configure manually:
+
+1. Find your Claude Code config:
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+   - Linux: `~/.config/Claude/claude_desktop_config.json`
+
+2. Add the MCP server:
+
+```json
+{
+  "mcpServers": {
+    "agentful": {
+      "command": "npx",
+      "args": ["-y", "@itz4blitz/agentful-mcp-server"]
+    }
+  }
+}
+```
+
+3. Restart Claude Code
+
+## State Files
+
+Pattern learning creates these additional state files:
+
+| File | Description |
+|------|-------------|
+| `.agentful/learnings.json` | Compound engineering retrospectives per feature |
+| `.agentful/last-validation.json` | Latest validation report from reviewer |
+
+Both are gitignored (inside `.agentful/`) and managed automatically.
+
+## Next Steps
+
+<div className="grid gap-4 md:grid-cols-2 mt-8">
+
+<div>
+
+### Agent Architecture
+How agents coordinate and communicate
+[Architecture →](/concepts/architecture)
+
+</div>
+
+<div>
+
+### Quality Gates
+What the reviewer validates
+[Validation Skill →](/skills/validation)
+
+</div>
+
+</div>
