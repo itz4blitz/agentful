@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/itz4blitz/agentful/compare/v1.7.0...v1.8.0) (2026-02-08)
+
+
+### Features
+
+* add pattern learning feature for agents to compound knowledge across sessions ([ac5946b](https://github.com/itz4blitz/agentful/commit/ac5946bf041ed9117fe4015e509b68c9d5174884))
+
 # [1.7.0](https://github.com/itz4blitz/agentful/compare/v1.6.0...v1.7.0) (2026-02-04)
 
 
