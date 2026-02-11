@@ -18,15 +18,65 @@ Inspired by Compound Engineering methodology (Plan → Work → Assess → **Com
 
 Without the MCP server, agents start from scratch every session. With it, they build on past successes.
 
-## Quick Setup
+## Setup
 
-Run this once to enable pattern learning:
+### Option 1: CLI (Recommended)
+
+Run this once in your project directory to enable pattern learning:
 
 ```bash
 claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server
 ```
 
-That's it. Restart Claude Code and agents will automatically use the MCP tools when available.
+This adds the MCP server at **project scope** (stored in `.claude/settings.local.json`). Restart Claude Code and agents will automatically use the MCP tools when available.
+
+To add it globally (available in all projects):
+
+```bash
+claude mcp add -s user agentful -- npx -y @itz4blitz/agentful-mcp-server
+```
+
+### Option 2: Manual Configuration
+
+Add the MCP server directly to your Claude Code settings file.
+
+**Project scope** — edit `.claude/settings.json` (or `.claude/settings.local.json`):
+
+```json
+{
+  "mcpServers": {
+    "agentful": {
+      "command": "npx",
+      "args": ["-y", "@itz4blitz/agentful-mcp-server"]
+    }
+  }
+}
+```
+
+**User scope** — edit `~/.claude/settings.json`:
+
+```json
+{
+  "mcpServers": {
+    "agentful": {
+      "command": "npx",
+      "args": ["-y", "@itz4blitz/agentful-mcp-server"]
+    }
+  }
+}
+```
+
+Restart Claude Code after editing.
+
+### Verify It's Working
+
+After setup, run:
+
+```bash
+claude mcp list
+```
+
+You should see `agentful` in the output. When you start a Claude Code session, the MCP tools (`store_pattern`, `find_patterns`, `add_feedback`) will be available to agents automatically.
 
 ## How Agents Use It
 
@@ -98,30 +148,6 @@ The MCP server is **optional**. When not configured:
 - MCP tools don't appear in agent tool lists
 - Agents skip MCP steps and work normally
 - No errors, no warnings, no degradation in core functionality
-
-## Manual Setup
-
-If the quick command doesn't work, configure manually:
-
-1. Find your Claude Code config:
-   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
-   - Linux: `~/.config/Claude/claude_desktop_config.json`
-
-2. Add the MCP server:
-
-```json
-{
-  "mcpServers": {
-    "agentful": {
-      "command": "npx",
-      "args": ["-y", "@itz4blitz/agentful-mcp-server"]
-    }
-  }
-}
-```
-
-3. Restart Claude Code
 
 ## State Files
 

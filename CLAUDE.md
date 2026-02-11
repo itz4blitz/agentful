@@ -150,26 +150,33 @@ The `reviewer` agent runs these checks. The `fixer` agent resolves failures.
 
 ### MCP Server (Manual Setup)
 
-If the quick setup command (`claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server`) from the [Pattern Learning](#pattern-learning-mcp-server) section doesn't work, configure manually:
+If the quick setup command (`claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server`) from the [Pattern Learning](#pattern-learning-mcp-server) section doesn't work, configure manually by adding `mcpServers` to your Claude Code settings:
 
-1. **Find your Claude Code config:**
-   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
-   - Linux: `~/.config/Claude/claude_desktop_config.json`
+**Project scope** — `.claude/settings.json` (or `.claude/settings.local.json`):
+```json
+{
+  "mcpServers": {
+    "agentful": {
+      "command": "npx",
+      "args": ["-y", "@itz4blitz/agentful-mcp-server"]
+    }
+  }
+}
+```
 
-2. **Add the MCP server:**
-   ```json
-   {
-     "mcpServers": {
-       "agentful": {
-         "command": "npx",
-         "args": ["-y", "@itz4blitz/agentful-mcp-server"]
-       }
-     }
-   }
-   ```
+**User scope** — `~/.claude/settings.json`:
+```json
+{
+  "mcpServers": {
+    "agentful": {
+      "command": "npx",
+      "args": ["-y", "@itz4blitz/agentful-mcp-server"]
+    }
+  }
+}
+```
 
-3. **Restart Claude Code** to load the MCP server
+**Restart Claude Code** to load the MCP server. Verify with `claude mcp list`.
 
 ### File Creation Protection Hooks
 

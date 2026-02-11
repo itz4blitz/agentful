@@ -22,7 +22,11 @@ This creates `.claude/product/index.md` for your product specification.
 **Optional: Enable [Pattern Learning](/concepts/pattern-learning)** so agents compound knowledge across sessions:
 
 ```bash
+# Project scope (default)
 claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server
+
+# Or global scope (available in all projects)
+claude mcp add -s user agentful -- npx -y @itz4blitz/agentful-mcp-server
 ```
 
 ## Step 2: Define Your Product
