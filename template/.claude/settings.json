@@ -1,7 +1,8 @@
 {
   "includeCoAuthoredBy": false,
   "env": {
-    "ENABLE_TOOL_SEARCH": "true"
+    "ENABLE_TOOL_SEARCH": "true",
+    "AGENTFUL_WORKTREE_MODE": "auto"
   },
   "hooks": {
     "SessionStart": [
@@ -23,6 +24,17 @@
       }
     ],
     "PreToolUse": [
+      {
+        "tools": ["Write", "Edit"],
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node bin/hooks/ensure-worktree.js",
+            "timeout": 10,
+            "description": "Ensure agents work in git worktrees (disable with AGENTFUL_WORKTREE_MODE=off)"
+          }
+        ]
+      },
       {
         "tools": ["Write", "Edit"],
         "hooks": [

@@ -178,6 +178,33 @@ If the quick setup command (`claude mcp add agentful -- npx -y @itz4blitz/agentf
 
 **Restart Claude Code** to load the MCP server. Verify with `claude mcp list`.
 
+### Git Worktree Mode
+
+agentful supports automatic git worktree management for safer parallel development.
+
+**Modes**:
+| Mode | Behavior |
+|-------|-----------|
+| `auto` | Create worktrees automatically when agents make changes (recommended) |
+| `block` | Require agents to work in existing worktrees |
+| `off` | Allow direct edits to root repository (legacy) |
+
+**Enable via environment**:
+```bash
+export AGENTFUL_WORKTREE_MODE=auto
+```
+
+**Or in `.claude/settings.json`**:
+```json
+{
+  "env": {
+    "AGENTFUL_WORKTREE_MODE": "auto"
+  }
+}
+```
+
+**More configuration**: See [/agentful-worktree](/commands/agentful-worktree) command and [Git Worktrees concept](/concepts/git-worktrees) for full details.
+
 ### File Creation Protection Hooks
 
 By default, agentful blocks creation of random files to keep your codebase clean and prevent littering.

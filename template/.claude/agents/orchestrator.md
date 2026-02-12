@@ -456,6 +456,188 @@ else:
 }
 ```
 
+## Worktree Management
+
+Git worktrees provide isolated environments for parallel agent development. Each task can work in its own worktree without polluting the main repository.
+
+### Why Worktrees?
+
+- **Isolation**: Changes are isolated until merged
+- **Parallel Development**: Multiple agents can work simultaneously
+- **Safety**: Experimental changes don't affect main branch
+- **Clean History**: Each worktree has its own git history
+
+### Worktree Modes
+
+Controlled via `AGENTFUL_WORKTREE_MODE` environment variable:
+
+| Mode | Behavior | When to Use |
+|-------|-----------|--------------|
+| `auto` | Create worktrees automatically | Default, recommended |
+| `block` | Require existing worktree | Strict environments |
+| `off` | Allow direct edits | Legacy, manual control |
+
+### Before Delegation: Worktree Setup
+
+Before delegating to any specialist agent:
+
+```bash
+# Check worktree mode
+if AGENTFUL_WORKTREE_MODE != "off":
+    # Check if we need a worktree
+    current_worktree = get_current_worktree()
+
+    if not current_worktree:
+        # Determine purpose from task type
+        purpose = determine_worktree_purpose(task_type)
+
+        # Create worktree via worktree-service
+        worktree = execute("node bin/hooks/worktree-service.js create " + purpose)
+
+        # Set environment for delegated agents
+        # They inherit AGENTFUL_WORKTREE_DIR
+        current_worktree = worktree
+
+    # Track in state.json
+    state.current_worktree = {
+        name: worktree.name,
+        path: worktree.path,
+        branch: worktree.branch,
+        purpose: worktree.purpose,
+        created_at: worktree.created_at
+    }
+```
+
+### Worktree Naming Convention
+
+Worktrees are automatically named:
+
+```
+agentful-<purpose>-<branch-slug>-<timestamp>
+```
+
+Examples:
+- `agentful-feature-auth-1739297120` - Feature development
+- `agentful-fix-coverage-1739297150` - Fixer adding coverage
+- `agentful-review-1739297180` - Reviewer validating
+- `agentful-hotfix-login-bug-1739297210` - Hotfix work
+
+### State Schema Extension
+
+Track worktrees in `.agentful/state.json`:
+
+```json
+{
+  "current_task": "feature/auth",
+  "current_phase": "implementation",
+  "current_worktree": {
+    "name": "agentful-feature-auth-1739297120",
+    "path": "/Users/dev/project/.git/worktrees/agentful-feature-auth-1739297120",
+    "branch": "feature/auth",
+    "purpose": "feature",
+    "created_at": "2025-02-11T15:30:00Z"
+  },
+  "worktrees": {
+    "active": [
+      {
+        "name": "agentful-feature-auth-1739297120",
+        "branch": "feature/auth",
+        "purpose": "feature",
+        "agent": "orchestrator",
+        "created_at": "2025-02-11T15:30:00Z",
+        "last_activity": "2025-02-11T16:45:00Z"
+      }
+    ]
+  }
+}
+```
+
+### After Task Completion: Worktree Cleanup
+
+When a feature passes all quality gates:
+
+```bash
+if task_completed and AGENTFUL_WORKTREE_AUTO_CLEANUP != "false":
+    # Commit changes in worktree
+    git -C $WORKTREE_PATH add .
+    git -C $WORKTREE_PATH commit -m "feat: complete ${feature_name}"
+
+    # Ask user what to do next
+    response = AskUserQuestion(
+        "Feature complete! What would you like to do?",
+        options: [
+            "Create PR",
+            "Merge to main",
+            "Keep worktree for review",
+            "Clean up worktree"
+        ]
+    )
+
+    if response == "Create PR" or response == "Merge to main":
+        # Push and create PR/merge
+        git -C $WORKTREE_PATH push
+        # ... PR creation logic ...
+
+    # Remove worktree
+    execute("node bin/hooks/worktree-service.js remove " + worktree.name)
+
+    # Update state.json
+    state.current_worktree = null
+```
+
+### Handling Interruptions
+
+If user interrupts during worktree operation:
+
+```bash
+on SIGINT:
+    if active_worktree:
+        # Mark for review instead of deleting
+        state.interrupted_worktree = {
+            name: active_worktree.name,
+            path: active_worktree.path,
+            interrupted_at: new Date().toISOString()
+        }
+
+        console.log("Worktree preserved: " + active_worktree.name)
+        console.log("Run /agentful-worktree --resume to continue")
+        console.log("Run /agentful-worktree --cleanup to remove")
+```
+
+### Worktree Service API
+
+The `worktree-service.js` provides these operations:
+
+```bash
+node bin/hooks/worktree-service.js create <purpose> [branch]  # Create worktree
+node bin/hooks/worktree-service.js list                    # List all worktrees
+node bin/hooks/worktree-service.js status                  # Show current status
+node bin/hooks/worktree-service.js cleanup                # Remove stale worktrees
+node bin/hooks/worktree-service.js prune                 # Run git prune
+node bin/hooks/worktree-service.js remove <name>         # Remove specific worktree
+```
+
+### Environment Variables
+
+| Variable | Default | Description |
+|-----------|----------|-------------|
+| `AGENTFUL_WORKTREE_MODE` | `auto` | Worktree enforcement mode |
+| `AGENTFUL_WORKTREE_DIR` | (auto-set) | Current worktree path |
+| `AGENTFUL_WORKTREE_LOCATION` | `../` | Where to create worktrees |
+| `AGENTFUL_WORKTREE_AUTO_CLEANUP` | `true` | Auto-remove after completion |
+| `AGENTFUL_WORKTREE_RETENTION_DAYS` | `7` | Days before stale cleanup |
+| `AGENTFUL_WORKTREE_MAX_ACTIVE` | `5` | Maximum active worktrees |
+
+### CI/CD Detection
+
+Worktree mode auto-disables in CI environments:
+
+```bash
+if process.env.CI == "true" or process.env.GITHUB_ACTIONS == "true":
+    # Skip worktree creation
+    # CI already provides isolated environments
+```
+
 ## Delegation Pattern
 
 **NEVER implement yourself.** Always use Task tool.

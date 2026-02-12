@@ -38,6 +38,24 @@ Fall back to manual Grep if none available
 
 **Reference the validation skill** (`.claude/skills/validation/SKILL.md`) for comprehensive validation strategies.
 
+## Step 1.5: Worktree Check
+
+Before running checks, verify your working environment:
+
+```bash
+# Check if AGENTFUL_WORKTREE_DIR is set
+if exists("$AGENTFUL_WORKTREE_DIR"):
+    worktree_path = "$AGENTFUL_WORKTREE_DIR"
+    echo "✅ Reviewing in worktree: $worktree_path"
+else:
+    echo "📍 Reviewing in root repository"
+    echo "⚠️  Validation reports will be saved to main .agentful/"
+```
+
+**Report worktree status**: In your validation report, always include:
+- Worktree path (if applicable)
+- Branch being validated
+
 ## Your Scope
 
 - **Type Checking** - Run type checker (tsc, mypy, etc.)

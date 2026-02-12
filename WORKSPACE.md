@@ -46,6 +46,40 @@ This will:
 
 The workspace is organized into 5 folders:
 
+---
+
+## 🔧 Recent Improvements
+
+### Better Search (2025-02-11)
+
+**Problem**: Client-side search was excluding too many files, making it hard to find content.
+
+**Fixes**:
+1. **`.vocsrc`** - Added Pagefind configuration for faster local search
+   - Full-text search across all docs
+   - 300 character excerpts for context
+   - `searchExclude=[]` removes unnecessary exclusions
+
+2. **`.vscode/settings.json`** - Improved workspace search configuration
+   - Removed excessive search excludes
+   - Keeps important files searchable (docs, skills, commands)
+   - Only excludes: node_modules, dist, .git, .vocs
+
+**To use**: Run `npm run docs:dev` and use Cmd+Shift+F for full workspace search.
+
+### Automatic Worktree Mode (2025-02-11)
+
+**Problem**: Agents were editing root repository directly instead of using worktrees.
+
+**Fix**: New projects now default to `AGENTFUL_WORKTREE_MODE=auto` in template settings:
+- Agents automatically create worktrees before making changes
+- Safer parallel development
+- Clean main branch from experimental changes
+
+See [/concepts/git-worktrees](docs/pages/concepts/git-worktrees) for details.
+
+---
+
 | Folder | Path | Purpose |
 |--------|------|---------|
 | 🚀 Root | `/` | Main project, docs, config |

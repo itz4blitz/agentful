@@ -156,6 +156,108 @@ Worktrees operate independently - there's no coordination between them. This is 
 
 This independence is what makes worktrees powerful for parallel local development.
 
+## Automatic Worktree Management
+
+agentful can automatically manage worktrees for you, ensuring agents always work in isolated environments.
+
+### How It Works
+
+When `AGENTFUL_WORKTREE_MODE=auto` (default):
+
+1. **Before Agent Work**: A PreToolUse hook detects file modification operations
+2. **Worktree Check**: Hook verifies if agent is in a worktree
+3. **Auto-Create**: If not in worktree, automatically creates one with naming:
+   - `agentful-<purpose>-<branch-slug>-<timestamp>`
+4. **Agent Continues**: Agent works normally in the new worktree
+5. **Cleanup**: Worktree is removed after task completes (if auto-cleanup enabled)
+
+### Worktree Modes
+
+| Mode | Behavior | Use Case |
+|-------|-----------|------------|
+| `auto` | Create worktrees automatically | **Default** - Recommended for most projects |
+| `block` | Require existing worktree | Strict environments - prevents accidental root edits |
+| `off` | Allow direct edits | Legacy projects or manual control |
+
+### Setting the Mode
+
+```bash
+# In .claude/settings.json (persisted)
+{
+  "env": {
+    "AGENTFUL_WORKTREE_MODE": "auto"
+  }
+}
+
+# Or via environment (temporary)
+export AGENTFUL_WORKTREE_MODE=auto
+export AGENTFUL_WORKTREE_MODE=block
+export AGENTFUL_WORKTREE_MODE=off
+```
+
+### Automatic Naming
+
+Worktrees are automatically named using this convention:
+
+```
+agentful-<purpose>-<branch-slug>-<timestamp>
+```
+
+Examples:
+- `agentful-feature-auth-1739297120` - Feature development
+- `agentful-fix-coverage-1739297150` - Fixer adding test coverage
+- `agentful-review-1739297180` - Reviewer running quality gates
+
+### Purpose Detection
+
+The system automatically determines purpose from agent context:
+
+| Agent Type | Purpose |
+|-------------|---------|
+| `fixer` | `fix` |
+| `reviewer` | `review` |
+| `tester` | `test` |
+| `backend` | `backend` |
+| `frontend` | `frontend` |
+| `orchestrator` | `orchestrator` |
+
+### Configuration
+
+| Environment Variable | Default | Description |
+|-------------------|----------|-------------|
+| `AGENTFUL_WORKTREE_MODE` | `auto` | Worktree enforcement mode |
+| `AGENTFUL_WORKTREE_LOCATION` | `../` | Where to create worktrees (relative to repo) |
+| `AGENTFUL_WORKTREE_AUTO_CLEANUP` | `true` | Auto-remove worktrees after completion |
+| `AGENTFUL_WORKTREE_RETENTION_DAYS` | `7` | Days before stale worktrees are cleaned |
+| `AGENTFUL_WORKTREE_MAX_ACTIVE` | `5` | Maximum active worktrees before forced cleanup |
+
+### Managing Worktrees
+
+Use the `/agentful-worktree` command to manage worktrees manually:
+
+```bash
+/agentful-worktree              # List all active worktrees
+/agentful-worktree --status       # Show current worktree
+/agentful-worktree --cleanup       # Remove stale worktrees
+/agentful-worktree --prune        # Run git worktree prune
+```
+
+### When to Disable
+
+You might want to disable automatic worktree management when:
+
+- **Quick fixes**: Making small edits in an active branch
+- **Documentation**: Only changing docs, not code
+- **Manual workflow**: You prefer creating worktrees manually
+
+Disable with:
+
+```bash
+export AGENTFUL_WORKTREE_MODE=off
+```
+
+Or remove the `ensure-worktree.js` hook from `.claude/settings.json`.
+
 ### Branch-Based Isolation
 
 Worktrees are most effective when working on different branches. If you want parallel work on the same branch, you'll need separate branches:

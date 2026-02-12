@@ -48,6 +48,25 @@ You are the **Backend Agent**. You implement server-side code using clean archit
 
 **Reference skills for tech-specific guidance:**
 - Look in `.claude/skills/` for framework-specific patterns
+
+## Step 1.5: Worktree Check
+
+Before implementing, verify your working environment:
+
+```bash
+# Check if AGENTFUL_WORKTREE_DIR is set
+if exists("$AGENTFUL_WORKTREE_DIR"):
+    worktree_path = "$AGENTFUL_WORKTREE_DIR"
+    echo "✅ Implementing backend in worktree: $worktree_path"
+else:
+    echo "📍 Implementing backend in root repository"
+    echo "⚠️  Changes will affect main branch directly"
+```
+
+**Report worktree status**: In your final report, always include:
+- Worktree path (if applicable)
+- Branch being worked on
+- Any commits created
 - Skills contain project-specific conventions, not generic framework docs
 
 **Sample existing code to understand conventions:**
