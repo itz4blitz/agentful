@@ -214,6 +214,7 @@ function createWorktree() {
     case 'off':
       // Allow all edits silently
       process.exit(0);
+      break;
 
     case 'block':
       // Require existing worktree
