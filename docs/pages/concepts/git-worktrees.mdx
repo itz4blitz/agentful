@@ -14,7 +14,7 @@ Git worktrees let you run multiple agentful agents locally in parallel branches.
 Git worktrees allow you to check out multiple branches simultaneously in different directories. agentful works naturally with this pattern because:
 
 - **Independent state** - Each worktree has its own `.agentful/` directory (gitignored)
-- **Branch-specific specs** - Product specifications in `.claude/product/` are git-tracked and branch-specific
+- **Branch-specific context** - Conversation history, progress files, and optional `.claude/product/` docs are branch-specific
 - **No coordination** - Worktrees don't coordinate with each other, enabling true parallel work
 
 <div className="mermaid-diagram">
@@ -28,21 +28,21 @@ graph TB
     subgraph MainWT[Main Worktree: repo/]
         MainGit[.git] -.-> GitDB
         MainState[.agentful/<br/>state.json<br/>completion.json]
-        MainSpec[.claude/product/<br/>index.md]
+        MainContext[.agentful/<br/>conversation-history.json<br/>.claude/product docs]
         MainSrc[src/]
 
         style MainState fill:#3b82f6,stroke:#2563eb,color:#fff
-        style MainSpec fill:#10b981,stroke:#059669,color:#fff
+        style MainContext fill:#10b981,stroke:#059669,color:#fff
     end
 
     subgraph DashWT[Worktree: repo-dashboard/]
         DashGit[.git] -.-> GitDB
         DashState[.agentful/<br/>state.json<br/>completion.json]
-        DashSpec[.claude/product/<br/>index.md]
+        DashContext[.agentful/<br/>conversation-history.json<br/>.claude/product docs]
         DashSrc[src/]
 
         style DashState fill:#3b82f6,stroke:#2563eb,color:#fff
-        style DashSpec fill:#10b981,stroke:#059669,color:#fff
+        style DashContext fill:#10b981,stroke:#059669,color:#fff
     end
 
     GitDB -->|Shared| MainGit
@@ -76,7 +76,7 @@ cd ../repo-dashboard
 Each worktree operates completely independently:
 - Different `.agentful/state.json` (different current task, phase)
 - Different `.agentful/completion.json` (different feature completion)
-- Different product specs (if branches have diverged)
+- Different conversation context and optional product docs (if branches have diverged)
 
 ### Safe Experimentation
 

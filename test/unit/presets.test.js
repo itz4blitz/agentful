@@ -76,6 +76,12 @@ describe('hookConfigurations', () => {
     expect(hookConfigurations['health-check'].config).toBeDefined();
   });
 
+  it('should have mcp-health-check hook', () => {
+    expect(hookConfigurations['mcp-health-check']).toBeDefined();
+    expect(hookConfigurations['mcp-health-check'].event).toBe('SessionStart');
+    expect(hookConfigurations['mcp-health-check'].config).toBeDefined();
+  });
+
   it('should have typescript-validation hook', () => {
     expect(hookConfigurations['typescript-validation']).toBeDefined();
     expect(hookConfigurations['typescript-validation'].event).toBe('PostToolUse');

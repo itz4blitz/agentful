@@ -70,9 +70,6 @@ npx @itz4blitz/agentful init --preset=minimal
 
 # Custom: Choose components
 npx @itz4blitz/agentful init --agents=orchestrator,backend --skills=validation
-
-# Web configurator
-https://agentful.app/configure
 ```
 
 ## Commands

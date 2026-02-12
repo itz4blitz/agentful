@@ -16,16 +16,14 @@
     "lint": "eslint .",
     "release": "semantic-release",
     "release:dry-run": "semantic-release --dry-run",
-    "docs:dev": "vocs dev",
+    "docs:dev": "vocs dev --host 127.0.0.1 --port 8080",
     "docs:build": "vocs build",
     "docs:preview": "vocs preview",
-    "build:all": "npm run build:cli && npm run build:studio && npm run build:mcp",
-    "build:cli": "cd packages/cli && npm run build",
-    "build:studio": "cd packages/studio && npm run build",
+    "build:all": "npm run build:mcp",
     "build:mcp": "cd packages/mcp-server && npm run build",
-    "dev:studio": "cd packages/studio && npm run dev",
-    "watch:studio": "cd packages/studio && npm run watch",
-    "install:all": "npm install && cd packages/cli && npm install && cd ../studio && npm install && cd ../mcp-server && npm install && cd ../shared && npm install"
+    "test:mcp": "cd packages/mcp-server && npm run test",
+    "dev:mcp": "cd packages/mcp-server && npm run dev",
+    "install:all": "npm install && cd packages/mcp-server && npm install"
   },
   "exports": {
     ".": {

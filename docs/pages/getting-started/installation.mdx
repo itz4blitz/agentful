@@ -14,20 +14,10 @@ description: Install and initialize agentful in your project.
 ## Installation Options
 
 > **Note**: These options are for **first-time installation only**. If you already have agentful installed, use `/agentful-update` instead. See [When to Use What](#when-to-use-what) below.
+>
+> **Local-only**: installation configuration is fully local via CLI flags. Remote/shareable `--config` URLs are no longer supported.
 
-### Option 1: Web Configurator (Recommended)
-
-Use the interactive web configurator to customize your installation:
-
-**[agentful.app](https://agentful.app)**
-
-1. Choose a preset or build custom configuration
-2. Select agents, skills, hooks, and quality gates
-3. Generate installation command
-4. Copy and run in your project
-
-
-### Option 2: Default Installation (CLI)
+### Option 1: Default Installation (CLI)
 
 Install with all components (recommended for most projects):
 
@@ -46,7 +36,7 @@ Tech stack is auto-detected on first run - no need to specify during installatio
 
 See the [Installation Options Guide](/getting-started/presets) for details.
 
-### Option 3: Custom Configuration (CLI)
+### Option 2: Custom Configuration (CLI)
 
 Build a custom configuration with specific components:
 
@@ -65,14 +55,6 @@ npx @itz4blitz/agentful init \
 - `--hooks=<list>` - Comma-separated hook identifiers
 - `--gates=<list>` - Comma-separated quality gate names
 
-### Option 4: Shareable Configuration
-
-Use a shared configuration from the web configurator:
-
-```bash
-npx @itz4blitz/agentful init --config=https://agentful.app/c/abc12345
-```
-
 This installs:
 - `.claude/` - Agents, commands, skills
 - `.agentful/` - Runtime state (gitignored)
@@ -86,7 +68,7 @@ your-project/
 ├── CLAUDE.md               # Project instructions
 ├── .claude/
 │   ├── agents/             # 8 specialized agents
-│   ├── commands/           # 5 slash commands
+│   ├── commands/           # Command templates (see /commands)
 │   ├── skills/             # Domain skills
 │   ├── product/            # Product specification
 │   │   ├── index.md        # Project overview
@@ -128,58 +110,6 @@ cat .agentful/state.json
 ls -la .claude/product/
 cat .claude/product/index.md
 ```
-
-## Additional Options
-
-### Bare Init
-
-Skip template files if you already have your spec:
-
-```bash
-npx @itz4blitz/agentful init --bare --preset=minimal
-```
-
-### Skip Smart Analysis
-
-Faster init without project analysis:
-
-```bash
-npx @itz4blitz/agentful init --no-smart
-```
-
-### Generate Domains
-
-Generate domain subdirectories for complex projects:
-
-```bash
-npx @itz4blitz/agentful init --generate-domains
-```
-
-### Override Components
-
-Customize the default installation with specific selections:
-
-```bash
-# Start with minimal, add frontend
-npx @itz4blitz/agentful init \
-  --preset=minimal \
-  --agents=orchestrator,backend,frontend
-
-# Start with default, customize skills
-npx @itz4blitz/agentful init \
-  --skills=product-tracking,validation,testing,deployment
-```
-
-### Global Install
-
-For frequent use:
-
-```bash
-npm install -g @itz4blitz/agentful
-agentful init --preset=minimal
-```
-
-Note: `npx` always uses the latest version.
 
 ## When to Use What
 

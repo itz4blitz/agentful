@@ -20,7 +20,7 @@ npx @itz4blitz/agentful init --agents=orchestrator,backend --skills=validation
 npx @itz4blitz/agentful presets
 ```
 
-**[agentful.app/configure](https://agentful.app/configure)** - Interactive web configurator for shareable configurations
+Use `npx @itz4blitz/agentful presets` to see local installation options.
 
 ## Quick Start
 
@@ -77,6 +77,15 @@ claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server
 Without MCP: agents start from scratch every session. With MCP: agents compound across sessions.
 
 See [Hooks System](#hooks-system) below for manual setup or other editors.
+
+## Metadata Safety (Critical)
+
+When editing `package.json` (or other repo metadata files), preserve project ownership:
+
+- Never change `repository.url`, `homepage`, `bugs.url`, `name` scope, or `author` to agentful maintainer values unless the project explicitly asks.
+- Keep `repository.type` as `"git"` when a `repository` object exists.
+- Do not infer repo owner from agentful package names/docs (`@itz4blitz/agentful`); derive owner from the current repository remote instead.
+- Prefer structured JSON edits (JSON path / `jq` / `npm pkg`) instead of broad text replace on `"type"` or `"url"`.
 
 ## Commands
 
@@ -286,7 +295,6 @@ Agentful uses Claude Code hooks for automation, protection, and intelligent cont
   - ✅ `.claude/skills/*/SKILL.md` - Skill documentation
   - ✅ `.claude/product/**/*.md` - Product specifications
   - ✅ `template/**/*.md` - Template files
-  - ✅ `examples/**/*.md` - Example documentation
 - **Allowed if parent directory exists**:
   - 📁 `docs/*.md`, `docs/pages/*.mdx` - Requires `docs/` directory
   - 📁 `documentation/*.md` - Requires `documentation/` directory

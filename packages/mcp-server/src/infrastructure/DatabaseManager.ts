@@ -20,6 +20,25 @@ export class DatabaseManager implements IDatabaseManager {
   private constructor() {}
 
   /**
+   * Resolve sql.js WASM path for both built and test/runtime contexts.
+   */
+  private resolveWasmPath(file: string): string {
+    const candidates = [
+      // Built runtime: dist/infrastructure/sql-wasm.wasm
+      resolve(__dirname, file),
+      // Test runtime from src: packages/mcp-server/node_modules/sql.js/dist/sql-wasm.wasm
+      resolve(__dirname, '../../node_modules/sql.js/dist', file),
+      // Fallback when cwd is package root
+      resolve(process.cwd(), 'node_modules/sql.js/dist', file),
+      // Fallback when cwd is monorepo root
+      resolve(process.cwd(), 'packages/mcp-server/node_modules/sql.js/dist', file)
+    ];
+
+    const match = candidates.find(candidate => existsSync(candidate));
+    return match ?? resolve(__dirname, file);
+  }
+
+  /**
    * Get singleton instance
    */
   static getInstance(): DatabaseManager {
@@ -34,15 +53,8 @@ export class DatabaseManager implements IDatabaseManager {
    */
   async getConnection(): Promise<Database> {
     if (!this.db) {
-      // The build script copies sql-wasm.wasm to dist/infrastructure/
-      // This code runs from dist/infrastructure/DatabaseManager.js
-      const wasmDir = __dirname;
-
       const SQL = await initSqlJs({
-        locateFile: (file: string) => {
-          // Load WASM from same directory as this module
-          return resolve(wasmDir, file);
-        }
+        locateFile: (file: string) => this.resolveWasmPath(file)
       });
       this.db = new SQL.Database();
     }

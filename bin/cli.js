@@ -20,6 +20,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { spawnSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { initProject, isInitialized } from '../lib/init.js';
 import {
@@ -82,11 +83,11 @@ function showHelp() {
   console.log('');
   console.log('INIT OPTIONS (optional):');
   console.log(`  ${colors.yellow}--preset=minimal${colors.reset}       Minimal setup (orchestrator + backend only)`);
-  console.log(`  ${colors.yellow}--config=<url|id>${colors.reset}       Use a shareable configuration`);
   console.log(`  ${colors.yellow}--agents=<list>${colors.reset}         Custom agents (comma-separated)`);
   console.log(`  ${colors.yellow}--skills=<list>${colors.reset}         Custom skills (comma-separated)`);
   console.log(`  ${colors.yellow}--hooks=<list>${colors.reset}          Custom hooks (comma-separated)`);
   console.log(`  ${colors.yellow}--gates=<list>${colors.reset}          Custom quality gates (comma-separated)`);
+  console.log(`  ${colors.yellow}--skip-mcp${colors.reset}              Skip automatic MCP server setup`);
   console.log('');
   console.log('EXAMPLES:');
   console.log(`  ${colors.dim}# Install agentful (all components - recommended)${colors.reset}`);
@@ -183,50 +184,78 @@ function checkGitignore() {
   }
 }
 
-/**
- * Fetch configuration from shareable URL or ID
- * @param {string} configParam - URL or ID
- * @returns {Promise<Object|null>}
- */
-async function fetchShareableConfig(configParam) {
-  try {
-    // Determine if it's a full URL or just an ID
-    let apiUrl;
-    if (configParam.startsWith('http://') || configParam.startsWith('https://')) {
-      // Extract ID from URL
-      const match = configParam.match(/\/c\/([a-f0-9]{8})$/i);
-      if (!match) {
-        throw new Error('Invalid config URL format. Expected: https://agentful.app/c/{id}');
-      }
-      const id = match[1];
-      apiUrl = `https://agentful.app/api/get-config/${id}`;
-    } else if (/^[a-f0-9]{8}$/i.test(configParam)) {
-      // It's just the ID
-      apiUrl = `https://agentful.app/api/get-config/${configParam}`;
-    } else {
-      throw new Error('Invalid config parameter. Provide either a full URL or an 8-character ID.');
-    }
+const MCP_SERVER_NAME = 'agentful';
+const MCP_SERVER_PACKAGE = '@itz4blitz/agentful-mcp-server';
+const MCP_SETUP_COMMAND = `claude mcp add ${MCP_SERVER_NAME} -- npx -y ${MCP_SERVER_PACKAGE}`;
 
-    log(colors.dim, `Fetching configuration from ${apiUrl}...`);
+function parseMcpInstallState() {
+  const result = spawnSync('claude', ['mcp', 'list'], {
+    encoding: 'utf8'
+  });
 
-    const response = await fetch(apiUrl);
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('Configuration not found. The config may have expired or the ID is invalid.');
-      }
-      if (response.status === 410) {
-        throw new Error('Configuration has expired (1 year TTL).');
-      }
-      throw new Error(`Failed to fetch config: HTTP ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.config;
-  } catch (error) {
-    log(colors.red, `Error fetching shareable config: ${error.message}`);
-    return null;
+  if (result.error) {
+    return {
+      ok: false,
+      reason: result.error.code === 'ENOENT' ? 'claude-not-found' : result.error.message
+    };
   }
+
+  if (result.status !== 0) {
+    return {
+      ok: false,
+      reason: (result.stderr || result.stdout || '').trim() || 'claude mcp list failed'
+    };
+  }
+
+  const output = `${result.stdout || ''}\n${result.stderr || ''}`;
+  const installed = new RegExp(`^\\s*${MCP_SERVER_NAME}(\\s|$)`, 'm').test(output);
+
+  return {
+    ok: true,
+    installed
+  };
+}
+
+function ensureAgentfulMcpInstalled() {
+  const state = parseMcpInstallState();
+  if (!state.ok) {
+    return {
+      status: 'unavailable',
+      reason: state.reason
+    };
+  }
+
+  if (state.installed) {
+    return { status: 'already-installed' };
+  }
+
+  const addResult = spawnSync('claude', ['mcp', 'add', MCP_SERVER_NAME, '--', 'npx', '-y', MCP_SERVER_PACKAGE], {
+    encoding: 'utf8'
+  });
+
+  if (addResult.error) {
+    return {
+      status: 'failed',
+      reason: addResult.error.message
+    };
+  }
+
+  if (addResult.status !== 0) {
+    return {
+      status: 'failed',
+      reason: (addResult.stderr || addResult.stdout || '').trim() || 'claude mcp add failed'
+    };
+  }
+
+  const verify = parseMcpInstallState();
+  if (!verify.ok || !verify.installed) {
+    return {
+      status: 'failed',
+      reason: !verify.ok ? verify.reason : 'MCP server not visible after install'
+    };
+  }
+
+  return { status: 'installed' };
 }
 
 async function init(args) {
@@ -241,76 +270,71 @@ async function init(args) {
   // Build configuration from preset and/or flags
   let config = null;
 
-  // Check for shareable config first
   if (flags.config) {
-    config = await fetchShareableConfig(flags.config);
-    if (!config) {
-      log(colors.red, 'Failed to load shareable configuration.');
+    log(colors.red, '--config is no longer supported.');
+    log(colors.dim, 'Use local CLI flags instead: --preset, --agents, --skills, --hooks, --gates');
+    process.exit(1);
+  }
+
+  // Default to "default" preset if no flags provided
+  let presetConfig = null;
+  const hasCustomFlags = flags.agents || flags.skills || flags.hooks || flags.gates;
+
+  if (flags.preset) {
+    // User explicitly specified a preset
+    presetConfig = getPreset(flags.preset);
+    if (!presetConfig) {
+      log(colors.red, `Unknown preset: ${flags.preset}`);
+      console.log('');
+      log(colors.dim, 'Available presets:');
+      listPresets().forEach(p => log(colors.dim, `  - ${p.name}`));
+      console.log('');
+      log(colors.dim, 'Run: agentful presets');
       process.exit(1);
     }
-    log(colors.green, 'Loaded shareable configuration successfully!');
-    console.log('');
+    log(colors.dim, `Using preset: ${flags.preset}`);
+  } else if (!hasCustomFlags) {
+    // No preset and no custom flags = use default preset
+    presetConfig = getPreset('default');
+    log(colors.dim, 'Installing agentful (all components)');
+  }
+
+  // Parse individual flags
+  const flagConfig = {
+    agents: flags.agents ? parseArrayFlag(flags.agents) : null,
+    skills: flags.skills ? parseArrayFlag(flags.skills) : null,
+    hooks: flags.hooks ? parseArrayFlag(flags.hooks) : null,
+    gates: flags.gates ? parseArrayFlag(flags.gates) : null
+  };
+
+  // Merge preset with flags (flags override preset)
+  if (presetConfig) {
+    config = mergePresetWithFlags(presetConfig, flagConfig);
   } else {
-    // Default to "default" preset if no flags provided
-    let presetConfig = null;
-    const hasCustomFlags = flags.agents || flags.skills || flags.hooks || flags.gates;
-
-    if (flags.preset) {
-      // User explicitly specified a preset
-      presetConfig = getPreset(flags.preset);
-      if (!presetConfig) {
-        log(colors.red, `Unknown preset: ${flags.preset}`);
-        console.log('');
-        log(colors.dim, 'Available presets:');
-        listPresets().forEach(p => log(colors.dim, `  - ${p.name}`));
-        console.log('');
-        log(colors.dim, 'Run: agentful presets');
-        process.exit(1);
-      }
-      log(colors.dim, `Using preset: ${flags.preset}`);
-    } else if (!hasCustomFlags) {
-      // No preset and no custom flags = use default preset
-      presetConfig = getPreset('default');
-      log(colors.dim, 'Installing agentful (all components)');
-    }
-
-    // Parse individual flags
-    const flagConfig = {
-      agents: flags.agents ? parseArrayFlag(flags.agents) : null,
-      skills: flags.skills ? parseArrayFlag(flags.skills) : null,
-      hooks: flags.hooks ? parseArrayFlag(flags.hooks) : null,
-      gates: flags.gates ? parseArrayFlag(flags.gates) : null
+    // Custom configuration with no preset
+    config = {
+      agents: flagConfig.agents || ['orchestrator'],
+      skills: flagConfig.skills || [],
+      hooks: flagConfig.hooks || [],
+      gates: flagConfig.gates || []
     };
+  }
 
-    // Merge preset with flags (flags override preset)
-    if (presetConfig) {
-      config = mergePresetWithFlags(presetConfig, flagConfig);
-    } else {
-      // Custom configuration with no preset
-      config = {
-        agents: flagConfig.agents || ['orchestrator'],
-        skills: flagConfig.skills || [],
-        hooks: flagConfig.hooks || [],
-        gates: flagConfig.gates || []
-      };
-    }
-
-    // Validate configuration
-    const validation = validateConfiguration(config);
-    if (!validation.valid) {
-      log(colors.yellow, 'Configuration warnings:');
-      validation.errors.forEach(err => log(colors.yellow, `  - ${err}`));
-      console.log('');
-    }
-
-    // Show what will be installed
-    log(colors.dim, 'Configuration:');
-    log(colors.dim, `  Agents: ${config.agents.join(', ')}`);
-    log(colors.dim, `  Skills: ${config.skills.join(', ') || 'none'}`);
-    log(colors.dim, `  Hooks: ${config.hooks.join(', ') || 'none'}`);
-    log(colors.dim, `  Gates: ${config.gates.join(', ') || 'none'}`);
+  // Validate configuration
+  const validation = validateConfiguration(config);
+  if (!validation.valid) {
+    log(colors.yellow, 'Configuration warnings:');
+    validation.errors.forEach(err => log(colors.yellow, `  - ${err}`));
     console.log('');
   }
+
+  // Show what will be installed
+  log(colors.dim, 'Configuration:');
+  log(colors.dim, `  Agents: ${config.agents.join(', ')}`);
+  log(colors.dim, `  Skills: ${config.skills.join(', ') || 'none'}`);
+  log(colors.dim, `  Hooks: ${config.hooks.join(', ') || 'none'}`);
+  log(colors.dim, `  Gates: ${config.gates.join(', ') || 'none'}`);
+  console.log('');
 
   // Check if already initialized
   if (await isInitialized(targetDir)) {
@@ -391,6 +415,28 @@ async function init(args) {
   // Update .gitignore
   checkGitignore();
 
+  // Configure Agentful MCP server by default (non-fatal)
+  const skipMcpSetup = Boolean(flags['skip-mcp']);
+  const mcpSetupResult = skipMcpSetup ? { status: 'skipped' } : ensureAgentfulMcpInstalled();
+
+  if (skipMcpSetup) {
+    log(colors.dim, 'Skipped MCP setup (--skip-mcp)');
+    console.log('');
+  } else if (mcpSetupResult.status === 'installed') {
+    log(colors.green, '✓ Agentful MCP server configured');
+    console.log('');
+  } else if (mcpSetupResult.status === 'already-installed') {
+    log(colors.green, '✓ Agentful MCP server already configured');
+    console.log('');
+  } else {
+    log(colors.yellow, '⚠ Could not auto-configure Agentful MCP server');
+    if (mcpSetupResult.reason) {
+      log(colors.dim, `  Reason: ${mcpSetupResult.reason}`);
+    }
+    log(colors.dim, `  Run manually: ${MCP_SETUP_COMMAND}`);
+    console.log('');
+  }
+
   // Show next steps
   console.log('');
   log(colors.bright, 'Next Steps:');
@@ -411,13 +457,23 @@ async function init(args) {
   }
   log(colors.dim, 'Optional: Edit CLAUDE.md and .claude/product/index.md first to customize.');
   console.log('');
-  log(colors.bright, 'Recommended: Enable Pattern Learning');
-  console.log('');
-  log(colors.dim, '  Agents get smarter when they can store and reuse patterns.');
-  log(colors.dim, '  Run this once to enable:');
-  console.log('');
-  log(colors.cyan, '    claude mcp add agentful -- npx -y @itz4blitz/agentful-mcp-server');
-  console.log('');
+  if (skipMcpSetup) {
+    log(colors.bright, 'Pattern Learning (Skipped)');
+    console.log('');
+    log(colors.dim, '  You skipped automatic MCP setup with --skip-mcp.');
+    log(colors.dim, '  Enable it later with:');
+    console.log('');
+    log(colors.cyan, `    ${MCP_SETUP_COMMAND}`);
+    console.log('');
+  } else if (mcpSetupResult.status !== 'installed' && mcpSetupResult.status !== 'already-installed') {
+    log(colors.bright, 'Pattern Learning (Manual Step Required)');
+    console.log('');
+    log(colors.dim, '  Agents get smarter when they can store and reuse patterns.');
+    log(colors.dim, '  Run this once to enable:');
+    console.log('');
+    log(colors.cyan, `    ${MCP_SETUP_COMMAND}`);
+    console.log('');
+  }
 }
 
 function showStatus() {

@@ -3,7 +3,6 @@ title: agentful - Pre-configured AI Agent Toolkit for Claude Code
 description: Local-first AI development toolkit that auto-generates domain specialists for your tech stack. Works with Claude Code, any LLM, any platform.
 ---
 
-import { ConfigWizard } from '../components/configurator/ConfigWizard'
 import { SystemVisualization } from '../components/SystemVisualization'
 
 <div style={{
@@ -89,13 +88,22 @@ Every software project needs [three tiers of agents and skills](/agents#three-ti
 2. **[Domain](/agents#2-domain-agents)** (generated) - Stack-specific agents (backend, frontend for web; extractor, transformer for pipelines) + tech skills (Next.js, Postgres, Tailwind). [Architect](/agents/architect) creates these based on your codebase.
 3. **[Ephemeral](/agents#3-ephemeral-agents)** (temporary) - Task-specific agents/skills created for one-off tasks or longer-term work, then removed when done (migration-agent for a 2-hour DB migration, performance-profiling for a multi-week optimization project).
 
-**Skills are shared across agents.** Any agent can use validation, research, etc. Our OOTB setup works for all software projects, but use the [custom installer](/getting-started/installation#custom) to tweak what you need.
+**Skills are shared across agents.** Any agent can use validation, research, etc. Our OOTB setup works for all software projects, and you can tweak installation via CLI flags in the [Installation Guide](/getting-started/installation).
 
-## Configure Your Installation
+## Install with CLI
 
-Use this interactive configurator to customize your agentful installation. Choose from presets or build a custom configuration tailored to your project's needs.
+Use preset flags with the CLI to customize your installation:
 
-<ConfigWizard />
+```bash
+# Full install (recommended)
+npx @itz4blitz/agentful init
+
+# Minimal preset
+npx @itz4blitz/agentful init --preset=minimal
+
+# Custom selection
+npx @itz4blitz/agentful init --agents=orchestrator,backend,tester --skills=validation,testing
+```
 
 ## Get Started
 

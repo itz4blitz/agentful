@@ -5,20 +5,8 @@
       "path": "."
     },
     {
-      "name": "📦 CLI",
-      "path": "packages/cli"
-    },
-    {
       "name": "🔌 MCP Server",
       "path": "packages/mcp-server"
-    },
-    {
-      "name": "📦 Shared",
-      "path": "packages/shared"
-    },
-    {
-      "name": "🎨 VS Code Extension (Studio)",
-      "path": "packages/studio"
     }
   ],
   "settings": {
@@ -43,15 +31,14 @@
     "version": "0.2.0",
     "configurations": [
       {
-        "name": "🎨 Studio Extension",
-        "type": "extensionHost",
+        "name": "🔌 MCP Server",
+        "type": "node",
         "request": "launch",
-        "args": [
-          "--extensionDevelopmentPath=${workspaceFolder:🎨 VS Code Extension (Studio)}"
-        ],
-        "outFiles": [
-          "${workspaceFolder:🎨 VS Code Extension (Studio)}/dist/**/*.js"
-        ]
+        "cwd": "${workspaceFolder:🔌 MCP Server}",
+        "runtimeExecutable": "npm",
+        "runtimeArgs": ["run", "dev"],
+        "console": "integratedTerminal",
+        "skipFiles": ["<node_internals>/**"]
       }
     ]
   }

@@ -7,6 +7,15 @@ import { MockEmbeddingService } from '../../src/services/EmbeddingService.js';
 import { SQLiteTestHelper } from '../helpers/sqlite-test-helper.js';
 
 describe('MCP Server Integration Tests', () => {
+  const expectedToolNames = [
+    'store_pattern',
+    'find_patterns',
+    'add_feedback',
+    'get_canvas_state',
+    'get_element_context',
+    'broadcast_canvas'
+  ];
+
   let db: Database;
   let patternRepo: PatternRepository;
   let errorRepo: ErrorRepository;
@@ -21,7 +30,8 @@ describe('MCP Server Integration Tests', () => {
     server = new AgentfulMCPServer(patternRepo, errorRepo, embeddingService);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await server.stop();
     db.close();
   });
 
@@ -244,10 +254,10 @@ describe('MCP Server Integration Tests', () => {
   describe('MCP protocol', () => {
     it('should have tools registered', async () => {
       const tools = server['tools'];
-      expect(tools).toHaveLength(3);
-      expect(tools.map(t => t.name)).toContain('store_pattern');
-      expect(tools.map(t => t.name)).toContain('find_patterns');
-      expect(tools.map(t => t.name)).toContain('add_feedback');
+      expect(tools).toHaveLength(expectedToolNames.length);
+      expectedToolNames.forEach(name => {
+        expect(tools.map(t => t.name)).toContain(name);
+      });
     });
 
     it('should validate store_pattern inputs correctly', async () => {
@@ -684,10 +694,10 @@ describe('MCP Server Integration Tests', () => {
 
       // Verify tools are registered by checking the tools property
       const tools = server['tools'];
-      expect(tools).toHaveLength(3);
-      expect(tools.map(t => t.name)).toContain('store_pattern');
-      expect(tools.map(t => t.name)).toContain('find_patterns');
-      expect(tools.map(t => t.name)).toContain('add_feedback');
+      expect(tools).toHaveLength(expectedToolNames.length);
+      expectedToolNames.forEach(name => {
+        expect(tools.map(t => t.name)).toContain(name);
+      });
     });
 
     it('should handle store_pattern tool call', async () => {
@@ -1038,10 +1048,10 @@ describe('MCP Server Integration Tests', () => {
     it('should return all registered tools', async () => {
       const result = await server.handleListTools();
 
-      expect(result.tools).toHaveLength(3);
-      expect(result.tools[0].name).toBe('store_pattern');
-      expect(result.tools[1].name).toBe('find_patterns');
-      expect(result.tools[2].name).toBe('add_feedback');
+      expect(result.tools).toHaveLength(expectedToolNames.length);
+      expectedToolNames.forEach(name => {
+        expect(result.tools.map(t => t.name)).toContain(name);
+      });
     });
 
     it('should return tools with correct structure', async () => {

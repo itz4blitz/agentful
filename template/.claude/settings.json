@@ -97,6 +97,17 @@
         "hooks": [
           {
             "type": "command",
+            "command": "node bin/hooks/package-metadata-guard.js",
+            "timeout": 3,
+            "description": "Protect package.json ownership metadata from accidental corruption"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
             "command": "npx tsc --noEmit 2>&1 | head -5 || true"
           }
         ]

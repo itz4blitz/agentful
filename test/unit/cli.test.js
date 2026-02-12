@@ -33,6 +33,15 @@ describe('CLI', () => {
       const semverRegex = /^\d+\.\d+\.\d+(-[a-zA-Z0-9.-]+)?(\+[a-zA-Z0-9.-]+)?$/;
       expect(versionData.version).toMatch(semverRegex);
     });
+
+    it('should match package.json version', () => {
+      const versionPath = path.join(projectRoot, 'version.json');
+      const packagePath = path.join(projectRoot, 'package.json');
+      const versionData = JSON.parse(fs.readFileSync(versionPath, 'utf-8'));
+      const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf-8'));
+
+      expect(versionData.version).toBe(packageData.version);
+    });
   });
 
   describe('package.json', () => {
@@ -166,6 +175,13 @@ describe('CLI', () => {
       expect(content).toContain('/agentful-generate');
       expect(content).toContain('/agentful-start');
       expect(content).toContain('CLAUDE CODE COMMANDS');
+    });
+
+    it('should include skip-mcp init option in help text', () => {
+      const cliPath = path.join(projectRoot, 'bin', 'cli.js');
+      const content = fs.readFileSync(cliPath, 'utf-8');
+
+      expect(content).toContain('--skip-mcp');
     });
   });
 

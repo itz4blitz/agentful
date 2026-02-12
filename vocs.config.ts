@@ -195,6 +195,13 @@ export default defineConfig({
       },
       {
         tagName: 'script',
+        attributes: {
+          src: '/diagram-lightbox.js',
+          defer: true,
+        },
+      },
+      {
+        tagName: 'script',
         children: `
           (function() {
             const style = document.createElement('style');

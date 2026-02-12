@@ -9,7 +9,7 @@ description: Understanding the agentful architecture, workflow, and how it trans
 
 **agentful** is a local development toolkit that runs specialized agents in Claude Code.
 
-**[Configure Your Installation →](/)**
+**[Installation Guide →](/getting-started/installation)**
 
 ## What You Get
 
@@ -51,16 +51,16 @@ Six core quality gates validate every change before it's marked complete:
 
 Gates automatically adapt to your tech stack. When failures occur, the **Fixer** agent auto-remediates and re-validates.
 
-### 3. Product-Driven Development
+### 3. Context-Driven Development (Spec Optional)
 
-agentful works from structured product specifications:
-- Hierarchical feature organization (domains → features → subtasks)
-- Priority levels (CRITICAL, HIGH, MEDIUM, LOW)
-- Acceptance criteria with checkboxes
-- Progress tracking with completion percentages
-- Automatic feature status updates
+Most teams use agentful conversationally first (`/agentful "build X"`), then add more structure only when needed.
 
-The orchestrator picks the highest-priority incomplete feature and works until 100% complete.
+- **Conversation-first** - Start work with `/agentful` and natural language requests
+- **Stateful progress** - `.agentful/` tracks current phase, completion, and decisions
+- **Optional specs** - `.claude/product/` improves planning for larger projects but is not required to begin
+- **Escalation path** - Move from chat requests to structured specs when scope grows
+
+The orchestrator uses available context (conversation history, state files, and optional specs) to choose the next best task.
 
 ### 4. Tech Stack Intelligence
 
@@ -106,7 +106,7 @@ The orchestrator acts as the central coordinator, analyzing tasks and delegating
 
 ```mermaid
 graph TD
-    User["👤 Developer"] -->|/agentful-start| Orchestrator["🎯 Orchestrator<br/>Coordinates & Delegates"]
+    User["👤 Developer"] -->|/agentful or /agentful-start| Orchestrator["🎯 Orchestrator<br/>Coordinates & Delegates"]
 
     Orchestrator -->|Analyze| Architect["🏗️ Architect<br/>Tech Stack Detection"]
     Orchestrator -->|APIs| Backend["⚙️ Backend<br/>Server Logic"]
@@ -148,7 +148,7 @@ graph TD
 </div>
 
 **How it works:**
-1. You invoke `/agentful-start` with a task
+1. You invoke `/agentful` (or `/agentful-start`) with a task
 2. Orchestrator classifies the work type (feature, bugfix, refactor, etc.)
 3. Delegates to appropriate specialist agents in parallel when possible
 4. Agents complete their work and report back
@@ -158,9 +158,19 @@ graph TD
 
 ## Development Workflow
 
-The typical agentful workflow follows this pattern:
+The typical workflow is progressive:
 
-### 1. Define Product Specification
+### 1. Set Direction (Conversation First)
+
+You can start immediately with natural language:
+
+```bash
+/agentful "build auth and roles"
+/agentful "fix flaky tests in billing"
+/agentful "keep going"
+```
+
+For larger projects, optionally add structure in `.claude/product/`:
 
 Create a structured product spec in `.claude/product/`:
 
@@ -179,9 +189,9 @@ Task management for distributed teams
 3. Task assignment (MEDIUM)
 ```
 
-### 2. Start Structured Development
+### 2. Start/Continue Development
 
-Run `/agentful-start` to begin the autonomous work workflow:
+Run `/agentful-start` (or `/agentful "keep going"`) to begin or continue work:
 
 **On first run**, `/agentful-start` automatically:
 - Analyzes your codebase and detects tech stack
@@ -190,8 +200,8 @@ Run `/agentful-start` to begin the autonomous work workflow:
 - Then begins development
 
 **For new projects** (no code yet):
-- Prompts you to run `/agentful-init` for guided setup
-- Generates agents from product spec + researched best practices
+- You can start with `/agentful` and describe what to build
+- If needed, run `/agentful-init` or `/agentful-product` to add more structure
 
 **For existing projects**:
 - Scans code to discover business domains
@@ -199,7 +209,7 @@ Run `/agentful-start` to begin the autonomous work workflow:
 - Creates tech skills (e.g., React patterns, Prisma patterns)
 
 **Then it**:
-- Orchestrator reads product specification
+- Orchestrator reads available context (state, history, optional product docs)
 - Picks highest-priority incomplete feature
 - Delegates to specialist agents
 - Validates through quality gates
@@ -214,7 +224,7 @@ The workflow follows these stages with automatic progression:
 
 ```mermaid
 graph LR
-    A["📄 Product Spec"] -->|Analyze| B["🔍 Requirements Check"]
+    A["🧭 User Request / Project Context"] -->|Analyze| B["🔍 Requirements Check"]
     B -->|Complete| C["💻 Implementation"]
     B -->|Gaps found| D["❓ Ask Human"]
     D --> C
@@ -491,7 +501,7 @@ For step-by-step usage instructions, see the [Quick Start Guide](/getting-starte
 
 Now that you understand how agentful works:
 
-1. **[Configure Your Installation](/)** - Use the interactive configurator
+1. **[Installation Guide](/getting-started/installation)** - Choose default, minimal, or custom CLI setup
 2. **[Quick Start Guide](/getting-started/quick-start)** - Get up and running in 5 minutes
 3. **[Your First Project](/getting-started/first-project)** - Step-by-step tutorial
 4. **[Agent Details](/agents)** - Deep dive into each agent

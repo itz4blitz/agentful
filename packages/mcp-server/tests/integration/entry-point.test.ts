@@ -8,6 +8,8 @@ describe('Entry Point', () => {
   let originalArgv: string[];
   let originalUrl: string;
   let mockShutdown: vi.Mock;
+  let originalSigintListeners: NodeJS.SignalsListener[];
+  let originalSigtermListeners: NodeJS.SignalsListener[];
 
   beforeEach(() => {
     // Mock process.exit
@@ -24,12 +26,21 @@ describe('Entry Point', () => {
 
     // Mock shutdown function
     mockShutdown = vi.fn();
+
+    // Preserve existing signal listeners to avoid listener accumulation across tests
+    originalSigintListeners = process.listeners('SIGINT');
+    originalSigtermListeners = process.listeners('SIGTERM');
   });
 
   afterEach(() => {
     process.exit = originalProcessExit;
     process.argv = originalArgv;
     (globalThis as any).importMetaUrl = originalUrl;
+
+    process.removeAllListeners('SIGINT');
+    process.removeAllListeners('SIGTERM');
+    originalSigintListeners.forEach(listener => process.on('SIGINT', listener));
+    originalSigtermListeners.forEach(listener => process.on('SIGTERM', listener));
   });
 
   describe('isRunDirectly function', () => {
@@ -80,7 +91,7 @@ describe('Entry Point', () => {
       }
     });
 
-    it('should handle initialization errors and exit with code 1', async () => {
+    it('should continue in degraded mode when database initialization fails', async () => {
       // Mock DatabaseManager.getInstance to throw
       const getInstance = vi.spyOn(DatabaseManager, 'getInstance').mockImplementation(() => {
         throw new Error('Database initialization failed');
@@ -88,9 +99,19 @@ describe('Entry Point', () => {
 
       await main();
 
-      expect(process.exit).toHaveBeenCalledWith(1);
+      expect(process.exit).not.toHaveBeenCalled();
 
       getInstance.mockRestore();
+    });
+
+    it('should exit with code 1 on fatal server start errors', async () => {
+      const startSpy = vi.spyOn(AgentfulMCPServer.prototype, 'start').mockRejectedValue(new Error('fatal startup failure'));
+
+      await main();
+
+      expect(process.exit).toHaveBeenCalledWith(1);
+
+      startSpy.mockRestore();
     });
   });
 

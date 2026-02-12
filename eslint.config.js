@@ -71,8 +71,7 @@ export default [
       'docs/.vocs/',
       'docs/dist/',
       'template/',
-      '*.config.js',
-      'examples/'
+      '*.config.js'
     ]
   }
 ];

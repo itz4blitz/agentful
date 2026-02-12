@@ -192,3 +192,78 @@ SYSTEM VISUALIZATION STYLES
     gap: 1.5rem !important;
   }
 }
+
+/* Mermaid diagram click-to-expand */
+.mermaid-diagram {
+  position: relative;
+  cursor: zoom-in;
+}
+
+.mermaid-diagram::after {
+  content: "Click to expand";
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 6px;
+  padding: 0.2rem 0.45rem;
+  opacity: 0;
+  transition: opacity 120ms ease-in-out;
+  pointer-events: none;
+}
+
+.mermaid-diagram:hover::after,
+.mermaid-diagram:focus-visible::after {
+  opacity: 1;
+}
+
+.diagram-lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(2, 6, 23, 0.84);
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.diagram-lightbox.open {
+  display: flex;
+}
+
+.diagram-lightbox-panel {
+  position: relative;
+  width: min(96vw, 1400px);
+  max-height: 94vh;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: #0f172a;
+  padding: 1rem;
+  box-shadow: 0 16px 60px rgba(2, 6, 23, 0.6);
+}
+
+.diagram-lightbox-content svg {
+  width: 100%;
+  height: auto;
+}
+
+.diagram-lightbox-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 1;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  background: rgba(15, 23, 42, 0.92);
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+}

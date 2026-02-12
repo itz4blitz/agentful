@@ -12,7 +12,6 @@
  * - .claude/skills/*\/SKILL.md (skill documentation)
  * - .claude/product/**\/*.md (product specifications)
  * - template/**\/*.md (template files)
- * - examples/**\/*.md (example documentation)
  *
  * Blocked:
  * - Random *.md files in project root
@@ -42,7 +41,6 @@ const ALLOWED_PATTERNS = [
   /^\.claude\/skills\/[^\/]+\/SKILL\.md$/,     // Skill docs
   /^\.claude\/product\/.*\.md$/,               // Product specs
   /^template\/.*\.md$/,                        // Template files
-  /^examples\/.*\.md$/,                        // Examples
   /^\.agentful\/.*\.md$/                       // Internal agentful state docs (rare)
 ];
 

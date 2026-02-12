@@ -16,7 +16,6 @@
  * - .claude/skills/*\/SKILL.md (skill documentation)
  * - .claude/product/**\/*.md (product specifications)
  * - template/**\/*.md (template files)
- * - examples/**\/*.md (example documentation)
  *
  * Blocked:
  * - Random *.md files in project root

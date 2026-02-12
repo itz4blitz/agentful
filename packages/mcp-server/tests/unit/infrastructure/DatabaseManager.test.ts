@@ -1,7 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { DatabaseManager } from '../../../src/infrastructure/DatabaseManager.js';
-import { rmSync, existsSync } from 'fs';
-import { resolve } from 'path';
 
 describe('DatabaseManager', () => {
   afterEach(() => {
@@ -58,18 +56,6 @@ describe('DatabaseManager', () => {
   describe('migrate', () => {
     it('should run schema migrations on first call', async () => {
       const manager = DatabaseManager.getInstance();
-
-      // Mock the schema file reading
-      const schemaContent = `
-        CREATE TABLE IF NOT EXISTS test_table (
-          id TEXT PRIMARY KEY,
-          name TEXT NOT NULL
-        );
-      `;
-
-      vi.mock('fs', async () => ({
-        readFileSync: vi.fn(() => schemaContent)
-      }));
 
       try {
         await manager.migrate();

@@ -78,22 +78,22 @@ export function SystemVisualization() {
 
       {/* Step-by-step sequence */}
       <div style={{ marginBottom: '4rem' }}>
-        {/* Step 1: You write spec */}
+        {/* Step 1: Start with natural language */}
         <SequenceStep
           number="1"
-          title="You write product spec"
-          description=".claude/product/index.md"
+          title="You describe what to build"
+          description='/agentful "build auth and roles"'
           color="#06b6d4"
           icon="📝"
         />
 
-        <Arrow label="Run /agentful-start" color="#10b981" highlight />
+        <Arrow label="Run /agentful" color="#10b981" highlight />
 
         {/* Step 2: Hooks intercept */}
         <SequenceStep
           number="2"
-          title="Hooks intercept & modify"
-          description="PreToolUse • PostToolUse • UserPromptSubmit"
+          title="Hooks enforce guardrails"
+          description="SessionStart • PreToolUse • PostToolUse"
           color="#3b82f6"
           icon="🪝"
           dashed
@@ -105,7 +105,7 @@ export function SystemVisualization() {
         <SequenceStep
           number="3"
           title="Orchestrator analyzes & delegates"
-          description="Reads spec, creates execution plan, spawns agents"
+          description="Reads state/history/context, creates execution plan, spawns agents"
           color="#8b5cf6"
           icon="🎯"
         />
@@ -175,32 +175,32 @@ export function SystemVisualization() {
             <TimelineBar
               label="🏗️ Architect"
               description=""
-              left="10px"
-              width="calc(60% - 10px)"
+              left="12%"
+              right="44%"
               color="#ef4444"
               top="10px"
             />
             <TimelineBar
               label="⚙️ Backend"
               description=""
-              left="10px"
-              width="calc(55% - 10px)"
+              left="18%"
+              right="28%"
               color="#3b82f6"
               top="60px"
             />
             <TimelineBar
               label="🎨 Frontend"
               description=""
-              left="10px"
-              width="calc(55% - 10px)"
+              left="24%"
+              right="14%"
               color="#10b981"
               top="110px"
             />
             <TimelineBar
               label="🧪 Tester"
               description=""
-              left="10px"
-              width="calc(45% - 10px)"
+              left="30%"
+              right="0%"
               color="#eab308"
               top="160px"
             />
@@ -754,11 +754,12 @@ function WaitingAgent({ name, active, waiting = false }: {
   );
 }
 
-function TimelineBar({ label, description, left, width, color, top }: {
+function TimelineBar({ label, description, left, width, right, color, top }: {
   label: string;
   description: string;
   left: string;
-  width: string;
+  width?: string;
+  right?: string;
   color: string;
   top: string;
 }) {
@@ -766,7 +767,7 @@ function TimelineBar({ label, description, left, width, color, top }: {
     <div style={{
       position: 'absolute',
       left,
-      width,
+      ...(right ? { right } : { width }),
       top,
       height: '38px',
       background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`,

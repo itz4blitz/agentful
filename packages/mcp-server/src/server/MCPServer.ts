@@ -30,6 +30,7 @@ export class AgentfulMCPServer {
   private server: Server;
   private tools: Tool[] = [];
   private degradedMode: boolean;
+  private started: boolean = false;
 
   constructor(
     private patternRepo: IPatternRepository | null,
@@ -471,8 +472,13 @@ export class AgentfulMCPServer {
    * Start the MCP server
    */
   async start(): Promise<void> {
+    if (this.started) {
+      return;
+    }
+
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
+    this.started = true;
 
     if (process.env.AGENTFUL_LOG_LEVEL === 'debug') {
       console.error('[MCP Server] Started successfully');
@@ -483,7 +489,12 @@ export class AgentfulMCPServer {
    * Stop the MCP server
    */
   async stop(): Promise<void> {
+    if (!this.started) {
+      return;
+    }
+
     await this.server.close();
+    this.started = false;
   }
 
   /**
