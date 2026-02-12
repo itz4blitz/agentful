@@ -1,3 +1,12 @@
+## [1.8.1](https://github.com/itz4blitz/agentful/compare/v1.8.0...v1.8.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* **docs:** Fix broken search with Pagefind plugin ([0600ef0](https://github.com/itz4blitz/agentful/commit/0600ef00cbee18702b1637741ee0ed44b73d2976))
+* **hooks:** add explicit break for no-fallthrough lint ([55f000c](https://github.com/itz4blitz/agentful/commit/55f000c424d068ffba85446b2f38f144be14b61e))
+* **hooks:** fix exit code in default case - changed to process.exit(0) ([ada6acb](https://github.com/itz4blitz/agentful/commit/ada6acbd6051f5a7158f964cbc18909f1ce8dac7))
+
 # [1.8.0](https://github.com/itz4blitz/agentful/compare/v1.7.0...v1.8.0) (2026-02-08)
 
 
