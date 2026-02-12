@@ -12,26 +12,29 @@
  *
  * Environment Variables:
  *   AGENTFUL_WORKTREE_MODE - off|block|auto (default: auto)
- *   AGENTFUL_WORKTREE_DIR - Current worktree path (if in worktree)
- *   AGENTFUL_AGENT_TYPE - Type of agent (fixer, reviewer, etc.)
- *   AGENTFUL_TASK_TYPE - Type of task (feature, hotfix, etc.)
+ *   AGENTFUL_WORKTREE_DIR - Where to create worktrees (default: ../)
+ *   AGENTFUL_WORKTREE_AUTO_CLEANUP - Auto-remove after completion (default: true)
+ *   AGENTFUL_WORKTREE_RETENTION_DAYS - Days before cleanup (default: 7)
+ *   AGENTFUL_WORKTREE_MAX_ACTIVE - Max active worktrees (default: 5)
  *
  * To disable this hook:
- *   export AGENTFUL_WORKTREE_MODE=off
- *   or remove from .claude/settings.json PreToolUse hooks
+ *   Temporary: export AGENTFUL_WORKTREE_MODE=off
+ *   Permanent: Remove from .claude/settings.json PreToolUse hooks
+ *   Customize: Edit bin/hooks/ensure-worktree.js
  */
 
 import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { readFileSync, writeFileSync, existsSync } from 'fs';
 
 // Get configuration
 const MODE = process.env.AGENTFUL_WORKTREE_MODE || 'auto';
-const WORKTREE_DIR = process.env.AGENTFUL_WORKTREE_DIR || '';
+const WORKTREE_DIR = process.env.AGENTFUL_WORKTREE_DIR || '../';
+const AUTO_CLEANUP = process.env.AGENTFUL_WORKTREE_AUTO_CLEANUP !== 'false';
+const RETENTION_DAYS = parseInt(process.env.AGENTFUL_WORKTREE_RETENTION_DAYS || '7', 10);
+const MAX_ACTIVE = parseInt(process.env.AGENTFUL_WORKTREE_MAX_ACTIVE || '5', 10);
 const AGENT_TYPE = process.env.AGENTFUL_AGENT_TYPE || 'general';
 const TASK_TYPE = process.env.AGENTFUL_TASK_TYPE || 'general';
 
@@ -44,57 +47,16 @@ function isInWorktree() {
     const gitFile = path.join(cwd, '.git');
 
     // If .git is a file (not a directory), we're in a worktree
-    if (fs.existsSync(gitFile)) {
-      const stat = fs.statSync(gitFile);
-      return stat.isFile();
+    if (existsSync(gitFile) && statSync(gitFile).isFile()) {
+      return true;
     }
-
-    return false;
   } catch (error) {
     return false;
   }
 }
 
 /**
- * Find git repository root
- */
-function findRepoRoot() {
-  try {
-    return execSync('git rev-parse --show-toplevel', {
-      encoding: 'utf8',
-      cwd: process.cwd(),
-    }).trim();
-  } catch (error) {
-    return null;
-  }
-}
-
-/**
- * Get current git branch
- */
-function getCurrentBranch() {
-  try {
-    return execSync('git rev-parse --abbrev-ref HEAD', {
-      encoding: 'utf8',
-      cwd: process.cwd(),
-    }).trim();
-  } catch (error) {
-    return 'unknown';
-  }
-}
-
-/**
- * Detect if running in CI environment
- */
-function isCIEnvironment() {
-  return process.env.CI === 'true' ||
-         process.env.GITHUB_ACTIONS === 'true' ||
-         process.env.GITLAB_CI === 'true' ||
-         process.env.CIRCLECI === 'true';
-}
-
-/**
- * Determine worktree purpose from context
+ * Determine worktree purpose from agent/task context
  */
 function determinePurpose() {
   // Agent-based purposes
@@ -108,10 +70,6 @@ function determinePurpose() {
     'orchestrator': 'orchestrator',
   };
 
-  if (agentPurposes[AGENT_TYPE]) {
-    return agentPurposes[AGENT_TYPE];
-  }
-
   // Task-based purposes
   const taskPurposes = {
     'feature': 'feature',
@@ -120,59 +78,17 @@ function determinePurpose() {
     'experiment': 'experiment',
   };
 
+  // Determine purpose based on agent type, then task type
+  if (agentPurposes[AGENT_TYPE]) {
+    return agentPurposes[AGENT_TYPE];
+  }
+
   if (taskPurposes[TASK_TYPE]) {
     return taskPurposes[TASK_TYPE];
   }
 
+  // Default to general
   return 'general';
-}
-
-/**
- * Create worktree automatically
- */
-function createWorktree() {
-  try {
-    const repoRoot = findRepoRoot();
-    if (!repoRoot) {
-      console.error(':::error Not in a git repository:::');
-      process.exit(1);
-    }
-
-    const purpose = determinePurpose();
-    const branch = getCurrentBranch();
-    const servicePath = path.join(__dirname, 'worktree-service.js');
-
-    console.log(`\n🌳 AGENTFUL_WORKTREE_MODE=auto`);
-    console.log(`   Agent: ${AGENT_TYPE}`);
-    console.log(`   Task: ${TASK_TYPE}`);
-    console.log(`   Purpose: ${purpose}`);
-    console.log(`   Creating worktree...\n`);
-
-    // Execute worktree service
-    const output = execSync(
-      `node "${servicePath}" create "${purpose}" "${branch}"`,
-      {
-        cwd: repoRoot,
-        encoding: 'utf8',
-      }
-    );
-
-    // Extract worktree path from output
-    const match = output.match(/WORKTREE_PATH=(.+)/);
-    if (match && match[1]) {
-      const worktreePath = match[1].trim();
-
-      // Export for caller to capture
-      console.log(`\n:::echo:::onend::`);
-      console.log(`export AGENTFUL_WORKTREE_DIR="${worktreePath}"`);
-      console.log(`   → Next: Run your task in this worktree\n`);
-    }
-
-    process.exit(0);
-  } catch (error) {
-    console.error(`:::error Failed to create worktree: ${error.message}:::`);
-    process.exit(1);
-  }
 }
 
 /**
@@ -180,13 +96,12 @@ function createWorktree() {
  */
 function showBlockMessage() {
   const branch = getCurrentBranch();
-  const repoRoot = findRepoRoot();
 
   console.error(`
 :::error
-═══════════════════════════════════════════════════════════
+═════════════════════════════════════════════════
   🚫 Blocked: Direct Repository Edits
-═══════════════════════════════════════════════════════════
+═════════════════════════════════════════════════
 
 You are attempting to edit files in the root repository, but AGENTFUL_WORKTREE_MODE
 is set to "block" which requires working in a git worktree.
@@ -212,7 +127,67 @@ For more information, see: /agentful-worktree or docs/pages/concepts/git-worktre
   process.exit(1);
 }
 
-// Main execution
+/**
+ * Create worktree automatically
+ */
+function createWorktree() {
+  const repoRoot = findRepoRoot();
+  if (!repoRoot) {
+    console.error(':::error Not in a git repository:::');
+    process.exit(1);
+  }
+
+  const purpose = determinePurpose();
+  const branch = getCurrentBranch();
+  const timestamp = Date.now();
+
+  // Generate worktree name
+  const worktreeName = `agentful-${purpose}-${sanitizeBranchName(branch)}-${timestamp}`;
+
+  // Create worktree
+  const worktreePath = path.join(repoRoot, WORKTREE_DIR, worktreeName);
+
+  console.log(`🌳 Creating worktree: ${worktreeName}`);
+  console.log(`   Branch: ${branch}`);
+  console.log(`   Path: ${worktreePath}`);
+
+  try {
+    execSync(
+      `git worktree add "${worktreePath}" -b "${branch}"`,
+      { cwd: repoRoot, stdio: 'inherit' }
+    );
+  } catch (error) {
+    console.error(`:::error Failed to create worktree: ${error.message}:::`);
+    process.exit(1);
+  }
+
+  // Track in state.json (would happen in orchestrator, but this is standalone)
+  try {
+    const stateFile = path.join(repoRoot, '.agentful', 'state.json');
+    if (existsSync(stateFile)) {
+      const state = JSON.parse(readFileSync(stateFile, 'utf8'));
+      state.current_worktree = {
+        name: worktreeName,
+        path: worktreePath,
+        branch: branch,
+        purpose: purpose,
+        created_at: new Date().toISOString(),
+      };
+      writeFileSync(stateFile, JSON.stringify(state, null, 2));
+    }
+  } catch (error) {
+    // State file might not exist yet, that's okay
+  }
+
+  // Export for caller to capture
+  console.log(`export AGENTFUL_WORKTREE_DIR="${worktreePath}"`);
+
+  process.exit(0);
+}
+
+/**
+ * Main execution
+ */
 (() => {
   // Get tool and file from environment
   const tool = process.env.TOOL || '';
@@ -231,11 +206,6 @@ For more information, see: /agentful-worktree or docs/pages/concepts/git-worktre
   // Check if already in worktree (explicitly set or detected)
   if (WORKTREE_DIR) {
     // In worktree - allow operation
-    process.exit(0);
-  }
-
-  // Check if we're in a worktree directory
-  if (isInWorktree()) {
     process.exit(0);
   }
 
