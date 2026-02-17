@@ -1,3 +1,11 @@
+## [1.8.2](https://github.com/itz4blitz/agentful/compare/v1.8.1...v1.8.2) (2026-02-17)
+
+
+### Bug Fixes
+
+* harden session-start.js parallel detection ([5c7f05b](https://github.com/itz4blitz/agentful/commit/5c7f05bbfea283692054c86103d5cfc3885ece94))
+* Windows compatibility and correct hook configuration syntax ([1e8b22c](https://github.com/itz4blitz/agentful/commit/1e8b22c37a8ff58644f71236dacd06828d0cec14))
+
 ## [1.8.1](https://github.com/itz4blitz/agentful/compare/v1.8.0...v1.8.1) (2026-02-12)
 
 
