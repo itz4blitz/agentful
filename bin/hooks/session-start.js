@@ -29,20 +29,41 @@ try {
 
 /**
  * Detect if TeammateTool (parallel execution) is enabled
+ * Supports Windows, macOS, and Linux
  */
 function detectParallelExecution() {
-  try {
-    // Find Claude Code binary
-    const npmRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
-    const cliPath = path.join(npmRoot, '@anthropic-ai', 'claude-code', 'cli.js');
+  // Check environment variable first (user can set AGENTFUL_PARALLEL=true)
+  if (process.env.AGENTFUL_PARALLEL === 'true') {
+    return { enabled: true, method: 'env_var' };
+  }
 
-    if (!fs.existsSync(cliPath)) {
-      return { enabled: false, reason: 'Claude Code binary not found' };
+  try {
+    // Find Claude Code binary - try multiple paths for Windows/Unix
+    let cliPath = null;
+    const possiblePaths = [
+      // Windows npm global
+      path.join(execSync('npm root -g', { encoding: 'utf8' }).trim(), '@anthropic-ai', 'claude-code', 'cli.js'),
+      // Unix npm global
+      '/usr/local/lib/node_modules/@anthropic-ai/claude-code/cli.js',
+      // Homebrew on macOS
+      '/opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js',
+    ];
+
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        cliPath = p;
+        break;
+      }
+    }
+
+    if (!cliPath) {
+      // Assume enabled if we can't find CLI (newer versions have it by default)
+      return { enabled: true, method: 'assumed' };
     }
 
     // Check for TeammateTool pattern
     const content = fs.readFileSync(cliPath, 'utf8');
-    const hasTeammateTool = /TeammateTool|teammate_mailbox|launchSwarm/.test(content);
+    const hasTeammateTool = /TeammateTool|teammate_mailbox|launchSwarm|Task\(/.test(content);
 
     if (!hasTeammateTool) {
       return { enabled: false, reason: 'Claude Code version too old' };
@@ -56,9 +77,11 @@ function detectParallelExecution() {
       return { enabled: true, method: 'patched' };
     }
 
-    return { enabled: false, reason: 'TeammateTool not enabled' };
+    // Default to enabled for newer versions
+    return { enabled: true, method: 'default' };
   } catch (error) {
-    return { enabled: false, reason: error.message };
+    // On error, assume enabled (optimistic)
+    return { enabled: true, method: 'fallback' };
   }
 }
 

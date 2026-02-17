@@ -239,4 +239,6 @@ function markForReanalysis(arch, reasons) {
 
 // Run detection
 const driftDetected = detectArchitectDrift();
-process.exit(driftDetected ? 1 : 0);
+// Always exit 0 - drift is informational, not an error
+// Non-zero exit codes are interpreted as hook errors by Claude Code
+process.exit(0);
