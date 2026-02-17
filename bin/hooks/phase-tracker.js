@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * Phase Tracker Hook
+ * Phase Tracker Hook (Cross-platform)
  *
- * Tracks current agentful phase from .agentful/state.json
- * Cross-platform compatible (Windows, macOS, Linux)
+ * Tracks current agentful phase from .agentful/state.json.
+ * Cross-platform compatible (Windows, macOS, Linux).
+ *
+ * Equivalent to: if [ -f .agentful/state.json ]; then jq -r '.current_phase // "idle"' .agentful/state.json 2>/dev/null || echo 'idle'; else echo 'idle'; fi
+ *
+ * Input: Reads tool_input JSON from stdin (Claude Code hook standard)
  */
 
 import fs from 'fs';
@@ -28,4 +32,5 @@ try {
   // Silently fail - phase tracking is optional
 }
 
+// Always exit 0 - phase tracking is informational
 process.exit(0);

@@ -102,6 +102,28 @@
             "description": "Protect package.json ownership metadata from accidental corruption"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node bin/hooks/typecheck-limiter.js",
+            "timeout": 30,
+            "description": "Run TypeScript type check and show first 5 errors (cross-platform)"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node bin/hooks/similar-doc-detector.js",
+            "timeout": 5,
+            "description": "Warn if similar markdown documentation already exists (cross-platform)"
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
