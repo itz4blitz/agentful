@@ -29,15 +29,42 @@ try {
 
 /**
  * Detect if TeammateTool (parallel execution) is enabled
+ * Supports Windows, macOS, and Linux
  */
 function detectParallelExecution() {
-  try {
-    // Find Claude Code binary
-    const npmRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
-    const cliPath = path.join(npmRoot, '@anthropic-ai', 'claude-code', 'cli.js');
+  // Check environment variable first (user can set AGENTFUL_PARALLEL=true)
+  if (process.env.AGENTFUL_PARALLEL === 'true') {
+    return { enabled: true, method: 'env_var' };
+  }
 
-    if (!fs.existsSync(cliPath)) {
-      return { enabled: false, reason: 'Claude Code binary not found' };
+  try {
+    // Find Claude Code binary - try multiple paths for Windows/Unix
+    let cliPath = null;
+    const possiblePaths = [
+      // Unix npm global
+      '/usr/local/lib/node_modules/@anthropic-ai/claude-code/cli.js',
+      // Homebrew on macOS
+      '/opt/homebrew/lib/node_modules/@anthropic-ai/claude-code/cli.js',
+    ];
+
+    // npm root -g can throw on Windows if npm isn't in PATH
+    try {
+      const npmRoot = execSync('npm root -g', { encoding: 'utf8' }).trim();
+      possiblePaths.unshift(path.join(npmRoot, '@anthropic-ai', 'claude-code', 'cli.js'));
+    } catch {
+      // npm not available - continue with static paths
+    }
+
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) {
+        cliPath = p;
+        break;
+      }
+    }
+
+    if (!cliPath) {
+      // Assume enabled if we can't find CLI (newer versions have it by default)
+      return { enabled: true, method: 'assumed' };
     }
 
     // Check for TeammateTool pattern
